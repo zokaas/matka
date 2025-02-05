@@ -1,16 +1,13 @@
-// src/main.ts
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+import { createClient } from '@supabase/supabase-js';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_API!,
+);
 
-  // Enable CORS if needed for frontend communication
-  app.enableCors({
-    origin: 'http://localhost:3000', // Adjust as per your frontend app
-    credentials: true,
-  });
-
-  await app.listen(5001);
-}
-bootstrap();
+supabase
+  .channel('realtime_updates')
+  .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
+    console.log('Change received!', payload);
+  })
+  .subscribe();
