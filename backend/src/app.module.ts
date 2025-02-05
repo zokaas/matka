@@ -1,23 +1,22 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ProgressController } from './progress.controller';
-import { AppController } from './app.controller';
-import { Users } from './user.entity';
-import { Activity } from './activity.entity';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      url: process.env.DATABASE_URL, // Use the environment variable
-      entities: [Users, Activity],
-      synchronize: true,
-      ssl: {
-        rejectUnauthorized: false, // Necessary for Render databases
-      },
+    ConfigModule.forRoot({
+      isGlobal: true,
     }),
-    TypeOrmModule.forFeature([Users, Activity]),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        url: configService.get<string>('DATABASE_URL'),
+        autoLoadEntities: true,
+        synchronize: false, // ⚠️ Remove this in production!
+      }),
+    }),
   ],
-  controllers: [ProgressController, AppController],
 })
 export class AppModule {}
