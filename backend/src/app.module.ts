@@ -5,7 +5,6 @@ import { ProgressController } from './progress.controller';
 import { AppController } from './app.controller';
 import { Users } from './user.entity';
 import { Activity } from './activity.entity';
-import { RedisModule } from './redis/redis.module'; // Import RedisModule
 
 @Module({
   imports: [
@@ -20,7 +19,6 @@ import { RedisModule } from './redis/redis.module'; // Import RedisModule
       synchronize: true,
     }),
     TypeOrmModule.forFeature([Users, Activity]),
-    RedisModule, // Add RedisModule here
   ],
   controllers: [ProgressController, AppController],
 })
