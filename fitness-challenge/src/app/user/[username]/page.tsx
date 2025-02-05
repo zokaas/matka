@@ -85,7 +85,7 @@ const UserProfile = () => {
   const params = useParams();
   const username = params?.username as string;
   const [user, setUser] = useState<User | null>(null);
-  const [page, setPage] = useState(1);
+  const [page, _setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
