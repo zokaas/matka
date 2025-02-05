@@ -1,4 +1,3 @@
-// src/app.module.ts
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProgressController } from './progress.controller';
@@ -10,13 +9,12 @@ import { Activity } from './activity.entity';
   imports: [
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'password',
-      database: 'fitness_challenge',
+      url: process.env.DATABASE_URL, // Use the environment variable
       entities: [Users, Activity],
       synchronize: true,
+      ssl: {
+        rejectUnauthorized: false, // Necessary for Render databases
+      },
     }),
     TypeOrmModule.forFeature([Users, Activity]),
   ],
