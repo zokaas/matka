@@ -9,7 +9,7 @@ async function bootstrap() {
 
   // Load environment variables
   const DATABASE_URL = configService.get<string>('DATABASE_URL');
-  const PORT = configService.get<number>('PORT') || 3000;
+  const PORT = configService.get<number>('PORT') || 5001;
 
   // Ensure the DATABASE_URL is provided
   if (!DATABASE_URL) {
@@ -21,6 +21,10 @@ async function bootstrap() {
     origin: '*', // Replace with frontend URL for security
   });
 
+    app
+      .getHttpAdapter()
+      .get('/health', (req, res) => res.send('Backend is healthy!'));
+      
   // Start the server
   await app.listen(PORT);
   Logger.log(`🚀 Backend running at: http://localhost:${PORT}`);

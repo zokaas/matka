@@ -24,6 +24,9 @@ const MOTIVATIONAL_MESSAGES = [
   "🚀 En tiedä miksi hypin, mutta hypin kyllä",
   "💪 Jos pallo on pyöreä, niin elämäkin on pyöreä",
 ];
+     const backendUrl =
+       process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+
 
 export default function QuickAccess() {
   const [users, setUsers] = useState<User[]>([]);
@@ -33,22 +36,25 @@ export default function QuickAccess() {
   const [motivationalMessage, setMotivationalMessage] = useState("");
 
   useEffect(() => {
-    let isMounted = true;
-    setLoading(true);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
 
-    fetch("http://localhost:5001/users")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch users");
-        return res.json();
-      })
-      .then((data) => {
-        if (!isMounted) return;
+        // Fetch total kilometers
+        const totalResponse = await fetch(`${backendUrl}/total-kilometers`);
+        if (!totalResponse.ok)
+          throw new Error("Failed to fetch total kilometers");
+        const totalData = await totalResponse.json();
+        setTotalKm(totalData.totalKm);
 
-        const sortedUsers = data.sort(
-          (a: User, b: User) => b.totalKm - a.totalKm
-        ); // Sort by totalKm descending
+        // Fetch users
+        const usersResponse = await fetch(`${backendUrl}/users`);
+        if (!usersResponse.ok) throw new Error("Failed to fetch users");
+        const usersData: User[] = await usersResponse.json();
+
+        // Sort users by totalKm
+        const sortedUsers = usersData.sort((a, b) => b.totalKm - a.totalKm);
         setUsers(sortedUsers);
-        setTotalKm(sortedUsers.reduce((sum: number, user: User) => sum + user.totalKm, 0));
 
         // Select a random motivational message
         setMotivationalMessage(
@@ -56,15 +62,14 @@ export default function QuickAccess() {
             Math.floor(Math.random() * MOTIVATIONAL_MESSAGES.length)
           ]
         );
-      })
-      .catch((err) => {
-        if (isMounted) setError(err.message);
-      })
-      .finally(() => setLoading(false));
-
-    return () => {
-      isMounted = false;
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setLoading(false);
+      }
     };
+
+    fetchData();
   }, []);
 
   const progress = (totalKm / TOTAL_GOAL) * 100; // Calculate progress percentage
@@ -75,6 +80,7 @@ export default function QuickAccess() {
     if (index === 2) return "🥉";
     return null;
   };
+
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8">

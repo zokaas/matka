@@ -1,6 +1,7 @@
 "use client";
+export const dynamic = "force-dynamic";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -85,7 +86,6 @@ const UserProfile = () => {
   const params = useParams();
   const username = params?.username as string;
   const [user, setUser] = useState<User | null>(null);
-  const [page, _setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
@@ -97,21 +97,23 @@ const UserProfile = () => {
   );
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-    const [activityDetails, setActivityDetails] = useState<{
-      activity: string;
-      date: string;
-      duration: number;
-    } | null>(null);
+  const [activityDetails, setActivityDetails] = useState<{
+    activity: string;
+    date: string;
+    duration: number;
+  } | null>(null);
+
+   const backendUrl = useMemo(
+     () => process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001",
+     []
+   );
 
   // Ref for the form section
   const formRef = useRef<HTMLDivElement>(null);
-
   const fetchUser = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `http://localhost:5001/users/${username}?page=${page}&limit=10`
-      );
+      const response = await fetch(`${backendUrl}/users/${username}`);
       if (!response.ok) throw new Error("Failed to fetch user data");
       const data = await response.json();
       setUser(data);
@@ -120,7 +122,7 @@ const UserProfile = () => {
     } finally {
       setLoading(false);
     }
-  }, [username, page]);
+  }, [username, backendUrl]); 
 
   useEffect(() => {
     fetchUser();
@@ -129,20 +131,16 @@ const UserProfile = () => {
   const handleDeleteActivity = async () => {
     if (deleteIndex === null) return;
     try {
-      await fetch(
-        `http://localhost:5001/users/${username}/activities/${deleteIndex}`,
-        {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      await fetch(`${backendUrl}/users/${username}/activities/${deleteIndex}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
       setIsModalOpen(false);
       fetchUser(); // Reload user data
     } catch (err) {
       setError((err as Error).message);
     }
   };
-
 
   const openDeleteModal = (index: number) => {
     const activity = user?.activities[index];
@@ -181,7 +179,7 @@ const UserProfile = () => {
     try {
       const kilometers = calculateKilometers(activity, Number(duration));
       await fetch(
-        `http://localhost:5001/users/${username}/activities/${editingIndex}`,
+        `${backendUrl}/users/${username}/activities/${editingIndex}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -206,7 +204,7 @@ const UserProfile = () => {
   const handleAddActivity = async () => {
     try {
       const kilometers = calculateKilometers(activity, Number(duration));
-      await fetch(`http://localhost:5001/users/${username}/activities`, {
+      await fetch(`${backendUrl}/users/${username}/activities`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

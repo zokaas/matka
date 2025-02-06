@@ -10,6 +10,16 @@ export class AppController {
     private userRepository: Repository<Users>, // Inject the user repository
   ) {}
 
+  @Get()
+  getHome() {
+    return { message: 'Welcome to the Matka Backend API' };
+  }
+
+  @Get('/health')
+  getHealth() {
+    return { status: 'Healthy', uptime: process.uptime() };
+  }
+
   @Get('/total-kilometers')
   async getTotalKilometers() {
     try {

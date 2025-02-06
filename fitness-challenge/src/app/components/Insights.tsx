@@ -87,28 +87,32 @@ export default function Insights() {
     projectedEndDate: null,
   });
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("http://localhost:5001/users");
-        if (!response.ok) throw new Error("Failed to fetch users");
-        const data: User[] = await response.json();
-        setUsers(data);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const backendUrl =
+        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+      const response = await fetch(`${backendUrl}/users`); // Fixed template literal
+      if (!response.ok) throw new Error("Failed to fetch users");
 
-        const weekday = getMostActiveWeekday(data);
-        setMostActiveDay(weekday);
-        calculateAchievements(data);
-        setTargetPaces(calculateTargetPaces(data));
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-      } finally {
-        setLoading(false);
-      }
-    };
+      const data: User[] = await response.json();
+      setUsers(data);
 
-    fetchData();
-  }, []);
+      const weekday = getMostActiveWeekday(data);
+      setMostActiveDay(weekday);
+      calculateAchievements(data);
+      setTargetPaces(calculateTargetPaces(data));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, []);
+
 
   const calculateTargetPaces = (userData: User[]): TargetPaces => {
     const today = new Date();

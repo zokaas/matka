@@ -1,5 +1,7 @@
 export async function fetchAllUsers() {
-  const response = await fetch("http://localhost:5001/users");
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+  const response = await fetch(`${backendUrl}/users`, { cache: "no-store"}); // Fixed template literal
   if (!response.ok) {
     throw new Error("Failed to fetch users");
   }

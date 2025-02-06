@@ -1,11 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const Navbar = ({ users }: { users: { username: string }[] }) => {
+interface User {
+  username: string;
+}
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+
+export default function Navbar() {
+  const [users, setUsers] = useState<User[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch(`${backendUrl}/users`);
+        if (!response.ok) throw new Error("Failed to fetch users");
+        setUsers(await response.json());
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   return (
     <nav className="bg-purple-600 text-white shadow">
@@ -13,7 +38,7 @@ const Navbar = ({ users }: { users: { username: string }[] }) => {
         <div className="flex justify-between h-16 items-center">
           {/* Logo / Home */}
           <Link href="/" className="text-xl font-bold hover:text-purple-300">
-            🌍 Fitness Challenge
+            🌍 MAAILMAN YMPÄRI 🌍
           </Link>
 
           {/* Links for Desktop */}
@@ -46,16 +71,24 @@ const Navbar = ({ users }: { users: { username: string }[] }) => {
               </button>
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 bg-white text-gray-800 rounded shadow w-48 z-10">
-                  {users.map((user) => (
-                    <Link
-                      key={user.username}
-                      href={`/user/${user.username}`}
-                      className="block px-4 py-2 hover:bg-gray-200"
-                      onClick={() => setIsDropdownOpen(false)}
-                    >
-                      {user.username}
-                    </Link>
-                  ))}
+                  {loading ? (
+                    <p className="text-gray-500 px-4 py-2">Loading users...</p>
+                  ) : error ? (
+                    <p className="text-red-500 px-4 py-2">
+                      Error fetching users
+                    </p>
+                  ) : (
+                    users.map((user) => (
+                      <Link
+                        key={user.username}
+                        href={`/user/${user.username}`}
+                        className="block px-4 py-2 hover:bg-gray-200"
+                        onClick={() => setIsDropdownOpen(false)}
+                      >
+                        {user.username}
+                      </Link>
+                    ))
+                  )}
                 </div>
               )}
             </div>
@@ -148,5 +181,3 @@ const Navbar = ({ users }: { users: { username: string }[] }) => {
     </nav>
   );
 };
-
-export default Navbar;
