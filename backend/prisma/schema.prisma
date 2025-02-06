@@ -1,25 +1,25 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model Users {
-  id        Int        @id @default(autoincrement())
-  username  String     @unique
-  totalKm   Float      @default(0)
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  totalKm   Float    @default(0)
   activities Activity[]
 }
 
 model Activity {
-  id         Int     @id @default(autoincrement())
-  activity   String
-  duration   Int
-  date       String
+  id        Int      @id @default(autoincrement())
+  activity  String
+  duration  Int
+  date      DateTime
   kilometers Float
-  userId     Int
-  user       Users   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
 }
