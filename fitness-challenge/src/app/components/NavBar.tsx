@@ -6,8 +6,7 @@ import { useEffect, useState } from "react";
 interface User {
   username: string;
 }
-  const backendUrl =
-    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+      const backendUrl = "https://matka-zogy.onrender.com";
 
 export default function Navbar() {
   const [users, setUsers] = useState<User[]>([]);

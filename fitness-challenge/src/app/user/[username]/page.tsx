@@ -103,10 +103,7 @@ const UserProfile = () => {
     duration: number;
   } | null>(null);
 
-   const backendUrl = useMemo(
-     () => process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001",
-     []
-   );
+      const backendUrl = "https://matka-zogy.onrender.com";
 
   // Ref for the form section
   const formRef = useRef<HTMLDivElement>(null);

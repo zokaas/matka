@@ -24,8 +24,7 @@ const MOTIVATIONAL_MESSAGES = [
   "🚀 En tiedä miksi hypin, mutta hypin kyllä",
   "💪 Jos pallo on pyöreä, niin elämäkin on pyöreä",
 ];
-     const backendUrl =
-       process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+      const backendUrl = "https://matka-zogy.onrender.com";
 
 
 export default function QuickAccess() {

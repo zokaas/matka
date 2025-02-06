@@ -91,8 +91,7 @@ useEffect(() => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const backendUrl =
-        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5001";
+      const backendUrl = "https://matka-zogy.onrender.com";
       const response = await fetch(`${backendUrl}/users`); // Fixed template literal
       if (!response.ok) throw new Error("Failed to fetch users");
 
