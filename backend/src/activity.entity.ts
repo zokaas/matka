@@ -1,7 +1,7 @@
-// src/activity.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { Users } from './user.entity';
 
+// activity.entity.ts
 @Entity()
 export class Activity {
   @PrimaryGeneratedColumn()
@@ -16,8 +16,11 @@ export class Activity {
   @Column()
   date: string;
 
-  @Column('float') // Change this line to 'float' to support decimal numbers
+  @Column('float')
   kilometers: number;
+
+  @Column('varchar', { nullable: true })
+  bonus: string | null;
 
   @ManyToOne(() => Users, (user) => user.activities)
   user: Users;

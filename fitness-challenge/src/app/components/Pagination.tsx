@@ -4,29 +4,57 @@ interface Props {
   page: number;
   setPage: (page: number) => void;
   totalItems: number;
+  itemsPerPage: number;
 }
 
-const Pagination: React.FC<Props> = ({ page, setPage, totalItems }) => {
-  const totalPages = Math.ceil(totalItems / 10);
+const Pagination: React.FC<Props> = ({
+  page,
+  setPage,
+  totalItems,
+  itemsPerPage,
+}) => {
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+  // Don't render pagination if there's only one page
+  if (totalPages <= 1) return null;
+
+  const handlePrevious = () => setPage(Math.max(1, page - 1));
+  const handleNext = () => setPage(Math.min(totalPages, page + 1));
 
   return (
-    <div className="flex justify-center space-x-4">
-      <button
-        onClick={() => setPage(Math.max(1, page - 1))}
-        disabled={page === 1}
-        className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
-      >
-        Previous
-      </button>
-      <span>Page {page} of {totalPages}</span>
-      <button
-        onClick={() => setPage(Math.min(totalPages, page + 1))}
-        disabled={page >= totalPages}
-        className="px-4 py-2 bg-gray-300 rounded disabled:opacity-50"
-      >
-        Next
-      </button>
-    </div>
+    <nav
+      aria-label="Pagination"
+      className="flex justify-center items-center mt-6"
+    >
+      <div className="flex items-center space-x-2">
+        <button
+          onClick={handlePrevious}
+          disabled={page === 1}
+          aria-label="Go to previous page"
+          className="px-4 py-2 rounded text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <span aria-hidden="true">&larr;</span>
+          <span className="ml-2">Previous</span>
+        </button>
+
+        <div className="px-4 font-medium">
+          <span className="sr-only">Page</span>
+          {page} <span className="text-gray-500">of</span> {totalPages}
+        </div>
+
+        <button
+          onClick={handleNext}
+          disabled={page >= totalPages}
+          aria-label="Go to next page"
+          className="px-4 py-2 rounded text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          <span>Next</span>
+          <span aria-hidden="true" className="ml-2">
+            &rarr;
+          </span>
+        </button>
+      </div>
+    </nav>
   );
 };
 

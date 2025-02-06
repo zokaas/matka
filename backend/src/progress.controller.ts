@@ -1,4 +1,3 @@
-// src/progress.controller.ts
 import {
   Controller,
   Get,
@@ -15,8 +14,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Users } from './user.entity';
 import { Activity } from './activity.entity';
+import { calculateKilometersWithBonus } from './activity.utils';
 
-@Controller('users') // Ensure this matches the route
+@Controller('users')
 export class ProgressController {
   constructor(
     @InjectRepository(Users)
@@ -25,7 +25,7 @@ export class ProgressController {
     private activityRepository: Repository<Activity>,
   ) {}
 
-  // GET: Fetch user
+  // ✅ GET: Fetch a user and paginate activities
   @Get(':username')
   async getUser(
     @Param('username') username: string,
@@ -40,6 +40,10 @@ export class ProgressController {
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
+
+    user.activities.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
 
     const start = (Number(page) - 1) * Number(limit);
     const paginatedActivities = user.activities.slice(
@@ -59,8 +63,10 @@ export class ProgressController {
       },
     };
   }
-  @Post() // POST route to add a new user
-  async addUser(@Body() newUser: { username: string; totalKm: number }) {
+
+  // ✅ POST: Add a new user
+  @Post()
+  async addUser(@Body() newUser: { username: string; totalKm?: number }) {
     const existingUser = await this.userRepository.findOne({
       where: { username: newUser.username },
     });
@@ -69,22 +75,25 @@ export class ProgressController {
       throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
     }
 
-    const user = this.userRepository.create(newUser);
-    await this.userRepository.save(user);
+    const user = this.userRepository.create({
+      username: newUser.username,
+      totalKm: newUser.totalKm ?? 0,
+    });
 
+    await this.userRepository.save(user);
     return user;
   }
 
-  // GET: Fetch all users
+  // ✅ GET: Fetch all users
   @Get()
   async getAllUsers() {
     const users = await this.userRepository.find({ relations: ['activities'] });
-    if (!users) {
+    if (!users.length) {
       throw new HttpException('No users found', HttpStatus.NOT_FOUND);
     }
     return users;
   }
-  // POST: Add activity to a user
+
   @Post(':username/activities')
   async addActivity(
     @Param('username') username: string,
@@ -99,14 +108,22 @@ export class ProgressController {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
+    const hours = (newActivity.duration ?? 0) / 60;
+    const adjustedKm = calculateKilometersWithBonus(
+      newActivity.activity ?? '',
+      hours,
+      newActivity.bonus,
+    );
+
     const activity = this.activityRepository.create({
       ...newActivity,
+      kilometers: adjustedKm,
+      bonus: newActivity.bonus ?? null,
       user,
     });
 
     const savedActivity = await this.activityRepository.save(activity);
 
-    // Update user's activities and totalKm
     user.activities = [...user.activities, savedActivity];
     user.totalKm = user.totalKm + savedActivity.kilometers;
     await this.userRepository.save(user);
@@ -120,44 +137,17 @@ export class ProgressController {
       },
     };
   }
-
-  // DELETE: Delete an activity
-  @Delete(':username/activities/:index')
-  async deleteActivity(
-    @Param('username') username: string,
-    @Param('index') index: string,
-  ) {
-    const user = await this.userRepository.findOne({
-      where: { username },
-      relations: ['activities'],
-    });
-    if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-
-    const activityIndex = parseInt(index, 10);
-    const activity = user.activities[activityIndex];
-
-    if (!activity)
-      throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
-
-    user.activities.splice(activityIndex, 1);
-    user.totalKm -= activity.kilometers;
-
-    await this.activityRepository.delete(activity.id);
-    await this.userRepository.save(user);
-
-    return user;
-  }
-
-  @Put(':username/activities/:index')
+  @Put(':username/activities/:id')
   async updateActivity(
     @Param('username') username: string,
-    @Param('index') index: string,
+    @Param('id') id: string,
     @Body()
     updateData: {
       activity: string;
       duration: number;
       date: string;
-      kilometers: number;
+      kilometers?: number;
+      bonus?: string | null;
     },
   ) {
     const user = await this.userRepository.findOne({
@@ -169,33 +159,69 @@ export class ProgressController {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    const activityIndex = parseInt(index, 10); // Convert to number
-    console.log(`Activity index: ${activityIndex}`, user.activities); // Log activities to check
+    const activityId = parseInt(id, 10);
+    const activity = await this.activityRepository.findOne({
+      where: { id: activityId },
+    });
 
-    if (
-      isNaN(activityIndex) ||
-      activityIndex < 0 ||
-      activityIndex >= user.activities.length
-    ) {
-      throw new HttpException('Invalid activity index', HttpStatus.BAD_REQUEST);
+    if (!activity) {
+      throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
     }
 
-    const updatedActivity = user.activities[activityIndex];
-    updatedActivity.activity = updateData.activity;
-    updatedActivity.duration = updateData.duration;
-    updatedActivity.date = updateData.date;
-    updatedActivity.kilometers = updateData.kilometers;
+    const hours = (updateData.duration ?? 0) / 60;
+    const adjustedKm = calculateKilometersWithBonus(
+      updateData.activity,
+      hours,
+      updateData.bonus,
+    );
 
-    await this.activityRepository.save(updatedActivity); // Save updated activity
+    activity.activity = updateData.activity;
+    activity.duration = updateData.duration;
+    activity.date = updateData.date;
+    activity.kilometers = adjustedKm;
+    activity.bonus = updateData.bonus || null;
+
+    await this.activityRepository.save(activity);
+
     user.totalKm = user.activities.reduce(
-      (total, activity) => total + activity.kilometers,
+      (total, a) => total + a.kilometers,
       0,
-    ); // Update totalKm by summing up the activity kilometers
-    await this.userRepository.save(user); // Save the user with updated totalKm
+    );
+    await this.userRepository.save(user);
 
-    return {
-      message: 'Activity updated successfully',
-      user,
-    };
+    return { message: 'Activity updated successfully', user };
+  }
+
+  // ✅ DELETE: Delete an activity by **ID**
+  @Delete(':username/activities/:id')
+  async deleteActivity(
+    @Param('username') username: string,
+    @Param('id') id: string, // String because Nest treats route params as strings
+  ) {
+    const user = await this.userRepository.findOne({
+      where: { username },
+      relations: ['activities'],
+    });
+
+    if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+    const activityId = parseInt(id, 10);
+    const activity = await this.activityRepository.findOne({
+      where: { id: activityId },
+    });
+
+    if (!activity)
+      throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
+
+    user.activities = user.activities.filter((a) => a.id !== activity.id);
+    user.totalKm = user.activities.reduce(
+      (total, a) => total + a.kilometers,
+      0,
+    );
+
+    await this.activityRepository.delete(activity.id);
+    await this.userRepository.save(user);
+
+    return user;
   }
 }

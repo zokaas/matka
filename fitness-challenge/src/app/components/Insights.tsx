@@ -220,8 +220,13 @@ useEffect(() => {
   };
 
   const getTargetLine = () => {
-    const startDate = new Date("2025-01-01");
-    const endDate = new Date("2025-05-31");
+    const startDate = new Date();
+    startDate.setMonth(0); // January
+    startDate.setDate(1); // 1st day
+
+    const endDate = new Date();
+    endDate.setMonth(4); // May
+    endDate.setDate(31); // 31st day
     const today = new Date();
     const totalDays = Math.ceil(
       (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
@@ -477,7 +482,7 @@ useEffect(() => {
                 value ? `${value.toFixed(1)} km` : "N/A"
               }
               labelFormatter={(label) =>
-                format(new Date(label), "MMM dd, yyyy")
+                format(new Date(label), "MMM d")
               }
             />
             <Legend />
