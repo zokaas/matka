@@ -17,7 +17,9 @@ import { ProgressController } from './progress.controller';
         type: 'postgres',
         url: configService.get<string>('DATABASE_URL'),
         autoLoadEntities: true,
-        synchronize: true, // Set to false in production
+        synchronize: true,
+              logging: true,
+      logger: 'advanced-console', // Set to false in production
         ssl: {
           rejectUnauthorized: false, // Required for Neon.tech
         },

@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 interface User {
   username: string;
   totalKm: number;
+  profilePicture: string;
   activities: { activity: string; date: string }[];
 }
 
@@ -154,9 +155,12 @@ export default function QuickAccess() {
                   <div className="flex flex-col items-center">
                     <div className="relative">
                       <Image
-                        src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${user.username}`}
-                        alt={`${user.username}'s avatar`}
-                        className="w-16 h-16 rounded-full"
+                        src={
+                          user.profilePicture
+                            ? `https://matka-xi.vercel.app/${user.username}.png`
+                            : `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.username}`
+                        }
+                        alt="User Avatar"
                         width={64}
                         height={64}
                         unoptimized

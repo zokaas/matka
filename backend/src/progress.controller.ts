@@ -9,6 +9,7 @@ import {
   HttpStatus,
   Put,
   Query,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -54,6 +55,7 @@ export class ProgressController {
     return {
       username: user.username,
       totalKm: user.totalKm,
+      profilePicture: user.profilePicture,
       activities: paginatedActivities,
       pagination: {
         total: user.activities.length,
@@ -99,6 +101,13 @@ export class ProgressController {
     @Param('username') username: string,
     @Body() newActivity: Partial<Activity>,
   ) {
+  process.stdout.write(
+    JSON.stringify({
+      msg: 'Debug log',
+      activity: newActivity,
+      username,
+    }) + '\n',
+  );
     const user = await this.userRepository.findOne({
       where: { username },
       relations: ['activities'],
@@ -108,12 +117,16 @@ export class ProgressController {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
+    console.log('Activity received:', newActivity);
+
     const hours = (newActivity.duration ?? 0) / 60;
     const adjustedKm = calculateKilometersWithBonus(
       newActivity.activity ?? '',
       hours,
-      newActivity.bonus,
+      newActivity.bonus ?? null,
     );
+
+    console.log('Adjusted Kilometers:', adjustedKm);
 
     const activity = this.activityRepository.create({
       ...newActivity,
@@ -127,7 +140,8 @@ export class ProgressController {
     user.activities = [...user.activities, savedActivity];
     user.totalKm = user.totalKm + savedActivity.kilometers;
     await this.userRepository.save(user);
-
+  console.log('Final kilometers:', adjustedKm);
+  console.log('================END================');
     return {
       activity: savedActivity,
       user: {
@@ -137,6 +151,7 @@ export class ProgressController {
       },
     };
   }
+
   @Put(':username/activities/:id')
   async updateActivity(
     @Param('username') username: string,
@@ -146,7 +161,6 @@ export class ProgressController {
       activity: string;
       duration: number;
       date: string;
-      kilometers?: number;
       bonus?: string | null;
     },
   ) {
@@ -172,13 +186,13 @@ export class ProgressController {
     const adjustedKm = calculateKilometersWithBonus(
       updateData.activity,
       hours,
-      updateData.bonus,
+      updateData.bonus ?? null,
     );
 
     activity.activity = updateData.activity;
     activity.duration = updateData.duration;
     activity.date = updateData.date;
-    activity.kilometers = adjustedKm;
+    activity.kilometers = adjustedKm; // Use updated kilometers
     activity.bonus = updateData.bonus || null;
 
     await this.activityRepository.save(activity);

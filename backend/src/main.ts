@@ -27,6 +27,13 @@ async function bootstrap() {
       
   // Start the server
   await app.listen(PORT);
+  app.use((req, res, next) => {
+    process.stdout.write(`${req.method} ${req.url}\n`);
+    if (req.body) {
+      process.stdout.write(`Body: ${JSON.stringify(req.body)}\n`);
+    }
+    next();
+  });
   Logger.log(`🚀 Backend running at: http://localhost:${PORT}`);
 }
 

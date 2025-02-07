@@ -20,6 +20,7 @@ interface Activity {
 interface User {
   username: string;
   totalKm: number;
+  profilePicture: string;
   activities: Activity[];
   pagination?: {
     total: number;
@@ -48,60 +49,14 @@ const sportsOptions = [
   "Jooga",
   "Liikkuvuus",
   "Golf",
-  "Muu(100km/h)",
-  "Muu(50km/h)",
+  // "Muu(100km/h)",
+  // "Muu(50km/h)",
   "Ryhmä, HIIT",
   "Kehonpainotreeni",
   "Jalkapallo",
   "Jääkiekko",
   "Kamppailulaji",
 ];
-
-const activityPoints: {
-  [key: string]: (hours: number) => number;
-} = {
-  Juoksu: (hours) => hours * 100,
-  Sali: (hours) => hours * 100,
-  Tennis: (hours) => hours * 100,
-  Pyöräily: (hours) => (hours > 1 ? 100 + (hours - 1) * 50 : hours * 100),
-  Hiihto: (hours) => (hours > 1 ? 100 + (hours - 1) * 50 : hours * 100),
-  Uinti: (hours) => hours * 200,
-  Crossfit: (hours) => hours * 100,
-  Tribe: (hours) => hours * 100,
-  "Ryhmä, pump": (hours) => hours * 100,
-  "Ryhmä, dance": (hours) => hours * 100,
-  "Ryhmä, combat": (hours) => hours * 100,
-  Spinning: (hours) => hours * 100,
-  Squash: (hours) => hours * 100,
-  Sulkapallo: (hours) => hours * 100,
-  Padel: (hours) => hours * 100,
-  Jooga: (hours) => hours * 50,
-  Liikkuvuus: (hours) => hours * 50,
-  Golf: (hours) => hours * 25,
-  "Muu(100km/h)": (hours) => hours * 100,
-  "Muu(50km/h)": (hours) => hours * 50,
-  "Ryhmä, HIIT": (hours) => hours * 100,
-  Kehonpainotreeni: (hours) => hours * 100,
-  Jalkapallo: (hours) => hours * 100,
-  Jääkiekko: (hours) => hours * 100,
-  Kamppailulaji: (hours) => hours * 100,
-};
-
-const calculateKilometers = (activity: string, duration: number) => {
-  const hours = duration / 60;
-
-  // Check if activity includes "Muu(100km/h)" or "Muu(50km/h)"
-  if (activity.includes("Muu(100km/h)")) return hours * 100;
-  if (activity.includes("Muu(50km/h)")) return hours * 50;
-
-  // Try to find the base activity in activityPoints
-  const baseActivity = Object.keys(activityPoints).find(
-    (key) => activity === key || activity.includes(`/ ${key}`)
-  );
-  const calculate = baseActivity ? activityPoints[baseActivity] : null;
-  return calculate ? calculate(hours) : 0;
-};
-
 
 const itemsPerPage = 10;
 
@@ -168,119 +123,41 @@ const UserProfile = () => {
     }
   };
 
-const handleAddActivity = async (e: React.FormEvent) => {
-  e.preventDefault();
-  try {
-    let selectedActivity = activity;
+  const handleAddActivity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      let selectedActivity = activity;
 
-    // ✅ Correct way to append custom activity name
-    if (
-      (activity === "Muu(100km/h)" || activity === "Muu(50km/h)") &&
-      customActivity
-    ) {
-      selectedActivity = `${customActivity} / ${activity}`;
-    }
-
-    let kilometers = calculateKilometers(selectedActivity, Number(duration));
-
-    // ✅ Apply bonus multipliers
-    if (bonus) {
-      switch (bonus) {
-        case "juhlapäivä":
-          kilometers *= 2;
-          break;
-        case "enemmän kuin kolme urheilee yhdessä":
-          kilometers *= 1.5;
-          break;
-        case "kaikki yhdessä":
-          kilometers *= 3;
-          break;
+      // Include custom activity name for "Muu"
+      if (
+        (activity === "Muu(100km/h)" || activity === "Muu(50km/h)") &&
+        customActivity
+      ) {
+        selectedActivity = `${customActivity} / ${activity}`;
       }
+
+      const response = await fetch(
+        `${backendUrl}/users/${username}/activities`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            activity: selectedActivity,
+            duration: Number(duration),
+            date,
+            bonus,
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to add activity");
+
+      resetForm();
+      fetchUser();
+    } catch (err) {
+      setError((err as Error).message);
     }
-
-    const response = await fetch(`${backendUrl}/users/${username}/activities`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        activity: selectedActivity,
-        duration: Number(duration),
-        date,
-        kilometers,
-        bonus,
-      }),
-    });
-
-    if (!response.ok) throw new Error("Failed to add activity");
-    resetForm();
-    fetchUser();
-  } catch (err) {
-    setError((err as Error).message);
-  }
-};
-
-
-
-const handleUpdateActivity = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!editingActivity?.id) return;
-
-  try {
-    let selectedActivity = activity;
-    if (
-      (activity === "Muu(100km/h)" || activity === "Muu(50km/h)") &&
-      customActivity
-    ) {
-      selectedActivity = `${customActivity} / ${activity}`;
-    }
-
-    let kilometers = calculateKilometers(selectedActivity, Number(duration));
-
-    // ✅ Apply bonus multipliers
-    if (bonus) {
-      switch (bonus) {
-        case "juhlapäivä":
-          kilometers *= 2;
-          break;
-        case "enemmän kuin kolme urheilee yhdessä":
-          kilometers *= 1.5;
-          break;
-        case "kaikki yhdessä":
-          kilometers *= 3;
-          break;
-      }
-    }
-
-    console.log(
-      "Updating activity:",
-      selectedActivity,
-      "with",
-      kilometers,
-      "km"
-    );
-
-    const response = await fetch(
-      `${backendUrl}/users/${username}/activities/${editingActivity.id}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          activity: selectedActivity,
-          duration: Number(duration),
-          date,
-          kilometers,
-          bonus,
-        }),
-      }
-    );
-
-    if (!response.ok) throw new Error("Failed to update activity");
-    resetForm();
-    fetchUser();
-  } catch (err) {
-    setError((err as Error).message);
-  }
-};
-
+  };
 
   const resetForm = () => {
     setIsEditing(false);
@@ -288,7 +165,7 @@ const handleUpdateActivity = async (e: React.FormEvent) => {
     setActivity("");
     setDuration("");
     setDate(new Date().toISOString().split("T")[0]);
-    setBonus(null); 
+    setBonus(null);
   };
 
   const startEdit = (activity: Activity) => {
@@ -322,9 +199,12 @@ const handleUpdateActivity = async (e: React.FormEvent) => {
       <header className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
           <Image
-            src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${user.username}`}
+            src={
+              user.profilePicture
+                ? `https://matka-xi.vercel.app/${user.username}.png`
+                : `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.username}`
+            }
             alt="User Avatar"
-            className="w-16 h-16 rounded-full"
             width={64}
             height={64}
             unoptimized
@@ -343,10 +223,7 @@ const handleUpdateActivity = async (e: React.FormEvent) => {
         <h2 className="text-lg font-semibold mb-4">
           {isEditing ? "Update Activity" : "Add Activity"}
         </h2>
-        <form
-          onSubmit={isEditing ? handleUpdateActivity : handleAddActivity}
-          className="space-y-4"
-        >
+        <form onSubmit={handleAddActivity} className="space-y-4">
           <div>
             <label className="block text-sm font-medium">Activity Type</label>
             <select
@@ -363,7 +240,6 @@ const handleUpdateActivity = async (e: React.FormEvent) => {
               ))}
             </select>
           </div>
-
           {(activity === "Muu(100km/h)" || activity === "Muu(50km/h)") && (
             <div>
               <label className="block text-sm font-medium">
@@ -402,7 +278,7 @@ const handleUpdateActivity = async (e: React.FormEvent) => {
               required
             />
           </div>
-          {/* <div>
+          <div>
             <label className="block text-sm font-medium">Bonus</label>
             <select
               value={bonus || ""}
@@ -416,7 +292,7 @@ const handleUpdateActivity = async (e: React.FormEvent) => {
               </option>
               <option value="kaikki yhdessä">Kaikki yhdessä (3x km)</option>
             </select>
-          </div> */}
+          </div>
 
           <div className="flex justify-between items-center space-x-4">
             {isEditing && (

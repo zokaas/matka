@@ -14,4 +14,8 @@ export class Users {
 
   @OneToMany(() => Activity, (activity) => activity.user)
   activities: Activity[];
+
+  @Column({ nullable: true }) // Allow null values initially
+  profilePicture: string;
+
 }

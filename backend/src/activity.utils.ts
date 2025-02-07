@@ -1,52 +1,69 @@
 // Create a new file: activity.utils.ts
-const activityPoints: {
-  [key: string]: (hours: number) => number;
-} = {
-  Juoksu: (hours) => hours * 100,
-  Sali: (hours) => hours * 100,
-  Tennis: (hours) => hours * 100,
-  Pyöräily: (hours) => (hours > 1 ? 100 + (hours - 1) * 50 : hours * 100),
-  Hiihto: (hours) => (hours > 1 ? 100 + (hours - 1) * 50 : hours * 100),
-  Uinti: (hours) => hours * 200,
-  Crossfit: (hours) => hours * 100,
-  Tribe: (hours) => hours * 100,
-  'Ryhmä, pump': (hours) => hours * 100,
-  'Ryhmä, dance': (hours) => hours * 100,
-  'Ryhmä, combat': (hours) => hours * 100,
-  Spinning: (hours) => hours * 100,
-  Squash: (hours) => hours * 100,
-  Sulkapallo: (hours) => hours * 100,
-  Padel: (hours) => hours * 100,
-  Jooga: (hours) => hours * 50,
-  Liikkuvuus: (hours) => hours * 50,
-  Golf: (hours) => hours * 25,
-  'Muu(100km/h)': (hours) => hours * 100,
-  'Muu(50km/h)': (hours) => hours * 50,
-  'Ryhmä, HIIT': (hours) => hours * 100,
-  Kehonpainotreeni: (hours) => hours * 100,
-  Jalkapallo: (hours) => hours * 100,
-  Jääkiekko: (hours) => hours * 100,
-  Kamppailulaji: (hours) => hours * 100,
-};
-
 export const calculateKilometersWithBonus = (
   activity: string,
   hours: number,
   bonus?: string | null,
 ): number => {
-  const basePoints =
-    activity in activityPoints ? activityPoints[activity](hours) : 0;
+  console.log('Calculating Kilometers for:', { activity, hours, bonus });
 
-  if (!bonus) return basePoints;
+  const basePoints: { [key: string]: number } = {
+    Juoksu: 100,
+    Sali: 100,
+    Tennis: 100,
+    Uinti: 200,
+    Crossfit: 100,
+    Tribe: 100,
+    'Ryhmä, pump': 100,
+    'Ryhmä, dance': 100,
+    'Ryhmä, combat': 100,
+    Spinning: 100,
+    Squash: 100,
+    Sulkapallo: 100,
+    Padel: 100,
+    Jooga: 50,
+    Liikkuvuus: 50,
+    Golf: 25,
+    'Ryhmä, HIIT': 100,
+    Kehonpainotreeni: 100,
+    Jalkapallo: 100,
+    Jääkiekko: 100,
+    Kamppailulaji: 100,
+    'Muu(100km/h)': 100,
+    'Muu(50km/h)': 50,
+  };
 
+
+let baseKilometers = 0;
+console.log('Received activity:', activity);
+
+// Strip any numbers and clean up the activity name
+const cleanActivity = activity.replace(/^\d+\s*\/\s*/, '').trim();
+console.log('Cleaned activity:', cleanActivity);
+
+if (cleanActivity.includes('Muu(100km/h)')) {
+  baseKilometers = hours * 100;
+} else if (cleanActivity.includes('Muu(50km/h)')) {
+  baseKilometers = hours * 50;
+} else if (cleanActivity === 'Pyöräily' || cleanActivity === 'Hiihto') {
+  baseKilometers = hours > 1 ? 100 + (hours - 1) * 50 : hours * 100;
+} else {
+  baseKilometers = (basePoints[cleanActivity] ?? 0) * hours;
+}
+
+  // Apply Bonus Multiplier
+  let finalKilometers = baseKilometers;
   switch (bonus) {
     case 'juhlapäivä':
-      return basePoints * 2;
+      finalKilometers *= 2;
+      break;
     case 'enemmän kuin kolme urheilee yhdessä':
-      return basePoints * 1.5;
+      finalKilometers *= 1.5;
+      break;
     case 'kaikki yhdessä':
-      return basePoints * 3;
-    default:
-      return basePoints;
+      finalKilometers *= 3;
+      break;
   }
+
+  console.log('Final Kilometers with Bonus:', finalKilometers);
+  return finalKilometers;
 };
