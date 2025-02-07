@@ -89,9 +89,16 @@ const activityPoints: {
 
 const calculateKilometers = (activity: string, duration: number) => {
   const hours = duration / 60;
+
+  // Check if activity is "Muu(100km/h)" or "Muu(50km/h)"
+  if (activity.startsWith("Muu(100km/h)")) return hours * 100;
+  if (activity.startsWith("Muu(50km/h)")) return hours * 50;
+
+  // Default lookup in activityPoints
   const calculate = activityPoints[activity];
   return calculate ? calculate(hours) : 0;
 };
+
 
 const itemsPerPage = 10;
 
@@ -158,117 +165,119 @@ const UserProfile = () => {
     }
   };
 
-  const handleAddActivity = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      let selectedActivity = activity;
-      if (
-        (activity === "Muu(100km/h)" || activity === "Muu(50km/h)") &&
-        customActivity
-      ) {
-        selectedActivity = `${customActivity} (${activity})`;
-      }
+const handleAddActivity = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    let selectedActivity = activity;
 
-      let kilometers = calculateKilometers(activity, Number(duration));
-
-      // Apply bonus multipliers
-      if (bonus) {
-        switch (bonus) {
-          case "juhlapäivä":
-            kilometers *= 2;
-            break;
-          case "enemmän kuin kolme urheilee yhdessä":
-            kilometers *= 1.5;
-            break;
-          case "kaikki yhdessä":
-            kilometers *= 3;
-            break;
-        }
-      }
-
-      const response = await fetch(
-        `${backendUrl}/users/${username}/activities`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            activity: selectedActivity,
-            duration: Number(duration),
-            date,
-            kilometers,
-            bonus,
-          }),
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to add activity");
-      resetForm();
-      fetchUser();
-    } catch (err) {
-      setError((err as Error).message);
+    // ✅ Correct way to append custom activity name
+    if (
+      (activity === "Muu(100km/h)" || activity === "Muu(50km/h)") &&
+      customActivity
+    ) {
+      selectedActivity = `${customActivity} /${activity}`;
     }
-  };
 
+    let kilometers = calculateKilometers(selectedActivity, Number(duration));
 
- const handleUpdateActivity = async (e: React.FormEvent) => {
-   e.preventDefault();
-   if (!editingActivity?.id) return;
+    // ✅ Apply bonus multipliers
+    if (bonus) {
+      switch (bonus) {
+        case "juhlapäivä":
+          kilometers *= 2;
+          break;
+        case "enemmän kuin kolme urheilee yhdessä":
+          kilometers *= 1.5;
+          break;
+        case "kaikki yhdessä":
+          kilometers *= 3;
+          break;
+      }
+    }
 
-   try {
-     let selectedActivity = activity;
-     if (
-       (activity === "Muu(100km/h)" || activity === "Muu(50km/h)") &&
-       customActivity
-     ) {
-       selectedActivity = `${customActivity} /${activity}`;
-     }
-
-     let kilometers = calculateKilometers(activity, Number(duration));
-
-     // Apply bonus multipliers
-     if (bonus) {
-       switch (bonus) {
-         case "juhlapäivä":
-           kilometers *= 2;
-           break;
-         case "enemmän kuin kolme urheilee yhdessä":
-           kilometers *= 1.5;
-           break;
-         case "kaikki yhdessä":
-           kilometers *= 3;
-           break;
-       }
-     }
-    console.log("Sending request with bonus:", bonus);
-    console.log("Request body:", {
-      activity: selectedActivity,
-      duration: Number(duration),
-      date,
-      kilometers,
-      bonus,
+    const response = await fetch(`${backendUrl}/users/${username}/activities`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        activity: selectedActivity,
+        duration: Number(duration),
+        date,
+        kilometers,
+        bonus,
+      }),
     });
-     const response = await fetch(
-       `${backendUrl}/users/${username}/activities/${editingActivity.id}`,
-       {
-         method: "PUT",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({
-           activity: selectedActivity,
-           duration: Number(duration),
-           date,
-           kilometers,
-           bonus: bonus || null,
-         }),
-       }
-     );
 
-     if (!response.ok) throw new Error("Failed to update activity");
-     resetForm();
-     fetchUser();
-   } catch (err) {
-     setError((err as Error).message);
-   }
- };
+    if (!response.ok) throw new Error("Failed to add activity");
+    resetForm();
+    fetchUser();
+  } catch (err) {
+    setError((err as Error).message);
+  }
+};
+
+
+
+const handleUpdateActivity = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!editingActivity?.id) return;
+
+  try {
+    let selectedActivity = activity;
+    if (
+      (activity === "Muu(100km/h)" || activity === "Muu(50km/h)") &&
+      customActivity
+    ) {
+      selectedActivity = `${customActivity} /${activity}`;
+    }
+
+    let kilometers = calculateKilometers(selectedActivity, Number(duration));
+
+    // ✅ Apply bonus multipliers
+    if (bonus) {
+      switch (bonus) {
+        case "juhlapäivä":
+          kilometers *= 2;
+          break;
+        case "enemmän kuin kolme urheilee yhdessä":
+          kilometers *= 1.5;
+          break;
+        case "kaikki yhdessä":
+          kilometers *= 3;
+          break;
+      }
+    }
+
+    console.log(
+      "Updating activity:",
+      selectedActivity,
+      "with",
+      kilometers,
+      "km"
+    );
+
+    const response = await fetch(
+      `${backendUrl}/users/${username}/activities/${editingActivity.id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          activity: selectedActivity,
+          duration: Number(duration),
+          date,
+          kilometers,
+          bonus,
+        }),
+      }
+    );
+
+    if (!response.ok) throw new Error("Failed to update activity");
+    resetForm();
+    fetchUser();
+  } catch (err) {
+    setError((err as Error).message);
+  }
+};
+
 
   const resetForm = () => {
     setIsEditing(false);
