@@ -90,12 +90,15 @@ const activityPoints: {
 const calculateKilometers = (activity: string, duration: number) => {
   const hours = duration / 60;
 
-  // Check if activity is "Muu(100km/h)" or "Muu(50km/h)"
+  // Check if activity includes "Muu(100km/h)" or "Muu(50km/h)"
   if (activity.includes("Muu(100km/h)")) return hours * 100;
   if (activity.includes("Muu(50km/h)")) return hours * 50;
 
-  // Default lookup in activityPoints
-  const calculate = activityPoints[activity];
+  // Try to find the base activity in activityPoints
+  const baseActivity = Object.keys(activityPoints).find(
+    (key) => activity === key || activity.includes(`/ ${key}`)
+  );
+  const calculate = baseActivity ? activityPoints[baseActivity] : null;
   return calculate ? calculate(hours) : 0;
 };
 
