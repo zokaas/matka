@@ -91,8 +91,8 @@ const calculateKilometers = (activity: string, duration: number) => {
   const hours = duration / 60;
 
   // Check if activity is "Muu(100km/h)" or "Muu(50km/h)"
-  if (activity.startsWith("Muu(100km/h)")) return hours * 100;
-  if (activity.startsWith("Muu(50km/h)")) return hours * 50;
+  if (activity.includes("Muu(100km/h)")) return hours * 100;
+  if (activity.includes("Muu(50km/h)")) return hours * 50;
 
   // Default lookup in activityPoints
   const calculate = activityPoints[activity];
@@ -175,7 +175,7 @@ const handleAddActivity = async (e: React.FormEvent) => {
       (activity === "Muu(100km/h)" || activity === "Muu(50km/h)") &&
       customActivity
     ) {
-      selectedActivity = `${customActivity} /${activity}`;
+      selectedActivity = `${customActivity} / ${activity}`;
     }
 
     let kilometers = calculateKilometers(selectedActivity, Number(duration));
@@ -227,7 +227,7 @@ const handleUpdateActivity = async (e: React.FormEvent) => {
       (activity === "Muu(100km/h)" || activity === "Muu(50km/h)") &&
       customActivity
     ) {
-      selectedActivity = `${customActivity} /${activity}`;
+      selectedActivity = `${customActivity} / ${activity}`;
     }
 
     let kilometers = calculateKilometers(selectedActivity, Number(duration));
