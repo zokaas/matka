@@ -161,8 +161,8 @@ export default function QuickAccess() {
                             : `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.username}`
                         }
                         alt="User Avatar"
-                        width={64}
-                        height={64}
+                        width={84}
+                        height={84}
                         unoptimized
                       />
                       {getMedal(index) && (
