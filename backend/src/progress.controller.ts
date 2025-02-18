@@ -140,8 +140,8 @@ export class ProgressController {
     user.activities = [...user.activities, savedActivity];
     user.totalKm = user.totalKm + savedActivity.kilometers;
     await this.userRepository.save(user);
-  console.log('Final kilometers:', adjustedKm);
-  console.log('================END================');
+    console.log('Final kilometers:', adjustedKm);
+    console.log('================END================');
     return {
       activity: savedActivity,
       user: {
@@ -175,13 +175,14 @@ export class ProgressController {
 
     const activityId = parseInt(id, 10);
     const activity = await this.activityRepository.findOne({
-      where: { id: activityId },
+      where: { id: activityId, user: { username } }, // Ensure activity belongs to user
     });
 
     if (!activity) {
       throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
     }
 
+    // Calculate updated kilometers
     const hours = (updateData.duration ?? 0) / 60;
     const adjustedKm = calculateKilometersWithBonus(
       updateData.activity,
@@ -189,21 +190,28 @@ export class ProgressController {
       updateData.bonus ?? null,
     );
 
+    // Remove old kilometers before updating
+    user.totalKm -= activity.kilometers;
+
+    // Update activity properties
     activity.activity = updateData.activity;
     activity.duration = updateData.duration;
     activity.date = updateData.date;
-    activity.kilometers = adjustedKm; // Use updated kilometers
+    activity.kilometers = adjustedKm;
     activity.bonus = updateData.bonus || null;
 
+    // Save updated activity
     await this.activityRepository.save(activity);
 
-    user.totalKm = user.activities.reduce(
-      (total, a) => total + a.kilometers,
-      0,
-    );
+    // Recalculate user's total kilometers correctly
+    user.totalKm += adjustedKm;
     await this.userRepository.save(user);
 
-    return { message: 'Activity updated successfully', user };
+    return {
+      message: 'Activity updated successfully',
+      updatedActivity: activity,
+      updatedTotalKm: user.totalKm,
+    };
   }
 
   // ✅ DELETE: Delete an activity by **ID**
