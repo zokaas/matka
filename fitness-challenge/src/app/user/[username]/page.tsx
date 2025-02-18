@@ -158,25 +158,63 @@ const UserProfile = () => {
       setError((err as Error).message);
     }
   };
+const handleUpdateActivity = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-  const resetForm = () => {
-    setIsEditing(false);
-    setEditingActivity(null);
-    setActivity("");
-    setDuration("");
-    setDate(new Date().toISOString().split("T")[0]);
-    setBonus(null);
-  };
+  if (!editingActivity) return; // ✅ Prevent updates if nothing is being edited
 
-  const startEdit = (activity: Activity) => {
-    setEditingActivity(activity);
-    setActivity(activity.activity);
-    setDuration(activity.duration.toString());
-    setDate(activity.date.split("T")[0]);
-    setBonus(activity.bonus || "");
-    setIsEditing(true);
-    formRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  try {
+    let selectedActivity = activity;
+    if (
+      (activity === "Muu(100km/h)" || activity === "Muu(50km/h)") &&
+      customActivity
+    ) {
+      selectedActivity = `${customActivity} / ${activity}`;
+    }
+
+    const response = await fetch(
+      `${backendUrl}/users/${username}/activities/${editingActivity.id}`, // ✅ Ensure correct ID is used
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          activity: selectedActivity,
+          duration: Number(duration),
+          date,
+          bonus,
+        }),
+      }
+    );
+
+    if (!response.ok) throw new Error("Failed to update activity");
+
+    resetForm();
+    fetchUser(); // ✅ Refresh the user data after update
+  } catch (err) {
+    setError((err as Error).message);
+  }
+};
+
+
+const resetForm = () => {
+  setIsEditing(false);
+  setEditingActivity(null);
+  setActivity("");
+  setDuration("");
+  setDate(new Date().toISOString().split("T")[0]);
+  setBonus(null);
+};
+
+const startEdit = (activity: Activity) => {
+  setEditingActivity(activity); // ✅ Store the full activity object
+  setActivity(activity.activity);
+  setDuration(activity.duration.toString());
+  setDate(activity.date.split("T")[0]);
+  setBonus(activity.bonus || "");
+  setIsEditing(true);
+  formRef.current?.scrollIntoView({ behavior: "smooth" });
+};
+
 
   if (loading) {
     return (
@@ -223,7 +261,10 @@ const UserProfile = () => {
         <h2 className="text-lg font-semibold mb-4">
           {isEditing ? "Update Activity" : "Add Activity"}
         </h2>
-        <form onSubmit={handleAddActivity} className="space-y-4">
+        <form
+          onSubmit={isEditing ? handleUpdateActivity : handleAddActivity}
+          className="space-y-4"
+        >
           <div>
             <label className="block text-sm font-medium">Activity Type</label>
             <select
