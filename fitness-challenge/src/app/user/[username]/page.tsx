@@ -49,13 +49,13 @@ const sportsOptions = [
   "Jooga",
   "Liikkuvuus",
   "Golf",
-  // "Muu(100km/h)",
-  // "Muu(50km/h)",
   "Ryhmä, HIIT",
   "Kehonpainotreeni",
   "Jalkapallo",
   "Jääkiekko",
   "Kamppailulaji",
+  "Muu(100km/h)",
+  "Muu(50km/h)",
 ];
 
 const itemsPerPage = 10;
@@ -122,63 +122,56 @@ const UserProfile = () => {
       setError((err as Error).message);
     }
   };
-
-  const handleAddActivity = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      let selectedActivity = activity;
-
-      // Include custom activity name for "Muu"
-      if (
-        (activity === "Muu(100km/h)" || activity === "Muu(50km/h)") &&
-        customActivity
-      ) {
-        selectedActivity = `${customActivity} / ${activity}`;
-      }
-
-      const response = await fetch(
-        `${backendUrl}/users/${username}/activities`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            activity: selectedActivity,
-            duration: Number(duration),
-            date,
-            bonus,
-          }),
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to add activity");
-
-      resetForm();
-      fetchUser();
-    } catch (err) {
-      setError((err as Error).message);
-    }
-  };
-const handleUpdateActivity = async (e: React.FormEvent) => {
+const handleAddActivity = async (e: React.FormEvent) => {
   e.preventDefault();
-
-  if (!editingActivity) return; // ✅ Prevent updates if nothing is being edited
-
   try {
     let selectedActivity = activity;
-    if (
-      (activity === "Muu(100km/h)" || activity === "Muu(50km/h)") &&
-      customActivity
-    ) {
+
+    // Ensure the activity name format is correct for "Muu"
+    if (activity.startsWith("Muu(") && customActivity) {
       selectedActivity = `${customActivity} / ${activity}`;
     }
 
+    const response = await fetch(`${backendUrl}/users/${username}/activities`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        activity: selectedActivity, // ✅ Store it properly
+        duration: Number(duration),
+        date,
+        bonus,
+      }),
+    });
+
+    if (!response.ok) throw new Error("Failed to add activity");
+
+    resetForm();
+    fetchUser();
+  } catch (err) {
+    setError((err as Error).message);
+  }
+};
+
+const handleUpdateActivity = async (e: React.FormEvent) => {
+  e.preventDefault();
+
+  if (!editingActivity) return;
+
+  try {
+    let selectedActivity = activity;
+
+    // Ensure correct format for custom "Muu" activities
+    if (activity.startsWith("Muu(") && customActivity) {
+      selectedActivity = `${customActivity} / ${activity}`; // Store as "Custom Name / Muu(100km/h)"
+    }
+
     const response = await fetch(
-      `${backendUrl}/users/${username}/activities/${editingActivity.id}`, // ✅ Ensure correct ID is used
+      `${backendUrl}/users/${username}/activities/${editingActivity.id}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          activity: selectedActivity,
+          activity: selectedActivity, // ✅ Correct format
           duration: Number(duration),
           date,
           bonus,
@@ -189,12 +182,11 @@ const handleUpdateActivity = async (e: React.FormEvent) => {
     if (!response.ok) throw new Error("Failed to update activity");
 
     resetForm();
-    fetchUser(); // ✅ Refresh the user data after update
+    fetchUser();
   } catch (err) {
     setError((err as Error).message);
   }
 };
-
 
 const resetForm = () => {
   setIsEditing(false);
@@ -206,15 +198,25 @@ const resetForm = () => {
 };
 
 const startEdit = (activity: Activity) => {
-  setEditingActivity(activity); // ✅ Store the full activity object
-  setActivity(activity.activity);
+  // Check if the activity is a custom "Muu" activity
+  const muuMatch = activity.activity.match(/(.*?)\s*\/\s*(Muu\(.*?\))/);
+
+  if (muuMatch) {
+    // Extract custom name and "Muu" type separately
+    setCustomActivity(muuMatch[1]); // Custom part
+    setActivity(muuMatch[2]); // The base "Muu(100km/h)" or "Muu(50km/h)"
+  } else {
+    setActivity(activity.activity); // Normal activities
+    setCustomActivity(""); // Reset custom activity field
+  }
+
+  setEditingActivity(activity);
   setDuration(activity.duration.toString());
   setDate(activity.date.split("T")[0]);
   setBonus(activity.bonus || "");
   setIsEditing(true);
   formRef.current?.scrollIntoView({ behavior: "smooth" });
 };
-
 
   if (loading) {
     return (
@@ -281,6 +283,8 @@ const startEdit = (activity: Activity) => {
               ))}
             </select>
           </div>
+
+          {/* Show custom input field if "Muu(100km/h)" or "Muu(50km/h)" is selected */}
           {(activity === "Muu(100km/h)" || activity === "Muu(50km/h)") && (
             <div>
               <label className="block text-sm font-medium">

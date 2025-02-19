@@ -60,7 +60,7 @@ const InsightAlert = ({
   <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
     <h4 className="font-medium text-purple-800">{title}</h4>
     <p className="text-sm text-purple-600 mt-1">{description}</p>
-  </div>
+ </div>
 );
 
 export default function Insights() {
@@ -111,6 +111,80 @@ useEffect(() => {
 
   fetchData();
 }, []);
+
+const getWeeklyTrend = () => {
+  const lastTwoWeeks = users.flatMap(user => 
+    user.activities
+      .filter(a => differenceInDays(new Date(), new Date(a.date)) <= 14)
+      .map(a => ({ ...a, week: Math.floor(differenceInDays(new Date(), new Date(a.date)) / 7) }))
+  );
+
+  const thisWeek = lastTwoWeeks.filter(a => a.week === 0).reduce((sum, a) => sum + a.kilometers, 0);
+  const lastWeek = lastTwoWeeks.filter(a => a.week === 1).reduce((sum, a) => sum + a.kilometers, 0);
+
+  if (lastWeek === 0) return 0;
+  return ((thisWeek - lastWeek) / lastWeek) * 100;
+};
+
+// Päivän suosituin laji
+const getTodayTopSport = () => {
+  const today = format(new Date(), 'yyyy-MM-dd');
+  const todayActivities = users.flatMap(user => 
+    user.activities.filter(a => format(new Date(a.date), 'yyyy-MM-dd') === today)
+  );
+
+  const sportCounts = todayActivities.reduce((acc, activity) => {
+    acc[activity.activity] = (acc[activity.activity] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const topSport = Object.entries(sportCounts)
+    .sort(([, a], [, b]) => b - a)[0];
+
+  return topSport ? { name: topSport[0], count: topSport[1] } : null;
+};
+
+// Pisin yksittäinen suoritus
+const getLongestActivity = () => {
+  const recentActivities = users.flatMap(user => 
+    user.activities
+      .filter(a => differenceInDays(new Date(), new Date(a.date)) <= 7)
+      .map(a => ({...a, username: user.username}))
+  );
+
+  return recentActivities.reduce((longest, current) => 
+    current.kilometers > (longest?.kilometers || 0) ? current : longest
+  , null as (Activity & { username: string } | null));
+};
+
+// Ahkerin liikkuja viikolta
+const getWeeklyTopPerformer = () => {
+  const weeklyStats = users.map(user => {
+    const weeklyKm = user.activities
+      .filter(a => differenceInDays(new Date(), new Date(a.date)) <= 7)
+      .reduce((sum, a) => sum + a.kilometers, 0);
+    
+    return { username: user.username, kilometers: weeklyKm };
+  });
+
+  return weeklyStats.sort((a, b) => b.kilometers - a.kilometers)[0];
+};
+
+const getAverageWeeklyDistance = () => {
+  const firstActivity = users.flatMap(u => u.activities)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+
+  if (!firstActivity) return 0;
+
+  const weeksSinceStart = Math.max(1, Math.ceil(differenceInDays(new Date(), new Date(firstActivity.date)) / 7));
+  return targetPaces.totalProgress / weeksSinceStart;
+};
+
+const getActiveUsers = () => {
+  return users.filter(user => 
+    user.activities.some(a => differenceInDays(new Date(), new Date(a.date)) <= 7)
+  ).length;
+};
 
 
   const calculateTargetPaces = (userData: User[]): TargetPaces => {
@@ -329,229 +403,243 @@ useEffect(() => {
     );
   }
 
-  return (
-    <div className="max-w-7xl mx-auto p-6 space-y-8">
-      <header className="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-xl shadow-sm">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-purple-800">
-              Team Activity Dashboard
-            </h1>
-            <p className="mt-2 text-gray-600">
-              Track team performance and identify patterns in activity data
-            </p>
-          </div>
-          <select
-            className="px-4 py-2 rounded-lg border border-gray-200 bg-white"
-            value={selectedTimeframe}
-            onChange={(e) => setSelectedTimeframe(e.target.value)}
-          >
-            <option value="all">All Time</option>
-            <option value="month">Last Month</option>
-            <option value="week">Last Week</option>
-          </select>
-        </div>
-      </header>
+ return (
+   <div className="max-w-7xl mx-auto p-6 space-y-8">
+     <header className="bg-gradient-to-r from-purple-50 to-indigo-50 p-6 rounded-xl shadow-sm">
+       <div className="flex justify-between items-center">
+         <div>
+           <h1 className="text-3xl font-bold text-purple-800">Tiimin matka</h1>
+           <p className="mt-2 text-gray-600">
+             Seurataan yhdessä etenemistä kohti tavoitetta 🌟
+           </p>
+         </div>
+       </div>
+     </header>
 
-      <div className="bg-white p-6 rounded-xl shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">
-          Goal Progress
-        </h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-          <div className="bg-purple-50 p-4 rounded-lg">
-            <h3 className="font-medium text-purple-800">Current Progress</h3>
-            <p className="text-2xl font-bold text-purple-600">
-              {targetPaces.totalProgress.toFixed(1)} km
-            </p>
-            <p className="text-sm text-purple-600">of 100,000 km goal</p>
-          </div>
+     {/* Päämittarit */}
+     <div className="grid grid-cols-1 gap-6">
+       <div className="bg-white p-6 rounded-xl shadow-sm">
+         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+           <div className="bg-purple-50 p-4 rounded-lg">
+             <h3 className="font-medium text-purple-800">Tähän mennessä</h3>
+             <p className="text-2xl font-bold text-purple-600">
+               {Math.round(targetPaces.totalProgress).toLocaleString("fi-FI")}{" "}
+               km
+             </p>
+             <p className="text-sm text-purple-600">/ 100 000 km</p>
+           </div>
 
-          <div className="bg-orange-50 p-4 rounded-lg">
-            <h3 className="font-medium text-orange-800">
-              Required Weekly Pace
-            </h3>
-            <p className="text-2xl font-bold text-orange-600">
-              {targetPaces.weeklyPerUser.toFixed(1)} km
-            </p>
-            <p className="text-sm text-orange-600">per person per week</p>
-          </div>
+           <div className="bg-orange-50 p-4 rounded-lg">
+             <h3 className="font-medium text-orange-800">Viikon tavoite</h3>
+             <div className="flex items-baseline gap-2">
+               <p className="text-2xl font-bold text-orange-600">
+                 {targetPaces.weeklyPerUser.toFixed(0)} km
+               </p>
+               <p className="text-sm text-orange-600">/ hlö</p>
+             </div>
+             <p className="text-sm text-orange-600">
+               {Math.round(
+                 targetPaces.weeklyPerUser * users.length
+               ).toLocaleString("fi-FI")}{" "}
+               km yhteensä
+             </p>
+           </div>
 
           <div className="bg-green-50 p-4 rounded-lg">
-            <h3 className="font-medium text-green-800">Days Remaining</h3>
-            <p className="text-2xl font-bold text-green-600">
-              {targetPaces.daysRemaining}
-            </p>
-            <p className="text-sm text-green-600">until May 31, 2025</p>
-          </div>
-        </div>
-
-        <InsightAlert
-          title="Pace Analysis"
-          description={`To reach the goal, each team member needs to cover ${targetPaces.weeklyPerUser.toFixed(
-            1
-          )} km weekly. At current pace, projected completion is ${
-            targetPaces.projectedEndDate
-              ? format(targetPaces.projectedEndDate, "MMM dd, yyyy")
-              : "not available"
-          }.`}
-        />
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
-          {[
-            {
-              icon: <TrendingUp className="w-8 h-8 text-purple-500" />,
-              label: "Total Distance",
-              value: `${achievementStats.totalDistance.toFixed(1)} km`,
-              description: "Combined distance covered by all team members",
-            },
-            {
-              icon: <Award className="w-8 h-8 text-green-500" />,
-              label: "Longest Streak",
-              value: `${achievementStats.longestStreak} days`,
-              description: "Consecutive days with recorded activities",
-            },
-            {
-              icon: <Activity className="w-8 h-8 text-orange-500" />,
-              label: "Average Duration",
-              value: `${(achievementStats.averageDuration / 60).toFixed(
-                1
-              )} hrs`,
-              description: "Average time spent per activity",
-            },
-            {
-              icon: <Users className="w-8 h-8 text-purple-500" />,
-              label: "Most Active Day",
-              value: mostActiveDay?.[0] || "N/A",
-              description: "Day with highest recorded activity",
-            },
-          ].map((stat, i) => (
-            <div key={i} className="bg-gray-50 p-6 rounded-xl">
-              <div className="flex items-center gap-4">
-                {stat.icon}
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">
-                    {stat.label}
-                  </h3>
-                  <p className="text-2xl font-bold text-gray-800">
-                    {stat.value}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {stat.description}
-                  </p>
-                </div>
-              </div>
+              <h3 className="font-medium text-green-800">Aikaa jäljellä</h3>
+              <p className="text-2xl font-bold text-green-600">{targetPaces.daysRemaining} päivää jäljellä</p>
             </div>
-          ))}
-        </div>
-      </div>
 
 
-      <section className="bg-white p-6 rounded-xl shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">
-          Top Sports Done
-        </h2>
-        <p className="text-gray-600 mb-4">
-          Most frequently recorded activities among all users
-        </p>
-        <ul className="space-y-2">
- {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
-          {topSports.map(([sport, count], index) => (
-            <li key={sport} className="flex items-center">
-              <span className="mr-2 font-bold text-lg">
-              </span>
-              <span className="text-gray-800 font-medium">{sport}</span>
-              <span className="ml-auto text-gray-500">{count} times</span>
-            </li>
-          ))}
-        </ul>
-      </section>
+           {/* Vaihtoehto 1: Päivän suosituin laji */}
+           <div className="bg-gray-50 p-6 rounded-xl">
+             <div className="flex items-center gap-4">
+               <Award className="w-8 h-8 text-green-500" />
+               <div>
+                 <h3 className="text-sm font-medium text-gray-500">
+                   Tämän päivän hitti
+                 </h3>
+                 {getTodayTopSport() ? (
+                   <>
+                     <p className="text-2xl font-bold text-gray-800">
+                       {getTodayTopSport()?.name}
+                     </p>
+                     <p className="text-xs text-gray-500 mt-1">
+                       {getTodayTopSport()?.count} suoritusta tänään
+                     </p>
+                   </>
+                 ) : (
+                   <p className="text-gray-600">Ei vielä suorituksia</p>
+                 )}
+               </div>
+             </div>
+           </div>
 
-      <section className="bg-white p-6 rounded-xl shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">
-          Progress Timeline
-        </h2>
-        <p className="text-gray-600 mb-4">
-          Progress towards 100,000 km goal (deadline: May 31, 2025)
-        </p>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={getTargetLine()}>
-            <XAxis dataKey="date" />
-            <YAxis domain={[0, 100000]} />
-            <Tooltip
-              formatter={(value: number) =>
-                value ? `${value.toFixed(1)} km` : "N/A"
-              }
-              labelFormatter={(label) =>
-                format(new Date(label), "MMM d")
-              }
-            />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="distance"
-              name="Current Progress"
-              stroke="#6366f1"
-              strokeWidth={2}
-              dot={false}
-            />
-            <Line
-              type="monotone"
-              dataKey="target"
-              name="Required Pace"
-              stroke="#ef4444"
-              strokeDasharray="5 5"
-              dot={false}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </section>
+           {/* Vaihtoehto 2: Viikon pisin yksittäinen suoritus */}
+           <div className="bg-gray-50 p-6 rounded-xl">
+             <div className="flex items-center gap-4">
+               <Award className="w-8 h-8 text-yellow-500" />
+               <div>
+                 <h3 className="text-sm font-medium text-gray-500">
+                   Viikon pisin
+                 </h3>
+                 {getLongestActivity() ? (
+                   <>
+                     <p className="text-2xl font-bold text-gray-800">
+                       {Math.round(getLongestActivity()?.kilometers || 0)} km
+                     </p>
+                     <p className="text-xs text-gray-500 mt-1">
+                       {getLongestActivity()?.username} -{" "}
+                       {getLongestActivity()?.activity}
+                     </p>
+                   </>
+                 ) : (
+                   <p className="text-gray-600">Ei suorituksia</p>
+                 )}
+               </div>
+             </div>
+           </div>
 
-      <section className="bg-white p-6 rounded-xl shadow-sm">
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">
-          Individual Performance
-        </h2>
-        <p className="text-gray-600 mb-4">
-          Compare individual contributions and achievements
-        </p>
-        <InsightAlert
-          title="Performance Metrics"
-          description="Table shows total distance, number of activities, and average duration for each team member. Top performers are marked with medals."
-        />
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200">
-                <th className="py-3 text-left">User</th>
-                <th className="py-3 text-right">Total Distance</th>
-                <th className="py-3 text-right">Activities</th>
-                <th className="py-3 text-right">Avg Duration</th>
-              </tr>
-            </thead>
-            <tbody>
-              {getUserProgress().map((user, index) => (
-                <tr
-                  key={user.name}
-                  className="border-b border-gray-100 hover:bg-gray-50"
-                >
-                  <td className="py-3">
-                    <div className="flex items-center gap-2">
-                      {index < 3 && ["🥇", "🥈", "🥉"][index]}
-                      {user.name}
-                    </div>
-                  </td>
-                  <td className="py-3 text-right font-medium">
-                    {user.distance.toFixed(1)} km
-                  </td>
-                  <td className="py-3 text-right">{user.activities}</td>
-                  <td className="py-3 text-right">
-                    {user.avgDuration.toFixed(1)} hrs
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </div>
-  );
+           {/* Vaihtoehto 3: Viikon ahkerin */}
+           <div className="bg-gray-50 p-6 rounded-xl">
+             <div className="flex items-center gap-4">
+               <Award className="w-8 h-8 text-orange-500" />
+               <div>
+                 <h3 className="text-sm font-medium text-gray-500">
+                   Viikon ahkerin
+                 </h3>
+                 {getWeeklyTopPerformer()?.kilometers > 0 ? (
+                   <>
+                     <p className="text-2xl font-bold text-gray-800">
+                       {getWeeklyTopPerformer()?.username}
+                     </p>
+                     <p className="text-xs text-gray-500 mt-1">
+                       {Math.round(getWeeklyTopPerformer()?.kilometers || 0)} km
+                       tällä viikolla
+                     </p>
+                   </>
+                 ) : (
+                   <p className="text-gray-600">Ei vielä suorituksia</p>
+                 )}
+               </div>
+             </div>
+           </div>
+         </div>
+
+
+       </div>
+
+       {/* Edistymiskaavio */}
+       <div className="bg-white p-6 rounded-xl shadow-sm">
+         <div className="flex items-center justify-between mb-4">
+           <h2 className="text-xl font-semibold text-gray-800">Edistyminen</h2>
+           <InsightAlert
+             title="Eteneminen"
+             description={`Tavoitteeseen tarvitaan ${Math.round(
+               targetPaces.weeklyPerUser
+             )} km viikossa per henkilö. Nykyisellä tahdilla saavutamme tavoitteen ${
+               targetPaces.projectedEndDate
+                 ? format(targetPaces.projectedEndDate, "d.M.yyyy")
+                 : "ei tiedossa"
+             }.`}
+           />
+         </div>
+         <ResponsiveContainer width="100%" height={300}>
+           <LineChart data={getTargetLine()}>
+             <XAxis
+               dataKey="date"
+               tickFormatter={(date) => format(new Date(date), "d.M.")}
+             />
+             <YAxis domain={[0, 100000]} />
+             <Tooltip
+               formatter={(value: number) =>
+                 value ? `${Math.round(value).toLocaleString("fi-FI")} km` : "-"
+               }
+               labelFormatter={(label) => format(new Date(label), "d.M.yyyy")}
+             />
+             <Legend />
+             <Line
+               type="monotone"
+               dataKey="distance"
+               name="Nykyinen"
+               stroke="#6366f1"
+               strokeWidth={2}
+               dot={false}
+             />
+             <Line
+               type="monotone"
+               dataKey="target"
+               name="Tavoite"
+               stroke="#ef4444"
+               strokeDasharray="5 5"
+               dot={false}
+             />
+           </LineChart>
+         </ResponsiveContainer>
+       </div>
+
+       {/* Lajikohtaiset tiedot */}
+       <div className="bg-white p-6 rounded-xl shadow-sm">
+         <h2 className="text-xl font-semibold text-gray-800 mb-4">
+           Lajit ja henkilöt
+         </h2>
+         <div className="grid lg:grid-cols-2 gap-6">
+           <div>
+             <h3 className="text-lg font-medium mb-4">Suosituimmat lajit</h3>
+             <ul className="space-y-2">
+               {topSports.map(([sport, count], index) => (
+                 <li
+                   key={sport}
+                   className="flex items-center p-2 bg-gray-50 rounded"
+                 >
+                   <span className="w-8 text-center font-bold text-purple-600">
+                     {index + 1}.
+                   </span>
+                   <span className="text-gray-800 font-medium">{sport}</span>
+                   <span className="ml-auto text-gray-500">{count} kertaa</span>
+                 </li>
+               ))}
+             </ul>
+           </div>
+
+           <div>
+             <h3 className="text-lg font-medium mb-4">
+               Henkilökohtaiset tulokset
+             </h3>
+             <div className="overflow-x-auto">
+               <table className="w-full">
+                 <thead>
+                   <tr className="border-b border-gray-200">
+                     <th className="py-3 text-left">Nimi</th>
+                     <th className="py-3 text-right">Matka</th>
+                     <th className="py-3 text-right">Aktiviteetit</th>
+                   </tr>
+                 </thead>
+                 <tbody>
+                   {getUserProgress().map((user, index) => (
+                     <tr
+                       key={user.name}
+                       className="border-b border-gray-100 hover:bg-gray-50"
+                     >
+                       <td className="py-3">
+                         <div className="flex items-center gap-2">
+                           {index < 3 && ["🥇", "🥈", "🥉"][index]}
+                           {user.name}
+                         </div>
+                       </td>
+                       <td className="py-3 text-right font-medium">
+                         {Math.round(user.distance).toLocaleString("fi-FI")} km
+                       </td>
+                       <td className="py-3 text-right">{user.activities}</td>
+                     </tr>
+                   ))}
+                 </tbody>
+               </table>
+             </div>
+           </div>
+         </div>
+       </div>
+     </div>
+   </div>
+ );
 }

@@ -9,7 +9,6 @@ import {
   HttpStatus,
   Put,
   Query,
-  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -101,13 +100,13 @@ export class ProgressController {
     @Param('username') username: string,
     @Body() newActivity: Partial<Activity>,
   ) {
-  process.stdout.write(
-    JSON.stringify({
-      msg: 'Debug log',
-      activity: newActivity,
-      username,
-    }) + '\n',
-  );
+    process.stdout.write(
+      JSON.stringify({
+        msg: 'Debug log',
+        activity: newActivity,
+        username,
+      }) + '\n',
+    );
     const user = await this.userRepository.findOne({
       where: { username },
       relations: ['activities'],
@@ -175,17 +174,22 @@ export class ProgressController {
 
     const activityId = parseInt(id, 10);
     const activity = await this.activityRepository.findOne({
-      where: { id: activityId, user: { username } }, // Ensure activity belongs to user
+      where: { id: activityId, user: { username } },
     });
 
     if (!activity) {
       throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
     }
 
-    // Calculate updated kilometers
+    console.log('Updating Activity:', updateData);
+
+    // Extract "Muu(100km/h)" or "Muu(50km/h)" even if a custom name is added
+    const match = updateData.activity.match(/Muu\(.*?\)/);
+    const activityType = match ? match[0] : updateData.activity.trim();
+
     const hours = (updateData.duration ?? 0) / 60;
     const adjustedKm = calculateKilometersWithBonus(
-      updateData.activity,
+      activityType, // ✅ Extracted correct activity type
       hours,
       updateData.bonus ?? null,
     );
@@ -194,7 +198,7 @@ export class ProgressController {
     user.totalKm -= activity.kilometers;
 
     // Update activity properties
-    activity.activity = updateData.activity;
+    activity.activity = updateData.activity; // ✅ Keeps full name e.g., "Custom Name / Muu(100km/h)"
     activity.duration = updateData.duration;
     activity.date = updateData.date;
     activity.kilometers = adjustedKm;
