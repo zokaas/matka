@@ -49,8 +49,8 @@ const sportsOptions = [
   "Jooga",
   "Liikkuvuus",
   "Golf",
-  // "Muu(100km/h)",
-  // "Muu(50km/h)",
+  "Muu(100km/h)",
+  "Muu(50km/h)",
   "Ryhmä, HIIT",
   "Kehonpainotreeni",
   "Jalkapallo",
@@ -158,10 +158,11 @@ const UserProfile = () => {
       setError((err as Error).message);
     }
   };
+  
 const handleUpdateActivity = async (e: React.FormEvent) => {
   e.preventDefault();
 
-  if (!editingActivity) return; // ✅ Prevent updates if nothing is being edited
+  if (!editingActivity) return; // Prevent updates if nothing is being edited
 
   try {
     let selectedActivity = activity;
@@ -173,7 +174,7 @@ const handleUpdateActivity = async (e: React.FormEvent) => {
     }
 
     const response = await fetch(
-      `${backendUrl}/users/${username}/activities/${editingActivity.id}`, // ✅ Ensure correct ID is used
+      `${backendUrl}/users/${username}/activities/${editingActivity.id}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -189,12 +190,11 @@ const handleUpdateActivity = async (e: React.FormEvent) => {
     if (!response.ok) throw new Error("Failed to update activity");
 
     resetForm();
-    fetchUser(); // ✅ Refresh the user data after update
+    fetchUser(); // Refresh user data
   } catch (err) {
     setError((err as Error).message);
   }
 };
-
 
 const resetForm = () => {
   setIsEditing(false);
@@ -206,14 +206,28 @@ const resetForm = () => {
 };
 
 const startEdit = (activity: Activity) => {
-  setEditingActivity(activity); // ✅ Store the full activity object
-  setActivity(activity.activity);
+  setEditingActivity(activity);
+
+  // Extract custom name and Muu type
+  const parts = activity.activity.split(" / ");
+  if (
+    parts.length === 2 &&
+    (parts[1] === "Muu(100km/h)" || parts[1] === "Muu(50km/h)")
+  ) {
+    setActivity(parts[1]); // Set dropdown to "Muu(100km/h)" or "Muu(50km/h)"
+    setCustomActivity(parts[0]); // Extract and set custom name
+  } else {
+    setActivity(activity.activity); // Set for normal activities
+    setCustomActivity(""); // Reset custom activity input
+  }
+
   setDuration(activity.duration.toString());
   setDate(activity.date.split("T")[0]);
   setBonus(activity.bonus || "");
   setIsEditing(true);
   formRef.current?.scrollIntoView({ behavior: "smooth" });
 };
+
 
 
   if (loading) {
@@ -281,6 +295,8 @@ const startEdit = (activity: Activity) => {
               ))}
             </select>
           </div>
+
+          {/* Show this only if "Muu(100km/h)" or "Muu(50km/h)" is selected */}
           {(activity === "Muu(100km/h)" || activity === "Muu(50km/h)") && (
             <div>
               <label className="block text-sm font-medium">

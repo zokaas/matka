@@ -1,10 +1,13 @@
-// Create a new file: activity.utils.ts
 export const calculateKilometersWithBonus = (
   activity: string,
-  hours: number,
+  durationMinutes: number,
   bonus?: string | null,
 ): number => {
-  console.log('Calculating Kilometers for:', { activity, hours, bonus });
+  console.log('Calculating Kilometers for:', {
+    activity,
+    durationMinutes,
+    bonus,
+  });
 
   const basePoints: { [key: string]: number } = {
     Juoksu: 100,
@@ -28,27 +31,25 @@ export const calculateKilometersWithBonus = (
     Jalkapallo: 100,
     Jääkiekko: 100,
     Kamppailulaji: 100,
-    'Muu(100km/h)': 100,
-    'Muu(50km/h)': 50,
   };
 
+  let baseKilometers = 0;
 
-let baseKilometers = 0;
-console.log('Received activity:', activity);
+  // Convert minutes to hours
+  const hours = durationMinutes / 60;
 
-// Strip any numbers and clean up the activity name
-const cleanActivity = activity.replace(/^\d+\s*\/\s*/, '').trim();
-console.log('Cleaned activity:', cleanActivity);
+  // Extract the last part after "/" if it's a "Muu" activity
+  const cleanActivity = activity.split('/').pop()?.trim() ?? '';
 
-if (cleanActivity.includes('Muu(100km/h)')) {
-  baseKilometers = hours * 100;
-} else if (cleanActivity.includes('Muu(50km/h)')) {
-  baseKilometers = hours * 50;
-} else if (cleanActivity === 'Pyöräily' || cleanActivity === 'Hiihto') {
-  baseKilometers = hours > 1 ? 100 + (hours - 1) * 50 : hours * 100;
-} else {
-  baseKilometers = (basePoints[cleanActivity] ?? 0) * hours;
-}
+  if (cleanActivity === 'Muu(100km/h)') {
+    baseKilometers = (durationMinutes / 60) * 100;
+  } else if (cleanActivity === 'Muu(50km/h)') {
+    baseKilometers = (durationMinutes / 60) * 50;
+  } else if (cleanActivity === 'Pyöräily' || cleanActivity === 'Hiihto') {
+    baseKilometers = hours > 1 ? 100 + (hours - 1) * 50 : hours * 100;
+  } else {
+    baseKilometers = (basePoints[cleanActivity] ?? 0) * hours;
+  }
 
   // Apply Bonus Multiplier
   let finalKilometers = baseKilometers;
