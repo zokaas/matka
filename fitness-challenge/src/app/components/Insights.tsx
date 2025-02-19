@@ -42,7 +42,7 @@ const InsightAlert = ({
   description,
 }: {
   title: string;
-  description: string;
+  description: React.ReactNode;
 }) => (
   <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
     <h4 className="font-medium text-purple-800">{title}</h4>
@@ -660,18 +660,19 @@ const getLastFourWeeks = () => {
   title="Eteneminen"
   description={
     <>
-      Tavoitevauhti: <strong>{Math.round(targetPaces.weeklyPerUser)} km/vko </strong>per hlö.
+      Tavoitevauhti: <strong>{Math.round(targetPaces.weeklyPerUser)} km/vko</strong> per hlö.
       <br />
       Nykyisellä tahdilla saavutamme tavoitteen{" "}
-      {targetPaces.projectedEndDate ? (
-        <strong>{format(targetPaces.projectedEndDate, "d.M.yyyy")}</strong>
-      ) : (
-        "ei tiedossa"
-      )}
+      <strong>
+        {targetPaces.projectedEndDate
+          ? format(targetPaces.projectedEndDate, "d.M.yyyy")
+          : "ei tiedossa"}
+      </strong>
       .
     </>
   }
 />
+
          </div>
          <ResponsiveContainer width="100%" height={300}>
            <LineChart data={getTargetLine()}>

@@ -1,7 +1,15 @@
 import React from "react";
 import { Award } from "lucide-react";
 
-const PerformanceCard = ({
+interface PerformanceCardProps {
+  username: string;
+  totalDistance: number;
+  weeklyDistance: number;
+  percentageAchieved: number;
+  rank: number;
+}
+
+const PerformanceCard: React.FC<PerformanceCardProps> = ({
   username,
   totalDistance,
   weeklyDistance,
@@ -79,8 +87,31 @@ const PerformanceCard = ({
   );
 };
 
-const PersonalResultsDashboard = ({ users, targetPaces }) => {
-  const calculateWeeklyPerformance = (user) => {
+interface UserActivity {
+  date: string;
+  kilometers: number;
+}
+
+interface User {
+  username: string;
+  totalKm: number;
+  activities: UserActivity[];
+}
+
+interface TargetPaces {
+  weeklyPerUser: number;
+}
+
+interface PersonalResultsDashboardProps {
+  users: User[];
+  targetPaces: TargetPaces;
+}
+
+const PersonalResultsDashboard: React.FC<PersonalResultsDashboardProps> = ({
+  users,
+  targetPaces,
+}) => {
+  const calculateWeeklyPerformance = (user: User) => {
     const weekActivities = user.activities.filter(
       (activity) =>
         (new Date().getTime() - new Date(activity.date).getTime()) /
