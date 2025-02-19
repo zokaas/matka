@@ -129,7 +129,7 @@ const handleAddActivity = async (e: React.FormEvent) => {
 
     // Ensure the activity name format is correct for "Muu"
     if (activity.startsWith("Muu(") && customActivity) {
-      selectedActivity = `${customActivity} / ${activity}`;
+      selectedActivity = `${customActivity} & ${activity}`;
     }
 
     const response = await fetch(`${backendUrl}/users/${username}/activities`, {

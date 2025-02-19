@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import {
-  TrendingUp,
   Award,
   Activity,
-  Users,
   Loader2,
   AlertCircle,
+  InfoIcon,
 } from "lucide-react";
-import { format, differenceInDays, parseISO } from "date-fns";
+import { format, differenceInDays } from "date-fns";
+import PersonalResultsDashboard from "./PersonalResultsDashboard";
 
 type Activity = {
   date: string;
@@ -25,9 +25,6 @@ type User = {
 
 type AchievementStats = {
   totalDistance: number;
-  totalDuration: number;
-  averageDuration: number;
-  longestStreak: number;
   totalActivities: number;
 };
 
@@ -39,16 +36,6 @@ type TargetPaces = {
   weeklyPerUser: number;
   projectedEndDate: Date | null;
 };
-
-const DAYS_OF_WEEK = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
 
 const InsightAlert = ({
   title,
@@ -68,14 +55,8 @@ export default function Insights() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedTimeframe, setSelectedTimeframe] = useState("all");
-  const [mostActiveDay, setMostActiveDay] = useState<[string, number] | null>(
-    null
-  );
   const [achievementStats, setAchievementStats] = useState<AchievementStats>({
     totalDistance: 0,
-    totalDuration: 0,
-    averageDuration: 0,
-    longestStreak: 0,
     totalActivities: 0,
   });
   const [targetPaces, setTargetPaces] = useState<TargetPaces>({
@@ -98,8 +79,6 @@ useEffect(() => {
       const data: User[] = await response.json();
       setUsers(data);
 
-      const weekday = getMostActiveWeekday(data);
-      setMostActiveDay(weekday);
       calculateAchievements(data);
       setTargetPaces(calculateTargetPaces(data));
     } catch (err) {
@@ -112,113 +91,103 @@ useEffect(() => {
   fetchData();
 }, []);
 
-const getWeeklyTrend = () => {
-  const lastTwoWeeks = users.flatMap(user => 
-    user.activities
-      .filter(a => differenceInDays(new Date(), new Date(a.date)) <= 14)
-      .map(a => ({ ...a, week: Math.floor(differenceInDays(new Date(), new Date(a.date)) / 7) }))
+const calculateTargetPaces = (userData: User[]): TargetPaces => {
+  const today = new Date();
+  const startDate = new Date("2025-01-06"); // Projektin aloituspäivä
+  const endDate = new Date("2025-05-31"); // Projektin loppupäivä
+
+  // Päivät jäljellä loppuun
+  const daysRemaining = Math.ceil(
+    (endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
   );
 
-  const thisWeek = lastTwoWeeks.filter(a => a.week === 0).reduce((sum, a) => sum + a.kilometers, 0);
-  const lastWeek = lastTwoWeeks.filter(a => a.week === 1).reduce((sum, a) => sum + a.kilometers, 0);
+  // Kokonaismatka tähän mennessä
+  const currentTotal = userData.reduce((sum, user) => sum + user.totalKm, 0);
+  const remainingDistance = 100000 - currentTotal;
 
-  if (lastWeek === 0) return 0;
-  return ((thisWeek - lastWeek) / lastWeek) * 100;
-};
+  // Tiimin koko
+  const activeMemberCount = Math.max(1, userData.length);
 
-// Päivän suosituin laji
-const getTodayTopSport = () => {
-  const today = format(new Date(), 'yyyy-MM-dd');
-  const todayActivities = users.flatMap(user => 
-    user.activities.filter(a => format(new Date(a.date), 'yyyy-MM-dd') === today)
+  // Paljonko per henkilö pitää tehdä
+  const requiredPerUser = remainingDistance / activeMemberCount;
+  const weeksRemaining = Math.ceil(daysRemaining / 7);
+
+  // Lasketaan projektoitu loppupäivä nykyisellä tahdilla
+  const daysFromStart = Math.ceil(
+    (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  const currentDailyRate = currentTotal / Math.max(1, daysFromStart); // km/päivä tähän mennessä
+
+  const daysNeededAtCurrentPace = remainingDistance / currentDailyRate;
+  const projectedEndDate = new Date(
+    today.getTime() + daysNeededAtCurrentPace * 24 * 60 * 60 * 1000
   );
 
-  const sportCounts = todayActivities.reduce((acc, activity) => {
-    acc[activity.activity] = (acc[activity.activity] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const topSport = Object.entries(sportCounts)
-    .sort(([, a], [, b]) => b - a)[0];
-
-  return topSport ? { name: topSport[0], count: topSport[1] } : null;
+  return {
+    totalProgress: currentTotal,
+    remainingDistance,
+    daysRemaining,
+    dailyPerUser: requiredPerUser / daysRemaining,
+    weeklyPerUser: requiredPerUser / weeksRemaining,
+    projectedEndDate: currentTotal === 0 ? null : projectedEndDate,
+  };
 };
 
-// Pisin yksittäinen suoritus
-const getLongestActivity = () => {
-  const recentActivities = users.flatMap(user => 
-    user.activities
-      .filter(a => differenceInDays(new Date(), new Date(a.date)) <= 7)
-      .map(a => ({...a, username: user.username}))
+const getTargetLine = () => {
+  const startDate = new Date("2025-01-06");
+  const endDate = new Date("2025-05-31");
+  const today = new Date();
+
+  const totalDays = Math.ceil(
+    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
   );
+  const dailyTarget = 100000 / totalDays; // Paljonko pitäisi kertyä per päivä
 
-  return recentActivities.reduce((longest, current) => 
-    current.kilometers > (longest?.kilometers || 0) ? current : longest
-  , null as (Activity & { username: string } | null));
-};
+  const activityData: Record<string, number> = {};
+  let cumulativeDistance = 0;
 
-// Ahkerin liikkuja viikolta
-const getWeeklyTopPerformer = () => {
-  const weeklyStats = users.map(user => {
-    const weeklyKm = user.activities
-      .filter(a => differenceInDays(new Date(), new Date(a.date)) <= 7)
-      .reduce((sum, a) => sum + a.kilometers, 0);
-    
-    return { username: user.username, kilometers: weeklyKm };
+  // Kerätään toteutuneet kilometrit
+  users.forEach((user) => {
+    user.activities.forEach((activity) => {
+      const date = format(new Date(activity.date), "yyyy-MM-dd");
+      activityData[date] = (activityData[date] || 0) + activity.kilometers;
+    });
   });
 
-  return weeklyStats.sort((a, b) => b.kilometers - a.kilometers)[0];
+  // Kerätään päivät tähän asti
+  const progressDates: string[] = [];
+  const currentDate = new Date(startDate);
+  while (currentDate <= today && currentDate <= endDate) {
+    progressDates.push(format(currentDate, "yyyy-MM-dd"));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  // Kerätään kaikki päivät loppuun asti
+  const allDates: string[] = [...progressDates];
+  while (currentDate <= endDate) {
+    allDates.push(format(currentDate, "yyyy-MM-dd"));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  // Rakennetaan data
+  return filterDataByTimeframe(
+    allDates.map((date) => {
+      const daysSinceStart = Math.ceil(
+        (new Date(date).getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      if (activityData[date] && progressDates.includes(date)) {
+        cumulativeDistance += activityData[date];
+      }
+
+      return {
+        date,
+        distance: progressDates.includes(date) ? cumulativeDistance : null,
+        target: Math.min(100000, dailyTarget * daysSinceStart),
+      };
+    })
+  );
 };
-
-const getAverageWeeklyDistance = () => {
-  const firstActivity = users.flatMap(u => u.activities)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
-
-  if (!firstActivity) return 0;
-
-  const weeksSinceStart = Math.max(1, Math.ceil(differenceInDays(new Date(), new Date(firstActivity.date)) / 7));
-  return targetPaces.totalProgress / weeksSinceStart;
-};
-
-const getActiveUsers = () => {
-  return users.filter(user => 
-    user.activities.some(a => differenceInDays(new Date(), new Date(a.date)) <= 7)
-  ).length;
-};
-
-
-  const calculateTargetPaces = (userData: User[]): TargetPaces => {
-    const today = new Date();
-    const endDate = new Date("2025-05-31");
-    const daysRemaining = Math.ceil(
-      (endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const currentTotal = userData.reduce((sum, user) => sum + user.totalKm, 0);
-    const remainingDistance = 100000 - currentTotal;
-
-    const activeMemberCount = Math.max(1, userData.length);
-    const requiredPerUser = remainingDistance / activeMemberCount;
-    const weeksRemaining = Math.ceil(daysRemaining / 7);
-
-    return {
-      totalProgress: currentTotal,
-      remainingDistance,
-      daysRemaining,
-      dailyPerUser: requiredPerUser / daysRemaining,
-      weeklyPerUser: requiredPerUser / weeksRemaining,
-      projectedEndDate:
-        currentTotal === 0
-          ? null
-          : new Date(
-              today.getTime() +
-                (remainingDistance / (currentTotal / daysRemaining)) *
-                  24 *
-                  60 *
-                  60 *
-                  1000
-            ),
-    };
-  };
 
   const filterDataByTimeframe = <T extends { date: string }>(
     data: T[]
@@ -236,121 +205,170 @@ const getActiveUsers = () => {
     }
   };
 
+
+// Päivän suosituin laji
+const getWeekTopSports = () => {
+  // Hae kuluvan viikon maanantai
+  const today = new Date();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - today.getDay() + 1); // 1 = maanantai
+  monday.setHours(0, 0, 0, 0);
+
+  // Hae viikon aktiviteetit (ma-su)
+  const weekActivities = users.flatMap(user => 
+    user.activities.filter(a => {
+      const activityDate = new Date(a.date);
+      return activityDate >= monday && activityDate <= today;
+    })
+  );
+
+  // Muu logiikka pysyy samana...
+  const sportCounts = weekActivities.reduce((acc, activity) => {
+    acc[activity.activity] = (acc[activity.activity] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  if (Object.keys(sportCounts).length === 0) return null;
+
+  const maxCount = Math.max(...Object.values(sportCounts));
+  const topSports = Object.entries(sportCounts)
+    .filter(([, count]) => count === maxCount)
+    .map(([sport, count]) => ({
+      name: sport,
+      count: count
+    }));
+
+  return {
+    count: maxCount,
+    sports: topSports
+  };
+};
+
+const getLongestActivities = () => {
+  const recentActivities = users.flatMap(user => 
+    user.activities
+      .filter(a => differenceInDays(new Date(), new Date(a.date)) <= 7)
+      .map(a => ({ ...a, username: user.username }))
+  );
+
+  const maxKilometers = Math.max(...recentActivities.map(a => a.kilometers), 0);
+
+  return recentActivities.filter(a => a.kilometers === maxKilometers);
+};
+
+
+// Ahkerin liikkuja viikolta
+const getWeeklyTopPerformers = () => {
+  // Calculate weekly kilometers for each user
+  const weeklyStats = users.map((user) => {
+    const weeklyKm = user.activities
+      .filter((a) => differenceInDays(new Date(), new Date(a.date)) <= 7)
+      .reduce((sum, a) => sum + a.kilometers, 0);
+
+    return { username: user.username, kilometers: weeklyKm };
+  });
+
+  // If no stats, return null
+  if (weeklyStats.length === 0) return null;
+
+  // Find the highest distance
+  const maxKm = Math.max(...weeklyStats.map((stat) => stat.kilometers));
+
+  // Get all users with this distance
+  const topPerformers = weeklyStats
+    .filter((stat) => stat.kilometers === maxKm)
+    .sort((a, b) => a.username.localeCompare(b.username)); // Sort by name for consistent order
+
+  return {
+    kilometers: maxKm,
+    users: topPerformers,
+  };
+};
+
+const getLastFourWeeks = () => {
+  // Haetaan kuluvan viikon maanantai
+  const today = new Date();
+  const currentMonday = new Date(today);
+  currentMonday.setDate(today.getDate() - today.getDay() + 1); // 1 = maanantai
+  currentMonday.setHours(0, 0, 0, 0);
+
+  // Luodaan lista neljästä viimeksi maanantaista
+  const weekStarts = [0, -1, -2, -3].map(weekOffset => {
+    const monday = new Date(currentMonday);
+    monday.setDate(monday.getDate() + (weekOffset * 7));
+    return monday;
+  });
+
+  // Haetaan aktiviteetit ja merkitään niille viikot
+  const recentActivities = users.flatMap(user =>
+    user.activities
+      .map(activity => {
+        const activityDate = new Date(activity.date);
+        // Etsi mihin viikkoon aktiviteetti kuuluu
+        const weekIndex = weekStarts.findIndex(monday => 
+          activityDate >= monday && 
+          activityDate < new Date(monday.getTime() + (7 * 24 * 60 * 60 * 1000))
+        );
+        return {
+          ...activity,
+          week: weekIndex
+        };
+      })
+      .filter(activity => activity.week !== -1) // Poista aktiviteetit jotka eivät osu 4 viikon aikaikkunaan
+  );
+
+  // Laske viikkojen tiedot
+  const weeks = weekStarts.map((startDate, weekIndex) => {
+    const weekActivities = recentActivities.filter(a => a.week === weekIndex);
+    const endDate = new Date(startDate.getTime() + (7 * 24 * 60 * 60 * 1000));
+    
+    const sportStats = weekActivities.reduce((acc, activity) => {
+      if (!acc[activity.activity]) {
+        acc[activity.activity] = { km: 0, count: 0 };
+      }
+      acc[activity.activity].km += activity.kilometers;
+      acc[activity.activity].count += 1;
+      return acc;
+    }, {} as Record<string, { km: number; count: number }>);
+
+    return {
+      week: weekIndex,
+      startDate,
+      endDate,
+      kilometers: Math.round(weekActivities.reduce((sum, a) => sum + a.kilometers, 0)),
+      activeDays: new Set(weekActivities.map(a => a.date)).size,
+      sports: Object.entries(sportStats)
+        .map(([sport, stats]) => ({
+          name: sport,
+          kilometers: Math.round(stats.km),
+          count: stats.count
+        }))
+        .sort((a, b) => b.kilometers - a.kilometers)
+    };
+  });
+
+  const allSports = new Set(weeks.flatMap(w => w.sports.map(s => s.name)));
+  
+  return {
+    weeks, // Viikot ovat jo uusimmasta vanhimpaan
+    allSports: Array.from(allSports),
+    comparisons: weeks.slice(1).map((week, i) => ({
+      weekChange: weeks[i].kilometers === 0 ? 0 : 
+        Math.round(((week.kilometers - weeks[i].kilometers) / weeks[i].kilometers) * 100),
+      activeDaysChange: week.activeDays - weeks[i].activeDays
+    }))
+  };
+};
+
   const calculateAchievements = (userData: User[]) => {
     const activities = userData.flatMap((user) => user.activities);
     const totalDist = userData.reduce((sum, user) => sum + user.totalKm, 0);
-    const totalDuration = activities.reduce(
-      (sum, act) => sum + act.duration,
-      0
-    );
 
-    const sortedDates = activities
-      .map((a) => a.date)
-      .sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-
-    let currentStreak = 1;
-    let maxStreak = 1;
-
-    for (let i = 1; i < sortedDates.length; i++) {
-      const diff = differenceInDays(
-        parseISO(sortedDates[i]),
-        parseISO(sortedDates[i - 1])
-      );
-      if (diff === 1) {
-        currentStreak++;
-        maxStreak = Math.max(maxStreak, currentStreak);
-      } else {
-        currentStreak = 1;
-      }
-    }
 
     setAchievementStats({
       totalDistance: totalDist,
-      totalDuration,
-      averageDuration: activities.length
-        ? totalDuration / activities.length
-        : 0,
-      longestStreak: maxStreak,
       totalActivities: activities.length,
     });
-  };
-
-  const getMostActiveWeekday = (userData: User[]): [string, number] => {
-    const weekdayCounts = userData
-      .flatMap((user) =>
-        user.activities.map((activity) => ({
-          day: DAYS_OF_WEEK[new Date(activity.date).getDay()],
-          kilometers: activity.kilometers,
-        }))
-      )
-      .reduce((acc, { day, kilometers }) => {
-        acc[day] = (acc[day] || 0) + kilometers;
-        return acc;
-      }, {} as Record<string, number>);
-
-    return (
-      Object.entries(weekdayCounts).sort((a, b) => b[1] - a[1])[0] || ["N/A", 0]
-    );
-  };
-
-  const getTargetLine = () => {
-    const startDate = new Date();
-    startDate.setMonth(0); // January
-    startDate.setDate(1); // 1st day
-
-    const endDate = new Date();
-    endDate.setMonth(4); // May
-    endDate.setDate(31); // 31st day
-    const today = new Date();
-    const totalDays = Math.ceil(
-      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const dailyTarget = 100000 / totalDays;
-
-    const activityData: Record<string, number> = {};
-    let cumulativeDistance = 0;
-
-    users.forEach((user) => {
-      user.activities.forEach((activity) => {
-        const date = format(new Date(activity.date), "yyyy-MM-dd");
-        activityData[date] = (activityData[date] || 0) + activity.kilometers;
-      });
-    });
-
-    const progressDates: string[] = [];
-    const currentDate = new Date(startDate);
-
-    // Get dates until today for actual progress
-    while (currentDate <= today && currentDate <= endDate) {
-      progressDates.push(format(currentDate, "yyyy-MM-dd"));
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    // Get all dates until end date for target line
-    const allDates: string[] = [...progressDates];
-    while (currentDate <= endDate) {
-      allDates.push(format(currentDate, "yyyy-MM-dd"));
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-
-    return filterDataByTimeframe(
-      allDates.map((date) => {
-        const daysSinceStart = Math.ceil(
-          (new Date(date).getTime() - startDate.getTime()) /
-            (1000 * 60 * 60 * 24)
-        );
-
-        if (activityData[date] && progressDates.includes(date)) {
-          cumulativeDistance += activityData[date];
-        }
-
-        return {
-          date,
-          distance: progressDates.includes(date) ? cumulativeDistance : null,
-          target: Math.min(100000, dailyTarget * daysSinceStart),
-        };
-      })
-    );
   };
 
   const getUserProgress = () => {
@@ -445,27 +463,30 @@ const getActiveUsers = () => {
              </p>
            </div>
 
-          <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="font-medium text-green-800">Aikaa jäljellä</h3>
-              <p className="text-2xl font-bold text-green-600">{targetPaces.daysRemaining} päivää jäljellä</p>
-            </div>
+           <div className="bg-green-50 p-4 rounded-lg">
+             <h3 className="font-medium text-green-800">Aikaa jäljellä</h3>
+             <p className="text-2xl font-bold text-green-600">
+               {targetPaces.daysRemaining} päivää{" "}
+             </p>
+           </div>
 
-
-           {/* Vaihtoehto 1: Päivän suosituin laji */}
+           {/* Vaihtoehto 1: VIIKON suosituin laji */}
            <div className="bg-gray-50 p-6 rounded-xl">
              <div className="flex items-center gap-4">
                <Award className="w-8 h-8 text-green-500" />
                <div>
                  <h3 className="text-sm font-medium text-gray-500">
-                   Tämän päivän hitti
+                   Viikon suosituimmat
                  </h3>
-                 {getTodayTopSport() ? (
+                 {getWeekTopSports() ? (
                    <>
-                     <p className="text-2xl font-bold text-gray-800">
-                       {getTodayTopSport()?.name}
-                     </p>
+                     <div className="text-2xl font-bold text-gray-800">
+                       {getWeekTopSports()
+                         ?.sports.map((sport) => sport.name)
+                         .join(" / ")}
+                     </div>
                      <p className="text-xs text-gray-500 mt-1">
-                       {getTodayTopSport()?.count} suoritusta tänään
+                       {getWeekTopSports()?.count} suoritusta tällä viikolla
                      </p>
                    </>
                  ) : (
@@ -475,30 +496,32 @@ const getActiveUsers = () => {
              </div>
            </div>
 
-           {/* Vaihtoehto 2: Viikon pisin yksittäinen suoritus */}
-           <div className="bg-gray-50 p-6 rounded-xl">
-             <div className="flex items-center gap-4">
-               <Award className="w-8 h-8 text-yellow-500" />
-               <div>
-                 <h3 className="text-sm font-medium text-gray-500">
-                   Viikon pisin
-                 </h3>
-                 {getLongestActivity() ? (
-                   <>
-                     <p className="text-2xl font-bold text-gray-800">
-                       {Math.round(getLongestActivity()?.kilometers || 0)} km
-                     </p>
-                     <p className="text-xs text-gray-500 mt-1">
-                       {getLongestActivity()?.username} -{" "}
-                       {getLongestActivity()?.activity}
-                     </p>
-                   </>
-                 ) : (
-                   <p className="text-gray-600">Ei suorituksia</p>
-                 )}
-               </div>
-             </div>
-           </div>
+{/* Vaihtoehto 2: Viikon pisimmät yksittäiset suoritukset */}
+<div className="bg-gray-50 p-6 rounded-xl">
+  <div className="flex items-center gap-4">
+    <Award className="w-8 h-8 text-yellow-500" />
+    <div>
+      <h3 className="text-sm font-medium text-gray-500">Viikon pisimmät</h3>
+      {getLongestActivities().length > 0 ? (
+        <>
+          <p className="text-2xl font-bold text-gray-800">
+            {Math.round(getLongestActivities()[0].kilometers)} km
+          </p>
+          <ul className="text-xs text-gray-500 mt-1">
+            {getLongestActivities().map((activity, index) => (
+              <li key={index}>
+                {activity.username} - {activity.activity}
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <p className="text-gray-600">Ei suorituksia</p>
+      )}
+    </div>
+  </div>
+</div>
+
 
            {/* Vaihtoehto 3: Viikon ahkerin */}
            <div className="bg-gray-50 p-6 rounded-xl">
@@ -506,43 +529,149 @@ const getActiveUsers = () => {
                <Award className="w-8 h-8 text-orange-500" />
                <div>
                  <h3 className="text-sm font-medium text-gray-500">
-                   Viikon ahkerin
+                   Viikon ahkerimmat
                  </h3>
-                 {getWeeklyTopPerformer()?.kilometers > 0 ? (
-                   <>
-                     <p className="text-2xl font-bold text-gray-800">
-                       {getWeeklyTopPerformer()?.username}
-                     </p>
-                     <p className="text-xs text-gray-500 mt-1">
-                       {Math.round(getWeeklyTopPerformer()?.kilometers || 0)} km
-                       tällä viikolla
-                     </p>
-                   </>
-                 ) : (
-                   <p className="text-gray-600">Ei vielä suorituksia</p>
-                 )}
+                 {(() => {
+                   const topPerformers = getWeeklyTopPerformers();
+
+                   if (!topPerformers || topPerformers.kilometers === 0) {
+                     return (
+                       <p className="text-gray-600">Ei vielä suorituksia</p>
+                     );
+                   }
+
+                   return (
+                     <>
+                       <p className="text-2xl font-bold text-gray-800">
+                         {topPerformers.users
+                           .map((user) => user.username)
+                           .join(" / ")}
+                       </p>
+                       <p className="text-xs text-gray-500 mt-1">
+                         {Math.round(topPerformers.kilometers)} km tällä
+                         viikolla
+                       </p>
+                     </>
+                   );
+                 })()}
                </div>
              </div>
            </div>
          </div>
+       </div>
+
+       <div className="space-y-4">
 
 
+         {/* Päätaulukko */}
+         <div className="bg-white p-6 rounded-xl shadow-sm">
+           <h3 className="text-xl font-semibold text-gray-800 mb-6">
+             Viikkoaktiivisuus
+           </h3>
+         {/* Info-laatikko */}
+         <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+           <div className="flex items-start gap-3">
+             <div className="text-blue-500 mt-1">
+               <InfoIcon className="w-5 h-5" />
+             </div>
+             <div>
+               <div className="space-y-2 text-sm text-blue-800">
+                 <p>Viikot laskettu maanantaista sunnuntaihin</p>
+               </div>
+             </div>
+           </div>
+         </div>
+           <div className="overflow-x-auto">
+             <table className="w-full">
+               <thead>
+                 <tr>
+                   <th className="text-left p-3 border-b">Laji</th>
+                   {getLastFourWeeks().weeks.map((week, i) => (
+                     <th
+                       key={i}
+                       className="p-3 text-right border-b min-w-[140px]"
+                     >
+                       <div className="font-semibold">
+                         {i === 0
+                           ? "Tämä viikko"
+                           : i === 1
+                           ? "Viime viikko"
+                           : format(week.startDate, "d.M.") +
+                             "–" +
+                             format(week.endDate, "d.M.")}
+                       </div>
+                     </th>
+                   ))}
+                 </tr>
+               </thead>
+
+               <tbody>
+                 {/* Yhteenveto */}
+                 <tr className="font-medium bg-gray-50">
+                   <td className="p-3 border-b">Yhteensä</td>
+                   {getLastFourWeeks().weeks.map((week, i) => (
+                     <td key={i} className="p-3 text-right border-b">
+                       <div className="text-lg font-bold">
+                         {week.kilometers.toLocaleString("fi-FI")} km
+                       </div>
+                     </td>
+                   ))}
+                 </tr>
+
+                 {/* Lajikohtaiset rivit */}
+                 {getLastFourWeeks().allSports.map((sport) => (
+                   <tr key={sport} className="hover:bg-gray-50">
+                     <td className="p-3 border-b">{sport}</td>
+                     {getLastFourWeeks().weeks.map((week, i) => {
+                       const sportData = week.sports.find(
+                         (s) => s.name === sport
+                       );
+                       return (
+                         <td key={i} className="p-3 text-right border-b">
+                           {sportData ? (
+                             <div>
+                               <div className="font-medium">
+                                 {sportData.kilometers.toLocaleString("fi-FI")}{" "}
+                                 km
+                               </div>
+                               <div className="text-sm text-gray-500">
+                                 {sportData.count}{" "}
+                                 {sportData.count === 1 ? "kerta" : "kertaa"}
+                               </div>
+                             </div>
+                           ) : (
+                             <span className="text-gray-300">—</span>
+                           )}
+                         </td>
+                       );
+                     })}
+                   </tr>
+                 ))}
+               </tbody>
+             </table>
+           </div>
+         </div>
        </div>
 
        {/* Edistymiskaavio */}
        <div className="bg-white p-6 rounded-xl shadow-sm">
          <div className="flex items-center justify-between mb-4">
-           <h2 className="text-xl font-semibold text-gray-800">Edistyminen</h2>
-           <InsightAlert
-             title="Eteneminen"
-             description={`Tavoitteeseen tarvitaan ${Math.round(
-               targetPaces.weeklyPerUser
-             )} km viikossa per henkilö. Nykyisellä tahdilla saavutamme tavoitteen ${
-               targetPaces.projectedEndDate
-                 ? format(targetPaces.projectedEndDate, "d.M.yyyy")
-                 : "ei tiedossa"
-             }.`}
-           />
+<InsightAlert
+  title="Eteneminen"
+  description={
+    <>
+      Tavoitevauhti: <strong>{Math.round(targetPaces.weeklyPerUser)} km/vko </strong>per hlö.
+      <br />
+      Nykyisellä tahdilla saavutamme tavoitteen{" "}
+      {targetPaces.projectedEndDate ? (
+        <strong>{format(targetPaces.projectedEndDate, "d.M.yyyy")}</strong>
+      ) : (
+        "ei tiedossa"
+      )}
+      .
+    </>
+  }
+/>
          </div>
          <ResponsiveContainer width="100%" height={300}>
            <LineChart data={getTargetLine()}>
@@ -583,7 +712,6 @@ const getActiveUsers = () => {
          <h2 className="text-xl font-semibold text-gray-800 mb-4">
            Lajit ja henkilöt
          </h2>
-         <div className="grid lg:grid-cols-2 gap-6">
            <div>
              <h3 className="text-lg font-medium mb-4">Suosituimmat lajit</h3>
              <ul className="space-y-2">
@@ -602,42 +730,7 @@ const getActiveUsers = () => {
              </ul>
            </div>
 
-           <div>
-             <h3 className="text-lg font-medium mb-4">
-               Henkilökohtaiset tulokset
-             </h3>
-             <div className="overflow-x-auto">
-               <table className="w-full">
-                 <thead>
-                   <tr className="border-b border-gray-200">
-                     <th className="py-3 text-left">Nimi</th>
-                     <th className="py-3 text-right">Matka</th>
-                     <th className="py-3 text-right">Aktiviteetit</th>
-                   </tr>
-                 </thead>
-                 <tbody>
-                   {getUserProgress().map((user, index) => (
-                     <tr
-                       key={user.name}
-                       className="border-b border-gray-100 hover:bg-gray-50"
-                     >
-                       <td className="py-3">
-                         <div className="flex items-center gap-2">
-                           {index < 3 && ["🥇", "🥈", "🥉"][index]}
-                           {user.name}
-                         </div>
-                       </td>
-                       <td className="py-3 text-right font-medium">
-                         {Math.round(user.distance).toLocaleString("fi-FI")} km
-                       </td>
-                       <td className="py-3 text-right">{user.activities}</td>
-                     </tr>
-                   ))}
-                 </tbody>
-               </table>
-             </div>
-           </div>
-         </div>
+           <PersonalResultsDashboard users={users} targetPaces={targetPaces} />
        </div>
      </div>
    </div>
