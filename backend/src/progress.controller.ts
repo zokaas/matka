@@ -9,6 +9,7 @@ import {
   HttpStatus,
   Put,
   Query,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -100,13 +101,13 @@ export class ProgressController {
     @Param('username') username: string,
     @Body() newActivity: Partial<Activity>,
   ) {
-    process.stdout.write(
-      JSON.stringify({
-        msg: 'Debug log',
-        activity: newActivity,
-        username,
-      }) + '\n',
-    );
+  process.stdout.write(
+    JSON.stringify({
+      msg: 'Debug log',
+      activity: newActivity,
+      username,
+    }) + '\n',
+  );
     const user = await this.userRepository.findOne({
       where: { username },
       relations: ['activities'],
@@ -139,6 +140,8 @@ export class ProgressController {
     user.activities = [...user.activities, savedActivity];
     user.totalKm = user.totalKm + savedActivity.kilometers;
     await this.userRepository.save(user);
+    console.log('Final kilometers:', adjustedKm);
+    console.log('================END================');
     return {
       activity: savedActivity,
       user: {
