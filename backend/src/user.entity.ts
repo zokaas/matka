@@ -17,5 +17,4 @@ export class Users {
 
   @Column({ nullable: true }) // Allow null values initially
   profilePicture: string;
-
 }

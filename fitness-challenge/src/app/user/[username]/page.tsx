@@ -7,6 +7,8 @@ import Link from "next/link";
 import Image from "next/image";
 import ConfirmationModal from "@/app/components/ConfirmationModal";
 import Pagination from "@/app/components/Pagination";
+import UserInsights from "@/app/components/UserInsights";
+import RecordHolders from "@/app/components/RecordHolders";
 
 interface Activity {
   id: number;
@@ -358,7 +360,7 @@ const startEdit = (activity: Activity) => {
           </div>
         </form>
       </section>
-
+      
       <ConfirmationModal
         isOpen={isModalOpen}
         onConfirm={handleDeleteActivity}
@@ -376,7 +378,6 @@ const startEdit = (activity: Activity) => {
             : undefined
         }
       />
-
       <div className="space-y-4">
         {user.activities.map((activity) => (
           <div key={activity.id} className="bg-white p-4 rounded-lg shadow">
