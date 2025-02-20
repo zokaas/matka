@@ -212,7 +212,7 @@ const RecordHolders = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg shadow p-4">
           <div className="text-sm text-purple-600 font-medium mb-1">
-            Eniten kilometrejä
+            Eniten kilometrejä päivässä
           </div>
           <div>{renderHolders(records.bestKm)}</div>
           <div className="text-2xl font-bold text-purple-600 mt-1">
@@ -251,7 +251,7 @@ const RecordHolders = () => {
               <div key={activity.id}>
                 {activity.activity} ({activity.duration} min)
                 {activity.bonus && (
-                  <span className="text-blue-500 ml-1">★</span>
+                  <span className="text-blue-500 ml-1">★ bonus</span>
                 )}
               </div>
             ))}
