@@ -156,22 +156,21 @@ const weeklyPerUser =
     remainingDistance,
     daysRemaining,
     dailyPerUser: requiredPerUser / daysRemaining,
+    weeklyPerUser: weeklyPerUser,
     projectedEndDate: currentTotal === 0 ? null : projectedEndDate,
   };
 };
 
-  const startDate = new Date("2025-01-06");
   const getTargetLine = () => {
     const startDate = new Date("2025-01-06");
     const endDate = new Date("2025-05-31");
     const today = new Date();
 
-    (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+    const totalDays = Math.ceil(
       (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
     );
     const dailyTarget = 100000 / totalDays; // Paljonko pitäisi kertyä per päivä
 
-  let cumulativeDistance = 0;
     const activityData: Record<string, number> = {};
     let cumulativeDistance = 0;
 
