@@ -366,11 +366,6 @@ const calculateTargetPaces = (userData: User[]): TargetPaces => {
                         })}{" "}
                         km
                       </p>
-                      {index < 3 && (
-                        <div className="mt-2 text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                          #{index + 1} Rank
-                        </div>
-                      )}
                     </div>
                   </Link>
                 </motion.div>
