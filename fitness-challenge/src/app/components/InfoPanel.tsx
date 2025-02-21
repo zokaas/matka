@@ -1,6 +1,5 @@
 import React from "react";
 import ProgressBar from "./ProgressBar";
-import { FaMapMarkerAlt, FaFlagCheckered } from "react-icons/fa";
 import styles from "../styles/styles";
 
 const InfoPanel = ({

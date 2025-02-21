@@ -64,9 +64,6 @@ export default function QuickAccess() {
   const [weeklyInsights, setWeeklyInsights] = useState<WeeklyInsight[]>([]);
   const [showWeeklyProgress, setShowWeeklyProgress] = useState(false);
   const [targetPaces, setTargetPaces] = useState<TargetPaces | null>(null);
-useEffect(() => {
-  console.log("Total KM Updated:", totalKm);
-}, [totalKm]);
 
   useEffect(() => {
     const fetchData = async () => {

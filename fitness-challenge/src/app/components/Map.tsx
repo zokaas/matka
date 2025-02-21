@@ -434,11 +434,11 @@ useEffect(() => {
 
     return Math.round(totalDistance);
   };
-
+//voi po
   useEffect(() => {
     const totalRouteDistance = calculateTotalRouteDistance();
     console.log(
-      `Total route distance: ${totalRouteDistance.toLocaleString()} km`
+      `TÄÄ ON SE: ${totalRouteDistance.toLocaleString()} km`
     );
 
     // Optionally, validate if it's close to 100,000 km

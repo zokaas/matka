@@ -133,13 +133,6 @@ export const routeCoordinates = [
     },
   },
   {
-    city: "Tashkent",
-    coordinates: {
-      latitude: 41.2995,
-      longitude: 69.2401,
-    },
-  },
-  {
     city: "Dushanbe",
     coordinates: {
       latitude: 38.5598,
@@ -151,13 +144,6 @@ export const routeCoordinates = [
     coordinates: {
       latitude: 37.4897,
       longitude: 71.5539,
-    },
-  },
-  {
-    city: "Fayzabad",
-    coordinates: {
-      latitude: 37.1167,
-      longitude: 70.5833,
     },
   },
   {
@@ -186,20 +172,6 @@ export const routeCoordinates = [
     coordinates: {
       latitude: 33.6844,
       longitude: 73.0479,
-    },
-  },
-  {
-    city: "Lahore",
-    coordinates: {
-      latitude: 31.5497,
-      longitude: 74.3436,
-    },
-  },
-  {
-    city: "Amritsar",
-    coordinates: {
-      latitude: 31.6338,
-      longitude: 74.8723,
     },
   },
   {
@@ -293,18 +265,25 @@ export const routeCoordinates = [
       longitude: 106.7009,
     },
   },
+  // {
+  //   city: "Da Nang",
+  //   coordinates: {
+  //     latitude: 16.0544,
+  //     longitude: 108.2022,
+  //   },
+  // },
   {
-    city: "Da Nang",
+    city: "Singapore",
     coordinates: {
-      latitude: 16.0544,
-      longitude: 108.2022,
+      latitude: 1.29027,
+      longitude: 103.851959,
     },
   },
   {
-    city: "Kota Kinabalu",
+    city: "Brunei",
     coordinates: {
-      latitude: 5.9804,
-      longitude: 116.0735,
+      latitude: 4.5,
+      longitude: 114.7,
     },
   },
   {
@@ -378,10 +357,10 @@ export const routeCoordinates = [
     },
   },
   {
-    city: "Shenyang",
+    city: "Seoul",
     coordinates: {
-      latitude: 41.8057,
-      longitude: 123.4315,
+      latitude: 37.5665,
+      longitude: 126.978,
     },
   },
   {
@@ -406,12 +385,12 @@ export const routeCoordinates = [
     },
   },
   {
-  city: "Near Islands",
-  coordinates: {
-    latitude: 52.3381,
-    longitude: 174.1976
-  }
-},
+    city: "Near Islands",
+    coordinates: {
+      latitude: 52.3381,
+      longitude: 174.1976,
+    },
+  },
   {
     city: "Adak Island",
     coordinates: {
@@ -452,6 +431,13 @@ export const routeCoordinates = [
     coordinates: {
       latitude: 48.3809,
       longitude: -89.2477,
+    },
+  },
+  {
+    city: "Chicago",
+    coordinates: {
+      latitude: 41.881832,
+      longitude: -87.623177,
     },
   },
   {
@@ -672,17 +658,17 @@ export const routeCoordinates = [
     },
   },
   {
-    city: "Cusco",
-    coordinates: {
-      latitude: -13.532,
-      longitude: -71.9675,
-    },
-  },
-  {
     city: "Machu Picchu",
     coordinates: {
       latitude: -13.1631,
       longitude: -72.545,
+    },
+  },
+  {
+    city: "Cusco",
+    coordinates: {
+      latitude: -13.532,
+      longitude: -71.9675,
     },
   },
   {
@@ -1119,6 +1105,56 @@ export const routeCoordinates = [
       longitude: 52.5837,
     },
   },
+  //Seuraavaksi Basra
+  // {
+  //   city: "Isfahan",
+  //   coordinates: {
+  //     latitude: 32.6546,
+  //     longitude: 51.6679
+  //   }
+  // },
+  // {
+  //   city: "Qom",
+  //   coordinates: {
+  //     latitude: 34.6401,
+  //     longitude: 50.8764
+  //   }
+  // },
+  // {
+  //   city: "Baghdad",
+  //   coordinates: {
+  //     latitude: 33.3152,
+  //     longitude: 44.3661
+  //   }
+  // },
+  // {
+  //   city: "Sharjah",
+  //   coordinates: {
+  //     latitude: 25.3463,
+  //     longitude: 55.4209
+  //   }
+  // },
+  // {
+  //   city: "Ras Al Khaimah",
+  //   coordinates: {
+  //     latitude: 25.8003,
+  //     longitude: 55.9764
+  //   }
+  // },
+  // {
+  //   city: "Bandar Abbas",
+  //   coordinates: {
+  //     latitude: 27.1832,
+  //     longitude: 56.2666
+  //   }
+  // },
+  // {
+  //   city: "Shiraz",
+  //   coordinates: {
+  //     latitude: 29.5918,
+  //     longitude: 52.5837
+  //   }
+  // },
   {
     city: "Isfahan",
     coordinates: {
@@ -1127,10 +1163,10 @@ export const routeCoordinates = [
     },
   },
   {
-    city: "Qom",
+    city: "Basra",
     coordinates: {
-      latitude: 34.6401,
-      longitude: 50.8764,
+      latitude: 30.5081,
+      longitude: 47.7835,
     },
   },
   {
@@ -1155,52 +1191,31 @@ export const routeCoordinates = [
     },
   },
   {
-    city: "Aswan",
+    city: "Alexandria",
     coordinates: {
-      latitude: 24.0889,
-      longitude: 32.8998,
+      latitude: 31.2001,
+      longitude: 29.9187,
     },
   },
   {
-    city: "Wadi Halfa",
+    city: "Hun",
     coordinates: {
-      latitude: 21.8,
-      longitude: 31.35,
+      latitude: 29.1211,
+      longitude: 15.9403,
     },
   },
   {
-    city: "Khartoum",
+    city: "Tunis",
     coordinates: {
-      latitude: 15.5007,
-      longitude: 32.5599,
+      latitude: 36.8065,
+      longitude: 10.1815,
     },
   },
   {
-    city: "N'Djamena",
+    city: "Algiers",
     coordinates: {
-      latitude: 12.1348,
-      longitude: 15.0557,
-    },
-  },
-  {
-    city: "Niamey",
-    coordinates: {
-      latitude: 13.5127,
-      longitude: 2.1126,
-    },
-  },
-  {
-    city: "Bamako",
-    coordinates: {
-      latitude: 12.6392,
-      longitude: -8.0029,
-    },
-  },
-  {
-    city: "Nouakchott",
-    coordinates: {
-      latitude: 18.0858,
-      longitude: -15.9785,
+      latitude: 36.7372,
+      longitude: 3.0863,
     },
   },
   {
@@ -1218,6 +1233,13 @@ export const routeCoordinates = [
     },
   },
   {
+    city: "Peniche",
+    coordinates: {
+      latitude: 39.3558,
+      longitude: -9.3814,
+    },
+  },
+  {
     city: "Madrid",
     coordinates: {
       latitude: 40.4168,
@@ -1229,6 +1251,13 @@ export const routeCoordinates = [
     coordinates: {
       latitude: 41.3851,
       longitude: 2.1734,
+    },
+  },
+  {
+    city: "Marseille",
+    coordinates: {
+      latitude: 43.2964,
+      longitude: 5.37,
     },
   },
   {
@@ -1253,6 +1282,20 @@ export const routeCoordinates = [
     },
   },
   {
+    city: "Lucerne",
+    coordinates: {
+      latitude: 47.0505,
+      longitude: 8.3059,
+    },
+  },
+  {
+    city: "Zurich",
+    coordinates: {
+      latitude: 47.3769,
+      longitude: 8.5417,
+    },
+  },
+  {
     city: "Milan",
     coordinates: {
       latitude: 45.4642,
@@ -1266,39 +1309,12 @@ export const routeCoordinates = [
       longitude: 12.3155,
     },
   },
-  {
-    city: "Zurich",
-    coordinates: {
-      latitude: 47.3769,
-      longitude: 8.5417,
-    },
-  },
-  {
-    city: "Lucerne",
-    coordinates: {
-      latitude: 47.0505,
-      longitude: 8.3059,
-    },
-  },
+
   {
     city: "Munich",
     coordinates: {
       latitude: 48.1351,
       longitude: 11.582,
-    },
-  },
-  {
-    city: "Prague",
-    coordinates: {
-      latitude: 50.0755,
-      longitude: 14.4378,
-    },
-  },
-  {
-    city: "Vienna",
-    coordinates: {
-      latitude: 48.2082,
-      longitude: 16.3738,
     },
   },
   {
@@ -1309,10 +1325,25 @@ export const routeCoordinates = [
     },
   },
   {
+    city: "Vienna",
+    coordinates: {
+      latitude: 48.2082,
+      longitude: 16.3738,
+    },
+  },
+
+  {
     city: "Berlin",
     coordinates: {
       latitude: 52.52,
       longitude: 13.405,
+    },
+  },
+  {
+    city: "Copenhagen",
+    coordinates: {
+      latitude: 55.6761,
+      longitude: 12.5683,
     },
   },
   {
@@ -1358,10 +1389,10 @@ export const routeCoordinates = [
     },
   },
   {
-    city: "Lisbon",
+    city: "London",
     coordinates: {
-      latitude: 38.7169,
-      longitude: -9.1399,
+      latitude: 51.5074,
+      longitude: -0.1278,
     },
   },
   {
@@ -1378,13 +1409,7 @@ export const routeCoordinates = [
       longitude: -5.9301,
     },
   },
-  {
-    city: "London",
-    coordinates: {
-      latitude: 51.5074,
-      longitude: -0.1278,
-    },
-  },
+
   {
     city: "Edinburgh",
     coordinates: {
@@ -1400,17 +1425,17 @@ export const routeCoordinates = [
     },
   },
   {
-    city: "Tromsø",
-    coordinates: {
-      latitude: 69.6496,
-      longitude: 18.956,
-    },
-  },
-  {
     city: "Lofoten",
     coordinates: {
       latitude: 68.2081,
       longitude: 13.8824,
+    },
+  },
+  {
+    city: "Tromsø",
+    coordinates: {
+      latitude: 69.6496,
+      longitude: 18.956,
     },
   },
   {
@@ -1442,13 +1467,6 @@ export const routeCoordinates = [
     },
   },
   {
-    city: "Kuopio",
-    coordinates: {
-      latitude: 62.8924,
-      longitude: 27.677,
-    },
-  },
-  {
     city: "Oulu",
     coordinates: {
       latitude: 65.0121,
@@ -1456,10 +1474,10 @@ export const routeCoordinates = [
     },
   },
   {
-    city: "Vaasa",
+    city: "Kuopio",
     coordinates: {
-      latitude: 63.096,
-      longitude: 21.6158,
+      latitude: 62.8924,
+      longitude: 27.677,
     },
   },
   {
