@@ -293,7 +293,7 @@ const calculateTargetPaces = (userData: User[]): TargetPaces => {
             } rounded-r-lg focus:z-10 focus:ring-2 focus:ring-purple-500 focus:outline-none transition-colors`}
             onClick={() => setShowWeeklyProgress(true)}
           >
-            Weekly Progress
+            Viikon tuloksia
           </button>
         </div>
       </div>
@@ -351,7 +351,7 @@ const calculateTargetPaces = (userData: User[]): TargetPaces => {
                           />
                         </div>
                         {getMedal(index) && (
-                          <div className="absolute -bottom-3 -right-3 text-3xl bg-white rounded-full p-1 shadow-md">
+                          <div className="absolute -bottom-3 -right-3 text-3xl rounded-full p-1 shadow-md">
                             {getMedal(index)}
                           </div>
                         )}
@@ -378,7 +378,7 @@ const calculateTargetPaces = (userData: User[]): TargetPaces => {
       {!loading && !error && showWeeklyProgress && (
         <section>
           <h2 className="text-xl font-bold text-gray-800 flex items-center mb-2">
-            <span>📊</span> This Week&apos;s Progress
+            <span>📊</span> Tämän viikon ranking
           </h2>
           <p className="text-sm text-gray-600 mb-6">
             Goal: {targetPaces && Math.round(targetPaces.weeklyPerUser)} km per
