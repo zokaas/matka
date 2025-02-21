@@ -6,6 +6,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
+import Map from "./Map";
 
 interface Activity {
   date: string;
@@ -63,6 +64,9 @@ export default function QuickAccess() {
   const [weeklyInsights, setWeeklyInsights] = useState<WeeklyInsight[]>([]);
   const [showWeeklyProgress, setShowWeeklyProgress] = useState(false);
   const [targetPaces, setTargetPaces] = useState<TargetPaces | null>(null);
+useEffect(() => {
+  console.log("Total KM Updated:", totalKm);
+}, [totalKm]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -104,50 +108,64 @@ export default function QuickAccess() {
   }, []);
 
   // Calculate target paces from Insights component
-  const calculateTargetPaces = (userData: User[]): TargetPaces => {
-    const today = new Date();
-    const startDate = new Date("2025-01-06"); // Project start date
-    const endDate = new Date("2025-05-31"); // Project end date
+const calculateTargetPaces = (userData: User[]): TargetPaces => {
+  const today = new Date();
+  const startDate = new Date("2025-01-06"); // Project start date
+  const endDate = new Date("2025-05-31"); // Project end date
 
-    // Days remaining until the end
-    const daysRemaining = Math.ceil(
-      (endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-    );
+  // Days remaining until the end
+  const daysRemaining = Math.ceil(
+    (endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+  );
 
-    // Total distance covered so far
-    const currentTotal = userData.reduce((sum, user) => sum + user.totalKm, 0);
-    const remainingDistance = 100000 - currentTotal;
+  // Total distance covered so far
+  const currentTotal = userData.reduce((sum, user) => sum + user.totalKm, 0);
+  const remainingDistance = 100000 - currentTotal;
 
-    // Team size
-    const activeMemberCount = Math.max(1, userData.length);
+  // Debugging logs:
+  console.log("🚀 Current Total:", currentTotal);
+  console.log("📅 Days Remaining:", daysRemaining);
+  console.log("📉 Remaining Distance:", remainingDistance);
 
-    // Required per person
-    const requiredPerUser = remainingDistance / activeMemberCount;
-    const weeksRemaining = Math.ceil(daysRemaining / 7);
+  // Team size
+  const activeMemberCount = Math.max(1, userData.length);
+  console.log("👥 Active Members:", activeMemberCount);
 
-    // Calculate projected end date at current pace
-    const daysFromStart = Math.ceil(
-      (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const currentDailyRate = currentTotal / Math.max(1, daysFromStart); // km/day so far
+  // Required per person
+  const requiredPerUser = remainingDistance / activeMemberCount;
+  const weeksRemaining = Math.ceil(daysRemaining / 7);
 
-    const daysNeededAtCurrentPace = remainingDistance / currentDailyRate;
-    const projectedEndDate = new Date(
-      today.getTime() + daysNeededAtCurrentPace * 24 * 60 * 60 * 1000
-    );
+  // Debugging logs:
+  console.log("📆 Weeks Remaining:", weeksRemaining);
+  console.log("💪 Required Per User:", requiredPerUser);
 
-    const weeklyPerUser =
-      weeksRemaining > 0 ? Math.max(1, requiredPerUser / weeksRemaining) : 1;
+  // Calculate projected end date at current pace
+  const daysFromStart = Math.ceil(
+    (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
 
-    return {
-      totalProgress: currentTotal,
-      remainingDistance,
-      daysRemaining,
-      dailyPerUser: requiredPerUser / daysRemaining,
-      weeklyPerUser: weeklyPerUser,
-      projectedEndDate: currentTotal === 0 ? null : projectedEndDate,
-    };
+  const currentDailyRate = currentTotal / Math.max(1, daysFromStart); // km/day so far
+
+  console.log("📊 Current Daily Rate:", currentDailyRate);
+
+  const daysNeededAtCurrentPace = remainingDistance / currentDailyRate;
+  const projectedEndDate = new Date(
+    today.getTime() + daysNeededAtCurrentPace * 24 * 60 * 60 * 1000
+  );
+
+  const weeklyPerUser =
+    weeksRemaining > 0 ? Math.max(1, requiredPerUser / weeksRemaining) : 1;
+
+  return {
+    totalProgress: currentTotal,
+    remainingDistance,
+    daysRemaining,
+    dailyPerUser: requiredPerUser / daysRemaining,
+    weeklyPerUser: weeklyPerUser,
+    projectedEndDate: currentTotal === 0 ? null : projectedEndDate,
   };
+};
+
 
   // Calculate weekly insights from Insights component
   const calculateWeeklyInsights = (
@@ -155,7 +173,6 @@ export default function QuickAccess() {
     weeklyGoalPerUser: number
   ) => {
     const today = new Date();
-    const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
 
     const weeklyGoal = weeklyGoalPerUser;
     const daysRemaining = Math.max(1, 7 - (today.getDay() || 7));
@@ -247,7 +264,15 @@ export default function QuickAccess() {
           </div>
         </motion.header>
       </section>
-
+      <div>
+        {totalKm >= 21000 ? (
+          <Map totalKm={totalKm} />
+        ) : (
+          <div className="text-center font-bold text-purple-500">
+              🔒 KARTTA PALJASTUU KUN KASASSA ON 21 000km! 🔒
+          </div>
+        )}
+      </div>
       {/* Toggle Buttons */}
       <div className="flex justify-center">
         <div className="inline-flex rounded-md shadow" role="group">

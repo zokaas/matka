@@ -2,3 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+
+.city-popup {
+  max-width: 200px;
+}
+
+.popup-city-name {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.popup-city-status {
+  font-size: 12px;
+  color: #666;
+}
+
+.mapboxgl-popup-content {
+  padding: 10px 15px;
+  border-radius: 6px;
+}

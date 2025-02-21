@@ -7,8 +7,6 @@ import Link from "next/link";
 import Image from "next/image";
 import ConfirmationModal from "@/app/components/ConfirmationModal";
 import Pagination from "@/app/components/Pagination";
-import UserInsights from "@/app/components/UserInsights";
-import RecordHolders from "@/app/components/RecordHolders";
 
 interface Activity {
   id: number;
