@@ -97,6 +97,12 @@ export default function Navbar() {
             >
               Etusivu
             </Link>
+            <Link
+              href="/insights"
+              className="hover:bg-purple-500 px-3 py-2 rounded text-sm font-medium"
+            >
+              Tilastot
+            </Link>
             {/* Dropdown for Users */}
             <div className="relative">
               <button
@@ -146,12 +152,6 @@ export default function Navbar() {
                 </div>
               )}
             </div>
-            <Link
-              href="/insights"
-              className="hover:bg-purple-500 px-3 py-2 rounded text-sm font-medium"
-            >
-              Tilastot
-            </Link>
           </div>
 
           {/* Hamburger Menu for Mobile */}
