@@ -10,6 +10,7 @@ export function useCalculateStats(users: User[]) {
     const daysRemaining = Math.ceil(
       (endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
     );
+
     const currentTotal = users.reduce((sum, user) => sum + user.totalKm, 0);
     const remainingDistance = 100000 - currentTotal;
     const activeMemberCount = Math.max(1, users.length);
@@ -20,21 +21,28 @@ export function useCalculateStats(users: User[]) {
         ? requiredPerUser / (daysRemaining / 7)
         : requiredPerUser;
 
+    // Fix projected end date calculation (previous formula was incorrect)
+    const daysFromStart = Math.ceil(
+      (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+    const currentDailyRate = currentTotal / Math.max(1, daysFromStart);
+    const daysNeededAtCurrentPace =
+      currentDailyRate > 0 ? remainingDistance / currentDailyRate : null;
+
+    const projectedEndDate =
+      daysNeededAtCurrentPace !== null
+        ? new Date(
+            today.getTime() + daysNeededAtCurrentPace * 24 * 60 * 60 * 1000
+          )
+        : null;
+
     return {
       totalProgress: currentTotal,
       remainingDistance,
       daysRemaining,
       dailyPerUser: requiredPerUser / daysRemaining,
       weeklyPerUser,
-      projectedEndDate: new Date(
-        today.getTime() +
-          (remainingDistance /
-            (currentTotal / (today.getTime() - startDate.getTime()))) *
-            24 *
-            60 *
-            60 *
-            1000
-      ),
+      projectedEndDate,
     } as TargetPaces;
   }, [users]);
 }

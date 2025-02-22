@@ -138,7 +138,9 @@ const AllTimeInsights = ({ username }: { username: string }) => {
                 {activity.activity}: {activity.kilometers.toFixed(1)} km (
                 {activity.duration} min)
                 {activity.bonus && (
-                  <span className="text-purple-500 ml-1">★ bonus</span>
+                  <span className="text-purple-500 ml-1">
+                    ★ bonukset laskettu mukaan
+                  </span>
                 )}
               </div>
             ))}
@@ -158,9 +160,11 @@ const AllTimeInsights = ({ username }: { username: string }) => {
               <div key={activity.id} className="text-sm text-gray-500">
                 {activity.activity}: {activity.duration} min (
                 {activity.kilometers.toFixed(1)} km)
-                {activity.bonus && (
-                  <span className="text-purple-500 ml-1">★</span>
-                )}
+                {/* {activity.bonus && (
+                  <span className="text-purple-500 ml-1">
+                    ★ bonukset laskettu mukaan
+                  </span>
+                )} */}
               </div>
             ))}
           </div>

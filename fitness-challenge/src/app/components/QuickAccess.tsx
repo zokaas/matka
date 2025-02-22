@@ -7,38 +7,9 @@ import { motion } from "framer-motion";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import Map from "./Map";
-
-interface Activity {
-  date: string;
-  duration: number;
-  kilometers: number;
-  activity: string;
-}
-
-interface User {
-  username: string;
-  totalKm: number;
-  profilePicture: string;
-  activities: Activity[];
-}
-
-interface WeeklyInsight {
-  username: string;
-  weeklyGoal: number;
-  weeklyProgress: number;
-  weeklyPercentage: number;
-  dailyTarget: number;
-  rank: number;
-}
-
-interface TargetPaces {
-  totalProgress: number;
-  remainingDistance: number;
-  daysRemaining: number;
-  dailyPerUser: number;
-  weeklyPerUser: number;
-  projectedEndDate: Date | null;
-}
+import { useTargetPaces } from "@/app/hooks/useTargetPaces";
+import { useWeeklyInsights } from "@/app/hooks/useWeeklyInsights";
+import { User } from "@/app/types/types";
 
 const TOTAL_GOAL = 100000; // Total goal in kilometers
 const MOTIVATIONAL_MESSAGES = [
@@ -61,9 +32,11 @@ export default function QuickAccess() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [motivationalMessage, setMotivationalMessage] = useState("");
-  const [weeklyInsights, setWeeklyInsights] = useState<WeeklyInsight[]>([]);
   const [showWeeklyProgress, setShowWeeklyProgress] = useState(false);
-  const [targetPaces, setTargetPaces] = useState<TargetPaces | null>(null);
+  
+  // Use the hooks here instead of inline calculations
+  const targetPaces = useTargetPaces(users);
+  const weeklyInsights = useWeeklyInsights(users, targetPaces);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -83,11 +56,6 @@ export default function QuickAccess() {
         const usersData: User[] = await usersResponse.json();
         setUsers(usersData);
 
-        // Calculate weekly insights based on target paces
-        const calculatedTargetPaces = calculateTargetPaces(usersData);
-        setTargetPaces(calculatedTargetPaces);
-        calculateWeeklyInsights(usersData, calculatedTargetPaces.weeklyPerUser);
-
         // Select a random motivational message
         setMotivationalMessage(
           MOTIVATIONAL_MESSAGES[
@@ -103,119 +71,6 @@ export default function QuickAccess() {
 
     fetchData();
   }, []);
-
-  // Calculate target paces from Insights component
-const calculateTargetPaces = (userData: User[]): TargetPaces => {
-  const today = new Date();
-  const startDate = new Date("2025-01-06"); // Project start date
-  const endDate = new Date("2025-05-31"); // Project end date
-
-  // Days remaining until the end
-  const daysRemaining = Math.ceil(
-    (endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-  );
-
-  // Total distance covered so far
-  const currentTotal = userData.reduce((sum, user) => sum + user.totalKm, 0);
-  const remainingDistance = 100000 - currentTotal;
-
-  // Debugging logs:
-  console.log("🚀 Current Total:", currentTotal);
-  console.log("📅 Days Remaining:", daysRemaining);
-  console.log("📉 Remaining Distance:", remainingDistance);
-
-  // Team size
-  const activeMemberCount = Math.max(1, userData.length);
-  console.log("👥 Active Members:", activeMemberCount);
-
-  // Required per person
-  const requiredPerUser = remainingDistance / activeMemberCount;
-  const weeksRemaining = Math.ceil(daysRemaining / 7);
-
-  // Debugging logs:
-  console.log("📆 Weeks Remaining:", weeksRemaining);
-  console.log("💪 Required Per User:", requiredPerUser);
-
-  // Calculate projected end date at current pace
-  const daysFromStart = Math.ceil(
-    (today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-  );
-
-  const currentDailyRate = currentTotal / Math.max(1, daysFromStart); // km/day so far
-
-  console.log("📊 Current Daily Rate:", currentDailyRate);
-
-  const daysNeededAtCurrentPace = remainingDistance / currentDailyRate;
-  const projectedEndDate = new Date(
-    today.getTime() + daysNeededAtCurrentPace * 24 * 60 * 60 * 1000
-  );
-
-  const weeklyPerUser =
-    weeksRemaining > 0 ? Math.max(1, requiredPerUser / weeksRemaining) : 1;
-
-  return {
-    totalProgress: currentTotal,
-    remainingDistance,
-    daysRemaining,
-    dailyPerUser: requiredPerUser / daysRemaining,
-    weeklyPerUser: weeklyPerUser,
-    projectedEndDate: currentTotal === 0 ? null : projectedEndDate,
-  };
-};
-
-
-  // Calculate weekly insights from Insights component
-  const calculateWeeklyInsights = (
-    users: User[],
-    weeklyGoalPerUser: number
-  ) => {
-    const today = new Date();
-
-    const weeklyGoal = weeklyGoalPerUser;
-    const daysRemaining = Math.max(1, 7 - (today.getDay() || 7));
-
-    const insights: WeeklyInsight[] = users.map((user) => {
-      const weekActivities = user.activities.filter(
-        (activity) =>
-          (today.getTime() - new Date(activity.date).getTime()) /
-            (1000 * 60 * 60 * 24) <=
-          7
-      );
-
-      const weeklyProgress = weekActivities.reduce(
-        (sum, activity) => sum + activity.kilometers,
-        0
-      );
-
-      const weeklyPercentage =
-        weeklyGoal > 0 ? Math.round((weeklyProgress / weeklyGoal) * 100) : 0;
-
-      const remainingWeeklyDistance = Math.max(0, weeklyGoal - weeklyProgress);
-      const dailyTarget =
-        remainingWeeklyDistance > 0
-          ? Math.round(remainingWeeklyDistance / daysRemaining)
-          : 0;
-
-      return {
-        username: user.username,
-        weeklyGoal,
-        weeklyProgress: Math.round(weeklyProgress),
-        weeklyPercentage,
-        dailyTarget,
-        rank: 0,
-      };
-    });
-
-    // Assign ranks
-    const sortedInsights = insights
-      .sort((a, b) => b.weeklyProgress - a.weeklyProgress)
-      .map((insight, index) => ({
-        ...insight,
-        rank: index + 1,
-      }));
-
-    setWeeklyInsights(sortedInsights);
-  };
 
   const progress = (totalKm / TOTAL_GOAL) * 100; // Calculate progress percentage
 
@@ -255,8 +110,9 @@ const calculateTargetPaces = (userData: User[]): TargetPaces => {
               ></motion.div>
             </div>
             <p className="mt-2 text-gray-600">
-              {totalKm.toFixed(2)} / {TOTAL_GOAL.toLocaleString()} km (
-              {progress.toFixed(2)}%)
+              {Math.round(totalKm).toLocaleString("en").replace(/,/g, " ")} /{" "}
+              {TOTAL_GOAL.toLocaleString("en").replace(/,/g, " ")} km (
+              {Math.round(progress)}%)
             </p>
           </div>
         </motion.header>
@@ -266,7 +122,7 @@ const calculateTargetPaces = (userData: User[]): TargetPaces => {
           <Map totalKm={totalKm} />
         ) : (
           <div className="text-center font-bold text-purple-500">
-              🔒 KARTTA PALJASTUU KUN KASASSA ON 21 000km! 🔒
+            🔒 KARTTA PALJASTUU KUN KASASSA ON 21 000km! 🔒
           </div>
         )}
       </div>

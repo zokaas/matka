@@ -226,7 +226,9 @@ const RecordHolders = () => {
               <div key={activity.id}>
                 {activity.activity} ({activity.kilometers.toFixed(1)} km)
                 {activity.bonus && (
-                  <span className="text-purple-500 ml-1">★</span>
+                  <span className="text-purple-500 ml-1">
+                    ★ bonukset laskettu mukaan
+                  </span>
                 )}
               </div>
             ))}
@@ -250,9 +252,11 @@ const RecordHolders = () => {
             {records.longestWorkout[0].activities.map((activity) => (
               <div key={activity.id}>
                 {activity.activity} ({activity.duration} min)
-                {activity.bonus && (
-                  <span className="text-blue-500 ml-1">★ bonus</span>
-                )}
+                {/* {activity.bonus && (
+                  <span className="text-blue-500 ml-1">
+                    ★ bonukset laskettu
+                  </span>
+                )} */}
               </div>
             ))}
           </div>

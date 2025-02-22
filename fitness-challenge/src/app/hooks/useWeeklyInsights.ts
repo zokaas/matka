@@ -8,16 +8,30 @@ export const useWeeklyInsights = (users: User[], targetPaces: TargetPaces) => {
     if (users.length === 0 || !targetPaces) return;
 
     const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+
+    // Determine the Monday of the current week
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() + mondayOffset);
+    weekStart.setHours(0, 0, 0, 0); // Start of Monday
+
+    // Determine the Sunday of the current week
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999); // End of Sunday
+
+    // Calculate days remaining until Sunday
+    const daysRemaining = 7 - (dayOfWeek === 0 ? 7 : dayOfWeek);
+
     const weeklyGoal = targetPaces.weeklyPerUser;
-    const daysRemaining = Math.max(1, 7 - (today.getDay() || 7));
 
     const insights: WeeklyInsight[] = users.map((user) => {
-      const weekActivities = user.activities.filter(
-        (activity) =>
-          (today.getTime() - new Date(activity.date).getTime()) /
-            (1000 * 60 * 60 * 24) <=
-          7
-      );
+      // Filter activities that occurred between this Monday and Sunday
+      const weekActivities = user.activities.filter((activity) => {
+        const activityDate = new Date(activity.date);
+        return activityDate >= weekStart && activityDate <= weekEnd;
+      });
 
       const weeklyProgress = weekActivities.reduce(
         (sum, activity) => sum + activity.kilometers,
@@ -27,9 +41,18 @@ export const useWeeklyInsights = (users: User[], targetPaces: TargetPaces) => {
       const weeklyPercentage =
         weeklyGoal > 0 ? Math.round((weeklyProgress / weeklyGoal) * 100) : 0;
 
+      const remainingWeeklyDistance = Math.max(0, weeklyGoal - weeklyProgress);
       const dailyTarget =
+        remainingWeeklyDistance > 0
+          ? Math.round(remainingWeeklyDistance / daysRemaining)
+          : 0;
+
+      // Calculate daily progress (optional, can adjust if needed)
+      const dailyProgress =
+        daysRemaining > 0 ? weeklyProgress / (7 - daysRemaining) : 0;
+      const dailyPercentage =
         weeklyGoal > 0
-          ? Math.round((weeklyGoal - weeklyProgress) / daysRemaining)
+          ? Math.round((dailyProgress / (weeklyGoal / 7)) * 100)
           : 0;
 
       return {
@@ -38,15 +61,21 @@ export const useWeeklyInsights = (users: User[], targetPaces: TargetPaces) => {
         weeklyProgress: Math.round(weeklyProgress),
         weeklyPercentage,
         dailyTarget,
-        dailyProgress: 0,
-        dailyPercentage: 0,
+        dailyProgress: Math.round(dailyProgress),
+        dailyPercentage,
         rank: 0,
       };
     });
 
-    setWeeklyInsights(
-      insights.sort((a, b) => b.weeklyProgress - a.weeklyProgress)
-    );
+    // Rank users based on weekly progress
+    const sortedInsights = insights
+      .sort((a, b) => b.weeklyProgress - a.weeklyProgress)
+      .map((insight, index) => ({
+        ...insight,
+        rank: index + 1,
+      }));
+
+    setWeeklyInsights(sortedInsights);
   }, [users, targetPaces]);
 
   return weeklyInsights;

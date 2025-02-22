@@ -10,13 +10,16 @@ export type LineFeature = GeoJSON.Feature<
 
 
 export type Activity = {
-  date: string;
-  duration: number;
-  kilometers: number;
+  id: number;
   activity: string;
+  duration: number;
+  date: string;
+  kilometers: number;
+  bonus?: string | null;
 };
 
 export type User = {
+  profilePicture?: string;
   id: string;
   username: string;
   totalKm: number;
@@ -48,7 +51,7 @@ export type WeeklyInsight = {
   rank: number;
 };
 
-export interface WeeklyData {
+export type WeeklyData = {
   week: number;
   startDate: Date;
   endDate: Date;
@@ -59,4 +62,21 @@ export interface WeeklyData {
     kilometers: number;
     count: number;
   }[];
+}
+
+
+export type DailyStats = {
+  date: string;
+  kilometers: number;
+  duration: number;
+  activities: Activity[];
+}
+
+export type UserStats = {
+  bestKmDay?: DailyStats;
+  longestWorkoutDay?: DailyStats;
+  currentStreak: {
+    start: string;
+    days: number;
+  };
 }

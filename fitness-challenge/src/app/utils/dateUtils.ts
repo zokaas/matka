@@ -9,35 +9,53 @@ export const formatDate = (date: Date, formatString = "d.M.yyyy") => {
 // 🔥 Get Last Four Weeks Summary
 export const getLastFourWeeks = (users: User[]) => {
   const today = new Date();
+
+  // Get the most recent Monday (start of the current week)
   const currentMonday = new Date(today);
-  currentMonday.setDate(today.getDate() - today.getDay() + 1);
+  const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  currentMonday.setDate(today.getDate() + mondayOffset);
   currentMonday.setHours(0, 0, 0, 0);
 
+  // Generate the last four Mondays (each Monday marks a new week)
   const weekStarts = [0, -1, -2, -3].map((weekOffset) => {
     const monday = new Date(currentMonday);
     monday.setDate(monday.getDate() + weekOffset * 7);
     return monday;
   });
 
-  const recentActivities = users.flatMap((user) =>
-    user.activities
-      .map((activity) => {
-        const activityDate = new Date(activity.date);
-        const weekIndex = weekStarts.findIndex(
-          (monday) =>
-            activityDate >= monday &&
-            activityDate < new Date(monday.getTime() + 7 * 24 * 60 * 60 * 1000)
-        );
-        return { ...activity, week: weekIndex };
-      })
-      .filter((activity) => activity.week !== -1)
+  // Flatten all activities and determine the week index
+  const recentActivities = users.flatMap(
+    (user) =>
+      user.activities
+        .map((activity) => {
+          if (!activity) return null; // ✅ Check if activity is null before proceeding
+
+          const activityDate = new Date(activity.date);
+
+          // Determine which week this activity belongs to
+          const weekIndex = weekStarts.findIndex(
+            (monday) =>
+              activityDate >= monday &&
+              activityDate <
+                new Date(monday.getTime() + 7 * 24 * 60 * 60 * 1000)
+          );
+
+          return weekIndex !== -1 ? { ...activity, week: weekIndex } : null;
+        })
+        .filter((activity) => activity !== null) // ✅ Filter out null activities
   );
 
+  // Process each week's data
   const weeks = weekStarts.map((startDate, weekIndex) => {
-    const weekActivities = recentActivities.filter((a) => a.week === weekIndex);
-    const endDate = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const weekActivities = recentActivities.filter(
+      (a) => a && a.week === weekIndex
+    );
+    const endDate = new Date(startDate.getTime() + 6 * 24 * 60 * 60 * 1000);
 
     const sportStats = weekActivities.reduce((acc, activity) => {
+      if (!activity) return acc; // ✅ Safety check
+
       if (!acc[activity.activity]) acc[activity.activity] = { km: 0, count: 0 };
       acc[activity.activity].km += activity.kilometers;
       acc[activity.activity].count += 1;
@@ -49,9 +67,9 @@ export const getLastFourWeeks = (users: User[]) => {
       startDate,
       endDate,
       kilometers: Math.round(
-        weekActivities.reduce((sum, a) => sum + a.kilometers, 0)
+        weekActivities.reduce((sum, a) => sum + (a ? a.kilometers : 0), 0) // ✅ Handle possible nulls
       ),
-      activeDays: new Set(weekActivities.map((a) => a.date)).size,
+      activeDays: new Set(weekActivities.map((a) => a?.date)).size, // ✅ Ensure `a` is not null
       sports: Object.entries(sportStats)
         .map(([sport, stats]) => ({
           name: sport,
@@ -62,20 +80,24 @@ export const getLastFourWeeks = (users: User[]) => {
     };
   });
 
+  // Get all sports across the last four weeks
   const allSports = new Set(weeks.flatMap((w) => w.sports.map((s) => s.name)));
+
+  // Compare each week's progress with the previous one
+  const comparisons = weeks.slice(1).map((week, i) => ({
+    weekChange:
+      weeks[i].kilometers === 0
+        ? 0
+        : Math.round(
+            ((week.kilometers - weeks[i].kilometers) / weeks[i].kilometers) *
+              100
+          ),
+    activeDaysChange: week.activeDays - weeks[i].activeDays,
+  }));
 
   return {
     weeks,
     allSports: Array.from(allSports),
-    comparisons: weeks.slice(1).map((week, i) => ({
-      weekChange:
-        weeks[i].kilometers === 0
-          ? 0
-          : Math.round(
-              ((week.kilometers - weeks[i].kilometers) / weeks[i].kilometers) *
-                100
-            ),
-      activeDaysChange: week.activeDays - weeks[i].activeDays,
-    })),
+    comparisons,
   };
 };
