@@ -237,183 +237,103 @@ useEffect(() => {
       });
   }, [achievedDestinations.length, totalKm]);
 
-  // Calculate view parameters based on current progress
-  const viewParams = useMemo(() => {
-    const currentIndex = achievedDestinations.length - 1;
+const viewParams = useMemo(() => {
+  const currentIndex = achievedDestinations.length - 1;
+  if (currentIndex < 0 || currentIndex >= routeCoordinates.length) {
+    return { center: [0, 20], zoom: 2, bearing: 0, pitch: 30 };
+  }
 
-    if (currentIndex < 0 || currentIndex >= routeCoordinates.length) {
-      // Default view if no valid current location
-      return {
-        center: [0, 20],
-        zoom: 1.5,
-        bearing: 0,
-        pitch: 30,
-      };
-    }
+  const current = routeCoordinates[currentIndex];
+  const next = routeCoordinates[currentIndex + 1];
 
-    const current = routeCoordinates[currentIndex];
-    const next = routeCoordinates[currentIndex + 1];
+  if (current && next) {
+    const centerLng =
+      (current.coordinates.longitude + next.coordinates.longitude) / 2;
+    const centerLat =
+      (current.coordinates.latitude + next.coordinates.latitude) / 2;
 
-    if (current && next) {
-      let centerLng, centerLat;
+    const distance = getDistance(
+      current.coordinates.latitude,
+      current.coordinates.longitude,
+      next.coordinates.latitude,
+      next.coordinates.longitude
+    );
 
-      // Special handling for date line crossing
-      if (
-        Math.abs(current.coordinates.longitude - next.coordinates.longitude) >
-        180
-      ) {
-        // When crossing the date line, we need a special center calculation
-        if (isPacificView) {
-          // Pacific-centered view (center around longitude 180/-180)
-          if (
-            current.coordinates.longitude > 0 &&
-            next.coordinates.longitude < 0
-          ) {
-            // Crossing from east to west (180 to -180)
-            centerLng =
-              (current.coordinates.longitude +
-                next.coordinates.longitude +
-                360) /
-              2;
-            if (centerLng > 180) centerLng -= 360;
-          } else {
-            // Crossing from west to east (-180 to 180)
-            centerLng =
-              (current.coordinates.longitude +
-                next.coordinates.longitude -
-                360) /
-              2;
-            if (centerLng < -180) centerLng += 360;
-          }
-        } else {
-          // Atlantic-centered view (center around longitude 0)
-          if (
-            current.coordinates.longitude > 0 &&
-            next.coordinates.longitude < 0
-          ) {
-            // Adjust for crossing
-            const adjustedNextLng = next.coordinates.longitude + 360;
-            centerLng = (current.coordinates.longitude + adjustedNextLng) / 2;
-            if (centerLng > 180) centerLng -= 360;
-          } else {
-            // Adjust for crossing
-            const adjustedCurrentLng = current.coordinates.longitude + 360;
-            centerLng = (adjustedCurrentLng + next.coordinates.longitude) / 2;
-            if (centerLng > 180) centerLng -= 360;
-          }
-        }
+    // Dynamic zoom based on distance (closer = more zoomed in)
+    let zoom = 4; // Default zoom level
+    if (distance < 500) zoom = 5.5;
+    if (distance < 300) zoom = 6.5;
+    if (distance < 150) zoom = 7;
+    if (distance < 50) zoom = 9;
 
-        centerLat =
-          (current.coordinates.latitude + next.coordinates.latitude) / 2;
-      } else {
-        // Normal case - no date line crossing
-        centerLng =
-          (current.coordinates.longitude + next.coordinates.longitude) / 2;
-        centerLat =
-          (current.coordinates.latitude + next.coordinates.latitude) / 2;
-      }
+    const bearing = getBearing(
+      current.coordinates.latitude,
+      current.coordinates.longitude,
+      next.coordinates.latitude,
+      next.coordinates.longitude
+    );
 
-      // Calculate the bearing between current and next
-      const bearing = getBearing(
-        current.coordinates.latitude,
-        current.coordinates.longitude,
-        next.coordinates.latitude,
-        next.coordinates.longitude
-      );
+    return { center: [centerLng, centerLat], zoom, bearing, pitch: 40 };
+  }
 
-      // Calculate appropriate zoom level based on distance
-      const distance = getDistance(
-        current.coordinates.latitude,
-        current.coordinates.longitude,
-        next.coordinates.latitude,
-        next.coordinates.longitude
-      );
+  return {
+    center: [current.coordinates.longitude, current.coordinates.latitude],
+    zoom: 5,
+    bearing: 0,
+    pitch: 30,
+  };
+}, [achievedDestinations.length]);
 
-      // Date line crossing typically means long distance, so adjust zoom accordingly
-      const zoom =
-        Math.abs(current.coordinates.longitude - next.coordinates.longitude) >
-        180
-          ? 1.5 // Wider view for date line crossing
-          : calculateZoomLevel(distance);
-
-      return {
-        center: [centerLng, centerLat],
-        zoom: zoom,
-        bearing: bearing,
-        pitch: 40,
-      };
-    } else if (current) {
-      // If at the end of journey, just center on the last city
-      return {
-        center: [current.coordinates.longitude, current.coordinates.latitude],
-        zoom: 5,
-        bearing: 0,
-        pitch: 30,
-      };
-    }
-
-    // Fallback view
-    return {
-      center: [0, 20],
-      zoom: 1.5,
-      bearing: 0,
-      pitch: 30,
-    };
-  }, [achievedDestinations.length, isPacificView]);
 
   // Update walker marker position
-  const updateWalkerMarker = useCallback(() => {
-    if (!map.current || achievedDestinations.length === 0) return;
+const updateWalkerMarker = useCallback(() => {
+  if (!map.current || achievedDestinations.length === 0) return;
 
-    const currentIndex = achievedDestinations.length - 1;
-    const currentCity = routeCoordinates[currentIndex];
+  const currentIndex = achievedDestinations.length - 1;
+  const currentCity = routeCoordinates[currentIndex];
+  if (!currentCity) return;
 
-    if (!currentCity) return;
+if (!walkerMarker.current) {
+  const el = document.createElement("div");
+  el.className = "walker-marker";
+const img = document.createElement("img");
+img.src = createWalkerIcon();
+img.style.width = "80px";
+img.style.height = "80px";
+el.appendChild(img);
 
-    // Create or update the walker marker
-    if (!walkerMarker.current) {
-      // Create a custom element for the marker
-      const el = document.createElement("div");
-      el.className = "walker-marker";
-      el.style.backgroundImage = `url(${createWalkerIcon()})`;
-      el.style.width = "42px";
-      el.style.height = "42px";
-      el.style.backgroundSize = "100%";
+  el.style.width = "80px"; // Bigger marker
+  el.style.height = "80px";
+  el.style.backgroundSize = "100%";
+  el.style.transition = "transform 1s ease-in-out";
 
-      // Create the marker
-      walkerMarker.current = new mapboxgl.Marker({
-        element: el,
-        anchor: "bottom",
-      })
-        .setLngLat([
-          currentCity.coordinates.longitude,
-          currentCity.coordinates.latitude,
-        ])
-        .addTo(map.current);
-    } else {
-      // Update the marker position
-      walkerMarker.current.setLngLat([
-        currentCity.coordinates.longitude,
-        currentCity.coordinates.latitude,
-      ]);
-    }
+  walkerMarker.current = new mapboxgl.Marker({ element: el, anchor: "bottom" })
+    .setLngLat([
+      currentCity.coordinates.longitude,
+      currentCity.coordinates.latitude,
+    ])
+    .addTo(map.current);
+} else {
+  walkerMarker.current.getElement().style.transition =
+    "transform 2s ease-in-out";
+  walkerMarker.current.setLngLat([
+    currentCity.coordinates.longitude,
+    currentCity.coordinates.latitude,
+  ]);
+}
 
-    // If we have a next city, calculate the bearing and rotate the marker
-    if (currentIndex < routeCoordinates.length - 1) {
-      const nextCity = routeCoordinates[currentIndex + 1];
-      const bearing = getBearing(
-        currentCity.coordinates.latitude,
-        currentCity.coordinates.longitude,
-        nextCity.coordinates.latitude,
-        nextCity.coordinates.longitude
-      );
 
-      // Rotate the marker to face the direction of travel
-      if (walkerMarker.current.getElement()) {
-        walkerMarker.current.getElement().style.transform = `translate(-50%, -50%) rotate(${bearing}deg)`;
-      }
-    }
-  }, [achievedDestinations.length]);
+  // Rotate walker based on direction
+  if (currentIndex < routeCoordinates.length - 1) {
+    const nextCity = routeCoordinates[currentIndex + 1];
+    const bearing = getBearing(
+      currentCity.coordinates.latitude, currentCity.coordinates.longitude,
+      nextCity.coordinates.latitude, nextCity.coordinates.longitude
+    );
+walkerMarker.current.getElement().style.transform = `rotate(${bearing}deg)`;
+  }
+}, [achievedDestinations.length]);
+
   // Function to calculate the total distance of the entire route
   const calculateTotalRouteDistance = () => {
     let totalDistance = 0;
@@ -434,6 +354,8 @@ useEffect(() => {
 
     return Math.round(totalDistance);
   };
+
+  
 //voi po
   useEffect(() => {
     const totalRouteDistance = calculateTotalRouteDistance();
@@ -490,314 +412,159 @@ useEffect(() => {
   }, [routeGeoJSON, cityFeatures, viewParams, mapReady, updateWalkerMarker]);
 
   // Initialize map
-  useEffect(() => {
-mapboxgl.accessToken =
-  "pk.eyJ1Ijoiem9rYWFzIiwiYSI6ImNtNnA2bmRubzA0ZDQya3NhZmk3bWQzMG8ifQ.Ej3pG0ieo8JRm-a46W9WGA";
-    if (map.current || !mapContainer.current) return;
+useEffect(() => {
+  mapboxgl.accessToken =
+    "pk.eyJ1Ijoiem9rYWFzIiwiYSI6ImNtNnA2bmRubzA0ZDQya3NhZmk3bWQzMG8ifQ.Ej3pG0ieo8JRm-a46W9WGA";
+  if (map.current || !mapContainer.current) return;
 
-    // Use a lighter map style with less prominent date line
-    // Always use the light theme
-    const mapStyle = "mapbox://styles/mapbox/light-v11"; // Light, clean style
+  const mapStyle = "mapbox://styles/mapbox/light-v11";
 
-    // Create the map instance
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: mapStyle,
-      center: viewParams.center as [number, number],
-      zoom: Math.min(viewParams.zoom, 3),
-      bearing: 0,
-      pitch: 0,
-      projection: { name: "mercator" }, // Better date line handling
-      attributionControl: false,
-      dragRotate: false,
+  map.current = new mapboxgl.Map({
+    container: mapContainer.current,
+    style: mapStyle,
+    center: viewParams.center as [number, number],
+    zoom: Math.min(viewParams.zoom, 3),
+    bearing: 0,
+    pitch: 0,
+    projection: { name: "mercator" },
+    attributionControl: false,
+    dragRotate: false,
+  });
+
+  map.current.addControl(new mapboxgl.AttributionControl(), "bottom-left");
+  map.current.addControl(
+    new mapboxgl.NavigationControl({
+      showCompass: true,
+      showZoom: true,
+      visualizePitch: true,
+    }),
+    "top-right"
+  );
+  map.current.addControl(
+    new mapboxgl.ScaleControl({ maxWidth: 100, unit: "metric" }),
+    "bottom-right"
+  );
+
+  const mapInstance = map.current;
+
+  mapInstance.on("load", () => {
+    mapInstance.addSource("completed-route", {
+      type: "geojson",
+      data: routeGeoJSON.completed,
+    });
+    mapInstance.addSource("upcoming-route", {
+      type: "geojson",
+      data: routeGeoJSON.upcoming,
+    });
+    mapInstance.addSource("cities", {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: cityFeatures },
     });
 
-    // Add attribution in a better position
-    map.current.addControl(new mapboxgl.AttributionControl(), "bottom-left");
-
-    // Add navigation controls
-    map.current.addControl(
-      new mapboxgl.NavigationControl({
-        showCompass: true,
-        showZoom: true,
-        visualizePitch: true,
-      }),
-      "top-right"
-    );
-
-    // Add scale
-    map.current.addControl(
-      new mapboxgl.ScaleControl({
-        maxWidth: 100,
-        unit: "metric",
-      }),
-      "bottom-right"
-    );
-
-    const mapInstance = map.current;
-
-    // When map is loaded, add the data layers
-    mapInstance.on("load", () => {
-      // Add sources
-      mapInstance.addSource("completed-route", {
-        type: "geojson",
-        data: routeGeoJSON.completed,
-      });
-
-      mapInstance.addSource("upcoming-route", {
-        type: "geojson",
-        data: routeGeoJSON.upcoming,
-      });
-
-      // Add city markers source
-      mapInstance.addSource("cities", {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: cityFeatures,
-        },
-      });
-
-      // Add glow effect for the completed route
-      mapInstance.addLayer({
-        id: "completed-route-glow",
-        type: "line",
-        source: "completed-route",
-        layout: {
-          "line-join": "round",
-          "line-cap": "round",
-        },
-        paint: {
-          "line-color": "#ff8a80",
-          "line-width": 6,
-          "line-opacity": 0.6,
-          "line-blur": 3,
-        },
-      });
-
-      // Add the main completed route
-      mapInstance.addLayer({
-        id: "completed-route-line",
-        type: "line",
-        source: "completed-route",
-        layout: {
-          "line-join": "round",
-          "line-cap": "round",
-        },
-        paint: {
-          "line-color": "#ff4d4d",
-          "line-width": 3,
-        },
-      });
-
-      // Add the upcoming route
-      mapInstance.addLayer({
-        id: "upcoming-route-line",
-        type: "line",
-        source: "upcoming-route",
-        layout: {
-          "line-join": "round",
-          "line-cap": "round",
-        },
-        paint: {
-          "line-color": "#c0c0c0",
-          "line-width": 2,
-          "line-dasharray": [2, 1],
-        },
-      });
-
-      // Add city markers glow effect
-      mapInstance.addLayer({
-        id: "city-marker-glow",
-        type: "circle",
-        source: "cities",
-        paint: {
-          "circle-radius": [
-            "case",
-            ["==", ["get", "status"], "current"],
-            16,
-            ["==", ["get", "status"], "next"],
-            12,
-            ["==", ["get", "status"], "visited"],
-            6,
-            6, // default for future cities
-          ],
-          "circle-color": [
-            "case",
-            ["==", ["get", "status"], "current"],
-            "#e91e63",
-            ["==", ["get", "status"], "next"],
-            "#2196f3",
-            ["==", ["get", "status"], "visited"],
-            "#5e35b1",
-            "#757575", // default for future cities
-          ],
-          "circle-opacity": 0.2,
-          "circle-blur": 1,
-        },
-      });
-
-      // Add city markers
-      mapInstance.addLayer({
-        id: "city-markers",
-        type: "circle",
-        source: "cities",
-        paint: {
-          "circle-radius": [
-            "case",
-            ["==", ["get", "status"], "current"],
-            8,
-            ["==", ["get", "status"], "next"],
-            6,
-            ["==", ["get", "status"], "visited"],
-            4,
-            3, // default for future cities
-          ],
-          "circle-color": [
-            "case",
-            ["==", ["get", "status"], "current"],
-            "#e91e63",
-            ["==", ["get", "status"], "next"],
-            "#2196f3",
-            ["==", ["get", "status"], "visited"],
-            "#5e35b1",
-            "#757575", // default for future cities
-          ],
-          "circle-stroke-width": 2,
-          "circle-stroke-color": "#ffffff",
-        },
-      });
-
-      // Add city labels layer
-      mapInstance.addLayer({
-        id: "city-labels",
-        type: "symbol",
-        source: "cities",
-        layout: {
-          "text-field": ["get", "name"],
-          "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-          "text-size": [
-            "case",
-            ["==", ["get", "status"], "current"],
-            14,
-            ["==", ["get", "status"], "next"],
-            14,
-            12,
-          ],
-          "text-offset": [0, -1.5],
-          "text-anchor": "bottom",
-          "text-allow-overlap": false,
-          "text-ignore-placement": false,
-          "text-optional": true,
-          "symbol-sort-key": [
-            "case",
-            ["==", ["get", "status"], "current"],
-            1,
-            ["==", ["get", "status"], "next"],
-            2,
-            ["==", ["get", "status"], "visited"],
-            3,
-            4, // Future cities have lowest priority
-          ],
-        },
-        paint: {
-          "text-color": [
-            "case",
-            ["==", ["get", "status"], "current"],
-            "#e91e63",
-            ["==", ["get", "status"], "next"],
-            "#2196f3",
-            ["==", ["get", "status"], "visited"],
-            "#5e35b1",
-            "#757575",
-          ],
-          "text-halo-color": "#ffffff",
-          "text-halo-width": 1.5,
-        },
-      });
-
-      // Add popup interaction for cities
-      const popup = new mapboxgl.Popup({
-        closeButton: false,
-        closeOnClick: false,
-        offset: 10,
-        className: "city-popup",
-      });
-
-      // Add mouse events for showing city popups
-      mapInstance.on("mouseenter", "city-markers", (e) => {
-        mapInstance.getCanvas().style.cursor = "pointer";
-
-        if (
-          e.features &&
-          e.features[0] &&
-          e.features[0].geometry.type === "Point"
-        ) {
-          const coords = e.features[0].geometry.coordinates.slice() as [
-            number,
-            number
-          ];
-          const properties = e.features[0].properties;
-
-          if (properties) {
-            const status = properties.status;
-            let statusText = "";
-
-            if (status === "current") {
-            //   // Show distance to next for current location
-            //   statusText = properties.distanceToNext
-            //     // ? `Current Location • ${properties.distanceToNext} km to next`
-            //     // : "Current Location";
-            } else if (status === "next") {
-              statusText = "Next Destination";
-            } else if (status === "visited") {
-            //   // Show visit date for visited cities
-            //   statusText = properties.visitDate
-            //     ? `Visited on ${properties.visitDate}`
-            //     : "Visited";
-            } else {
-              statusText = "Future Destination";
-            }
-
-            const popupContent = `
-              <div class="popup-city-name">${properties.name}</div>
-              <div class="popup-city-status">${statusText}</div>
-            `;
-
-            popup.setLngLat(coords).setHTML(popupContent).addTo(mapInstance);
-          }
-        }
-      });
-
-      // Remove popup when mouse leaves the marker
-      mapInstance.on("mouseleave", "city-markers", () => {
-        mapInstance.getCanvas().style.cursor = "";
-        popup.remove();
-      });
-
-      // Add the walking character marker
-      updateWalkerMarker();
-
-      // Mark the map as ready
-      setMapReady(true);
+    mapInstance.addLayer({
+      id: "completed-route-glow",
+      type: "line",
+      source: "completed-route",
+      layout: { "line-join": "round", "line-cap": "round" },
+      paint: {
+        "line-color": "#f7c850", // Vibrant Lemon Yellow
+        "line-width": 6,
+        "line-opacity": 0.7,
+        "line-blur": 3,
+      },
     });
 
-    // Add resize handler
-    const resizeHandler = () => {
-      if (map.current) {
-        map.current.resize();
-      }
-    };
+    mapInstance.addLayer({
+      id: "completed-route-line",
+      type: "line",
+      source: "completed-route",
+      layout: { "line-join": "round", "line-cap": "round" },
+      paint: {
+        "line-color": "#1c2d69", // Deep Blue
+        "line-width": 3,
+      },
+    });
 
-    window.addEventListener("resize", resizeHandler);
+    mapInstance.addLayer({
+      id: "upcoming-route-line",
+      type: "line",
+      source: "upcoming-route",
+      layout: { "line-join": "round", "line-cap": "round" },
+      paint: {
+        "line-color": "#8a8a8a", // Soft Shadow Gray
+        "line-width": 2,
+        "line-dasharray": [2, 1],
+      },
+    });
 
-    return () => {
-      window.removeEventListener("resize", resizeHandler);
-      if (mapInstance) {
-        mapInstance.remove();
-      }
-    };
-  }, []);
+    mapInstance.addLayer({
+      id: "city-markers",
+      type: "circle",
+      source: "cities",
+      paint: {
+        "circle-radius": [
+          "case",
+          ["==", ["get", "status"], "current"],
+          8,
+          ["==", ["get", "status"], "next"],
+          6,
+          ["==", ["get", "status"], "visited"],
+          4,
+          3,
+        ],
+        "circle-color": [
+          "case",
+          ["==", ["get", "status"], "current"],
+          "#4ea26e", // Mint Green
+          ["==", ["get", "status"], "next"],
+          "#f7c850", // Vibrant Lemon Yellow
+          ["==", ["get", "status"], "visited"],
+          "#1c2d69", // Deep Blue
+          "#8a8a8a", // Soft Shadow Gray
+        ],
+        "circle-stroke-width": 2,
+        "circle-stroke-color": "#ffffff",
+      },
+    });
+
+    mapInstance.addLayer({
+      id: "city-labels",
+      type: "symbol",
+      source: "cities",
+      layout: {
+        "text-field": ["get", "name"],
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-size": 12,
+        "text-offset": [0, -1.5],
+        "text-anchor": "bottom",
+      },
+      paint: {
+        "text-color": "#1c2d69", // Deep Blue
+        "text-halo-color": "#ffffff",
+        "text-halo-width": 1.5,
+      },
+    });
+
+    updateWalkerMarker();
+    setMapReady(true);
+  });
+
+  const resizeHandler = () => {
+    if (map.current) {
+      map.current.resize();
+    }
+  };
+
+  window.addEventListener("resize", resizeHandler);
+
+  return () => {
+    window.removeEventListener("resize", resizeHandler);
+    if (mapInstance) {
+      mapInstance.remove();
+    }
+  };
+}, []);
+
 
   // Update map when data changes
   useEffect(() => {

@@ -22,3 +22,9 @@
   padding: 10px 15px;
   border-radius: 6px;
 }
+
+.walker-marker {
+  position: absolute;
+  z-index: 1000; /* Ensure it's above other elements */
+}
+
