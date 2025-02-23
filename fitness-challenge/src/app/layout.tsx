@@ -16,7 +16,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         {/* ✅ Force browser to reload favicon */}
-        <link rel="icon" type="image/png" href="/favicon-new.ico?v=3" />
+        <link rel="icon" type="image/png" href="/favicon.ico?v=2" />
         <meta
           httpEquiv="Cache-Control"
           content="no-cache, no-store, must-revalidate"
