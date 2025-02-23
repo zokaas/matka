@@ -26,10 +26,10 @@ export const getWeekTopSports = (users: User[]) => {
   );
 
   // Count occurrences of each sport
-  const sportCounts = weekActivities.reduce((acc, activity) => {
-    acc[activity.activity] = (acc[activity.activity] || 0) + 1;
-    return acc;
-  }, {});
+const sportCounts = weekActivities.reduce<Record<string, number>>((acc, activity) => {
+  acc[activity.activity] = (acc[activity.activity] || 0) + 1;
+  return acc;
+}, {});
 
   if (Object.keys(sportCounts).length === 0) return null;
 
