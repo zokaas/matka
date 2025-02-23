@@ -41,7 +41,7 @@ export default function Quotes() {
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
-        <p className="italic text-gray-700 text-lg">❝ {quote} ❞</p>
+        <p className="italic text-gray-700 text-lg">{quote}</p>
       )}
     </section>
   );
