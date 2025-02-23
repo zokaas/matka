@@ -84,7 +84,6 @@ export default function QuickAccess() {
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8">
       {/* Progress Bar */}
-      <section className="bg-white p-4 rounded-lg shadow text-center">
         {/* Header Section */}
         <motion.header
           className="p-4 rounded-lg text-center shadow"
@@ -98,10 +97,12 @@ export default function QuickAccess() {
             transition={{ repeat: Infinity, duration: 2 }}
           >
             {motivationalMessage}
+
           </motion.div>
+<div>
           <Map totalKm={totalKm} />
+</div>
         </motion.header>
-      </section>
       {/* Toggle Buttons */}
       <div className="flex justify-center">
         <div className="inline-flex rounded-md shadow" role="group">
