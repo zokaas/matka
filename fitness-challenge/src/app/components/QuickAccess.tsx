@@ -99,10 +99,11 @@ export default function QuickAccess() {
             {motivationalMessage}
 
           </motion.div>
+        </motion.header>
+
 <div>
           <Map totalKm={totalKm} />
 </div>
-        </motion.header>
       {/* Toggle Buttons */}
       <div className="flex justify-center">
         <div className="inline-flex rounded-md shadow" role="group">
