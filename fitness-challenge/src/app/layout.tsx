@@ -14,6 +14,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        {/* ✅ Force browser to reload favicon */}
+        <link rel="icon" type="image/png" href="/favicon.ico?v=2" />
+        <meta
+          httpEquiv="Cache-Control"
+          content="no-cache, no-store, must-revalidate"
+        />
+        <meta httpEquiv="Pragma" content="no-cache" />
+        <meta httpEquiv="Expires" content="0" />
+      </head>
       <body className="antialiased">
         <NavBar />
         {children}
