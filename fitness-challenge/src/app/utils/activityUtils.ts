@@ -2,7 +2,7 @@ import { User } from "@/app/types/types";
 import { differenceInDays } from "date-fns";
 
 // 🔥 Get Week's Most Popular Sport
-export const getWeekTopSports = (users) => {
+export const getWeekTopSports = (users: User[]) => {
   const today = new Date();
   
   // Calculate the most recent Monday
