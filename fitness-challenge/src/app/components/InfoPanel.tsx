@@ -21,7 +21,9 @@ const InfoPanel = ({
       <ProgressBar progressPercentage={progressPercentage} />
 
       <div style={styles.distanceInfo}>
-        <span style={styles.distance}>{totalKm.toLocaleString()} km</span>
+        <span style={styles.distance}>
+  {totalKm.toLocaleString(undefined, { maximumFractionDigits: 0 })} km
+</span>
         <span style={styles.percentage}>{progressPercentage.toFixed(1)}%</span>
       </div>
 
