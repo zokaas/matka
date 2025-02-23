@@ -99,27 +99,9 @@ export default function QuickAccess() {
           >
             {motivationalMessage}
           </motion.div>
-
-          <div className="relative mt-4">
-            <div className="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
-              <motion.div
-                className="h-6 bg-gradient-to-r from-purple-500 to-purple-500 rounded-full"
-                style={{ width: `${progress}%` }}
-                animate={{ width: `${progress}%` }}
-                transition={{ duration: 1 }}
-              ></motion.div>
-            </div>
-            <p className="mt-2 text-gray-600">
-              {Math.round(totalKm).toLocaleString("en").replace(/,/g, " ")} /{" "}
-              {TOTAL_GOAL.toLocaleString("en").replace(/,/g, " ")} km (
-              {Math.round(progress)}%)
-            </p>
-          </div>
+          <Map totalKm={totalKm} />
         </motion.header>
       </section>
-      <div>
-          <Map totalKm={totalKm} />
-      </div>
       {/* Toggle Buttons */}
       <div className="flex justify-center">
         <div className="inline-flex rounded-md shadow" role="group">
