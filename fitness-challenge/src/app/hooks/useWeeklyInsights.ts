@@ -42,10 +42,12 @@ export const useWeeklyInsights = (users: User[], targetPaces: TargetPaces) => {
         weeklyGoal > 0 ? Math.round((weeklyProgress / weeklyGoal) * 100) : 0;
 
       const remainingWeeklyDistance = Math.max(0, weeklyGoal - weeklyProgress);
-      const dailyTarget =
-        remainingWeeklyDistance > 0
-          ? Math.round(remainingWeeklyDistance / daysRemaining)
-          : 0;
+const dailyTarget =
+  remainingWeeklyDistance > 0
+    ? daysRemaining > 0
+      ? Math.round(remainingWeeklyDistance / daysRemaining)
+      : remainingWeeklyDistance // If last day of the week, show total remaining
+    : 0;
 
       // Calculate daily progress (optional, can adjust if needed)
       const dailyProgress =
