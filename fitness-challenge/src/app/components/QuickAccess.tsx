@@ -118,13 +118,7 @@ export default function QuickAccess() {
         </motion.header>
       </section>
       <div>
-        {totalKm >= 21000 ? (
           <Map totalKm={totalKm} />
-        ) : (
-          <div className="text-center font-bold text-purple-500">
-            🔒 KARTTA PALJASTUU KUN KASASSA ON 21 000km! 🔒
-          </div>
-        )}
       </div>
       {/* Toggle Buttons */}
       <div className="flex justify-center">
