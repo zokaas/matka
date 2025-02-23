@@ -16,7 +16,8 @@ export default function RootLayout({
     <html lang="en">
       <head>
         {/* ✅ Force browser to reload favicon */}
-        <link rel="icon" type="image/png" href="public/favicon.ico?v=2" />
+        <link rel="icon" href="/favicon.ico?v=2" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
         <meta
           httpEquiv="Cache-Control"
           content="no-cache, no-store, must-revalidate"
