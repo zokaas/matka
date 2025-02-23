@@ -7,6 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import ConfirmationModal from "@/app/components/ConfirmationModal";
 import Pagination from "@/app/components/Pagination";
+import SubmitQuote from "@/app/components/SubmitQuote";
 
 interface Activity {
   id: number;
@@ -431,6 +432,7 @@ const startEdit = (activity: Activity) => {
           />
         </div>
       )}
+            <SubmitQuote />
     </div>
   );
 };

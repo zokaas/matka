@@ -6,6 +6,8 @@ import { AppService } from './app.service';
 import { Users } from './user.entity';
 import { Activity } from './activity.entity';
 import { ProgressController } from './progress.controller';
+import { Quote } from './quote.entity';
+import { QuoteController } from './quote.controller';
 
 @Module({
   imports: [
@@ -18,16 +20,16 @@ import { ProgressController } from './progress.controller';
         url: configService.get<string>('DATABASE_URL'),
         autoLoadEntities: true,
         synchronize: true,
-              logging: true,
-      logger: 'advanced-console', // Set to false in production
+        logging: true,
+        logger: 'advanced-console', // Set to false in production
         ssl: {
           rejectUnauthorized: false, // Required for Neon.tech
         },
       }),
     }),
-    TypeOrmModule.forFeature([Users, Activity]),
+    TypeOrmModule.forFeature([Users, Activity, Quote]),
   ],
-    controllers: [AppController, ProgressController], // Ensure your controllers are registered
+  controllers: [AppController, ProgressController, QuoteController], // Ensure your controllers are registered
   providers: [AppService],
 })
 export class AppModule {}

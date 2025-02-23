@@ -10,6 +10,8 @@ import Map from "./Map";
 import { useTargetPaces } from "@/app/hooks/useTargetPaces";
 import { useWeeklyInsights } from "@/app/hooks/useWeeklyInsights";
 import { User } from "@/app/types/types";
+import SubmitQuote from "./SubmitQuote";
+import Quotes from "./Quotes";
 
 const TOTAL_GOAL = 100000; // Total goal in kilometers
 const MOTIVATIONAL_MESSAGES = [
@@ -83,26 +85,25 @@ export default function QuickAccess() {
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8">
-        {/* Header Section */}
-        <motion.header
-          className="p-4 rounded-lg text-center"
-          animate={{ opacity: [0, 1], y: [-20, 0] }}
-          transition={{ duration: 1 }}
+      {/* Header Section */}
+      <motion.header
+        className="p-4 rounded-lg text-center"
+        animate={{ opacity: [0, 1], y: [-20, 0] }}
+        transition={{ duration: 1 }}
+      >
+        <h1 className="text-2xl font-bold text-purple-600">PETOLLISET🔥</h1>
+        <motion.div
+          className="mt-4 text-lg font-bold text-purple-500"
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ repeat: Infinity, duration: 2 }}
         >
-          <h1 className="text-2xl font-bold text-purple-600">PETOLLISET🔥</h1>
-          <motion.div
-            className="mt-4 text-lg font-bold text-purple-500"
-            animate={{ scale: [1, 1.1, 1] }}
-            transition={{ repeat: Infinity, duration: 2 }}
-          >
-            {motivationalMessage}
+          <Quotes />
+        </motion.div>
+      </motion.header>
 
-          </motion.div>
-        </motion.header>
-
-<div>
-          <Map totalKm={totalKm} />
-</div>
+      <div>
+        <Map totalKm={totalKm} />
+      </div>
       {/* Toggle Buttons */}
       <div className="flex justify-center">
         <div className="inline-flex rounded-md shadow" role="group">
@@ -319,6 +320,7 @@ export default function QuickAccess() {
           </div>
         </section>
       )}
+      <SubmitQuote />
     </div>
   );
 }

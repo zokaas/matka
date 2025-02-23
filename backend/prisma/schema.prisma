@@ -24,3 +24,8 @@ model Activity {
   user       User     @relation(fields: [userId], references: [id])
   bonus      String?  // Can be NULL or one of the predefined values
 }
+
+model Quote {
+  id   Int    @id @default(autoincrement())
+  text String
+}
