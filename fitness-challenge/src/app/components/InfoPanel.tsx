@@ -24,7 +24,7 @@ const InfoPanel = ({
         <span style={styles.distance}>
   {totalKm.toLocaleString(undefined, { maximumFractionDigits: 0 })} km
 </span>
-        <span style={styles.percentage}>{progressPercentage.toFixed(1)}%</span>
+        <span style={styles.percentage}>{progressPercentage.toFixed(0)}%</span>
       </div>
 
       <div style={styles.divider} />
