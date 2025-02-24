@@ -1,4 +1,13 @@
-const styles: { [key: string]: React.CSSProperties } = {
+import React from "react";
+
+// Define a type that allows media queries
+type CSSStylesWithMediaQueries = React.CSSProperties & {
+  "@media"?: {
+    [key: string]: React.CSSProperties;
+  };
+};
+
+const styles: { [key: string]: CSSStylesWithMediaQueries } = {
   pageContainer: {
     position: "relative",
     width: "100%",
@@ -11,111 +20,172 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   infoPanel: {
     position: "absolute",
-    top: "20px",
-    left: "20px",
+    top: "12px",
+    left: "12px",
     background: "white",
-    padding: "16px",
-    borderRadius: "8px",
-    fontSize: "14px",
-    width: "280px",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    padding: "12px",
+    borderRadius: "10px",
+    fontSize: "12px",
+    width: "220px",
+    maxWidth: "calc(100vw - 24px)",
+    boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
     zIndex: 1000,
-  },
-  viewToggleButton: {
-    position: "absolute",
-    top: "20px",
-    right: "100px",
-    background: "white",
-    border: "1px solid #ddd",
-    borderRadius: "4px",
-    padding: "8px 12px",
-    fontSize: "14px",
-    cursor: "pointer",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-    zIndex: 1000,
+    transition: "all 0.3s ease",
+    "@media": {
+      "(max-width: 600px)": {
+        width: "calc(100% - 24px)",
+        maxHeight: "50vh",
+        overflowY: "auto",
+        fontSize: "11px",
+        padding: "10px",
+        left: "12px",
+        right: "12px",
+      },
+      "(max-width: 375px)": {
+        fontSize: "10px",
+        padding: "8px",
+      },
+    },
   },
   progressBarContainer: {
     width: "100%",
-    height: "6px",
+    height: "3px",
     backgroundColor: "#f0f0f0",
-    borderRadius: "3px",
-    marginBottom: "10px",
+    borderRadius: "2px",
+    marginBottom: "6px",
     overflow: "hidden",
   },
   progressBar: {
     height: "100%",
-    borderRadius: "3px",
+    borderRadius: "2px",
     transition: "width 0.5s ease-in-out",
+    backgroundColor: "#2196f3",
   },
   distanceInfo: {
     display: "flex",
     alignItems: "baseline",
     justifyContent: "space-between",
-    marginBottom: "5px",
+    marginBottom: "2px",
+    marginTop: "4px",
+    "@media": {
+      "(max-width: 600px)": {
+        // Mobile-specific adjustments if needed
+      },
+    },
   },
   distance: {
     fontSize: "18px",
-    fontWeight: "600",
-  },
-  totalDistance: {
-    fontSize: "14px",
-    color: "#666",
-    marginLeft: "5px",
+    fontWeight: "700",
+    color: "#1a1a1a",
+    "@media": {
+      "(max-width: 600px)": {
+        fontSize: "16px",
+      },
+      "(max-width: 375px)": {
+        fontSize: "14px",
+      },
+    },
   },
   percentage: {
     fontSize: "14px",
-    fontWeight: "500",
+    fontWeight: "600",
+    color: "#2196f3",
+    "@media": {
+      "(max-width: 600px)": {
+        fontSize: "12px",
+      },
+    },
   },
   divider: {
     height: "1px",
-    backgroundColor: "#eee",
+    background: "linear-gradient(to right, #f0f0f0, #e0e0e0, #f0f0f0)",
     width: "100%",
-    margin: "15px 0",
+    margin: "10px 0",
   },
   locationInfo: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "15px",
+    marginTop: "2px",
   },
   locationLabel: {
-    fontSize: "12px",
+    fontSize: "10px",
     color: "#666",
-    marginBottom: "4px",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+    marginBottom: "3px",
+    fontWeight: "500",
+    "@media": {
+      "(max-width: 375px)": {
+        fontSize: "9px",
+      },
+    },
   },
   currentCity: {
     fontSize: "16px",
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#e91e63",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
+    marginBottom: "6px",
+    "@media": {
+      "(max-width: 600px)": {
+        fontSize: "14px",
+      },
+    },
+  },
+  routeInfo: {
+    marginBottom: "10px",
   },
   distanceToNext: {
     fontSize: "12px",
     color: "#666",
-    marginTop: "4px",
-    fontStyle: "italic",
+    fontWeight: "500",
+    "@media": {
+      "(max-width: 375px)": {
+        fontSize: "10px",
+      },
+    },
   },
-  nextLocationContainer: {
-    marginTop: "5px",
+  nextDestination: {
+    marginTop: "2px",
   },
   nextCity: {
     fontSize: "16px",
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#2196f3",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
+    "@media": {
+      "(max-width: 600px)": {
+        fontSize: "14px",
+      },
+    },
   },
   completedBadge: {
     backgroundColor: "#e8f5e9",
     color: "#2e7d32",
-    padding: "8px 12px",
-    borderRadius: "4px",
-    fontSize: "14px",
-    fontWeight: "500",
+    padding: "8px",
+    borderRadius: "6px",
+    fontSize: "13px",
+    fontWeight: "600",
     textAlign: "center",
-    marginTop: "15px",
+    marginTop: "12px",
+    boxShadow: "0 2px 6px rgba(46, 125, 50, 0.1)",
+    "@media": {
+      "(max-width: 600px)": {
+        fontSize: "11px",
+        padding: "6px",
+      },
+    },
+  },
+  navigationControl: {
+    position: "absolute",
+    top: "12px",
+    right: "12px",
+    zIndex: 1000,
+    "@media": {
+      "(max-width: 600px)": {
+        top: "8px",
+        right: "8px",
+      },
+    },
+  },
+  scaleControl: {
+    maxWidth: "80px",
   },
 };
 

@@ -15,8 +15,6 @@ import { calculateVisitDate, calculateZoomLevel } from "../utils/progressUtils";
 import InfoPanel from "./InfoPanel";
 import { createWalkerIcon } from "./WalkerIcon";
 
-
-
 const processLineStringCoordinates = (
   coordinates: [number, number][]
 ): [number, number][] => {
@@ -66,14 +64,38 @@ export default function Map({ totalKm }: { totalKm: number }) {
   const [showMap, setShowMap] = useState(true);
 
   // Calculate progress and achieved destinations
-  const { progressPercentage, achievedDestinations } = useMemo(() => {
-    const progress = (totalKm / 100000) * 100;
-    const achieved = routeCoordinates.slice(
-      0,
-      Math.ceil((progress / 100) * routeCoordinates.length)
+const { progressPercentage, achievedDestinations } = useMemo(() => {
+  const progress = (totalKm / 100000) * 100;
+  
+  // Calculate actual achieved cities based on distance
+  let distanceCovered = 0;
+  const achievedCities = [];
+  
+  for (let i = 0; i < routeCoordinates.length - 1; i++) {
+    const current = routeCoordinates[i];
+    const next = routeCoordinates[i + 1];
+    
+    achievedCities.push(current);
+    
+    const segmentDistance = getDistance(
+      current.coordinates.latitude,
+      current.coordinates.longitude,
+      next.coordinates.latitude,
+      next.coordinates.longitude
     );
-    return { progressPercentage: progress, achievedDestinations: achieved };
-  }, [totalKm]);
+    
+    distanceCovered += segmentDistance;
+    
+    if (distanceCovered > totalKm) {
+      break;
+    }
+  }
+  
+  return { 
+    progressPercentage: progress, 
+    achievedDestinations: achievedCities 
+  };
+}, [totalKm]);
 
 useEffect(() => {
   if (totalKm > 1000) {
@@ -81,41 +103,62 @@ useEffect(() => {
   }
 }, [totalKm]);
   // Find current and next city, and calculate distance to next
-  useEffect(() => {
-    if (achievedDestinations.length > 0) {
-      const current = achievedDestinations[achievedDestinations.length - 1];
-      const next = routeCoordinates[achievedDestinations.length];
+useEffect(() => {
+  if (achievedDestinations.length > 0) {
+    const current = achievedDestinations[achievedDestinations.length - 1];
+    const next = routeCoordinates[achievedDestinations.length];
 
-      setCurrentCity(current?.city || "Unknown");
-      setNextCity(next?.city || "Journey Complete 🎉");
+    setCurrentCity(current?.city || "?");
+    setNextCity(next?.city || "Journey Complete 🎉");
 
-      // Calculate distance to next destination
-      if (current && next) {
-        const distance = getDistance(
-          current.coordinates.latitude,
-          current.coordinates.longitude,
-          next.coordinates.latitude,
-          next.coordinates.longitude
+    if (current && next) {
+      // Get the index of current city
+      const currentIndex = routeCoordinates.findIndex(
+        (city) => city.city === current.city
+      );
+
+      // Calculate distance up to current segment
+      let distanceToCurrent = 0;
+      for (let i = 0; i < currentIndex; i++) {
+        const segStart = routeCoordinates[i];
+        const segEnd = routeCoordinates[i + 1];
+        distanceToCurrent += getDistance(
+          segStart.coordinates.latitude,
+          segStart.coordinates.longitude,
+          segEnd.coordinates.latitude,
+          segEnd.coordinates.longitude
         );
-        setDistanceToNext(Math.round(distance));
-
-        // Check if we're crossing the Pacific Ocean
-        const isNearDateLine =
-          (current.coordinates.longitude > 140 ||
-            current.coordinates.longitude < -140) &&
-          (next.coordinates.longitude > 140 ||
-            next.coordinates.longitude < -140);
-
-        if (isNearDateLine) {
-          setIsPacificView(true);
-        } else {
-          setIsPacificView(false);
-        }
-      } else {
-        setDistanceToNext(null);
       }
+
+      // Calculate total distance of current segment
+      const currentSegmentDistance = getDistance(
+        current.coordinates.latitude,
+        current.coordinates.longitude,
+        next.coordinates.latitude,
+        next.coordinates.longitude
+      );
+
+      // Calculate progress within current segment
+      const progressInCurrentSegment = Math.max(0, totalKm - distanceToCurrent);
+
+      // Calculate remaining distance
+      const remainingDistance = Math.max(
+        0,
+        currentSegmentDistance - progressInCurrentSegment
+      );
+
+      setDistanceToNext(Math.round(remainingDistance));
+
+      const isNearDateLine =
+        (current.coordinates.longitude > 140 ||
+          current.coordinates.longitude < -140) &&
+        (next.coordinates.longitude > 140 || next.coordinates.longitude < -140);
+      setIsPacificView(isNearDateLine);
+    } else {
+      setDistanceToNext(null);
     }
-  }, [achievedDestinations]);
+  }
+}, [achievedDestinations, totalKm]);
 
   // Convert route coordinates to GeoJSON with date line handling
   const routeGeoJSON = useMemo(() => {
@@ -175,67 +218,44 @@ useEffect(() => {
   }, [achievedDestinations.length]);
 
   // Create city marker features with visit dates and distances
-  const cityFeatures = useMemo(() => {
-    const currentIndex = achievedDestinations.length - 1;
+const cityFeatures = useMemo(() => {
+  const currentIndex = achievedDestinations.length - 1;
 
-    return routeCoordinates
-      .filter((_, index) => {
-        // Show only completed cities, current city, and next city
-        // Plus first and last of entire journey for context
-        if (index === 0 || index === routeCoordinates.length - 1) return true;
-        if (index <= currentIndex || index === currentIndex + 1) return true;
+  return routeCoordinates
+    .filter((_, index) => {
+      if (index === 0 || index === routeCoordinates.length - 1) return true;
+      if (index <= currentIndex || index === currentIndex + 1) return true;
+      return false;
+    })
+    .map((city): PointFeature => {
+      const cityIndex = routeCoordinates.findIndex((c) => c.city === city.city);
 
-        // Hide all other future destinations
-        return false;
-      })
-      .map((city): PointFeature => {
-        const cityIndex = routeCoordinates.findIndex(
-          (c) => c.city === city.city
-        );
+      let status = "future";
+      if (cityIndex === currentIndex) status = "current";
+      else if (cityIndex === currentIndex + 1) status = "next";
+      else if (cityIndex < currentIndex) status = "visited";
 
-        let status = "future";
-        if (cityIndex === currentIndex) status = "current";
-        else if (cityIndex === currentIndex + 1) status = "next";
-        else if (cityIndex < currentIndex) status = "visited";
+      const visitDate =
+        cityIndex < currentIndex
+          ? calculateVisitDate(cityIndex, currentIndex, totalKm)
+          : undefined;
 
-        // Calculate visit date for visited cities
-        const visitDate =
-          cityIndex < currentIndex
-            ? calculateVisitDate(cityIndex, currentIndex, totalKm)
-            : undefined;
+      // Remove the distance calculation from here as it's handled in the useEffect
 
-        // Calculate distance to next destination for current city
-        let distanceToNext;
-        if (status === "current" && cityIndex < routeCoordinates.length - 1) {
-          const nextCity = routeCoordinates[cityIndex + 1];
-          distanceToNext = getDistance(
-            city.coordinates.latitude,
-            city.coordinates.longitude,
-            nextCity.coordinates.latitude,
-            nextCity.coordinates.longitude
-          );
-        }
-
-        return {
-          type: "Feature",
-          properties: {
-            name: city.city,
-            status,
-            visitDate,
-            distanceToNext: distanceToNext
-              ? Math.round(distanceToNext)
-              : undefined,
-          },
-          geometry: {
-            type: "Point",
-            coordinates: [
-              city.coordinates.longitude,
-              city.coordinates.latitude,
-            ],
-          },
-        };
-      });
-  }, [achievedDestinations.length, totalKm]);
+      return {
+        type: "Feature",
+        properties: {
+          name: city.city,
+          status,
+          visitDate,
+        },
+        geometry: {
+          type: "Point",
+          coordinates: [city.coordinates.longitude, city.coordinates.latitude],
+        },
+      };
+    });
+}, [achievedDestinations.length, totalKm]);
 
 const viewParams = useMemo(() => {
   const currentIndex = achievedDestinations.length - 1;
@@ -321,7 +341,6 @@ el.appendChild(img);
     currentCity.coordinates.latitude,
   ]);
 }
-
 
   // Rotate walker based on direction
   if (currentIndex < routeCoordinates.length - 1) {
@@ -577,8 +596,8 @@ useEffect(() => {
       <InfoPanel
         totalKm={totalKm}
         progressPercentage={progressPercentage}
-        currentCity={currentCity || "Unknown"}
-        nextCity={nextCity || "Unknown"}
+        currentCity={currentCity || "?"}
+        nextCity={nextCity || "?"}
         distanceToNext={distanceToNext}
       />
     </div>

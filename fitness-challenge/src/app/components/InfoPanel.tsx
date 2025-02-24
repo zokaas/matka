@@ -1,3 +1,4 @@
+// InfoPanel.tsx
 import React from "react";
 import ProgressBar from "./ProgressBar";
 import styles from "../styles/styles";
@@ -17,41 +18,37 @@ const InfoPanel = ({
 }) => {
   return (
     <div style={styles.infoPanel}>
-
       <ProgressBar progressPercentage={progressPercentage} />
 
       <div style={styles.distanceInfo}>
         <span style={styles.distance}>
-  {totalKm.toLocaleString(undefined, { maximumFractionDigits: 0 })} km
-</span>
+          {totalKm.toLocaleString(undefined, { maximumFractionDigits: 0 })} km
+        </span>
         <span style={styles.percentage}>{progressPercentage.toFixed(0)}%</span>
       </div>
 
       <div style={styles.divider} />
 
       <div style={styles.locationInfo}>
-        <div style={styles.locationItem}>
-          <div>
-            <div style={styles.locationLabel}>Current Location</div>
-            <div style={styles.currentCity}>{currentCity}</div>
-            {/* {distanceToNext !== null && (
-              <div style={styles.distanceToNext}>
-                {distanceToNext} km to next destination
-              </div>
-            )} */}
-          </div>
-        </div>
+        <div style={styles.locationLabel}>Nykyinen sijainti</div>
+        <div style={styles.currentCity}>{currentCity}</div>
 
-        <div style={styles.locationItem}>
-          <div>
-            <div style={styles.locationLabel}>Next Destination</div>
-            <div style={styles.nextCity}>{nextCity}</div>
+        {distanceToNext !== null && (
+          <div style={styles.routeInfo}>
+            <div style={styles.distanceToNext}>
+              {distanceToNext.toLocaleString()} km seuraavaan kohteeseen
+            </div>
           </div>
+        )}
+
+        <div style={styles.nextDestination}>
+          <div style={styles.locationLabel}>Seuraava kohde</div>
+          <div style={styles.nextCity}>{nextCity}</div>
         </div>
       </div>
 
       {progressPercentage >= 100 && (
-        <div style={styles.completedBadge}>🎉 Challenge completed!</div>
+        <div style={styles.completedBadge}>🎉 Haaste suoritettu!</div>
       )}
     </div>
   );
