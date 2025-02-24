@@ -188,6 +188,13 @@ export default function Navbar() {
           >
             Etusivu
           </Link>
+          <Link
+            href="/insights"
+            className="block px-4 py-2 text-sm font-medium hover:bg-purple-800"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Tilastot
+          </Link>
           <div>
             <button
               ref={mobileDropdownButtonRef}
@@ -229,13 +236,6 @@ export default function Navbar() {
               </div>
             )}
           </div>
-          <Link
-            href="/insights"
-            className="block px-4 py-2 text-sm font-medium hover:bg-purple-800"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Tilastot
-          </Link>
         </div>
       )}
     </nav>
