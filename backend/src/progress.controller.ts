@@ -250,4 +250,25 @@ export class ProgressController {
 
     return user;
   }
+// Add this new endpoint to your ProgressController class
+
+// ✅ GET: Fetch all activities for a user (no pagination)
+@Get(':username/activities/all')
+async getAllActivities(@Param('username') username: string) {
+  const user = await this.userRepository.findOne({
+    where: { username },
+    relations: ['activities'],
+  });
+
+  if (!user) {
+    throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+  }
+
+  // Sort activities by date (newest first)
+  user.activities.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+
+  return user.activities;
+}
 }
