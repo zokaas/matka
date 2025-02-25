@@ -8,6 +8,7 @@ import Image from "next/image";
 import ConfirmationModal from "@/app/components/ConfirmationModal";
 import Pagination from "@/app/components/Pagination";
 import SubmitQuote from "@/app/components/SubmitQuote";
+import PersonalInsights from "@/app/components/PersonalInsights";
 
 interface Activity {
   id: number;
@@ -59,6 +60,26 @@ const sportsOptions = [
   "Muu(50km/h)",
 ];
 
+// Finnish translations
+const translations = {
+  back: "Takaisin etusivulle",
+  addActivity: "Lisää suoritus",
+  updateActivity: "Päivitä suoritus",
+  activityType: "Laji",
+  selectActivity: "Valitse laji",
+  specifyName: "Tarkenna laji ",
+  enterActivityName: "Kirjoita mikä laji",
+  duration: "Kesto (minuutit)",
+  date: "Päivämäärä",
+  bonus: "Bonus",
+  noBonus: "Ei bonuksia",
+  cancel: "Peruuta",
+  edit: "Muokkaa",
+  delete: "Poista",
+  userNotFound: "Käyttäjää ei löytynyt",
+  mins: "min",
+};
+
 const itemsPerPage = 10;
 
 const UserProfile = () => {
@@ -81,6 +102,8 @@ const UserProfile = () => {
   );
   const [page, setPage] = useState(1);
   const [bonus, setBonus] = useState<string | null>(null);
+  // Add state to toggle between activity form and insights
+  const [showInsights, setShowInsights] = useState(false);
 
   const backendUrl = "https://matka-zogy.onrender.com";
   const formRef = useRef<HTMLDivElement>(null);
@@ -123,101 +146,110 @@ const UserProfile = () => {
       setError((err as Error).message);
     }
   };
-const handleAddActivity = async (e: React.FormEvent) => {
-  e.preventDefault();
-  try {
-    let selectedActivity = activity;
 
-    // Ensure the activity name format is correct for "Muu"
-    if (activity.startsWith("Muu(") && customActivity) {
-      selectedActivity = `${customActivity} / ${activity}`;
-    }
+  const handleAddActivity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      let selectedActivity = activity;
 
-    const response = await fetch(`${backendUrl}/users/${username}/activities`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        activity: selectedActivity, // ✅ Store it properly
-        duration: Number(duration),
-        date,
-        bonus,
-      }),
-    });
-
-    if (!response.ok) throw new Error("Failed to add activity");
-
-    resetForm();
-    fetchUser();
-  } catch (err) {
-    setError((err as Error).message);
-  }
-};
-
-const handleUpdateActivity = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  if (!editingActivity) return;
-
-  try {
-    let selectedActivity = activity;
-
-    // Ensure correct format for custom "Muu" activities
-    if (activity.startsWith("Muu(") && customActivity) {
-      selectedActivity = `${customActivity} / ${activity}`; // Store as "Custom Name / Muu(100km/h)"
-    }
-
-    const response = await fetch(
-      `${backendUrl}/users/${username}/activities/${editingActivity.id}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          activity: selectedActivity, // ✅ Correct format
-          duration: Number(duration),
-          date,
-          bonus,
-        }),
+      // Ensure the activity name format is correct for "Muu"
+      if (activity.startsWith("Muu(") && customActivity) {
+        selectedActivity = `${customActivity} / ${activity}`;
       }
-    );
 
-    if (!response.ok) throw new Error("Failed to update activity");
+      const response = await fetch(
+        `${backendUrl}/users/${username}/activities`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            activity: selectedActivity, // ✅ Store it properly
+            duration: Number(duration),
+            date,
+            bonus,
+          }),
+        }
+      );
 
-    resetForm();
-    fetchUser();
-  } catch (err) {
-    setError((err as Error).message);
-  }
-};
+      if (!response.ok) throw new Error("Failed to add activity");
 
-const resetForm = () => {
-  setIsEditing(false);
-  setEditingActivity(null);
-  setActivity("");
-  setDuration("");
-  setDate(new Date().toISOString().split("T")[0]);
-  setBonus(null);
-};
+      resetForm();
+      fetchUser();
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  };
 
-const startEdit = (activity: Activity) => {
-  // Check if the activity is a custom "Muu" activity
-  const muuMatch = activity.activity.match(/(.*?)\s*\/\s*(Muu\(.*?\))/);
+  const handleUpdateActivity = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  if (muuMatch) {
-    // Extract custom name and "Muu" type separately
-    setCustomActivity(muuMatch[1]); // Custom part
-    setActivity(muuMatch[2]); // The base "Muu(100km/h)" or "Muu(50km/h)"
-  } else {
-    setActivity(activity.activity); // Normal activities
-    setCustomActivity(""); // Reset custom activity field
-  }
+    if (!editingActivity) return;
 
-  setEditingActivity(activity);
-  setDuration(activity.duration.toString());
-  setDate(activity.date.split("T")[0]);
-  setBonus(activity.bonus || "");
-  setIsEditing(true);
-  formRef.current?.scrollIntoView({ behavior: "smooth" });
-};
+    try {
+      let selectedActivity = activity;
+
+      // Ensure correct format for custom "Muu" activities
+      if (activity.startsWith("Muu(") && customActivity) {
+        selectedActivity = `${customActivity} / ${activity}`; // Store as "Custom Name / Muu(100km/h)"
+      }
+
+      const response = await fetch(
+        `${backendUrl}/users/${username}/activities/${editingActivity.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            activity: selectedActivity, // ✅ Correct format
+            duration: Number(duration),
+            date,
+            bonus,
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update activity");
+
+      resetForm();
+      fetchUser();
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  };
+
+  const resetForm = () => {
+    setIsEditing(false);
+    setEditingActivity(null);
+    setActivity("");
+    setDuration("");
+    setDate(new Date().toISOString().split("T")[0]);
+    setBonus(null);
+  };
+
+  const startEdit = (activity: Activity) => {
+    // Switch to activity form view if in insights view
+    if (showInsights) {
+      setShowInsights(false);
+    }
+
+    // Check if the activity is a custom "Muu" activity
+    const muuMatch = activity.activity.match(/(.*?)\s*\/\s*(Muu\(.*?\))/);
+
+    if (muuMatch) {
+      // Extract custom name and "Muu" type separately
+      setCustomActivity(muuMatch[1]); // Custom part
+      setActivity(muuMatch[2]); // The base "Muu(100km/h)" or "Muu(50km/h)"
+    } else {
+      setActivity(activity.activity); // Normal activities
+      setCustomActivity(""); // Reset custom activity field
+    }
+
+    setEditingActivity(activity);
+    setDuration(activity.duration.toString());
+    setDate(activity.date.split("T")[0]);
+    setBonus(activity.bonus || "");
+    setIsEditing(true);
+    formRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   if (loading) {
     return (
@@ -232,7 +264,11 @@ const startEdit = (activity: Activity) => {
   }
 
   if (!user) {
-    return <div className="text-center text-gray-500 p-4">User not found</div>;
+    return (
+      <div className="text-center text-gray-500 p-4">
+        {translations.userNotFound}
+      </div>
+    );
   }
 
   return (
@@ -256,110 +292,152 @@ const startEdit = (activity: Activity) => {
           </div>
         </div>
         <Link href="/" className="text-purple-500 hover:underline">
-          Back to Home
+          {translations.back}
         </Link>
       </header>
 
-      <section ref={formRef} className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-lg font-semibold mb-4">
-          {isEditing ? "Update Activity" : "Add Activity"}
-        </h2>
-        <form
-          onSubmit={isEditing ? handleUpdateActivity : handleAddActivity}
-          className="space-y-4"
-        >
-          <div>
-            <label className="block text-sm font-medium">Activity Type</label>
-            <select
-              value={activity}
-              onChange={(e) => setActivity(e.target.value)}
-              className="w-full border rounded px-4 py-2"
-              required
-            >
-              <option value="">Select an activity</option>
-              {sportsOptions.map((sport) => (
-                <option key={sport} value={sport}>
-                  {sport}
-                </option>
-              ))}
-            </select>
-          </div>
+      {/* Toggle button to switch between activity form and insights */}
+      <div className="flex justify-center">
+        <div className="bg-white rounded-full p-1 shadow inline-flex">
+          <button
+            onClick={() => setShowInsights(false)}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              !showInsights
+                ? "bg-purple-500 text-white"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            {translations.addActivity}
+          </button>
+          <button
+            onClick={() => setShowInsights(true)}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              showInsights
+                ? "bg-purple-500 text-white"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            Tilastot
+          </button>
+        </div>
+      </div>
 
-          {/* Show custom input field if "Muu(100km/h)" or "Muu(50km/h)" is selected */}
-          {(activity === "Muu(100km/h)" || activity === "Muu(50km/h)") && (
+      {/* Conditionally render the activity form or insights */}
+      {!showInsights ? (
+        <section ref={formRef} className="bg-white p-6 rounded-lg shadow">
+          <h2 className="text-lg font-semibold mb-4">
+            {isEditing ? translations.updateActivity : translations.addActivity}
+          </h2>
+          <form
+            onSubmit={isEditing ? handleUpdateActivity : handleAddActivity}
+            className="space-y-4"
+          >
             <div>
               <label className="block text-sm font-medium">
-                Specify Activity Name
+                {translations.activityType}
               </label>
-              <input
-                type="text"
-                value={customActivity}
-                onChange={(e) => setCustomActivity(e.target.value)}
+              <select
+                value={activity}
+                onChange={(e) => setActivity(e.target.value)}
                 className="w-full border rounded px-4 py-2"
                 required
-                placeholder="Enter activity name"
+              >
+                <option value="">{translations.selectActivity}</option>
+                {sportsOptions.map((sport) => (
+                  <option key={sport} value={sport}>
+                    {sport}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Show custom input field if "Muu(100km/h)" or "Muu(50km/h)" is selected */}
+            {(activity === "Muu(100km/h)" || activity === "Muu(50km/h)") && (
+              <div>
+                <label className="block text-sm font-medium">
+                  {translations.specifyName}
+                </label>
+                <input
+                  type="text"
+                  value={customActivity}
+                  onChange={(e) => setCustomActivity(e.target.value)}
+                  className="w-full border rounded px-4 py-2"
+                  required
+                  placeholder={translations.enterActivityName}
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium">
+                {translations.duration}
+              </label>
+              <input
+                type="number"
+                value={duration}
+                onChange={(e) => setDuration(e.target.value)}
+                className="w-full border rounded px-4 py-2"
+                required
               />
             </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium">
-              Duration (minutes)
-            </label>
-            <input
-              type="number"
-              value={duration}
-              onChange={(e) => setDuration(e.target.value)}
-              className="w-full border rounded px-4 py-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Date</label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full border rounded px-4 py-2"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Bonus</label>
-            <select
-              value={bonus || ""}
-              onChange={(e) => setBonus(e.target.value || null)}
-              className="w-full border rounded px-4 py-2"
-            >
-              <option value="">Ei bonuksia</option>
-              <option value="juhlapäivä">Juhlapäivä (2x km)</option>
-              <option value="enemmän kuin kolme urheilee yhdessä">
-                Enemmän kuin kolme urheilee yhdessä (1.5x km)
-              </option>
-              <option value="kaikki yhdessä">Kaikki yhdessä (3x km)</option>
-            </select>
-          </div>
-
-          <div className="flex justify-between items-center space-x-4">
-            {isEditing && (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="w-full bg-gray-300 text-gray-500 py-2 rounded hover:bg-gray-400"
+            <div>
+              <label className="block text-sm font-medium">
+                {translations.date}
+              </label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full border rounded px-4 py-2"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">
+                {translations.bonus}
+              </label>
+              <select
+                value={bonus || ""}
+                onChange={(e) => setBonus(e.target.value || null)}
+                className="w-full border rounded px-4 py-2"
               >
-                Cancel
+                <option value="">{translations.noBonus}</option>
+                <option value="juhlapäivä">Juhlapäivä (2x km)</option>
+                <option value="enemmän kuin kolme urheilee yhdessä">
+                  Enemmän kuin kolme urheilee yhdessä (1.5x km)
+                </option>
+                <option value="kaikki yhdessä">Kaikki yhdessä (3x km)</option>
+              </select>
+            </div>
+
+            <div className="flex justify-between items-center space-x-4">
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="w-full bg-gray-300 text-gray-500 py-2 rounded hover:bg-gray-400"
+                >
+                  {translations.cancel}
+                </button>
+              )}
+              <button
+                type="submit"
+                className="w-full bg-purple-500 text-white py-2 rounded hover:bg-purple-600"
+              >
+                {isEditing
+                  ? translations.updateActivity
+                  : translations.addActivity}
               </button>
-            )}
-            <button
-              type="submit"
-              className="w-full bg-purple-500 text-white py-2 rounded hover:bg-purple-600"
-            >
-              {isEditing ? "Update Activity" : "Add Activity"}
-            </button>
-          </div>
-        </form>
-      </section>
-      
+            </div>
+          </form>
+        </section>
+      ) : (
+        <PersonalInsights
+          activities={user.activities}
+          username={user.username}
+        />
+      )}
+
       <ConfirmationModal
         isOpen={isModalOpen}
         onConfirm={handleDeleteActivity}
@@ -384,7 +462,8 @@ const startEdit = (activity: Activity) => {
               <div>
                 <h3 className="font-semibold">{activity.activity}</h3>
                 <p className="text-sm text-gray-600">
-                  {activity.kilometers.toFixed(1)} km | {activity.duration} mins
+                  {activity.kilometers.toFixed(1)} km | {activity.duration}{" "}
+                  {translations.mins}
                 </p>
                 {activity.bonus && (
                   <p className="text-sm text-purple-500">
@@ -405,7 +484,7 @@ const startEdit = (activity: Activity) => {
                   className="text-purple-500 hover:text-purple-600"
                   onClick={() => startEdit(activity)}
                 >
-                  Edit
+                  {translations.edit}
                 </button>
                 <button
                   className="text-red-500 hover:text-red-600"
@@ -414,7 +493,7 @@ const startEdit = (activity: Activity) => {
                     setIsModalOpen(true);
                   }}
                 >
-                  Delete
+                  {translations.delete}
                 </button>
               </div>
             </div>
@@ -432,7 +511,7 @@ const startEdit = (activity: Activity) => {
           />
         </div>
       )}
-            <SubmitQuote />
+      <SubmitQuote />
     </div>
   );
 };
