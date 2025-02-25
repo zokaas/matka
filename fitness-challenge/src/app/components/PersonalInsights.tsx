@@ -93,52 +93,48 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
   username,
 }) => {
   // State for active tab
-  const [activeTab, setActiveTab] = useState<"overview" | "activity">(
-    "overview"
-  );
-
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "activity"
+  >("overview");
+  
   // State for all activities (in case we need to fetch them separately)
-  const [allActivities, setAllActivities] = useState<Activity[]>(activities);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  // Fetch all activities if we only have the paginated ones
+  const [allActivities, setAllActivities] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  
+  // Fetch all activities for accurate statistics
   useEffect(() => {
-    async function fetchAllActivities() {
+    const fetchAllActivities = async () => {
       try {
         setLoading(true);
-        // Check if the backend API supports getting all activities
         const backendUrl = "https://matka-zogy.onrender.com";
         const response = await fetch(
           `${backendUrl}/users/${username}/activities/all`
         );
-
+        
         if (response.ok) {
           const data = await response.json();
           setAllActivities(data);
         } else {
-          // If API doesn't support "all" endpoint, use the activities provided by props
+          // If API request fails, use the provided activities
           setAllActivities(activities);
         }
       } catch (error) {
         console.error("Error fetching all activities:", error);
-        // Fall back to the activities provided by props
+        // Fallback to the activities passed via props
         setAllActivities(activities);
       } finally {
         setLoading(false);
       }
-    }
-
-    // Only fetch if needed - if activities length is limited (paginated)
-    if (activities.length <= 10 && activities.length > 0) {
-      fetchAllActivities();
-    } else {
-      setAllActivities(activities);
-    }
+    };
+    
+    fetchAllActivities();
   }, [username, activities]);
 
   // Process activity data for insights using ALL activities
   const insights = useMemo<InsightsData>(() => {
-    if (!allActivities || allActivities.length === 0) {
+    const activitiesToUse = allActivities.length > 0 ? allActivities : activities;
+    
+    if (!activitiesToUse || activitiesToUse.length === 0) {
       return {
         totalActivities: 0,
         totalDuration: 0,
@@ -154,16 +150,16 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
     }
 
     // Sort activities by date
-    const sortedActivities = _.sortBy(allActivities, (a) => new Date(a.date));
+    const sortedActivities = _.sortBy(activitiesToUse, (a) => new Date(a.date));
 
     // Total stats
-    const totalActivities = allActivities.length;
-    const totalDuration = _.sumBy(allActivities, "duration");
-    const totalKilometers = _.sumBy(allActivities, "kilometers");
+    const totalActivities = activitiesToUse.length;
+    const totalDuration = _.sumBy(activitiesToUse, "duration");
+    const totalKilometers = _.sumBy(activitiesToUse, "kilometers");
     const averageDuration = totalDuration / totalActivities;
 
     // Most frequent activity
-    const activityCounts = _.countBy(allActivities, "activity");
+    const activityCounts = _.countBy(activitiesToUse, "activity");
     const mostFrequentActivity = Object.entries(activityCounts).reduce(
       (max, [activity, count]) => (count > max[1] ? [activity, count] : max),
       ["", 0]
@@ -188,9 +184,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
       .slice(0, 5); // Top 5 activities
 
     // Weekday breakdown
-    const weekdayData = _.groupBy(allActivities, (a) =>
-      new Date(a.date).getDay()
-    );
+    const weekdayData = _.groupBy(activitiesToUse, (a) => new Date(a.date).getDay());
     const weekdays = [
       "Sunnuntai",
       "Maanantai",
@@ -282,9 +276,9 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
       weeklyAverage,
       streakData,
     };
-  }, [allActivities]);
+  }, [allActivities, activities]);
 
-  if (!allActivities || allActivities.length === 0) {
+  if (!activities || activities.length === 0) {
     return (
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-lg font-semibold mb-4">
@@ -294,14 +288,16 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
       </div>
     );
   }
-
+  
   if (loading) {
     return (
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-lg font-semibold mb-4">
           {translations.personalInsights}
         </h2>
-        <p className="text-gray-600">{translations.loading}</p>
+        <div className="flex justify-center">
+          <div className="animate-spin h-10 w-10 border-4 border-purple-500 rounded-full border-t-transparent"></div>
+        </div>
       </div>
     );
   }
