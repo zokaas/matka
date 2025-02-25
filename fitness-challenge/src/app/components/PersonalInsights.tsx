@@ -52,11 +52,11 @@ interface InsightsData {
     name: string;
     activities: number;
   }>;
-  weeklyAverage: number;
   streakData: {
     currentStreak: number;
     longestStreak: number;
   };
+  avgWeeklyKm: number;
 }
 
 // Translation object for Finnish
@@ -67,7 +67,7 @@ const translations = {
   totalActivities: "Suoritukset",
   totalHours: "Tunnit",
   totalKm: "Kilometrit",
-  weeklyAvg: "Viikkosuoritus ka",
+  weeklyKm: "Viikko km",
   currentStreak: "Nykyinen putki",
   longestStreak: "Pisin putki",
   days: "päivää",
@@ -144,8 +144,8 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
         trendData: [],
         activityBreakdown: [],
         weekdayBreakdown: [],
-        weeklyAverage: 0,
         streakData: { currentStreak: 0, longestStreak: 0 },
+        avgWeeklyKm: 0,
       };
     }
 
@@ -200,18 +200,18 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
       activities: weekdayData[index] ? weekdayData[index].length : 0,
     }));
 
-    // Weekly average (assuming activities span at least a week)
+    // Calculate average weekly kilometers
     const firstDate = new Date(sortedActivities[0].date);
-    const lastDate = new Date(
-      sortedActivities[sortedActivities.length - 1].date
-    );
+    const lastDate = new Date(sortedActivities[sortedActivities.length - 1].date);
+    
+    // Calculate the number of weeks between first and last activity
     const weeksDiff = Math.max(
       1,
-      Math.ceil(
-        (lastDate.getTime() - firstDate.getTime()) / (7 * 24 * 60 * 60 * 1000)
-      )
+      Math.ceil((lastDate.getTime() - firstDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
     );
-    const weeklyAverage = totalActivities / weeksDiff;
+    
+    // Calculate average weekly kilometers
+    const avgWeeklyKm = totalKilometers / weeksDiff;
 
     // Calculate streak data
     let currentStreak = 0;
@@ -273,8 +273,8 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
       trendData,
       activityBreakdown,
       weekdayBreakdown,
-      weeklyAverage,
       streakData,
+      avgWeeklyKm,
     };
   }, [allActivities, activities]);
 
@@ -344,13 +344,13 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
               <p className="text-2xl font-bold">{insights.totalActivities}</p>
             </div>
             <div className="bg-blue-50 p-4 rounded-lg">
-  <h3 className="text-sm text-blue-800 font-medium">
-    {translations.totalHours}
-  </h3>
-  <p className="text-2xl font-bold">
-    {(insights.totalDuration / 60).toFixed(1)}
-  </p>
-</div>
+              <h3 className="text-sm text-blue-800 font-medium">
+                {translations.totalHours}
+              </h3>
+              <p className="text-2xl font-bold">
+                {(insights.totalDuration / 60).toFixed(1)}
+              </p>
+            </div>
             <div className="bg-green-50 p-4 rounded-lg">
               <h3 className="text-sm text-green-800 font-medium">
                 {translations.totalKm}
@@ -361,10 +361,10 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
             </div>
             <div className="bg-indigo-50 p-4 rounded-lg">
               <h3 className="text-sm text-indigo-800 font-medium">
-                {translations.weeklyAvg}
+                {translations.weeklyKm}
               </h3>
               <p className="text-2xl font-bold">
-                {insights.weeklyAverage.toFixed(1)}
+                {insights.avgWeeklyKm.toFixed(1)} {translations.km}
               </p>
             </div>
           </div>
