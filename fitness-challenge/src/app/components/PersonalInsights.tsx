@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -61,31 +61,31 @@ interface InsightsData {
 
 // Translation object for Finnish
 const translations = {
-  personalInsights: "Omat Tilastot",
+  personalInsights: "Omat tilastot",
   overview: "Yleiskatsaus",
-  trends: "Trendit",
-  activity: "Aktiviteetit",
-  totalActivities: "Aktiviteetit Yhteensä",
-  totalHours: "Tunnit Yhteensä",
-  totalKm: "Kilometrit Yhteensä",
-  weeklyAvg: "Viikkokesk.",
-  currentStreak: "Nykyinen Putki",
-  longestStreak: "Pisin Putki",
+  activity: "Suoritukset",
+  totalActivities: "Suoritukset",
+  totalHours: "Tunnit",
+  totalKm: "Kilometrit",
+  weeklyAvg: "Viikkosuoritus ka",
+  currentStreak: "Nykyinen putki",
+  longestStreak: "Pisin putki",
   days: "päivää",
-  mostFrequentActivity: "Suosituin Aktiviteetti",
-  recentActivityTrend: "Viimeaikaiset Aktiviteetit",
+  mostFrequentActivity: "Suosituin laji",
+  recentActivityTrend: "Viimeaikaiset lajit",
   kilometers: "Kilometrit",
   duration: "Kesto (min)",
-  activityByDayOfWeek: "Aktiviteetit Viikonpäivittäin",
+  activityByDayOfWeek: "Aktiviteetit viikonpäivittäin",
   activities: "Aktiviteetit",
   activityBreakdown: "Aktiviteettijakauma",
   times: "kertaa",
-  personalStatistics: "Henkilökohtaiset Tilastot",
-  avgDuration: "Keskim. Kesto",
-  avgDistance: "Keskim. Matka",
+  personalStatistics: "Henkilökohtaiset tilastot",
+  avgDuration: "Keskim. kesto",
+  avgDistance: "Keskim. matka",
   mins: "min",
   km: "km",
   addActivitiesToSee: "Lisää aktiviteetteja nähdäksesi tilastot.",
+  loading: "Ladataan tilastoja...",
 };
 
 const PersonalInsights: React.FC<PersonalInsightProps> = ({
@@ -93,13 +93,52 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
   username,
 }) => {
   // State for active tab
-  const [activeTab, setActiveTab] = useState<
-    "overview" | "activity"
-  >("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "activity">(
+    "overview"
+  );
 
-  // Process activity data for insights
+  // State for all activities (in case we need to fetch them separately)
+  const [allActivities, setAllActivities] = useState<Activity[]>(activities);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  // Fetch all activities if we only have the paginated ones
+  useEffect(() => {
+    async function fetchAllActivities() {
+      try {
+        setLoading(true);
+        // Check if the backend API supports getting all activities
+        const backendUrl = "https://matka-zogy.onrender.com";
+        const response = await fetch(
+          `${backendUrl}/users/${username}/activities/all`
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          setAllActivities(data);
+        } else {
+          // If API doesn't support "all" endpoint, use the activities provided by props
+          setAllActivities(activities);
+        }
+      } catch (error) {
+        console.error("Error fetching all activities:", error);
+        // Fall back to the activities provided by props
+        setAllActivities(activities);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Only fetch if needed - if activities length is limited (paginated)
+    if (activities.length <= 10 && activities.length > 0) {
+      fetchAllActivities();
+    } else {
+      setAllActivities(activities);
+    }
+  }, [username, activities]);
+
+  // Process activity data for insights using ALL activities
   const insights = useMemo<InsightsData>(() => {
-    if (!activities || activities.length === 0) {
+    if (!allActivities || allActivities.length === 0) {
       return {
         totalActivities: 0,
         totalDuration: 0,
@@ -115,16 +154,16 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
     }
 
     // Sort activities by date
-    const sortedActivities = _.sortBy(activities, (a) => new Date(a.date));
+    const sortedActivities = _.sortBy(allActivities, (a) => new Date(a.date));
 
     // Total stats
-    const totalActivities = activities.length;
-    const totalDuration = _.sumBy(activities, "duration");
-    const totalKilometers = _.sumBy(activities, "kilometers");
+    const totalActivities = allActivities.length;
+    const totalDuration = _.sumBy(allActivities, "duration");
+    const totalKilometers = _.sumBy(allActivities, "kilometers");
     const averageDuration = totalDuration / totalActivities;
 
     // Most frequent activity
-    const activityCounts = _.countBy(activities, "activity");
+    const activityCounts = _.countBy(allActivities, "activity");
     const mostFrequentActivity = Object.entries(activityCounts).reduce(
       (max, [activity, count]) => (count > max[1] ? [activity, count] : max),
       ["", 0]
@@ -149,7 +188,9 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
       .slice(0, 5); // Top 5 activities
 
     // Weekday breakdown
-    const weekdayData = _.groupBy(activities, (a) => new Date(a.date).getDay());
+    const weekdayData = _.groupBy(allActivities, (a) =>
+      new Date(a.date).getDay()
+    );
     const weekdays = [
       "Sunnuntai",
       "Maanantai",
@@ -177,7 +218,6 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
       )
     );
     const weeklyAverage = totalActivities / weeksDiff;
-
 
     // Calculate streak data
     let currentStreak = 0;
@@ -242,15 +282,26 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
       weeklyAverage,
       streakData,
     };
-  }, [activities]);
+  }, [allActivities]);
 
-  if (!activities || activities.length === 0) {
+  if (!allActivities || allActivities.length === 0) {
     return (
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-lg font-semibold mb-4">
           {translations.personalInsights}
         </h2>
         <p className="text-gray-600">{translations.addActivitiesToSee}</p>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-white p-6 rounded-lg shadow">
+        <h2 className="text-lg font-semibold mb-4">
+          {translations.personalInsights}
+        </h2>
+        <p className="text-gray-600">{translations.loading}</p>
       </div>
     );
   }
