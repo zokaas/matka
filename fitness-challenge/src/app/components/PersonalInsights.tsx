@@ -344,13 +344,13 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
               <p className="text-2xl font-bold">{insights.totalActivities}</p>
             </div>
             <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="text-sm text-blue-800 font-medium">
-                {translations.totalHours}
-              </h3>
-              <p className="text-2xl font-bold">
-                {Math.round(insights.totalDuration / 60)}
-              </p>
-            </div>
+  <h3 className="text-sm text-blue-800 font-medium">
+    {translations.totalHours}
+  </h3>
+  <p className="text-2xl font-bold">
+    {(insights.totalDuration / 60).toFixed(1)}
+  </p>
+</div>
             <div className="bg-green-50 p-4 rounded-lg">
               <h3 className="text-sm text-green-800 font-medium">
                 {translations.totalKm}
