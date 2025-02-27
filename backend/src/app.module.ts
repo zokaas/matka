@@ -8,6 +8,10 @@ import { Activity } from './activity.entity';
 import { ProgressController } from './progress.controller';
 import { Quote } from './quote.entity';
 import { QuoteController } from './quote.controller';
+import { Comment } from './comment.entity';
+import { Reaction } from './reaction.entity';
+import { CommentsController } from './comments.controller';
+import { ReactionsController } from './reactions.controller';
 
 @Module({
   imports: [
@@ -27,9 +31,15 @@ import { QuoteController } from './quote.controller';
         },
       }),
     }),
-    TypeOrmModule.forFeature([Users, Activity, Quote]),
+    TypeOrmModule.forFeature([Users, Activity, Quote, Comment, Reaction]),
   ],
-  controllers: [AppController, ProgressController, QuoteController], // Ensure your controllers are registered
+  controllers: [
+    AppController,
+    ProgressController,
+    QuoteController,
+    CommentsController,
+    ReactionsController,
+  ],
   providers: [AppService],
 })
 export class AppModule {}

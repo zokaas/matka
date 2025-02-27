@@ -103,6 +103,12 @@ export default function Navbar() {
             >
               Tilastot
             </Link>
+            {/* <Link
+              href="/feed"
+              className="hover:bg-purple-500 px-3 py-2 rounded text-sm font-medium"
+            >
+              Suoritukset
+            </Link> */}
             {/* Dropdown for Users */}
             <div className="relative">
               <button
@@ -195,6 +201,13 @@ export default function Navbar() {
           >
             Tilastot
           </Link>
+          {/* <Link
+            href="/feed"
+            className="block px-4 py-2 text-sm font-medium hover:bg-purple-800"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Suoritukset
+          </Link> */}
           <div>
             <button
               ref={mobileDropdownButtonRef}

@@ -1,18 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-} from "recharts";
 import _ from "lodash";
 
 // Define the Activity interface based on your existing model

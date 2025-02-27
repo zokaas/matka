@@ -80,3 +80,21 @@ export type UserStats = {
     days: number;
   };
 }
+
+export type Comment = {
+  id: number;
+  text: string;
+  createdAt: string;
+};
+
+export type Reaction = {
+  type: string;
+  count: number;
+}
+
+
+export type ActivityWithUser = Activity & {
+  username: string;
+  profilePicture?: string;
+  status?: "coming_soon" | "available"; // 🔥 Added status to handle "TULOSSA PIAN"
+};
