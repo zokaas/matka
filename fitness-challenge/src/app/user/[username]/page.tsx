@@ -9,7 +9,6 @@ import ConfirmationModal from "@/app/components/ConfirmationModal";
 import Pagination from "@/app/components/Pagination";
 import SubmitQuote from "@/app/components/SubmitQuote";
 import PersonalInsights from "@/app/components/PersonalInsights";
-import CommentAndReactionView from "@/app/components/CommentAndReactionView"; // Import the new component
 
 interface Activity {
   id: number;
@@ -498,9 +497,6 @@ const UserProfile = () => {
                 </button>
               </div>
             </div>
-
-            {/* Add the CommentAndReactionView component here */}
-            <CommentAndReactionView activityId={activity.id} />
           </div>
         ))}
       </div>

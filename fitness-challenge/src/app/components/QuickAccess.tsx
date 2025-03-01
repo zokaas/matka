@@ -7,10 +7,16 @@ import "react-circular-progressbar/dist/styles.css";
 import Map from "./Map";
 import { useTargetPaces } from "@/app/hooks/useTargetPaces";
 import { useWeeklyInsights } from "@/app/hooks/useWeeklyInsights";
-import { User } from "@/app/types/types";
+import { User, Activity } from "@/app/types/types";
 import SubmitQuote from "./SubmitQuote";
 import Quotes from "./Quotes";
-import ActivityFeedPage from "./ActivityFeedPage";
+import CommentsSection from "./CommentsSection";
+import ActivityReactions from "./ActivityReactions";
+
+interface ActivityWithUser extends Activity {
+  username: string;
+  profilePicture?: string;
+}
 
 const backendUrl = "https://matka-zogy.onrender.com";
 
@@ -21,6 +27,11 @@ export default function QuickAccess() {
   const [error, setError] = useState<string | null>(null);
   const [showWeeklyProgress, setShowWeeklyProgress] = useState(false);
   const [showActivityFeed, setShowActivityFeed] = useState(false);
+  const [recentActivities, setRecentActivities] = useState<ActivityWithUser[]>(
+    []
+  );
+  const [loadingActivities, setLoadingActivities] = useState(false);
+  const [expandedActivity, setExpandedActivity] = useState<number | null>(null);
 
   // Use the hooks here instead of inline calculations
   const targetPaces = useTargetPaces(users);
@@ -53,21 +64,71 @@ export default function QuickAccess() {
     fetchData();
   }, []);
 
+  // Fix the declaration order issue in QuickAccess.tsx
+
+  // Define fetchRecentActivities using useCallback before using it in useEffect
+  const fetchRecentActivities = useCallback(async () => {
+    try {
+      setLoadingActivities(true);
+
+      // Process activities from all users
+      const allActivities: ActivityWithUser[] = [];
+
+      // For each user, get activities and add username
+      for (const user of users) {
+        const response = await fetch(
+          `${backendUrl}/users/${user.username}/activities/all`
+        );
+        if (response.ok) {
+          const userActivities: Activity[] = await response.json();
+          // Add username to each activity
+          const activitiesWithUser = userActivities.map((activity) => ({
+            ...activity,
+            username: user.username,
+            profilePicture: user.profilePicture,
+          }));
+          allActivities.push(...activitiesWithUser);
+        }
+      }
+
+      // Sort by date (newest first) and limit to 10
+      const activities = allActivities
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 10);
+
+      setRecentActivities(activities);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+    } finally {
+      setLoadingActivities(false);
+    }
+  }, [users]); // Remove backendUrl from dependencies
+
+  // Then use fetchRecentActivities in useEffect
+  useEffect(() => {
+    if (showActivityFeed) {
+      fetchRecentActivities();
+    }
+  }, [showActivityFeed, fetchRecentActivities]);
+  const toggleComments = (activityId: number) => {
+    setExpandedActivity(expandedActivity === activityId ? null : activityId);
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("fi-FI", {
+      day: "numeric",
+      month: "numeric",
+      year: "numeric",
+    });
+  };
+
   const getMedal = (index: number) => {
     if (index === 0) return "🥇";
     if (index === 1) return "🥈";
     if (index === 2) return "🥉";
     return null;
   };
-
-  // Calculate total weekly progress
-  const totalWeeklyKm = weeklyInsights.reduce(
-    (sum, user) => sum + user.weeklyProgress,
-    0
-  );
-  const weeklyGoal = users.length * targetPaces.weeklyPerUser;
-  const progressPercentage =
-    weeklyGoal > 0 ? Math.round((totalWeeklyKm / weeklyGoal) * 100) : 0;
 
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-8">
@@ -86,31 +147,11 @@ export default function QuickAccess() {
           <Quotes />
         </motion.div>
       </motion.header>
+
       <div>
         <Map totalKm={totalKm} />
       </div>
-      {/* Weekly Progress Bar */}
-      <div className="p-4 rounded-lg mb-6 relative">
-        <h3 className="text-md font-semibold text-gray-800 mb-2">
-          Petollisten viikon tavoite
-        </h3>
 
-        {/* Progress Bar */}
-        <div className="relative w-full h-6 bg-gray-300 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-purple-600 transition-all duration-500 ease-in-out"
-            style={{ width: `${progressPercentage}%` }}
-          ></div>
-          <span className="absolute inset-0 flex items-center justify-center text-sm font-semibold text-white">
-            {progressPercentage}%
-          </span>
-        </div>
-
-        {/* Numeric Info Below Progress Bar */}
-        <p className="text-sm text-gray-700 mt-2 text-center">
-          {Math.round(totalWeeklyKm)} km / {Math.round(weeklyGoal)} km
-        </p>
-      </div>
       {/* Toggle Buttons */}
       <div className="flex justify-center">
         <div className="inline-flex rounded-md shadow" role="group">
@@ -158,6 +199,7 @@ export default function QuickAccess() {
           </button>
         </div>
       </div>
+
       {/* Loading & Error Handling */}
       {loading && (
         <div className="text-center text-gray-500 animate-pulse">
@@ -165,12 +207,127 @@ export default function QuickAccess() {
         </div>
       )}
       {error && <div className="text-center text-red-500">Virhe: {error}</div>}
+
       {/* Activity Feed Section */}
       {!loading && !error && showActivityFeed && (
-        <section className="space-y-6">
-          <ActivityFeedPage />
-        </section>
+        // <section className="space-y-6">
+        //   <h2 className="text-xl font-bold text-purple-700 mb-4">
+        //     Viimeisimmät Suoritukset
+        //   </h2>
+
+        //   {loadingActivities ? (
+        //     <div className="flex justify-center items-center py-8">
+        //       <div className="animate-spin h-8 w-8 border-4 border-purple-500 rounded-full border-t-transparent"></div>
+        //     </div>
+        //   ) : recentActivities.length === 0 ? (
+        //     <div className="text-center p-6 bg-white rounded-lg shadow">
+        //       <p className="text-gray-500">Ei suorituksia saatavilla.</p>
+        //     </div>
+        //   ) : (
+        //     <div className="space-y-6">
+        //       {recentActivities.map((activity) => (
+        //         <div
+        //           key={activity.id}
+        //           className="bg-white p-6 rounded-lg shadow"
+        //         >
+        //           <div className="flex items-center space-x-3 mb-4">
+        //             <div className="w-10 h-10 rounded-full overflow-hidden">
+        //               <Image
+        //                 src={
+        //                   activity.profilePicture
+        //                     ? `https://matka-xi.vercel.app/${activity.username}.png`
+        //                     : `https://api.dicebear.com/7.x/adventurer/svg?seed=${activity.username}`
+        //                 }
+        //                 alt={`${activity.username}'s avatar`}
+        //                 width={40}
+        //                 height={40}
+        //                 className="object-cover"
+        //                 unoptimized
+        //               />
+        //             </div>
+        //             <div>
+        //               <Link
+        //                 href={`/user/${activity.username}`}
+        //                 className="font-medium text-purple-600 hover:underline"
+        //               >
+        //                 {activity.username}
+        //               </Link>
+        //               <p className="text-xs text-gray-500">
+        //                 {formatDate(activity.date)}
+        //               </p>
+        //             </div>
+        //           </div>
+
+        //           <div className="mb-3">
+        //             <h3 className="font-semibold text-lg">
+        //               {activity.activity}
+        //             </h3>
+        //             <div className="flex space-x-4 text-sm text-gray-600">
+        //               <span>{activity.kilometers.toFixed(1)} km</span>
+        //               <span>{activity.duration} min</span>
+        //               {activity.bonus && (
+        //                 <span className="text-purple-500">
+        //                   🎉 {activity.bonus}
+        //                 </span>
+        //               )}
+        //             </div>
+        //           </div>
+
+        //           <ActivityReactions activityId={activity.id} />
+
+        //           <div className="flex justify-between border-t pt-3 mt-3">
+        //             <button
+        //               onClick={() => toggleComments(activity.id)}
+        //               className="text-gray-600 hover:text-purple-600 text-sm flex items-center"
+        //             >
+        //               <svg
+        //                 xmlns="http://www.w3.org/2000/svg"
+        //                 className="h-5 w-5 mr-1"
+        //                 fill="none"
+        //                 viewBox="0 0 24 24"
+        //                 stroke="currentColor"
+        //               >
+        //                 <path
+        //                   strokeLinecap="round"
+        //                   strokeLinejoin="round"
+        //                   strokeWidth={2}
+        //                   d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+        //                 />
+        //               </svg>
+        //               {expandedActivity === activity.id
+        //                 ? "Sulje kommentit"
+        //                 : "Näytä kommentit"}
+        //             </button>
+        //           </div>
+
+        //           {/* Comments section that expands when toggled */}
+        //           {expandedActivity === activity.id && (
+        //             <div className="mt-4 border-t pt-4">
+        //               <CommentsSection activityId={activity.id} />
+        //             </div>
+        //           )}
+        //         </div>
+        //       ))}
+
+        //       <div className="text-center">
+        //         <Link
+        //           href="/feed"
+        //           className="text-purple-600 hover:text-purple-800 font-medium"
+        //         >
+        //           Näytä kaikki suoritukset →
+        //         </Link>
+        //       </div>
+        //     </div>
+        //   )}
+        // </section>
+        <div className="text-center bg-yellow-100 text-yellow-700 p-4 rounded-lg">
+          <h2 className="text-xl font-semibold">TULOSSA PIAN 🚀</h2>
+          <p className="text-sm">
+            Tämä ominaisuus julkaistaan kun olette saaneet kasaan 30 000km.
+          </p>
+        </div>
       )}
+
       {/* Leaderboard */}
       {!loading && !error && !showWeeklyProgress && !showActivityFeed && (
         <section>
@@ -238,6 +395,7 @@ export default function QuickAccess() {
           </div>
         </section>
       )}
+
       {/* Weekly Progress Rings */}
       {!loading && !error && showWeeklyProgress && !showActivityFeed && (
         <section>
