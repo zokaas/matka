@@ -23,7 +23,9 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
   useEffect(() => {
     const fetchReactions = async () => {
       try {
-const response = await fetch(`${backendUrl}/activity/${activityId}/reactions`);
+        const response = await fetch(
+          `${backendUrl}/activity/${activityId}/reactions`
+        );
 
         if (response.ok) {
           const reactionData: Reaction[] = await response.json();
@@ -65,7 +67,7 @@ const response = await fetch(`${backendUrl}/activity/${activityId}/reactions`);
 
       // Send reaction to backend
       const response = await fetch(
-        `${backendUrl}/activity/${activityId}/comments`,
+        `${backendUrl}/activity/${activityId}/reactions`,
         {
           method: "POST",
           headers: {
