@@ -24,51 +24,29 @@ const CommentsSection: React.FC<CommentsProps> = ({ activityId }) => {
 
     try {
       setLoading(true);
-      console.log(`Fetching comments for activity ${activityId}`);
-
       const response = await fetch(
         `${backendUrl}/activity/${activityId}/comments`
       );
-
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`Error response: ${errorText}`);
-
-        let errorDetails;
-        try {
-          errorDetails = JSON.parse(errorText);
-        } catch {
-          errorDetails = { message: errorText };
-        }
-
-        throw new Error(
-          `Failed to fetch comments: ${response.status} ${response.statusText} - ${errorDetails.message}`
-        );
-      }
+      if (!response.ok) throw new Error("Failed to fetch comments");
 
       const data = await response.json();
-      console.log("Received comments:", data);
       setComments(data);
     } catch (err) {
-      console.error("Error fetching comments:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
-  }, [activityId, backendUrl]);
+  }, [activityId]);
 
   useEffect(() => {
     fetchComments();
   }, [fetchComments]);
 
-  // Update characters left whenever the comment changes
   useEffect(() => {
     setCharactersLeft(COMMENT_MAX_LENGTH - newComment.length);
   }, [newComment]);
 
   const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Only update if we're below the limit or if the user is deleting text
     if (e.target.value.length <= COMMENT_MAX_LENGTH) {
       setNewComment(e.target.value);
     }
@@ -78,20 +56,9 @@ const CommentsSection: React.FC<CommentsProps> = ({ activityId }) => {
     e.preventDefault();
     if (!newComment.trim() || !activityId || submitting) return;
 
-    // Enforce character limit
-    if (newComment.length > COMMENT_MAX_LENGTH) {
-      setError(
-        `Comment is too long. Maximum ${COMMENT_MAX_LENGTH} characters allowed.`
-      );
-      return;
-    }
-
     try {
       setSubmitting(true);
       setError("");
-      console.log(
-        `Submitting comment for activity ${activityId}: ${newComment}`
-      );
 
       const response = await fetch(
         `${backendUrl}/activity/${activityId}/comments`,
@@ -102,29 +69,13 @@ const CommentsSection: React.FC<CommentsProps> = ({ activityId }) => {
         }
       );
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        let errorDetails;
-        try {
-          errorDetails = JSON.parse(errorText);
-        } catch {
-          errorDetails = { message: errorText };
-        }
-
-        throw new Error(
-          `Failed to add comment: ${response.status} ${response.statusText} - ${errorDetails.message}`
-        );
-      }
+      if (!response.ok) throw new Error("Failed to add comment");
 
       const addedComment = await response.json();
-      console.log("Comment added successfully:", addedComment);
-
-      // Add the new comment to the top of the list
       setComments([addedComment, ...comments]);
       setNewComment("");
       setCharactersLeft(COMMENT_MAX_LENGTH);
     } catch (err) {
-      console.error("Error adding comment:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setSubmitting(false);
@@ -142,44 +93,40 @@ const CommentsSection: React.FC<CommentsProps> = ({ activityId }) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 mt-3">
       {/* Comment form */}
-      <form onSubmit={handleSubmitComment} className="flex flex-col space-y-2">
-        <div className="flex items-center space-x-2">
+      <form
+        onSubmit={handleSubmitComment}
+        className="flex w-full items-center space-x-2"
+      >
+        {/* Input container with full width */}
+        <div className="flex-grow">
           <input
             type="text"
             value={newComment}
             onChange={handleCommentChange}
             placeholder="Kirjoita kommentti..."
-            className="flex-1 border rounded px-3 py-2 text-sm"
+            className="w-full border rounded-md px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-purple-400 focus:outline-none"
             maxLength={COMMENT_MAX_LENGTH}
             required
             disabled={submitting}
           />
-          <button
-            type="submit"
-            className={`bg-purple-500 text-white px-3 py-2 rounded text-sm hover:bg-purple-600 ${
-              submitting ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            disabled={
-              newComment.length === 0 ||
-              newComment.length > COMMENT_MAX_LENGTH ||
-              submitting
-            }
-          >
-            {submitting ? "Lähetetään..." : "Lähetä"}
-          </button>
         </div>
 
-        {/* Character counter */}
-        <div
-          className={`text-xs text-right ${
-            charactersLeft < 20 ? "text-red-500" : "text-gray-500"
-          }`}
+        {/* Send button constrained within container */}
+        <button
+          type="submit"
+          className="bg-purple-500 text-white px-4 py-2 rounded-md text-sm font-semibold hover:bg-purple-600 transition whitespace-nowrap"
+          disabled={submitting || newComment.length === 0}
         >
-          {charactersLeft} merkkiä jäljellä
-        </div>
+          {submitting ? "Lähetetään..." : "Lähetä"}
+        </button>
       </form>
+
+      {/* Character counter */}
+      <div className="text-xs text-right text-gray-500">
+        {charactersLeft} merkkiä jäljellä
+      </div>
 
       {/* Error message */}
       {error && (
@@ -189,43 +136,26 @@ const CommentsSection: React.FC<CommentsProps> = ({ activityId }) => {
       )}
 
       {/* Comments list */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {loading ? (
           <div className="text-center p-2 text-sm text-gray-500">
-            <svg
-              className="animate-spin h-4 w-4 mx-auto mb-1"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
             Ladataan kommentteja...
           </div>
         ) : comments.length === 0 ? (
           <p className="text-gray-500 text-center text-sm py-2">
-            Ei kommentteja vielä. Ole ensimmäinen kommentoija!
+            Ei kommentteja vielä. Ole ensimmäinen!
           </p>
         ) : (
           comments.map((comment) => (
-            <div key={comment.id} className="bg-gray-50 p-3 rounded border">
+            <div
+              key={comment.id}
+              className="bg-gray-100 p-3 rounded-lg shadow-sm"
+            >
               <div className="flex justify-between items-start">
                 <p className="text-gray-700 text-sm">{comment.text}</p>
-                <div className="text-xs text-gray-500 ml-2">
+                <span className="text-xs text-gray-500 ml-3 whitespace-nowrap">
                   {formatDate(comment.createdAt)}
-                </div>
+                </span>
               </div>
             </div>
           ))
