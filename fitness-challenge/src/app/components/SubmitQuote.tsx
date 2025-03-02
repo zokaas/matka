@@ -1,46 +1,37 @@
 "use client";
 
 import { useState } from "react";
-
-const backendUrl = "https://matka-zogy.onrender.com"; // Backend URL
+import apiService from "../service/apiService";
 
 export default function SubmitQuote() {
   const [quote, setQuote] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!quote.trim()) {
-    setMessage("⚠️ Please enter a quote!");
-    return;
-  }
-
-  setLoading(true);
-  setMessage("");
-
-  try {
-    const response = await fetch(`${backendUrl}/quotes`, {
-      // ✅ Fixed API URL
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: quote }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to submit the quote");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quote.trim()) {
+      setMessage("⚠️ Please enter a quote!");
+      return;
     }
 
-    setQuote("");
-    setMessage("✅ Quote submitted successfully!");
-  } catch (error) {
-    setMessage(`❌ ${(error as Error).message}`);
-  } finally {
-    setLoading(false);
-  }
-};
+    setLoading(true);
+    setMessage("");
 
+    try {
+      await apiService.quote.addQuote(quote);
+      setQuote("");
+      setMessage("✅ Quote submitted successfully!");
+    } catch (error) {
+      setMessage(
+        `❌ ${
+          error instanceof Error ? error.message : "Failed to submit the quote"
+        }`
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg text-center">

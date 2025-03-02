@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-
-const backendUrl = "https://matka-zogy.onrender.com"; // Backend URL
+import apiService from "../service/apiService";
 
 export default function Quotes() {
   const [quote, setQuote] = useState<string | null>(null);
@@ -12,16 +11,14 @@ export default function Quotes() {
   useEffect(() => {
     const fetchQuotes = async () => {
       try {
-        const response = await fetch(`${backendUrl}/quotes`); // ✅ Correct endpoint
-        if (!response.ok) throw new Error("Failed to fetch quotes");
+        const quotesData = await apiService.quote.getAllQuotes();
 
-        const quotesData = await response.json();
         if (quotesData.length > 0) {
           const randomQuote =
-            quotesData[Math.floor(Math.random() * quotesData.length)].text; // ✅ Pick random quote
+            quotesData[Math.floor(Math.random() * quotesData.length)].text;
           setQuote(randomQuote);
         } else {
-          setQuote("No quotes available yet."); // ✅ Fallback if no quotes exist
+          setQuote("No quotes available yet.");
         }
       } catch (error) {
         setError("⚠️ Could not load quotes.");
@@ -35,7 +32,6 @@ export default function Quotes() {
 
   return (
     <section className="bg-white p-6 rounded-lg shadow-lg text-center">
-      {/* Display a single random quote */}
       {loading ? (
         <p className="text-gray-500">Loading quote...</p>
       ) : error ? (

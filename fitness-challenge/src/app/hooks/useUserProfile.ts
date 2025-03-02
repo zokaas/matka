@@ -3,14 +3,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { useGlobalState } from "../context/GlobalStateProvider";
 import { Activity, UserWithPagination } from "../types/types";
+import apiService from "../service/apiService";
 
 export const useUserProfile = (
   username: string,
   page: number = 1,
   itemsPerPage: number = 10
 ) => {
-  const { state, getUser, getUserActivities, clearActivityCache } =
-    useGlobalState();
+  const { state, getUser, clearActivityCache } = useGlobalState();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [pagination, setPagination] = useState<{
     total: number;
@@ -25,21 +25,20 @@ export const useUserProfile = (
   // Get user from global state
   const user = getUser(username);
 
-  // Fetch activities using the global state
+  // Fetch activities using the API service
   const fetchActivities = useCallback(async () => {
     if (!username) return;
 
     setLoading(true);
     try {
-      // Get all activities from global state (cached or from API)
-      const allActivities = await getUserActivities(username);
+      // Get activities from API service
+      const allActivities = await apiService.user.getUserActivities(username);
 
       // Apply pagination locally
       const startIndex = (page - 1) * itemsPerPage;
-      const paginatedActivities = allActivities.slice(
-        startIndex,
-        startIndex + itemsPerPage
-      );
+      const paginatedActivities = allActivities
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(startIndex, startIndex + itemsPerPage);
 
       setActivities(paginatedActivities);
       setPagination({
@@ -51,7 +50,7 @@ export const useUserProfile = (
     } finally {
       setLoading(false);
     }
-  }, [username, page, itemsPerPage, getUserActivities]);
+  }, [username, page, itemsPerPage]);
 
   // Fetch activities when parameters change
   useEffect(() => {

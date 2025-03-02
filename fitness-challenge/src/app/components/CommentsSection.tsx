@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Comment } from "../types/types";
+import apiService from "../service/apiService";
 
 interface CommentsProps {
   activityId: number;
@@ -24,21 +25,12 @@ const CommentsSection: React.FC<CommentsProps> = ({
   const [charactersLeft, setCharactersLeft] = useState(COMMENT_MAX_LENGTH);
   const [submitting, setSubmitting] = useState(false);
 
-  const backendUrl = "https://matka-zogy.onrender.com";
-
+  // Replace the fetchComments function with:
   const fetchComments = useCallback(async () => {
     if (!activityId) return;
     try {
       setLoading(true);
-      const response = await fetch(
-        `${backendUrl}/activity/${activityId}/comments`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Error fetching comments`);
-      }
-
-      const data = await response.json();
+      const data = await apiService.comment.getComments(activityId);
       setComments(data);
 
       if (onCommentCountUpdate) {
@@ -51,20 +43,7 @@ const CommentsSection: React.FC<CommentsProps> = ({
     }
   }, [activityId, onCommentCountUpdate]);
 
-  useEffect(() => {
-    fetchComments();
-  }, [fetchComments]);
-
-  useEffect(() => {
-    setCharactersLeft(COMMENT_MAX_LENGTH - newComment.length);
-  }, [newComment]);
-
-  const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.value.length <= COMMENT_MAX_LENGTH) {
-      setNewComment(e.target.value);
-    }
-  };
-
+  // Replace the handleSubmitComment function with:
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim() || submitting) return;
@@ -73,20 +52,10 @@ const CommentsSection: React.FC<CommentsProps> = ({
       setSubmitting(true);
       setError("");
 
-      const response = await fetch(
-        `${backendUrl}/activity/${activityId}/comments`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: newComment }),
-        }
+      const addedComment = await apiService.comment.addComment(
+        activityId,
+        newComment
       );
-
-      if (!response.ok) {
-        throw new Error("Kommentin lisääminen epäonnistui.");
-      }
-
-      const addedComment = await response.json();
       setComments([addedComment, ...comments]);
 
       if (onCommentCountUpdate) {
@@ -99,6 +68,19 @@ const CommentsSection: React.FC<CommentsProps> = ({
       setError("Kommentin lisääminen epäonnistui.");
     } finally {
       setSubmitting(false);
+    }
+  };
+  useEffect(() => {
+    fetchComments();
+  }, [fetchComments]);
+
+  useEffect(() => {
+    setCharactersLeft(COMMENT_MAX_LENGTH - newComment.length);
+  }, [newComment]);
+
+  const handleCommentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.value.length <= COMMENT_MAX_LENGTH) {
+      setNewComment(e.target.value);
     }
   };
 

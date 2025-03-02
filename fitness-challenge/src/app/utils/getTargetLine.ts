@@ -6,7 +6,7 @@ export const getTargetLine = (
   filterDataByTimeframe: <T extends { date: string }>(data: T[]) => T[]
 ) => {
   const startDate = new Date("2025-01-06");
-  const endDate = new Date("2025-05-31");
+  const endDate = new Date("2025-06-22");
   const today = new Date();
 
   const totalDays = Math.ceil(

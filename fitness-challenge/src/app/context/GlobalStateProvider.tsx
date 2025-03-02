@@ -11,6 +11,7 @@ import React, {
 } from "react";
 import { User, Activity, WeeklyInsight, TargetPaces } from "@/app/types/types";
 import { useCalculateStats } from "../hooks/useCalculateStats";
+import apiService from "../service/apiService";
 
 // Define what our global state will look like
 interface GlobalState {
@@ -52,9 +53,6 @@ interface GlobalStateContextType {
 const GlobalStateContext = createContext<GlobalStateContextType | undefined>(
   undefined
 );
-
-// Backend URL
-const backendUrl = "https://matka-zogy.onrender.com";
 
 // Cache time - how long before we consider the data stale (in milliseconds)
 const CACHE_TIME = 5 * 60 * 1000; // 5 minutes
@@ -104,7 +102,7 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({
     return Date.now() - lastUpdated.getTime() < CACHE_TIME;
   }, []);
 
-  // Fetch all users
+  // Replace the fetchUsers function with:
   const fetchUsers = useCallback(async (): Promise<User[]> => {
     try {
       setState((prev) => ({
@@ -113,10 +111,7 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({
         error: { ...prev.error, users: null },
       }));
 
-      const response = await fetch(`${backendUrl}/users`);
-      if (!response.ok) throw new Error("Failed to fetch users");
-
-      const data: User[] = await response.json();
+      const data = await apiService.user.getAllUsers();
 
       setState((prev) => ({
         ...prev,
@@ -138,7 +133,7 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, []);
 
-  // Fetch total kilometers
+  // Replace the fetchTotalKm function with:
   const fetchTotalKm = useCallback(async (): Promise<number> => {
     try {
       setState((prev) => ({
@@ -147,19 +142,16 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({
         error: { ...prev.error, totalKm: null },
       }));
 
-      const response = await fetch(`${backendUrl}/total-kilometers`);
-      if (!response.ok) throw new Error("Failed to fetch total kilometers");
-
-      const data = await response.json();
+      const totalKm = await apiService.user.getTotalKilometers();
 
       setState((prev) => ({
         ...prev,
-        totalKm: data.totalKm,
+        totalKm,
         loading: { ...prev.loading, totalKm: false },
         lastUpdated: { ...prev.lastUpdated, totalKm: new Date() },
       }));
 
-      return data.totalKm;
+      return totalKm;
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred";
@@ -172,7 +164,7 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({
     }
   }, []);
 
-  // Fetch a specific user's activities
+  // Replace the fetchUserActivities function with:
   const fetchUserActivities = useCallback(
     async (username: string): Promise<Activity[]> => {
       try {
@@ -194,13 +186,7 @@ export const GlobalStateProvider: React.FC<{ children: ReactNode }> = ({
           },
         }));
 
-        const response = await fetch(
-          `${backendUrl}/users/${username}?page=1&limit=1000`
-        );
-        if (!response.ok) throw new Error("Failed to fetch user activities");
-
-        const userData = await response.json();
-        const activities = userData.activities || [];
+        const activities = await apiService.user.getUserActivities(username);
 
         setState((prev) => ({
           ...prev,

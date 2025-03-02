@@ -61,7 +61,7 @@ const Leaderboard = ({ users }: LeaderboardProps) => {
                     </div>
                     {/* Medals for Top 3 */}
                     {getMedal(index) && (
-                      <div className="absolute -bottom-3 -right-3 text-3xl rounded-full p-1 shadow-md">
+                      <div className="absolute -bottom-3 -right-3 text-3xl rounded-full p-1">
                         {getMedal(index)}
                       </div>
                     )}

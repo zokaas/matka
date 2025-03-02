@@ -5,7 +5,7 @@ export function useCalculateStats(users: User[]) {
   return useMemo(() => {
     const today = new Date();
     const startDate = new Date("2025-01-06");
-    const endDate = new Date("2025-05-31");
+    const endDate = new Date("2025-05-22");
 
     const daysRemaining = Math.ceil(
       (endDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)

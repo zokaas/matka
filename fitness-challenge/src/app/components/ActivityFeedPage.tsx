@@ -92,7 +92,7 @@ export default function ActivityFeedPage() {
   }
 
   // Feature flag for "coming soon" message
-  const FEATURE_ENABLED = false; // Change to false to display "coming soon" banner
+  const FEATURE_ENABLED = true; // Change to false to display "coming soon" banner
 
   if (!FEATURE_ENABLED) {
     return (

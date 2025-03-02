@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import apiService from "../service/apiService";
 
 interface ReactionsProps {
   activityId: number;
@@ -21,31 +22,23 @@ const REACTION_TYPES = [
   { type: "strong", emoji: "🏋️‍♀️" },
 ];
 
-const backendUrl = "https://matka-zogy.onrender.com";
-
 const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
   const [reactions, setReactions] = useState<{ [key: string]: boolean }>({});
   const [counts, setCounts] = useState<{ [key: string]: number }>({});
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  // Fetch existing reactions when component mounts
+  // Replace the useEffect for fetching reactions with:
   useEffect(() => {
     const fetchReactions = async () => {
       try {
-        const response = await fetch(
-          `${backendUrl}/activity/${activityId}/reactions`
+        const reactionData = await apiService.reaction.getReactions(activityId);
+        const initialCounts: { [key: string]: number } = {};
+        reactionData.forEach(
+          ({ type, count }: { type: string; count: number }) => {
+            initialCounts[type] = count;
+          }
         );
-
-        if (response.ok) {
-          const reactionData = await response.json();
-          const initialCounts: { [key: string]: number } = {};
-          reactionData.forEach(
-            ({ type, count }: { type: string; count: number }) => {
-              initialCounts[type] = count;
-            }
-          );
-          setCounts(initialCounts);
-        }
+        setCounts(initialCounts);
       } catch (error) {
         console.error("Error fetching reactions:", error);
       }
@@ -54,6 +47,7 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
     fetchReactions();
   }, [activityId]);
 
+  // Replace the toggleReaction function with:
   const toggleReaction = async (reactionType: string) => {
     try {
       const newCounts = { ...counts };
@@ -62,11 +56,7 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
       setCounts(newCounts);
       setReactions({ ...reactions, [reactionType]: true });
 
-      await fetch(`${backendUrl}/activity/${activityId}/reactions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: reactionType }),
-      });
+      await apiService.reaction.toggleReaction(activityId, reactionType);
     } catch (error) {
       console.error("Error toggling reaction:", error);
     }

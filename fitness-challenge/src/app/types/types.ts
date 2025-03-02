@@ -111,6 +111,12 @@ export type ActivityWithUser = Activity & {
   status?: "coming_soon" | "available";
 };
 
+// Quote type definition
+export type Quote = {
+  id: number;
+  text: string;
+};
+
 // Helper type guard to check if a User has pagination
 export function hasUserPagination(user: User): user is UserWithPagination {
   return "pagination" in user && user.pagination !== undefined;

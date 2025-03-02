@@ -12,6 +12,7 @@ import PersonalInsights from "@/app/components/PersonalInsights";
 import CommentAndReactionView from "@/app/components/CommentAndReactionView";
 import { useUserProfile } from "@/app/hooks/useUserProfile";
 import { Activity } from "@/app/types/types";
+import apiService from "@/app/service/apiService";
 
 const sportsOptions = [
   "Juoksu",
@@ -62,7 +63,6 @@ const translations = {
 };
 
 const itemsPerPage = 10;
-const backendUrl = "https://matka-zogy.onrender.com";
 
 const UserProfile = () => {
   const params = useParams();
@@ -94,95 +94,72 @@ const UserProfile = () => {
 
   const formRef = useRef<HTMLDivElement>(null);
 
-  const handleDeleteActivity = async () => {
-    if (!activityToDelete?.id) return;
-    try {
-      const response = await fetch(
-        `${backendUrl}/users/${username}/activities/${activityToDelete.id}`,
-        {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-      if (!response.ok) throw new Error("Failed to delete activity");
-      setIsModalOpen(false);
-      setActivityToDelete(null);
+const handleDeleteActivity = async () => {
+  if (!activityToDelete?.id) return;
+  try {
+    await apiService.activity.deleteActivity(username, activityToDelete.id);
+    setIsModalOpen(false);
+    setActivityToDelete(null);
 
-      // Refresh activities after deletion
-      refreshActivities();
-    } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "An error occurred");
+    // Refresh activities after deletion
+    refreshActivities();
+  } catch (err) {
+    setSubmitError(err instanceof Error ? err.message : "An error occurred");
+  }
+};
+
+// Replace the handleAddActivity function with:
+const handleAddActivity = async (e: React.FormEvent) => {
+  e.preventDefault();
+  try {
+    let selectedActivity = activity;
+
+    // Ensure the activity name format is correct for "Muu"
+    if (activity.startsWith("Muu(") && customActivity) {
+      selectedActivity = `${customActivity} / ${activity}`;
     }
-  };
 
-  const handleAddActivity = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      let selectedActivity = activity;
+    await apiService.activity.addActivity(username, {
+      activity: selectedActivity,
+      duration: Number(duration),
+      date,
+      bonus,
+    });
 
-      // Ensure the activity name format is correct for "Muu"
-      if (activity.startsWith("Muu(") && customActivity) {
-        selectedActivity = `${customActivity} / ${activity}`;
-      }
+    resetForm();
+    refreshActivities();
+  } catch (err) {
+    setSubmitError(err instanceof Error ? err.message : "An error occurred");
+  }
+};
 
-      const response = await fetch(
-        `${backendUrl}/users/${username}/activities`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            activity: selectedActivity,
-            duration: Number(duration),
-            date,
-            bonus,
-          }),
-        }
-      );
+// Replace the handleUpdateActivity function with:
+const handleUpdateActivity = async (e: React.FormEvent) => {
+  e.preventDefault();
 
-      if (!response.ok) throw new Error("Failed to add activity");
+  if (!editingActivity) return;
 
-      resetForm();
-      refreshActivities();
-    } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "An error occurred");
+  try {
+    let selectedActivity = activity;
+
+    // Ensure correct format for custom "Muu" activities
+    if (activity.startsWith("Muu(") && customActivity) {
+      selectedActivity = `${customActivity} / ${activity}`;
     }
-  };
 
-  const handleUpdateActivity = async (e: React.FormEvent) => {
-    e.preventDefault();
+    await apiService.activity.updateActivity(username, editingActivity.id, {
+      activity: selectedActivity,
+      duration: Number(duration),
+      date,
+      bonus,
+    });
 
-    if (!editingActivity) return;
-
-    try {
-      let selectedActivity = activity;
-
-      // Ensure correct format for custom "Muu" activities
-      if (activity.startsWith("Muu(") && customActivity) {
-        selectedActivity = `${customActivity} / ${activity}`;
-      }
-
-      const response = await fetch(
-        `${backendUrl}/users/${username}/activities/${editingActivity.id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            activity: selectedActivity,
-            duration: Number(duration),
-            date,
-            bonus,
-          }),
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to update activity");
-
-      resetForm();
-      refreshActivities();
-    } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : "An error occurred");
-    }
-  };
+    resetForm();
+    refreshActivities();
+  } catch (err) {
+    setSubmitError(err instanceof Error ? err.message : "An error occurred");
+  }
+};
 
   const resetForm = () => {
     setIsEditing(false);
