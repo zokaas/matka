@@ -5,11 +5,17 @@ import { Comment } from "../types/types";
 
 interface CommentsProps {
   activityId: number;
+  isExpanded: boolean;
+  onCommentCountUpdate?: (count: number) => void;
 }
 
 const COMMENT_MAX_LENGTH = 300; // Maximum character limit for comments
 
-const CommentsSection: React.FC<CommentsProps> = ({ activityId }) => {
+const CommentsSection: React.FC<CommentsProps> = ({
+  activityId,
+  isExpanded,
+  onCommentCountUpdate,
+}) => {
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,7 +36,6 @@ const CommentsSection: React.FC<CommentsProps> = ({ activityId }) => {
         `${backendUrl}/activity/${activityId}/comments`
       );
 
-
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Error response: ${errorText}`);
@@ -50,13 +55,18 @@ const CommentsSection: React.FC<CommentsProps> = ({ activityId }) => {
       const data = await response.json();
       console.log("Received comments:", data);
       setComments(data);
+
+      // Update the parent component with the comment count
+      if (onCommentCountUpdate) {
+        onCommentCountUpdate(data.length);
+      }
     } catch (err) {
       console.error("Error fetching comments:", err);
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
-  }, [activityId, backendUrl]);
+  }, [activityId, backendUrl, onCommentCountUpdate]);
 
   useEffect(() => {
     fetchComments();
@@ -120,7 +130,14 @@ const CommentsSection: React.FC<CommentsProps> = ({ activityId }) => {
       console.log("Comment added successfully:", addedComment);
 
       // Add the new comment to the top of the list
-      setComments([addedComment, ...comments]);
+      const updatedComments = [addedComment, ...comments];
+      setComments(updatedComments);
+
+      // Update the parent component with the new comment count
+      if (onCommentCountUpdate) {
+        onCommentCountUpdate(updatedComments.length);
+      }
+
       setNewComment("");
       setCharactersLeft(COMMENT_MAX_LENGTH);
     } catch (err) {
@@ -140,6 +157,11 @@ const CommentsSection: React.FC<CommentsProps> = ({ activityId }) => {
       minute: "2-digit",
     });
   };
+
+  // If not expanded, still fetch comments to get count but don't render anything
+  if (!isExpanded) {
+    return null;
+  }
 
   return (
     <div className="space-y-4">

@@ -8,14 +8,23 @@ interface ReactionsProps {
 }
 
 const REACTION_TYPES = [
-  { type: "like", emoji: "👍", label: "Tykkää" },
-  { type: "support", emoji: "💪", label: "Kannusta" },
-  { type: "celebrate", emoji: "🎉", label: "Juhli" },
+  { type: "like", emoji: "👍" },
+  { type: "support", emoji: "💪" },
+  { type: "celebrate", emoji: "🎉" },
+  { type: "inspire", emoji: "✨" },
+  { type: "focus", emoji: "🎯" },
+  { type: "determination", emoji: "🔥" },
+  { type: "teamwork", emoji: "🤝" },
+  { type: "global", emoji: "🌍" },
+  { type: "love", emoji: "💖" },
+  { type: "speed", emoji: "🏃‍♀️" },
+  { type: "strong", emoji: "🏋️‍♀️" },
 ];
 
 const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
   const [reactions, setReactions] = useState<{ [key: string]: boolean }>({});
   const [counts, setCounts] = useState<{ [key: string]: number }>({});
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const backendUrl = "https://matka-zogy.onrender.com";
 
@@ -91,27 +100,84 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
     }
   };
 
+  // Get active reactions (ones with counts > 0)
+  const activeReactions = Object.entries(counts)
+    .filter(([_, count]) => count > 0)
+    .map(([type, count]) => ({
+      type,
+      count,
+      emoji: REACTION_TYPES.find((r) => r.type === type)?.emoji || "👍",
+    }));
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        showEmojiPicker &&
+        !(event.target as Element).closest(".emoji-container")
+      ) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showEmojiPicker]);
+
   return (
-    <div className="flex space-x-2 mt-3">
-      {REACTION_TYPES.map(({ type, emoji, label }) => (
+    <div className="mt-3 flex flex-wrap gap-2">
+      {/* Display active reactions */}
+      {activeReactions.map(({ type, emoji, count }) => (
         <button
           key={type}
           onClick={() => toggleReaction(type)}
-          className={`flex items-center space-x-1 px-3 py-1 rounded-full text-sm transition-colors ${
-            reactions[type]
-              ? "bg-purple-100 text-purple-600"
-              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-          }`}
+          className="flex items-center bg-gray-100 hover:bg-gray-200 
+                    px-4 py-2 rounded-full transition-colors"
+          aria-label={type}
         >
-          <span>{emoji}</span>
-          <span>{label}</span>
-          {(counts[type] || 0) > 0 && (
-            <span className="bg-white ml-1 rounded-full px-1.5 text-xs font-bold">
-              {counts[type]}
-            </span>
-          )}
+          <span className="text-base mr-1">{emoji}</span>
+          <span className="text-sm text-gray-700 font-medium">{count}</span>
         </button>
       ))}
+
+      {/* Add reaction button */}
+      <button
+        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+        className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 
+                  active:bg-gray-300 w-10 h-10 rounded-full transition-colors"
+        aria-label="Add reaction"
+      >
+        <span className="text-gray-500 text-xl">+</span>
+      </button>
+
+      {/* Emoji picker popup */}
+      {showEmojiPicker && (
+        <div
+          className="emoji-container absolute z-10 mt-12 p-3 bg-white rounded-lg shadow-lg 
+                      border border-gray-200 flex flex-wrap gap-2 max-w-xs"
+        >
+          {REACTION_TYPES.map(({ type, emoji }) => (
+            <button
+              key={type}
+              onClick={() => {
+                toggleReaction(type);
+                setShowEmojiPicker(false);
+              }}
+              className={`w-10 h-10 flex items-center justify-center rounded-full text-xl
+                        transition-colors ${
+                          reactions[type]
+                            ? "bg-purple-100 text-purple-600"
+                            : "hover:bg-gray-100"
+                        }`}
+              aria-label={type}
+            >
+              {emoji}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

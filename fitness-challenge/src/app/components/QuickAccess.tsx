@@ -12,6 +12,7 @@ import SubmitQuote from "./SubmitQuote";
 import Quotes from "./Quotes";
 import CommentsSection from "./CommentsSection";
 import ActivityReactions from "./ActivityReactions";
+import ActivityFeedPage from "./ActivityFeedPage";
 
 interface ActivityWithUser extends Activity {
   username: string;
@@ -147,7 +148,6 @@ export default function QuickAccess() {
           <Quotes />
         </motion.div>
       </motion.header>
-
       <div>
         <Map totalKm={totalKm} />
       </div>
@@ -210,122 +210,7 @@ export default function QuickAccess() {
 
       {/* Activity Feed Section */}
       {!loading && !error && showActivityFeed && (
-        // <section className="space-y-6">
-        //   <h2 className="text-xl font-bold text-purple-700 mb-4">
-        //     Viimeisimmät Suoritukset
-        //   </h2>
-
-        //   {loadingActivities ? (
-        //     <div className="flex justify-center items-center py-8">
-        //       <div className="animate-spin h-8 w-8 border-4 border-purple-500 rounded-full border-t-transparent"></div>
-        //     </div>
-        //   ) : recentActivities.length === 0 ? (
-        //     <div className="text-center p-6 bg-white rounded-lg shadow">
-        //       <p className="text-gray-500">Ei suorituksia saatavilla.</p>
-        //     </div>
-        //   ) : (
-        //     <div className="space-y-6">
-        //       {recentActivities.map((activity) => (
-        //         <div
-        //           key={activity.id}
-        //           className="bg-white p-6 rounded-lg shadow"
-        //         >
-        //           <div className="flex items-center space-x-3 mb-4">
-        //             <div className="w-10 h-10 rounded-full overflow-hidden">
-        //               <Image
-        //                 src={
-        //                   activity.profilePicture
-        //                     ? `https://matka-xi.vercel.app/${activity.username}.png`
-        //                     : `https://api.dicebear.com/7.x/adventurer/svg?seed=${activity.username}`
-        //                 }
-        //                 alt={`${activity.username}'s avatar`}
-        //                 width={40}
-        //                 height={40}
-        //                 className="object-cover"
-        //                 unoptimized
-        //               />
-        //             </div>
-        //             <div>
-        //               <Link
-        //                 href={`/user/${activity.username}`}
-        //                 className="font-medium text-purple-600 hover:underline"
-        //               >
-        //                 {activity.username}
-        //               </Link>
-        //               <p className="text-xs text-gray-500">
-        //                 {formatDate(activity.date)}
-        //               </p>
-        //             </div>
-        //           </div>
-
-        //           <div className="mb-3">
-        //             <h3 className="font-semibold text-lg">
-        //               {activity.activity}
-        //             </h3>
-        //             <div className="flex space-x-4 text-sm text-gray-600">
-        //               <span>{activity.kilometers.toFixed(1)} km</span>
-        //               <span>{activity.duration} min</span>
-        //               {activity.bonus && (
-        //                 <span className="text-purple-500">
-        //                   🎉 {activity.bonus}
-        //                 </span>
-        //               )}
-        //             </div>
-        //           </div>
-
-        //           <ActivityReactions activityId={activity.id} />
-
-        //           <div className="flex justify-between border-t pt-3 mt-3">
-        //             <button
-        //               onClick={() => toggleComments(activity.id)}
-        //               className="text-gray-600 hover:text-purple-600 text-sm flex items-center"
-        //             >
-        //               <svg
-        //                 xmlns="http://www.w3.org/2000/svg"
-        //                 className="h-5 w-5 mr-1"
-        //                 fill="none"
-        //                 viewBox="0 0 24 24"
-        //                 stroke="currentColor"
-        //               >
-        //                 <path
-        //                   strokeLinecap="round"
-        //                   strokeLinejoin="round"
-        //                   strokeWidth={2}
-        //                   d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-        //                 />
-        //               </svg>
-        //               {expandedActivity === activity.id
-        //                 ? "Sulje kommentit"
-        //                 : "Näytä kommentit"}
-        //             </button>
-        //           </div>
-
-        //           {/* Comments section that expands when toggled */}
-        //           {expandedActivity === activity.id && (
-        //             <div className="mt-4 border-t pt-4">
-        //               <CommentsSection activityId={activity.id} />
-        //             </div>
-        //           )}
-        //         </div>
-        //       ))}
-
-        //       <div className="text-center">
-        //         <Link
-        //           href="/feed"
-        //           className="text-purple-600 hover:text-purple-800 font-medium"
-        //         >
-        //           Näytä kaikki suoritukset →
-        //         </Link>
-        //       </div>
-        //     </div>
-        //   )}
-        // </section>
-        <div className="text-center bg-yellow-100 text-yellow-700 p-4 rounded-lg">
-          <h2 className="text-xl font-semibold">TULOSSA PIAN 🚀</h2>
-          <p className="text-sm">
-            Tämä ominaisuus julkaistaan kun olette saaneet kasaan 30 000km.
-          </p>
-        </div>
+<ActivityFeedPage/>
       )}
 
       {/* Leaderboard */}
