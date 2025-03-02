@@ -33,26 +33,23 @@ export class ReactionsController {
         throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
       }
 
-      // Group reactions by type and count
-      const reactionCounts = activity.reactions.reduce((acc, reaction) => {
-        if (!acc[reaction.type]) {
-          acc[reaction.type] = 0;
-        }
-        acc[reaction.type]++;
-        return acc;
-      }, {});
+      // ✅ Explicitly typing reactionCounts as Record<string, number>
+      const reactionCounts: Record<string, number> = activity.reactions.reduce(
+        (acc: Record<string, number>, reaction) => {
+          acc[reaction.type] = (acc[reaction.type] || 0) + 1;
+          return acc;
+        },
+        {},
+      );
 
       return Object.entries(reactionCounts).map(([type, count]) => ({
         type,
         count,
       }));
-    } catch (error) {
-      console.error('Error getting reactions:', error);
-      if (error instanceof HttpException) {
-        throw error;
-      }
+    } catch (error: unknown) {
+      console.error('Error fetching reactions:', error);
       throw new HttpException(
-        'Error processing reaction request',
+        'Failed to retrieve reactions',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -64,11 +61,6 @@ export class ReactionsController {
     @Body() reactionData: { type: string },
   ) {
     try {
-      console.log(
-        `Toggling reaction for activity ${activityId}:`,
-        reactionData,
-      );
-
       const activity = await this.activityRepository.findOne({
         where: { id: parseInt(activityId, 10) },
       });
@@ -84,29 +76,45 @@ export class ReactionsController {
         },
       });
 
+      const currentTime = new Date();
+
       if (existingReaction) {
-        // Remove existing reaction if it exists
-        await this.reactionRepository.remove(existingReaction);
-        return { added: false, type: reactionData.type };
+        // ✅ Ensure that createdAt is correctly handled
+        if (!existingReaction.createdAt) {
+          throw new HttpException(
+            'Reaction does not have a valid timestamp',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+
+        const sessionExpiresAt = new Date(existingReaction.createdAt);
+        sessionExpiresAt.setMinutes(sessionExpiresAt.getMinutes() + 5);
+
+        if (currentTime <= sessionExpiresAt) {
+          await this.reactionRepository.remove(existingReaction);
+          return { added: false, type: reactionData.type };
+        } else {
+          return {
+            added: true,
+            type: reactionData.type,
+            message: 'Reactions are now permanent after session expiration.',
+          };
+        }
       }
 
-      // Create new reaction
+      // ✅ Ensure createdAt is properly set
       const reaction = this.reactionRepository.create({
         type: reactionData.type,
         activity,
+        createdAt: currentTime, // Explicitly set creation time
       });
 
-      const savedReaction = await this.reactionRepository.save(reaction);
-      console.log('Reaction saved:', savedReaction);
-
+      await this.reactionRepository.save(reaction);
       return { added: true, type: reactionData.type };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error processing reaction:', error);
-      if (error instanceof HttpException) {
-        throw error;
-      }
       throw new HttpException(
-        'Error processing reaction request',
+        'Failed to process reaction request',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

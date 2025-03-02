@@ -23,24 +23,19 @@ export class CommentsController {
 
   @Get(':activityId/comments')
   async getActivityComments(@Param('activityId') activityId: string) {
-    console.log(`Fetching comments for activity: ${activityId}`);
     const activity = await this.activityRepository.findOne({
       where: { id: parseInt(activityId, 10) },
       relations: ['comments'],
     });
-    console.log('Activity found:', activity);
 
     if (!activity) {
       throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
     }
 
-    // Sort comments by date (newest first)
-    const sortedComments = activity.comments.sort(
+    return activity.comments.sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
-
-    return sortedComments;
   }
 
   @Post(':activityId/comments')
@@ -61,8 +56,6 @@ export class CommentsController {
       activity,
     });
 
-    const savedComment = await this.commentRepository.save(comment);
-
-    return savedComment;
+    return await this.commentRepository.save(comment);
   }
 }

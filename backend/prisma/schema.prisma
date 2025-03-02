@@ -8,21 +8,40 @@ generator client {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  totalKm   Float    @default(0)
-  activities Activity[]
+  id          Int        @id @default(autoincrement())
+  username    String     @unique
+  totalKm     Float      @default(0)
+  profilePicture String? // Nullable profile picture field
+  activities  Activity[]
 }
 
 model Activity {
-  id         Int      @id @default(autoincrement())
+  id         Int        @id @default(autoincrement())
   activity   String
   duration   Int
   date       DateTime
   kilometers Float
+  bonus      String?    // Can be NULL or one of the predefined values
   userId     Int
-  user       User     @relation(fields: [userId], references: [id])
-  bonus      String?  // Can be NULL or one of the predefined values
+  user       User       @relation(fields: [userId], references: [id])
+  comments   Comment[]  @relation("ActivityComments") // Comments on activity
+  reactions  Reaction[] @relation("ActivityReactions") // Reactions on activity
+}
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  text       String
+  createdAt  DateTime @default(now()) // Automatically sets timestamp
+  activityId Int
+  activity   Activity @relation(fields: [activityId], references: [id], name: "ActivityComments")
+}
+
+model Reaction {
+  id         Int      @id @default(autoincrement())
+  type       String   // Can be "like", "support", "celebrate"
+  createdAt  DateTime @default(now()) // Timestamp for reaction
+  activityId Int
+  activity   Activity @relation(fields: [activityId], references: [id], name: "ActivityReactions")
 }
 
 model Quote {

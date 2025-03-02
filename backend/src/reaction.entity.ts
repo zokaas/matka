@@ -1,10 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  CreateDateColumn,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { Activity } from './activity.entity';
 import { Users } from './user.entity';
 
@@ -21,9 +15,9 @@ export class Reaction {
   })
   activity: Activity;
 
-  @ManyToOne(() => Users, { onDelete: 'CASCADE' }) // ❌ Removed user.reactions reference
-  user: Users;
+  @ManyToOne(() => Users, { onDelete: 'CASCADE' })
+  user: Users; // Note: User reference is commented out
 
-  @CreateDateColumn()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 }

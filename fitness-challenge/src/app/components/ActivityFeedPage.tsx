@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Activity, User } from "@/app/types/types";
 import ActivityItem from "./ActivityItem";
 
@@ -9,73 +10,79 @@ interface ActivityWithUser extends Activity {
   profilePicture?: string;
 }
 
+const backendUrl = "https://matka-zogy.onrender.com";
+
 export default function ActivityFeedPage() {
   const [activities, setActivities] = useState<ActivityWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const backendUrl = "https://matka-zogy.onrender.com";
+  // Fetch activities more efficiently
+  const fetchRecentActivities = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      // Fetch all users in one request
+      const usersResponse = await fetch(`${backendUrl}/users`);
+      if (!usersResponse.ok)
+        throw new Error("Käyttäjien lataaminen epäonnistui.");
+      const users: User[] = await usersResponse.json();
+
+      // Fetch all activities in parallel for better performance
+      const activityPromises = users.map(async (user) => {
+        try {
+          const response = await fetch(
+            `${backendUrl}/users/${user.username}/activities/all`
+          );
+          if (!response.ok)
+            throw new Error(
+              `Aktiivisuuden haku epäonnistui käyttäjälle ${user.username}.`
+            );
+          const userActivities: Activity[] = await response.json();
+
+          return userActivities.map((activity) => ({
+            ...activity,
+            username: user.username,
+            profilePicture: user.profilePicture,
+          }));
+        } catch (error) {
+          console.error(
+            `Error fetching activities for ${user.username}:`,
+            error
+          );
+          return []; // Ensure errors for one user don’t block others
+        }
+      });
+
+      // Wait for all activity requests to finish
+      const allActivities = (await Promise.all(activityPromises)).flat();
+
+      // Sort by date (newest first) and limit to 20
+      const recentActivities = allActivities
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 20);
+
+      setActivities(recentActivities);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Tapahtui virhe.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchRecentActivities = async () => {
-      try {
-        setLoading(true);
-
-        // First fetch all users
-        const usersResponse = await fetch(`${backendUrl}/users`);
-        if (!usersResponse.ok) throw new Error("Failed to fetch users");
-        const users: User[] = await usersResponse.json();
-
-        // Process activities from all users
-        const allActivities: ActivityWithUser[] = [];
-
-        // For each user, get activities and add username
-        for (const user of users) {
-          try {
-            const response = await fetch(
-              `${backendUrl}/users/${user.username}/activities/all`
-            );
-            if (response.ok) {
-              const userActivities: Activity[] = await response.json();
-              // Add username to each activity
-              const activitiesWithUser = userActivities.map((activity) => ({
-                ...activity,
-                username: user.username,
-                profilePicture: user.profilePicture,
-              }));
-              allActivities.push(...activitiesWithUser);
-            }
-          } catch (userError) {
-            console.error(
-              `Error fetching activities for ${user.username}:`,
-              userError
-            );
-            // Continue with other users even if one fails
-          }
-        }
-
-        // Sort by date (newest first) and limit to 20
-        const recentActivities = allActivities
-          .sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-          )
-          .slice(0, 20);
-
-        setActivities(recentActivities);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchRecentActivities();
-  }, [backendUrl]);
+  }, [fetchRecentActivities]);
 
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin h-12 w-12 border-4 border-purple-500 rounded-full border-t-transparent"></div>
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity }}
+          className="h-12 w-12 border-4 border-purple-500 rounded-full border-t-transparent"
+        ></motion.div>
       </div>
     );
   }
@@ -84,8 +91,8 @@ export default function ActivityFeedPage() {
     return <div className="text-center text-red-500 p-4">{error}</div>;
   }
 
-  // Feature flag for showing the full activity feed or the "coming soon" banner
-  const FEATURE_ENABLED = false; // Set to true when ready to launch
+  // Feature flag for "coming soon" message
+  const FEATURE_ENABLED = false; // Change to false to display "coming soon" banner
 
   if (!FEATURE_ENABLED) {
     return (
@@ -100,6 +107,7 @@ export default function ActivityFeedPage() {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
+      {/* Header */}
       <header className="text-center mb-8">
         <h1 className="text-3xl font-bold text-purple-600">
           Viimeisimmät Suoritukset
@@ -109,15 +117,26 @@ export default function ActivityFeedPage() {
         </p>
       </header>
 
+      {/* Activity Feed */}
       <div className="space-y-6">
         {activities.length === 0 ? (
           <div className="text-center p-6 bg-white rounded-lg shadow">
             <p className="text-gray-500">Ei aktiivisuuksia saatavilla.</p>
           </div>
         ) : (
-          activities.map((activity) => (
-            <ActivityItem key={activity.id} activity={activity} />
-          ))
+          <AnimatePresence>
+            {activities.map((activity) => (
+              <motion.div
+                key={activity.id}
+                initial={{ opacity: 0, y: 5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ActivityItem activity={activity} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         )}
       </div>
     </div>

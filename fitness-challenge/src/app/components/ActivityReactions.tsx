@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Reaction } from "../types/types";
+import React, { useState, useEffect, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ReactionsProps {
   activityId: number;
@@ -21,12 +21,12 @@ const REACTION_TYPES = [
   { type: "strong", emoji: "🏋️‍♀️" },
 ];
 
+const backendUrl = "https://matka-zogy.onrender.com";
+
 const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
   const [reactions, setReactions] = useState<{ [key: string]: boolean }>({});
   const [counts, setCounts] = useState<{ [key: string]: number }>({});
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
-  const backendUrl = "https://matka-zogy.onrender.com";
 
   // Fetch existing reactions when component mounts
   useEffect(() => {
@@ -37,18 +37,13 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
         );
 
         if (response.ok) {
-          const reactionData: Reaction[] = await response.json();
-
-          // Initialize reactions and counts from backend
-          const initialReactions: { [key: string]: boolean } = {};
+          const reactionData = await response.json();
           const initialCounts: { [key: string]: number } = {};
-
-          reactionData.forEach(({ type, count }) => {
-            initialReactions[type] = false;
-            initialCounts[type] = count;
-          });
-
-          setReactions(initialReactions);
+          reactionData.forEach(
+            ({ type, count }: { type: string; count: number }) => {
+              initialCounts[type] = count;
+            }
+          );
           setCounts(initialCounts);
         }
       } catch (error) {
@@ -61,123 +56,110 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
 
   const toggleReaction = async (reactionType: string) => {
     try {
-      // Optimistically update UI
-      const newReactions = { ...reactions };
       const newCounts = { ...counts };
+      newCounts[reactionType] = (newCounts[reactionType] || 0) + 1;
 
-      // Toggle the reaction
-      newReactions[reactionType] = !newReactions[reactionType];
-      newCounts[reactionType] = newReactions[reactionType]
-        ? (newCounts[reactionType] || 0) + 1
-        : Math.max(0, (newCounts[reactionType] || 0) - 1);
-
-      setReactions(newReactions);
       setCounts(newCounts);
+      setReactions({ ...reactions, [reactionType]: true });
 
-      // Send reaction to backend
-      const response = await fetch(
-        `${backendUrl}/activity/${activityId}/reactions`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ type: reactionType }),
-        }
-      );
-
-      if (!response.ok) {
-        // If backend call fails, revert local state
-        setReactions(reactions);
-        setCounts(counts);
-        console.error("Failed to update reaction");
-      }
+      await fetch(`${backendUrl}/activity/${activityId}/reactions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: reactionType }),
+      });
     } catch (error) {
       console.error("Error toggling reaction:", error);
-      // Revert local state on error
-      setReactions(reactions);
-      setCounts(counts);
     }
   };
 
-  // Get active reactions (ones with counts > 0)
-  const activeReactions = Object.entries(counts)
-    .filter(([_, count]) => count > 0)
-    .map(([type, count]) => ({
-      type,
-      count,
-      emoji: REACTION_TYPES.find((r) => r.type === type)?.emoji || "👍",
-    }));
+  // Memoized active reactions for efficiency
+  const activeReactions = useMemo(
+    () =>
+      Object.entries(counts)
+        .filter(([_, count]) => count > 0)
+        .map(([type, count]) => ({
+          type,
+          count,
+          emoji: REACTION_TYPES.find((r) => r.type === type)?.emoji || "👍",
+        })),
+    [counts]
+  );
 
   // Close emoji picker when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         showEmojiPicker &&
-        !(event.target as Element).closest(".emoji-container")
+        !(event.target as Element).closest(".emoji-picker")
       ) {
         setShowEmojiPicker(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showEmojiPicker]);
 
   return (
-    <div className="mt-3 flex flex-wrap gap-2">
+    <div className="mt-3 flex flex-wrap gap-2 items-center">
       {/* Display active reactions */}
       {activeReactions.map(({ type, emoji, count }) => (
-        <button
+        <motion.button
           key={type}
+          whileTap={{ scale: 0.9 }}
+          className="flex items-center bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full transition-colors shadow-sm"
           onClick={() => toggleReaction(type)}
-          className="flex items-center bg-gray-100 hover:bg-gray-200 
-                    px-4 py-2 rounded-full transition-colors"
           aria-label={type}
         >
           <span className="text-base mr-1">{emoji}</span>
           <span className="text-sm text-gray-700 font-medium">{count}</span>
-        </button>
+        </motion.button>
       ))}
 
       {/* Add reaction button */}
-      <button
+      <motion.button
+        whileTap={{ scale: 0.9 }}
         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-        className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 
-                  active:bg-gray-300 w-10 h-10 rounded-full transition-colors"
+        className="flex items-center justify-center bg-gray-100 hover:bg-gray-200 active:bg-gray-300 
+                   w-10 h-10 rounded-full transition-colors shadow-sm"
         aria-label="Add reaction"
       >
         <span className="text-gray-500 text-xl">+</span>
-      </button>
+      </motion.button>
 
       {/* Emoji picker popup */}
-      {showEmojiPicker && (
-        <div
-          className="emoji-container absolute z-10 mt-12 p-3 bg-white rounded-lg shadow-lg 
-                      border border-gray-200 flex flex-wrap gap-2 max-w-xs"
-        >
-          {REACTION_TYPES.map(({ type, emoji }) => (
-            <button
-              key={type}
-              onClick={() => {
-                toggleReaction(type);
-                setShowEmojiPicker(false);
-              }}
-              className={`w-10 h-10 flex items-center justify-center rounded-full text-xl
-                        transition-colors ${
-                          reactions[type]
-                            ? "bg-purple-100 text-purple-600"
-                            : "hover:bg-gray-100"
-                        }`}
-              aria-label={type}
-            >
-              {emoji}
-            </button>
-          ))}
-        </div>
-      )}
+      <AnimatePresence>
+        {showEmojiPicker && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{ duration: 0.2 }}
+            className="emoji-picker absolute z-10 mt-12 p-3 bg-white rounded-lg shadow-lg 
+                       border border-gray-200 flex flex-wrap gap-2 max-w-xs"
+          >
+            {REACTION_TYPES.map(({ type, emoji }) => (
+              <motion.button
+                key={type}
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  toggleReaction(type);
+                  setShowEmojiPicker(false);
+                }}
+                className={`w-10 h-10 flex items-center justify-center rounded-full text-xl 
+                           transition-colors ${
+                             reactions[type]
+                               ? "bg-purple-100 text-purple-600"
+                               : "hover:bg-gray-100"
+                           }`}
+                aria-label={type}
+              >
+                {emoji}
+              </motion.button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
