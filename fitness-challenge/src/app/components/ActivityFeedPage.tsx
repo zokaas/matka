@@ -110,7 +110,7 @@ export default function ActivityFeedPage() {
       {/* Header */}
       <header className="text-center mb-8">
         <h1 className="text-3xl font-bold text-purple-600">
-          Viimeisimmät Suoritukset
+          Viimeisimmät suoritukset
         </h1>
         <p className="text-gray-600 mt-2">
           Katso mitä Petolliset ovat tehneet viime aikoina!
