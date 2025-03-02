@@ -15,12 +15,11 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
   const targetPaces = useTargetPaces(users);
   const weeklyInsights = useWeeklyInsights(users, targetPaces);
 
-  // Progress color based on percentage
-  const getProgressColor = (percentage) => {
-    if (percentage >= 50) return "#22c55e"; // Green
-    if (percentage >= 25) return "#f97316"; // Orange
-    return "#ef4444"; // Red
-  };
+const getProgressColor = (percentage: number) => {
+  if (percentage >= 50) return "#22c55e"; // Green
+  if (percentage >= 25) return "#f97316"; // Orange
+  return "#ef4444"; // Red
+};
 
   return (
     <section>
