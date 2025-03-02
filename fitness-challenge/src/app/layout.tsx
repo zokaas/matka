@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import NavBar from "./components/NavBar";
+import { GlobalStateProvider } from "./context/GlobalStateProvider";
 
 export const metadata: Metadata = {
   title: "Petolliset",
@@ -15,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* ✅ Force browser to reload favicon */}
+        {/* Force browser to reload favicon */}
         <link rel="icon" href="/favicon.ico?v=2" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
         <meta
@@ -26,8 +27,10 @@ export default function RootLayout({
         <meta httpEquiv="Expires" content="0" />
       </head>
       <body className="antialiased">
-        <NavBar />
-        {children}
+        <GlobalStateProvider>
+          <NavBar />
+          {children}
+        </GlobalStateProvider>
       </body>
     </html>
   );
