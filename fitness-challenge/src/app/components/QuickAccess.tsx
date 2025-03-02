@@ -1,58 +1,66 @@
-import { useState } from "react";
-import { useLeaderboard } from "../hooks/useLeaderboard";
+import { useState, useEffect, useCallback } from "react";
+import { User, Activity } from "@/app/types/types";
+import { fetchRecentActivities, fetchUsersAndTotalKm } from "../utils/utils";
 import ActivityFeedPage from "./ActivityFeedPage";
+import Header from "./Insights/Header";
 import Leaderboard from "./Leaderboard";
 import SubmitQuote from "./SubmitQuote";
 import ToggleButtons from "./ToggleButtons";
-import MapWithGlobalState from "./MapWithGlobalState";
+import Map from "./Map"; // Ensure you have a Map component in the specified path
 import WeeklyProgress from "./WeeklyProgress";
 
+
+const backendUrl = "https://matka-zogy.onrender.com";
+
 export default function QuickAccess() {
-  const { users, loading: loadingUsers, error: errorUsers } = useLeaderboard();
+  const [users, setUsers] = useState<User[]>([]);
+  const [totalKm, setTotalKm] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showWeeklyProgress, setShowWeeklyProgress] = useState(false);
   const [showActivityFeed, setShowActivityFeed] = useState(false);
+  const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
+  const [loadingActivities, setLoadingActivities] = useState(false);
+
+  useEffect(() => {
+    fetchUsersAndTotalKm(setUsers, setTotalKm, setLoading, setError);
+  }, []);
+
+  useEffect(() => {
+    if (showActivityFeed) {
+      fetchRecentActivities(
+        users,
+        setRecentActivities,
+        setLoadingActivities,
+        setError
+      );
+    }
+  }, [showActivityFeed, users]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-8">
-      {/* Map takes full width on mobile */}
-      <div className="w-full">
-        <MapWithGlobalState />
-      </div>
+    <div className="max-w-5xl mx-auto p-6 space-y-8">
+      <Map totalKm={totalKm} />
+      <ToggleButtons
+        showWeeklyProgress={showWeeklyProgress}
+        showActivityFeed={showActivityFeed}
+        setShowWeeklyProgress={setShowWeeklyProgress}
+        setShowActivityFeed={setShowActivityFeed}
+      />
 
-      {/* Toggle buttons with better mobile spacing */}
-      <div className="w-full">
-        <ToggleButtons
-          showWeeklyProgress={showWeeklyProgress}
-          showActivityFeed={showActivityFeed}
-          setShowWeeklyProgress={setShowWeeklyProgress}
-          setShowActivityFeed={setShowActivityFeed}
-        />
-      </div>
-
-      {/* Loading and error states */}
-      {loadingUsers && (
-        <div className="text-center py-4 text-gray-500 animate-pulse">
+      {loading && (
+        <div className="text-center text-gray-500 animate-pulse">
           Ladataan käyttäjiä...
         </div>
       )}
-      {errorUsers && (
-        <div className="text-center py-4 text-red-500">Virhe: {errorUsers}</div>
-      )}
+      {error && <div className="text-center text-red-500">Virhe: {error}</div>}
 
-      {/* Content sections with proper mobile handling */}
-      <div className="w-full">
-        {!loadingUsers && !errorUsers && showActivityFeed && (
-          <ActivityFeedPage />
-        )}
-        {!loadingUsers &&
-          !errorUsers &&
-          !showWeeklyProgress &&
-          !showActivityFeed && <Leaderboard users={users} />}
-        {!loadingUsers &&
-          !errorUsers &&
-          showWeeklyProgress &&
-          !showActivityFeed && <WeeklyProgress users={users} />}
-      </div>
+      {!loading && !error && showActivityFeed && <ActivityFeedPage />}
+      {!loading && !error && !showWeeklyProgress && !showActivityFeed && (
+        <Leaderboard users={users} />
+      )}
+      {!loading && !error && showWeeklyProgress && !showActivityFeed && (
+        <WeeklyProgress users={users} />
+      )}
 
       {/* Submit quote with proper spacing */}
       <div className="w-full pt-2 sm:pt-4">

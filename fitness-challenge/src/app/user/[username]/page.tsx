@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -10,9 +10,28 @@ import Pagination from "@/app/components/Pagination";
 import SubmitQuote from "@/app/components/SubmitQuote";
 import PersonalInsights from "@/app/components/PersonalInsights";
 import CommentAndReactionView from "@/app/components/CommentAndReactionView";
-import { useUserProfile } from "@/app/hooks/useUserProfile";
-import { Activity } from "@/app/types/types";
-import apiService from "@/app/service/apiService";
+
+interface Activity {
+  id: number;
+  activity: string;
+  duration: number;
+  date: string;
+  kilometers: number;
+  bonus?: string;
+}
+
+interface User {
+  username: string;
+  totalKm: number;
+  profilePicture: string;
+  activities: Activity[];
+  pagination?: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
 
 const sportsOptions = [
   "Juoksu",
@@ -67,15 +86,9 @@ const itemsPerPage = 10;
 const UserProfile = () => {
   const params = useParams();
   const username = params?.username as string;
-  const [page, setPage] = useState(1);
-
-  // Use our custom hook to manage user data
-  const { user, loading, error, refreshActivities } = useUserProfile(
-    username,
-    page,
-    itemsPerPage
-  );
-
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [activity, setActivity] = useState("");
@@ -88,78 +101,121 @@ const UserProfile = () => {
   const [activityToDelete, setActivityToDelete] = useState<Activity | null>(
     null
   );
+  const [page, setPage] = useState(1);
   const [bonus, setBonus] = useState<string | null>(null);
+  // Add state to toggle between activity form and insights
   const [showInsights, setShowInsights] = useState(false);
-  const [submitError, setSubmitError] = useState("");
 
+  const backendUrl = "https://matka-zogy.onrender.com";
   const formRef = useRef<HTMLDivElement>(null);
 
-const handleDeleteActivity = async () => {
-  if (!activityToDelete?.id) return;
-  try {
-    await apiService.activity.deleteActivity(username, activityToDelete.id);
-    setIsModalOpen(false);
-    setActivityToDelete(null);
-
-    // Refresh activities after deletion
-    refreshActivities();
-  } catch (err) {
-    setSubmitError(err instanceof Error ? err.message : "An error occurred");
-  }
-};
-
-// Replace the handleAddActivity function with:
-const handleAddActivity = async (e: React.FormEvent) => {
-  e.preventDefault();
-  try {
-    let selectedActivity = activity;
-
-    // Ensure the activity name format is correct for "Muu"
-    if (activity.startsWith("Muu(") && customActivity) {
-      selectedActivity = `${customActivity} / ${activity}`;
+  const fetchUser = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${backendUrl}/users/${username}?page=${page}&limit=${itemsPerPage}`
+      );
+      if (!response.ok) throw new Error("Failed to fetch user data");
+      const data = await response.json();
+      setUser(data);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
     }
+  }, [username, page]);
 
-    await apiService.activity.addActivity(username, {
-      activity: selectedActivity,
-      duration: Number(duration),
-      date,
-      bonus,
-    });
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
-    resetForm();
-    refreshActivities();
-  } catch (err) {
-    setSubmitError(err instanceof Error ? err.message : "An error occurred");
-  }
-};
-
-// Replace the handleUpdateActivity function with:
-const handleUpdateActivity = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  if (!editingActivity) return;
-
-  try {
-    let selectedActivity = activity;
-
-    // Ensure correct format for custom "Muu" activities
-    if (activity.startsWith("Muu(") && customActivity) {
-      selectedActivity = `${customActivity} / ${activity}`;
+  const handleDeleteActivity = async () => {
+    if (!activityToDelete?.id) return;
+    try {
+      const response = await fetch(
+        `${backendUrl}/users/${username}/activities/${activityToDelete.id}`,
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+      if (!response.ok) throw new Error("Failed to delete activity");
+      setIsModalOpen(false);
+      setActivityToDelete(null);
+      fetchUser();
+    } catch (err) {
+      setError((err as Error).message);
     }
+  };
 
-    await apiService.activity.updateActivity(username, editingActivity.id, {
-      activity: selectedActivity,
-      duration: Number(duration),
-      date,
-      bonus,
-    });
+  const handleAddActivity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      let selectedActivity = activity;
 
-    resetForm();
-    refreshActivities();
-  } catch (err) {
-    setSubmitError(err instanceof Error ? err.message : "An error occurred");
-  }
-};
+      // Ensure the activity name format is correct for "Muu"
+      if (activity.startsWith("Muu(") && customActivity) {
+        selectedActivity = `${customActivity} / ${activity}`;
+      }
+
+      const response = await fetch(
+        `${backendUrl}/users/${username}/activities`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            activity: selectedActivity,
+            duration: Number(duration),
+            date,
+            bonus,
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to add activity");
+
+      resetForm();
+      fetchUser();
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  };
+
+  const handleUpdateActivity = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!editingActivity) return;
+
+    try {
+      let selectedActivity = activity;
+
+      // Ensure correct format for custom "Muu" activities
+      if (activity.startsWith("Muu(") && customActivity) {
+        selectedActivity = `${customActivity} / ${activity}`;
+      }
+
+      const response = await fetch(
+        `${backendUrl}/users/${username}/activities/${editingActivity.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            activity: selectedActivity,
+            duration: Number(duration),
+            date,
+            bonus,
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update activity");
+
+      resetForm();
+      fetchUser();
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  };
 
   const resetForm = () => {
     setIsEditing(false);
@@ -169,7 +225,6 @@ const handleUpdateActivity = async (e: React.FormEvent) => {
     setDuration("");
     setDate(new Date().toISOString().split("T")[0]);
     setBonus(null);
-    setSubmitError("");
   };
 
   const startEdit = (activity: Activity) => {
@@ -358,10 +413,6 @@ const handleUpdateActivity = async (e: React.FormEvent) => {
               </select>
             </div>
 
-            {submitError && (
-              <div className="text-red-500 text-sm">{submitError}</div>
-            )}
-
             <div className="flex justify-between items-center space-x-4">
               {isEditing && (
                 <button
@@ -385,10 +436,7 @@ const handleUpdateActivity = async (e: React.FormEvent) => {
         </section>
       ) : (
         <PersonalInsights
-          activities={user.activities.map((activity) => ({
-            ...activity,
-            bonus: activity.bonus || undefined,
-          }))}
+          activities={user.activities}
           username={user.username}
         />
       )}
@@ -459,20 +507,16 @@ const handleUpdateActivity = async (e: React.FormEvent) => {
         ))}
       </div>
 
-      {user.pagination &&
-        "totalPages" in user.pagination &&
-        user.pagination.totalPages > 1 && (
-          <div className="mt-6">
-            <Pagination
-              page={page}
-              setPage={setPage}
-              totalItems={
-                "total" in user.pagination ? user.pagination.total : 0
-              }
-              itemsPerPage={itemsPerPage}
-            />
-          </div>
-        )}
+      {user.pagination && user.pagination.totalPages > 1 && (
+        <div className="mt-6">
+          <Pagination
+            page={page}
+            setPage={setPage}
+            totalItems={user.pagination.total}
+            itemsPerPage={itemsPerPage}
+          />
+        </div>
+      )}
       <SubmitQuote />
     </div>
   );

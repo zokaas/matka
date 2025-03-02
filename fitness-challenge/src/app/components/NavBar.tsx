@@ -2,17 +2,18 @@
 
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
-import { useGlobalState } from "../context/GlobalStateProvider";
+
+interface User {
+  username: string;
+}
+const backendUrl = "https://matka-zogy.onrender.com";
 
 export default function Navbar() {
-  const { state, refreshUsers } = useGlobalState();
+  const [users, setUsers] = useState<User[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-
-  // Extract users from global state
-  const { users } = state;
-  const loading = state.loading.users;
-  const error = state.error.users;
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   // Refs for dropdown buttons and content
   const dropdownButtonRef = useRef<HTMLButtonElement>(null);
@@ -20,12 +21,21 @@ export default function Navbar() {
   const mobileDropdownButtonRef = useRef<HTMLButtonElement>(null);
   const mobileDropdownContentRef = useRef<HTMLDivElement>(null);
 
-  // Fetch users if not already loaded
   useEffect(() => {
-    if (!loading && !state.lastUpdated.users) {
-      refreshUsers();
-    }
-  }, [loading, refreshUsers, state.lastUpdated.users]);
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch(`${backendUrl}/users`);
+        if (!response.ok) throw new Error("Failed to fetch users");
+        setUsers(await response.json());
+      } catch (err) {
+        setError((err as Error).message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   // Handle clicks anywhere in the document
   useEffect(() => {
@@ -93,6 +103,12 @@ export default function Navbar() {
             >
               Tilastot
             </Link>
+            {/* <Link
+              href="/feed"
+              className="hover:bg-purple-500 px-3 py-2 rounded text-sm font-medium"
+            >
+              Suoritukset
+            </Link> */}
             {/* Dropdown for Users */}
             <div className="relative">
               <button
@@ -185,6 +201,13 @@ export default function Navbar() {
           >
             Tilastot
           </Link>
+          {/* <Link
+            href="/feed"
+            className="block px-4 py-2 text-sm font-medium hover:bg-purple-800"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            Suoritukset
+          </Link> */}
           <div>
             <button
               ref={mobileDropdownButtonRef}

@@ -8,7 +8,7 @@ export type LineFeature = GeoJSON.Feature<
   Record<string, unknown>
 >;
 
-// Base Activity type
+
 export type Activity = {
   id: number;
   activity: string;
@@ -18,27 +18,13 @@ export type Activity = {
   bonus?: string | null;
 };
 
-// Base User type
-export type BaseUser = {
+export type User = {
   profilePicture?: string;
   id: string;
   username: string;
   totalKm: number;
   activities: Activity[];
 };
-
-// User type with pagination for user profile page
-export interface UserWithPagination extends BaseUser {
-  pagination?: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
-
-// Main User type alias - most components should use this
-export type User = BaseUser | UserWithPagination;
 
 export type AchievementStats = {
   totalDistance: number;
@@ -58,7 +44,7 @@ export type WeeklyInsight = {
   username: string;
   weeklyGoal: number;
   weeklyProgress: number;
-  weeklyPercentage: number;
+  weeklyPercentage: number; // Changed from string to number
   dailyTarget: number;
   dailyProgress: number;
   dailyPercentage: number;
@@ -76,14 +62,15 @@ export type WeeklyData = {
     kilometers: number;
     count: number;
   }[];
-};
+}
+
 
 export type DailyStats = {
   date: string;
   kilometers: number;
   duration: number;
   activities: Activity[];
-};
+}
 
 export type UserStats = {
   bestKmDay?: DailyStats;
@@ -92,7 +79,7 @@ export type UserStats = {
     start: string;
     days: number;
   };
-};
+}
 
 export type Comment = {
   id: number;
@@ -103,7 +90,8 @@ export type Comment = {
 export type Reaction = {
   type: string;
   count: number;
-};
+}
+
 
 export type ActivityWithUser = Activity & {
   username: string;
@@ -117,7 +105,3 @@ export type Quote = {
   text: string;
 };
 
-// Helper type guard to check if a User has pagination
-export function hasUserPagination(user: User): user is UserWithPagination {
-  return "pagination" in user && user.pagination !== undefined;
-}
