@@ -9,9 +9,9 @@ interface CommentAndReactionViewProps {
 }
 
 const REACTION_EMOJI_MAP: Record<string, string> = {
-  like: "🤝",
-  support: "🏃‍♀️",
-  celebrate: "🏋️‍♀️",
+  like: "👍",
+  support: "💪",
+  celebrate: "🎉",
   inspire: "✨",
   focus: "🎯",
   determination: "🔥",

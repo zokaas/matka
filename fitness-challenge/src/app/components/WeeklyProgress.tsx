@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 import { User } from "@/app/types/types";
 import { useTargetPaces } from "@/app/hooks/useTargetPaces";
 import { useWeeklyInsights } from "@/app/hooks/useWeeklyInsights";
@@ -14,93 +15,105 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
   const targetPaces = useTargetPaces(users);
   const weeklyInsights = useWeeklyInsights(users, targetPaces);
 
+  // Progress color based on percentage
+  const getProgressColor = (percentage) => {
+    if (percentage >= 50) return "#22c55e"; // Green
+    if (percentage >= 25) return "#f97316"; // Orange
+    return "#ef4444"; // Red
+  };
+
   return (
-    <section className="w-full">
-      <h2 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center mb-2 sm:mb-4">
-        📊 Tämän viikon ranking
+    <section>
+      <h2 className="text-xl font-bold text-gray-800 flex items-center mb-2">
+        <span>📊</span> Tämän viikon ranking
       </h2>
-      <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
+      <p className="text-sm text-gray-600 mb-6">
         Tavoite: {targetPaces && Math.round(targetPaces.weeklyPerUser)} km
         viikossa
       </p>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {weeklyInsights.map((insight, index) => {
+          // Find the matching user to get their profile picture
           const user = users.find((u) => u.username === insight.username);
 
           return (
             <Link
               key={insight.username}
               href={`/user/${insight.username}`}
-              className="block p-3 sm:p-5 rounded-xl shadow-md transition-transform duration-200 hover:scale-105"
+              className="block hover:shadow-lg transition-shadow duration-200"
             >
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: 0.1 }}
+                className="bg-white p-6 rounded-xl shadow-md"
               >
-                {/* 🏅 Profile Section - more compact on mobile */}
-                <div className="flex items-center mb-3 sm:mb-4">
-                  <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-md border-2 border-gray-300 mr-3 sm:mr-4">
-                    <Image
-                      src={
-                        user?.profilePicture
-                          ? `https://matka-xi.vercel.app/${user.username}.png`
-                          : `https://api.dicebear.com/7.x/adventurer/svg?seed=${user?.username}`
-                      }
-                      alt={`${insight.username} profiilikuva`}
-                      width={56}
-                      height={56}
-                      className="object-cover w-full h-full"
-                      unoptimized
-                    />
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 mr-4 flex-shrink-0">
+                    {user && (
+                      <Image
+                        src={
+                          user.profilePicture
+                            ? `https://matka-xi.vercel.app/${user.username}.png`
+                            : `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.username}`
+                        }
+                        alt={`${insight.username}'s avatar`}
+                        width={48}
+                        height={48}
+                        className="object-cover w-full h-full"
+                        unoptimized
+                      />
+                    )}
                   </div>
                   <div>
-                    <h4 className="text-base sm:text-lg font-semibold text-gray-800">
+                    <h4 className="text-base font-semibold text-gray-800">
                       {insight.username}
                     </h4>
-                    <p className="text-xs sm:text-sm text-gray-500">
-                      Sijoitus {index + 1}
-                    </p>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <span className="font-medium">Sijoitus {index + 1}</span>
+                      {index + 1 <= 3 && (
+                        <span className="ml-2 text-yellow-500">
+                          {index + 1 === 1
+                            ? "🥇"
+                            : index + 1 === 2
+                            ? "🥈"
+                            : "🥉"}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* 📊 Progress Bar & Stats - made responsive */}
                 <div className="flex items-center justify-between">
-                  <div className="relative w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center">
+                  <div className="w-20 h-20">
                     <CircularProgressbar
                       value={insight.weeklyPercentage}
+                      text={`${insight.weeklyPercentage}%`}
                       styles={buildStyles({
-                        pathColor:
-                          insight.weeklyPercentage >= 100
-                            ? "#22c55e"
-                            : insight.weeklyPercentage >= 50
-                            ? "#f97316"
-                            : "#ef4444",
-                        textColor: "transparent",
+                        pathColor: getProgressColor(insight.weeklyPercentage),
+                        textColor: "#374151",
                         trailColor: "#e5e7eb",
-                        strokeLinecap: "round",
+                        textSize: "22px",
+                        pathTransition: "stroke-dashoffset 0.5s ease 0s",
                       })}
                     />
-                    <div className="absolute text-gray-800 font-bold text-xs sm:text-sm">
-                      {insight.weeklyPercentage}%
-                    </div>
                   </div>
 
-                  {/* 🏃‍♂️ Distance Info - responsive text sizes */}
                   <div className="text-right">
-                    <p className="text-xl sm:text-2xl font-bold text-purple-600">
+                    <div className="text-2xl font-bold text-purple-600">
                       {Math.round(insight.weeklyProgress).toLocaleString(
                         "fi-FI"
                       )}{" "}
                       km
-                    </p>
-                    <p className="text-xs sm:text-sm text-gray-500">
+                    </div>
+                    <div className="text-sm text-gray-500">
                       km tällä viikolla
-                    </p>
+                    </div>
+
                     {insight.dailyTarget > 0 && (
-                      <div className="mt-1 sm:mt-2 text-xs bg-purple-50 text-purple-700 rounded-full px-2 py-0.5 sm:py-1 text-center sm:text-left">
-                        {insight.dailyTarget} km/päivä
+                      <div className="mt-2 text-xs bg-purple-50 text-purple-700 rounded-full px-2 py-1">
+                        {insight.dailyTarget} km/pvä tarvitaan
                       </div>
                     )}
                   </div>
