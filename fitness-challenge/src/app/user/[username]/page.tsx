@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -9,29 +9,9 @@ import ConfirmationModal from "@/app/components/ConfirmationModal";
 import Pagination from "@/app/components/Pagination";
 import SubmitQuote from "@/app/components/SubmitQuote";
 import PersonalInsights from "@/app/components/PersonalInsights";
-import CommentAndReactionView from "@/app/components/CommentAndReactionView"; // Import the new component
-
-interface Activity {
-  id: number;
-  activity: string;
-  duration: number;
-  date: string;
-  kilometers: number;
-  bonus?: string;
-}
-
-interface User {
-  username: string;
-  totalKm: number;
-  profilePicture: string;
-  activities: Activity[];
-  pagination?: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
-}
+import CommentAndReactionView from "@/app/components/CommentAndReactionView";
+import { useUserProfile } from "@/app/hooks/useUserProfile";
+import { Activity } from "@/app/types/types";
 
 const sportsOptions = [
   "Juoksu",
@@ -82,13 +62,20 @@ const translations = {
 };
 
 const itemsPerPage = 10;
+const backendUrl = "https://matka-zogy.onrender.com";
 
 const UserProfile = () => {
   const params = useParams();
   const username = params?.username as string;
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [page, setPage] = useState(1);
+
+  // Use our custom hook to manage user data
+  const { user, loading, error, refreshActivities } = useUserProfile(
+    username,
+    page,
+    itemsPerPage
+  );
+
   const [isEditing, setIsEditing] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
   const [activity, setActivity] = useState("");
@@ -101,33 +88,11 @@ const UserProfile = () => {
   const [activityToDelete, setActivityToDelete] = useState<Activity | null>(
     null
   );
-  const [page, setPage] = useState(1);
   const [bonus, setBonus] = useState<string | null>(null);
-  // Add state to toggle between activity form and insights
   const [showInsights, setShowInsights] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
-  const backendUrl = "https://matka-zogy.onrender.com";
   const formRef = useRef<HTMLDivElement>(null);
-
-  const fetchUser = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await fetch(
-        `${backendUrl}/users/${username}?page=${page}&limit=${itemsPerPage}`
-      );
-      if (!response.ok) throw new Error("Failed to fetch user data");
-      const data = await response.json();
-      setUser(data);
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  }, [username, page]);
-
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
 
   const handleDeleteActivity = async () => {
     if (!activityToDelete?.id) return;
@@ -142,9 +107,11 @@ const UserProfile = () => {
       if (!response.ok) throw new Error("Failed to delete activity");
       setIsModalOpen(false);
       setActivityToDelete(null);
-      fetchUser();
+
+      // Refresh activities after deletion
+      refreshActivities();
     } catch (err) {
-      setError((err as Error).message);
+      setSubmitError(err instanceof Error ? err.message : "An error occurred");
     }
   };
 
@@ -164,7 +131,7 @@ const UserProfile = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            activity: selectedActivity, // ✅ Store it properly
+            activity: selectedActivity,
             duration: Number(duration),
             date,
             bonus,
@@ -175,9 +142,9 @@ const UserProfile = () => {
       if (!response.ok) throw new Error("Failed to add activity");
 
       resetForm();
-      fetchUser();
+      refreshActivities();
     } catch (err) {
-      setError((err as Error).message);
+      setSubmitError(err instanceof Error ? err.message : "An error occurred");
     }
   };
 
@@ -191,7 +158,7 @@ const UserProfile = () => {
 
       // Ensure correct format for custom "Muu" activities
       if (activity.startsWith("Muu(") && customActivity) {
-        selectedActivity = `${customActivity} / ${activity}`; // Store as "Custom Name / Muu(100km/h)"
+        selectedActivity = `${customActivity} / ${activity}`;
       }
 
       const response = await fetch(
@@ -200,7 +167,7 @@ const UserProfile = () => {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            activity: selectedActivity, // ✅ Correct format
+            activity: selectedActivity,
             duration: Number(duration),
             date,
             bonus,
@@ -211,9 +178,9 @@ const UserProfile = () => {
       if (!response.ok) throw new Error("Failed to update activity");
 
       resetForm();
-      fetchUser();
+      refreshActivities();
     } catch (err) {
-      setError((err as Error).message);
+      setSubmitError(err instanceof Error ? err.message : "An error occurred");
     }
   };
 
@@ -221,9 +188,11 @@ const UserProfile = () => {
     setIsEditing(false);
     setEditingActivity(null);
     setActivity("");
+    setCustomActivity("");
     setDuration("");
     setDate(new Date().toISOString().split("T")[0]);
     setBonus(null);
+    setSubmitError("");
   };
 
   const startEdit = (activity: Activity) => {
@@ -247,7 +216,7 @@ const UserProfile = () => {
     setEditingActivity(activity);
     setDuration(activity.duration.toString());
     setDate(activity.date.split("T")[0]);
-    setBonus(activity.bonus || "");
+    setBonus(activity.bonus || null);
     setIsEditing(true);
     formRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -412,6 +381,10 @@ const UserProfile = () => {
               </select>
             </div>
 
+            {submitError && (
+              <div className="text-red-500 text-sm">{submitError}</div>
+            )}
+
             <div className="flex justify-between items-center space-x-4">
               {isEditing && (
                 <button
@@ -435,7 +408,10 @@ const UserProfile = () => {
         </section>
       ) : (
         <PersonalInsights
-          activities={user.activities}
+          activities={user.activities.map((activity) => ({
+            ...activity,
+            bonus: activity.bonus || undefined,
+          }))}
           username={user.username}
         />
       )}
@@ -506,16 +482,20 @@ const UserProfile = () => {
         ))}
       </div>
 
-      {user.pagination && user.pagination.totalPages > 1 && (
-        <div className="mt-6">
-          <Pagination
-            page={page}
-            setPage={setPage}
-            totalItems={user.pagination.total}
-            itemsPerPage={itemsPerPage}
-          />
-        </div>
-      )}
+      {user.pagination &&
+        "totalPages" in user.pagination &&
+        user.pagination.totalPages > 1 && (
+          <div className="mt-6">
+            <Pagination
+              page={page}
+              setPage={setPage}
+              totalItems={
+                "total" in user.pagination ? user.pagination.total : 0
+              }
+              itemsPerPage={itemsPerPage}
+            />
+          </div>
+        )}
       <SubmitQuote />
     </div>
   );
