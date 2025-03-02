@@ -8,6 +8,8 @@ import SubmitQuote from "./SubmitQuote";
 import ToggleButtons from "./ToggleButtons";
 import Map from "./Map"; // Ensure you have a Map component in the specified path
 import WeeklyProgress from "./WeeklyProgress";
+import { motion } from "framer-motion";
+import Quotes from "./Quotes";
 
 
 const backendUrl = "https://matka-zogy.onrender.com";
@@ -38,7 +40,22 @@ export default function QuickAccess() {
   }, [showActivityFeed, users]);
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-8">
+        <div className="max-w-5xl mx-auto p-6 space-y-8">
+      {/* Header Section */}
+      <motion.header
+        className="p-4 rounded-lg text-center"
+        animate={{ opacity: [0, 1], y: [-20, 0] }}
+        transition={{ duration: 1 }}
+      >
+        <h1 className="text-2xl font-bold text-purple-600">PETOLLISET🔥</h1>
+        <motion.div
+          className="mt-4 text-lg font-bold text-purple-500"
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ repeat: Infinity, duration: 2 }}
+        >
+          <Quotes />
+        </motion.div>
+      </motion.header>
       <Map totalKm={totalKm} />
       <ToggleButtons
         showWeeklyProgress={showWeeklyProgress}
