@@ -33,6 +33,23 @@ const KeyMetrics: React.FC<Props> = ({
   const longestActivities = getLongestActivities();
   const topPerformers = getWeeklyTopPerformers();
 
+  // Step 1: Find the maximum kilometers
+  const maxKilometers = Math.max(
+    ...longestActivities.map((activity) => activity.kilometers)
+  );
+
+  // Step 2: Keep only activities with max kilometers and remove duplicates
+  const longestMatchingActivities = longestActivities
+    .filter((activity) => activity.kilometers === maxKilometers)
+    .filter(
+      (activity, index, self) =>
+        index ===
+        self.findIndex(
+          (a) =>
+            a.username === activity.username && a.activity === activity.activity
+        )
+    );
+
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm">
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
@@ -93,15 +110,16 @@ const KeyMetrics: React.FC<Props> = ({
               <h3 className="text-sm font-medium text-gray-500">
                 Viikon pisimmät
               </h3>
-              {longestActivities.length > 0 ? (
+              {longestMatchingActivities.length > 0 ? (
                 <>
-                  <p className="text-2xl font-bold text-gray-800">
-                    {Math.round(longestActivities[0].kilometers)} km
-                  </p>
                   <ul className="text-xs text-gray-500 mt-1">
-                    {longestActivities.map((activity, index) => (
-                      <li key={index}>
-                        {activity.username} - {activity.activity}
+                    {longestMatchingActivities.map((activity, index) => (
+                      <li
+                        key={index}
+                        className="text-2xl font-bold text-gray-800"
+                      >
+                        {activity.username} - {activity.activity} (
+                        {Math.round(activity.kilometers)} km)
                       </li>
                     ))}
                   </ul>
