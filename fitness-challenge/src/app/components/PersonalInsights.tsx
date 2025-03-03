@@ -329,14 +329,16 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
               <h3 className="text-sm text-purple-800 font-medium">
                 {translations.totalActivities}
               </h3>
-              <p className="text-2xl font-bold">{insights.totalActivities}</p>
+              <p className="text-2xl font-bold">
+                {Math.round(insights.totalActivities)}
+              </p>
             </div>
             <div className="bg-blue-50 p-4 rounded-lg">
               <h3 className="text-sm text-blue-800 font-medium">
                 {translations.totalHours}
               </h3>
               <p className="text-2xl font-bold">
-                {(insights.totalDuration / 60).toFixed(1)}
+                {(insights.totalDuration / 60).toFixed(1)}{" "}
               </p>
             </div>
             <div className="bg-green-50 p-4 rounded-lg">
@@ -344,7 +346,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                 {translations.totalKm}
               </h3>
               <p className="text-2xl font-bold">
-                {insights.totalKilometers.toFixed(1)}
+                {Math.round(insights.totalKilometers)}
               </p>
             </div>
             <div className="bg-indigo-50 p-4 rounded-lg">
@@ -352,7 +354,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                 {translations.weeklyKm}
               </h3>
               <p className="text-2xl font-bold">
-                {insights.avgWeeklyKm.toFixed(1)} {translations.km}
+                {Math.round(insights.avgWeeklyKm)} {translations.km}
               </p>
             </div>
           </div>
@@ -364,7 +366,8 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                 {translations.currentStreak}
               </h3>
               <p className="text-2xl font-bold">
-                {insights.streakData.currentStreak} {translations.days}
+                {Math.round(insights.streakData.currentStreak)}{" "}
+                {translations.days}
               </p>
             </div>
             <div className="flex-1 bg-orange-50 p-4 rounded-lg">
@@ -372,7 +375,8 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                 {translations.longestStreak}
               </h3>
               <p className="text-2xl font-bold">
-                {insights.streakData.longestStreak} {translations.days}
+                {Math.round(insights.streakData.longestStreak)}{" "}
+                {translations.days}
               </p>
             </div>
           </div>
@@ -424,7 +428,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                   {translations.avgDuration}
                 </h4>
                 <p className="text-xl font-medium">
-                  {Math.round(insights.averageDuration)} {translations.mins}
+                  {Math.round(insights.averageDuration)} {translations.mins}{" "}
                 </p>
               </div>
               <div className="bg-gray-50 p-4 rounded">
@@ -432,9 +436,9 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                   {translations.avgDistance}
                 </h4>
                 <p className="text-xl font-medium">
-                  {(
+                  {Math.round(
                     insights.totalKilometers / insights.totalActivities
-                  ).toFixed(1)}{" "}
+                  )}{" "}
                   {translations.km}
                 </p>
               </div>
