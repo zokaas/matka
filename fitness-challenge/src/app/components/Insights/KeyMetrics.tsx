@@ -102,13 +102,13 @@ const KeyMetrics: React.FC<Props> = ({
           </div>
         </div>
 
-        {/* Longest Activities */}
+        {/* Longest Workout */}
         <div className="bg-gray-50 p-6 rounded-xl">
           <div className="flex items-center gap-4">
-            <Award className="w-8 h-8 text-yellow-500" />
+            <Award className="w-8 h-8 text-blue-500" />
             <div>
               <h3 className="text-sm font-medium text-gray-500">
-                Viikon pisimmät
+                Pisin treeni
               </h3>
               {longestMatchingActivities.length > 0 ? (
                 <>
