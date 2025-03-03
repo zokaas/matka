@@ -93,7 +93,7 @@ const CommentAndReactionView: React.FC<CommentAndReactionViewProps> = ({
     <div className="pt-3">
       {/* Reactions Display */}
       {reactions.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-2">
           {reactions.map(({ type, count }) => (
             <motion.div
               key={type}
