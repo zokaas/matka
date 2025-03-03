@@ -103,7 +103,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
       </div>
 
       {/* Comments section */}
-      <div className={`mt-4 ${isExpanded ? "border-t pt-4" : ""}`}>
+      <div className={`mt-1 ${isExpanded ? "border-t pt-4" : ""}`}>
         <CommentsSection
           activityId={activity.id}
           isExpanded={isExpanded}
