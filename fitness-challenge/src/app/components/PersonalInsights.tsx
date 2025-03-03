@@ -338,7 +338,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                 {translations.totalHours}
               </h3>
               <p className="text-2xl font-bold">
-                {(insights.totalDuration / 60).toFixed(1)}{" "}
+                {(insights.totalDuration / 60).toFixed(1)} h
               </p>
             </div>
             <div className="bg-green-50 p-4 rounded-lg">
@@ -346,7 +346,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                 {translations.totalKm}
               </h3>
               <p className="text-2xl font-bold">
-                {Math.round(insights.totalKilometers)}
+                {Math.round(insights.totalKilometers)} km
               </p>
             </div>
             <div className="bg-indigo-50 p-4 rounded-lg">
@@ -395,30 +395,6 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
       {activeTab === "activity" && (
         <div className="space-y-6">
           <div>
-            <h3 className="text-lg font-medium mb-4">
-              {translations.activityBreakdown}
-            </h3>
-            <div className="space-y-3">
-              {insights.activityBreakdown.map((item) => (
-                <div key={item.activity} className="bg-gray-50 p-3 rounded">
-                  <div className="flex justify-between mb-1">
-                    <span className="font-medium">{item.activity}</span>
-                    <span>
-                      {item.count} {translations.times} ({item.percentage}%)
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div
-                      className="bg-purple-600 h-2.5 rounded-full"
-                      style={{ width: `${item.percentage}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
             <h3 className="text-lg font-medium mb-2">
               {translations.personalStatistics}
             </h3>
@@ -442,6 +418,29 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                   {translations.km}
                 </p>
               </div>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-lg font-medium mb-4">
+              {translations.activityBreakdown}
+            </h3>
+            <div className="space-y-3">
+              {insights.activityBreakdown.map((item) => (
+                <div key={item.activity} className="bg-gray-50 p-3 rounded">
+                  <div className="flex justify-between mb-1">
+                    <span className="font-medium">{item.activity}</span>
+                    <span>
+                      {item.count} {translations.times} ({item.percentage}%)
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-purple-600 h-2.5 rounded-full"
+                      style={{ width: `${item.percentage}%` }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
