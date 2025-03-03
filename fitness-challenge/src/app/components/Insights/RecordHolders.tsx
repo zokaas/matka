@@ -29,163 +29,152 @@ const RecordHolders = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchRecords = async () => {
-      try {
-        const usersResponse = await fetch(
-          "https://matka-zogy.onrender.com/users"
+const fetchRecords = async () => {
+  try {
+    const usersResponse = await fetch("https://matka-zogy.onrender.com/users");
+    if (!usersResponse.ok) throw new Error("Failed to fetch users");
+    const users = await usersResponse.json();
+
+    // Collect all records first
+    const allRecords = await Promise.all(
+      users.map(async (user: { username: string }) => {
+        const response = await fetch(
+          `https://matka-zogy.onrender.com/users/${user.username}?page=1&limit=1000`
         );
-        if (!usersResponse.ok) throw new Error("Failed to fetch users");
-        const users = await usersResponse.json();
+        if (!response.ok) return null;
+        const data = await response.json();
 
-        // Collect all records first
-        const allRecords = await Promise.all(
-          users.map(async (user: { username: string }) => {
-            const response = await fetch(
-              `https://matka-zogy.onrender.com/users/${user.username}?page=1&limit=1000`
-            );
-            if (!response.ok) return null;
-            const data = await response.json();
+        const activities: Activity[] = data.activities;
 
-            const activities: Activity[] = data.activities;
+        // Best kilometers in a day
+        const dailyActivities = _.groupBy(
+          activities,
+          (activity) => new Date(activity.date).toISOString().split("T")[0]
+        );
 
-            const dailyActivities = _.groupBy(
-              activities,
-              (activity) => new Date(activity.date).toISOString().split("T")[0]
-            );
-
-            // Best kilometers in a day
-            const dailyKilometers = Object.entries(dailyActivities).map(
-              ([date, acts]) => ({
-                date,
-                kilometers: _.sumBy(acts, "kilometers"),
-                activities: acts,
-              })
-            );
-            const bestDay = _.maxBy(dailyKilometers, "kilometers");
-
-            // Longest workout day
-            const dailyDurations = Object.entries(dailyActivities).map(
-              ([date, acts]) => ({
-                date,
-                duration: _.sumBy(acts, "duration"),
-                activities: acts,
-              })
-            );
-            const longest = _.maxBy(dailyDurations, "duration");
-
-            // Find longest streak (including current and historical)
-            const dates = Object.keys(dailyActivities).sort();
-            let currentStreak = 0;
-            let maxStreak = 0;
-            let maxStreakStart = "";
-            let tempStreakStart = "";
-
-            for (let i = 0; i < dates.length; i++) {
-              const currentDate = new Date(dates[i]);
-              const nextDate =
-                i < dates.length - 1 ? new Date(dates[i + 1]) : null;
-
-              if (currentStreak === 0) {
-                tempStreakStart = dates[i];
-              }
-
-              currentStreak++;
-
-              if (nextDate) {
-                const diffDays = Math.floor(
-                  (nextDate.getTime() - currentDate.getTime()) /
-                    (1000 * 60 * 60 * 24)
-                );
-                if (diffDays > 1) {
-                  // Streak broken
-                  if (currentStreak > maxStreak) {
-                    maxStreak = currentStreak;
-                    maxStreakStart = tempStreakStart;
-                  }
-                  currentStreak = 0;
-                }
-              } else {
-                // End of dates array - check if this is the longest streak
-                if (currentStreak > maxStreak) {
-                  maxStreak = currentStreak;
-                  maxStreakStart = tempStreakStart;
-                }
-              }
-            }
-
-            return {
-              username: user.username,
-              bestKm: bestDay
-                ? {
-                    username: user.username,
-                    value: bestDay.kilometers,
-                    date: bestDay.date,
-                    activities: bestDay.activities,
-                  }
-                : null,
-              longestWorkout: longest
-                ? {
-                    username: user.username,
-                    value: longest.duration,
-                    date: longest.date,
-                    activities: longest.activities,
-                  }
-                : null,
-              streak:
-                maxStreak > 0
-                  ? {
-                      username: user.username,
-                      value: maxStreak,
-                      date: maxStreakStart,
-                      activities: [],
-                    }
-                  : null,
-            };
+        const dailyKilometers = Object.entries(dailyActivities).map(
+          ([date, acts]) => ({
+            date,
+            kilometers: _.sumBy(acts, "kilometers"),
+            activities: acts,
           })
         );
+        const bestDay = _.maxBy(dailyKilometers, "kilometers");
 
-        // Filter out nulls and find max values
-        const validRecords = allRecords.filter(Boolean);
-        const maxKm = Math.max(
-          ...validRecords.map((r) => r?.bestKm?.value || 0)
-        );
-        const maxWorkout = Math.max(
-          ...validRecords.map((r) => r?.longestWorkout?.value || 0)
-        );
-        const maxStreak = Math.max(
-          ...validRecords.map((r) => r?.streak?.value || 0)
-        );
+        // Find the single longest workout (not the sum of a day)
+        const longestWorkout = _.maxBy(activities, "duration");
 
-        // Find all users with max values
-        const bestKmHolders = validRecords
-          .filter((r) => r?.bestKm?.value === maxKm)
-          .filter((r) => r?.bestKm !== undefined)
-          .map((r) => r!.bestKm)
-          .filter(Boolean);
+        // Find longest streak (consecutive active days)
+        const dates = Object.keys(dailyActivities).sort();
+        let currentStreak = 0;
+        let maxStreak = 0;
+        let maxStreakStart = "";
+        let tempStreakStart = "";
 
-        const longestWorkoutHolders = validRecords
-          .filter((r) => r?.longestWorkout?.value === maxWorkout)
-          .filter((r) => r?.longestWorkout !== undefined)
-          .map((r) => r!.longestWorkout)
-          .filter(Boolean);
+        for (let i = 0; i < dates.length; i++) {
+          const currentDate = new Date(dates[i]);
+          const nextDate = i < dates.length - 1 ? new Date(dates[i + 1]) : null;
 
-        const longestStreakHolders = validRecords
-          .filter((r) => r?.streak?.value === maxStreak)
-          .filter((r) => r?.streak !== undefined)
-          .map((r) => r!.streak)
-          .filter(Boolean);
+          if (currentStreak === 0) {
+            tempStreakStart = dates[i];
+          }
 
-        setRecords({
-          bestKm: bestKmHolders,
-          longestWorkout: longestWorkoutHolders,
-          longestStreak: longestStreakHolders,
-        });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-      } finally {
-        setLoading(false);
-      }
-    };
+          currentStreak++;
+
+          if (nextDate) {
+            const diffDays = Math.floor(
+              (nextDate.getTime() - currentDate.getTime()) /
+                (1000 * 60 * 60 * 24)
+            );
+            if (diffDays > 1) {
+              // Streak broken
+              if (currentStreak > maxStreak) {
+                maxStreak = currentStreak;
+                maxStreakStart = tempStreakStart;
+              }
+              currentStreak = 0;
+            }
+          } else {
+            // End of dates array - check if this is the longest streak
+            if (currentStreak > maxStreak) {
+              maxStreak = currentStreak;
+              maxStreakStart = tempStreakStart;
+            }
+          }
+        }
+
+        return {
+          username: user.username,
+          bestKm: bestDay
+            ? {
+                username: user.username,
+                value: bestDay.kilometers,
+                date: bestDay.date,
+                activities: bestDay.activities,
+              }
+            : null,
+          longestWorkout: longestWorkout
+            ? {
+                username: user.username,
+                value: longestWorkout.duration,
+                date: longestWorkout.date,
+                activities: [longestWorkout], // Only the single longest workout
+              }
+            : null,
+          streak:
+            maxStreak > 0
+              ? {
+                  username: user.username,
+                  value: maxStreak,
+                  date: maxStreakStart,
+                  activities: [],
+                }
+              : null,
+        };
+      })
+    );
+
+    // Filter out nulls and find max values
+    const validRecords = allRecords.filter(Boolean);
+    const maxKm = Math.max(...validRecords.map((r) => r?.bestKm?.value || 0));
+    const maxWorkout = Math.max(
+      ...validRecords.map((r) => r?.longestWorkout?.value || 0)
+    );
+    const maxStreak = Math.max(
+      ...validRecords.map((r) => r?.streak?.value || 0)
+    );
+
+    // Find all users with max values
+    const bestKmHolders = validRecords
+      .filter((r) => r?.bestKm?.value === maxKm)
+      .filter((r) => r?.bestKm !== undefined)
+      .map((r) => r!.bestKm)
+      .filter(Boolean);
+
+    const longestWorkoutHolders = validRecords
+      .filter((r) => r?.longestWorkout?.value === maxWorkout)
+      .filter((r) => r?.longestWorkout !== undefined)
+      .map((r) => r!.longestWorkout)
+      .filter(Boolean);
+
+    const longestStreakHolders = validRecords
+      .filter((r) => r?.streak?.value === maxStreak)
+      .filter((r) => r?.streak !== undefined)
+      .map((r) => r!.streak)
+      .filter(Boolean);
+
+    setRecords({
+      bestKm: bestKmHolders,
+      longestWorkout: longestWorkoutHolders,
+      longestStreak: longestStreakHolders,
+    });
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "An error occurred");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
     fetchRecords();
   }, []);
