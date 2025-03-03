@@ -106,7 +106,7 @@ export default function ActivityFeedPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto p-6">
+    <div className="max-w-5xl mx-auto">
       {/* Header */}
       <header className="text-center mb-8">
         <h1 className="text-3xl font-bold text-purple-600">

@@ -26,22 +26,26 @@ const processLineStringCoordinates = (
     const [prevLng, prevLat] = coordinates[i - 1];
     const [currLng, currLat] = coordinates[i];
 
-    // Check for date line crossing
-    if (Math.abs(currLng - prevLng) > 180) {
-      if (prevLng < 0 && currLng > 0) {
-        // Crossing from -180 to +180 (west to east)
-        const ratio = (-180 - prevLng) / (currLng + 360 - prevLng);
+    const lngDiff = currLng - prevLng;
+
+    // Detect a large longitude jump (crossing the date line)
+    if (Math.abs(lngDiff) > 180) {
+      if (currLng > 0 && prevLng < 0) {
+        // Crossing from west (-180) to east (+180)
+        const ratio =
+          (180 - Math.abs(prevLng)) / (Math.abs(currLng) + Math.abs(prevLng));
         const latAtCrossing = prevLat + ratio * (currLat - prevLat);
 
-        result.push([-180, latAtCrossing]);
-        result.push([180, latAtCrossing]); // Jump to the other side
-      } else {
-        // Crossing from +180 to -180 (east to west)
-        const ratio = (180 - prevLng) / (180 - prevLng + (180 + currLng));
+        result.push([prevLng > 0 ? 180 : -180, latAtCrossing]);
+        result.push([currLng > 0 ? -180 : 180, latAtCrossing]); // Jump across
+      } else if (currLng < 0 && prevLng > 0) {
+        // Crossing from east (+180) to west (-180)
+        const ratio =
+          (180 - Math.abs(currLng)) / (Math.abs(currLng) + Math.abs(prevLng));
         const latAtCrossing = prevLat + ratio * (currLat - prevLat);
 
-        result.push([180, latAtCrossing]);
-        result.push([-180, latAtCrossing]); // Jump to the other side
+        result.push([prevLng > 0 ? 180 : -180, latAtCrossing]);
+        result.push([currLng > 0 ? -180 : 180, latAtCrossing]); // Jump across
       }
     }
 
