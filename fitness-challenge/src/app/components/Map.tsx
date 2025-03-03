@@ -37,7 +37,7 @@ const processLineStringCoordinates = (
         result.push([180, latAtCrossing]); // Jump to the other side
       } else {
         // Crossing from +180 to -180 (east to west)
-        const ratio = (180 - prevLng) / (360 + currLng - prevLng);
+        const ratio = (180 - prevLng) / (180 - prevLng + (180 + currLng));
         const latAtCrossing = prevLat + ratio * (currLat - prevLat);
 
         result.push([180, latAtCrossing]);
@@ -101,7 +101,6 @@ export default function Map({ totalKm }: { totalKm: number }) {
       setShowMap(true);
     }
   }, [totalKm]);
-
   // Find current and next city, and calculate distance to next
   useEffect(() => {
     if (achievedDestinations.length > 0) {
@@ -266,7 +265,6 @@ export default function Map({ totalKm }: { totalKm: number }) {
       });
   }, [achievedDestinations.length, totalKm]);
 
-  // Calculate view parameters with date line crossing handling
   const viewParams = useMemo(() => {
     const currentIndex = achievedDestinations.length - 1;
     if (currentIndex < 0 || currentIndex >= routeCoordinates.length) {
@@ -277,41 +275,10 @@ export default function Map({ totalKm }: { totalKm: number }) {
     const next = routeCoordinates[currentIndex + 1];
 
     if (current && next) {
-      // Calculate center point correctly even if crossing the date line
-      let centerLng;
+      const centerLng =
+        (current.coordinates.longitude + next.coordinates.longitude) / 2;
       const centerLat =
         (current.coordinates.latitude + next.coordinates.latitude) / 2;
-
-      // Check if we're crossing the International Date Line
-      if (
-        Math.abs(current.coordinates.longitude - next.coordinates.longitude) >
-        180
-      ) {
-        // Date line crossing - adjust one longitude by adding/subtracting 360
-        let adjustedNextLng = next.coordinates.longitude;
-        if (
-          current.coordinates.longitude > 0 &&
-          next.coordinates.longitude < 0
-        ) {
-          // Going from east to west across the line
-          adjustedNextLng += 360;
-        } else if (
-          current.coordinates.longitude < 0 &&
-          next.coordinates.longitude > 0
-        ) {
-          // Going from west to east across the line
-          adjustedNextLng -= 360;
-        }
-
-        // Calculate center with adjusted longitude
-        centerLng = (current.coordinates.longitude + adjustedNextLng) / 2;
-        // Normalize back to -180 to 180 range
-        centerLng = ((centerLng + 180) % 360) - 180;
-      } else {
-        // Regular calculation - no date line crossing
-        centerLng =
-          (current.coordinates.longitude + next.coordinates.longitude) / 2;
-      }
 
       const distance = getDistance(
         current.coordinates.latitude,
@@ -327,7 +294,6 @@ export default function Map({ totalKm }: { totalKm: number }) {
       if (distance < 150) zoom = 7;
       if (distance < 50) zoom = 9;
 
-      // Calculate bearing correctly even for date line crossing
       const bearing = getBearing(
         current.coordinates.latitude,
         current.coordinates.longitude,
@@ -420,7 +386,7 @@ export default function Map({ totalKm }: { totalKm: number }) {
     return Math.round(totalDistance);
   };
 
-  // Calculate total distance once
+  //voi po
   useEffect(() => {
     const totalRouteDistance = calculateTotalRouteDistance();
     console.log(`TÄÄ ON SE: ${totalRouteDistance.toLocaleString()} km`);
@@ -431,150 +397,97 @@ export default function Map({ totalKm }: { totalKm: number }) {
       `Route distance validation: ${isRouteValid ? "Valid" : "Not valid"}`
     );
   }, []);
-
-  // In the updateMapData function, add more guards:
+  // Update map data when progress changes
   const updateMapData = useCallback(() => {
     if (!map.current || !mapReady) return;
 
     // Get map instance
     const mapInstance = map.current;
 
-    // Safely check if the sources exist before trying to update them
-    try {
-      // Debug logging
-      const currentIndex = achievedDestinations.length - 1;
-      if (currentIndex >= 0 && currentIndex + 1 < routeCoordinates.length) {
-        const current = routeCoordinates[currentIndex];
-        const next = routeCoordinates[currentIndex + 1];
-
-        console.log(
-          "Current city:",
-          current.city,
-          "at [",
-          current.coordinates.longitude,
-          ", ",
-          current.coordinates.latitude,
-          "]"
-        );
-        console.log(
-          "Next city:",
-          next.city,
-          "at [",
-          next.coordinates.longitude,
-          ", ",
-          next.coordinates.latitude,
-          "]"
-        );
-        console.log("Map center:", viewParams.center);
-      }
-
-      // Only proceed if map is fully loaded
-      if (
-        !mapInstance.isSourceLoaded("completed-route") ||
-        !mapInstance.isSourceLoaded("upcoming-route") ||
-        !mapInstance.isSourceLoaded("cities")
-      ) {
-        console.log("Sources not yet loaded, waiting...");
-        setTimeout(() => updateMapData(), 200); // Retry after a short delay
-        return;
-      }
-
-      // Update route sources
-      if (mapInstance.getSource("completed-route")) {
-        (
-          mapInstance.getSource("completed-route") as mapboxgl.GeoJSONSource
-        ).setData(routeGeoJSON.completed);
-      }
-
-      if (mapInstance.getSource("upcoming-route")) {
-        (
-          mapInstance.getSource("upcoming-route") as mapboxgl.GeoJSONSource
-        ).setData(routeGeoJSON.upcoming);
-      }
-
-      // Update city markers source
-      if (mapInstance.getSource("cities")) {
-        (mapInstance.getSource("cities") as mapboxgl.GeoJSONSource).setData({
-          type: "FeatureCollection",
-          features: cityFeatures,
-        });
-      }
-
-      // Update the walker marker
-      updateWalkerMarker();
-
-      // Determine the camera position and animation for the route
-      const flyToOptions = {
-        center: viewParams.center as [number, number],
-        zoom: viewParams.zoom,
-        bearing: viewParams.bearing,
-        pitch: viewParams.pitch,
-        duration: 2000,
-        essential: true,
-      };
-
-      // Fly to new view position
-      mapInstance.flyTo(flyToOptions);
-    } catch (error) {
-      console.error("Error updating map data:", error);
-      // We might want to retry after a delay
-      setTimeout(() => updateMapData(), 500);
+    // Update route sources
+    if (mapInstance.getSource("completed-route")) {
+      (
+        mapInstance.getSource("completed-route") as mapboxgl.GeoJSONSource
+      ).setData(routeGeoJSON.completed);
     }
-  }, [
-    routeGeoJSON,
-    cityFeatures,
-    viewParams,
-    mapReady,
-    updateWalkerMarker,
-    achievedDestinations.length,
-  ]);
 
-  // In the map initialization useEffect:
+    if (mapInstance.getSource("upcoming-route")) {
+      (
+        mapInstance.getSource("upcoming-route") as mapboxgl.GeoJSONSource
+      ).setData(routeGeoJSON.upcoming);
+    }
+
+    // Update city markers source
+    if (mapInstance.getSource("cities")) {
+      (mapInstance.getSource("cities") as mapboxgl.GeoJSONSource).setData({
+        type: "FeatureCollection",
+        features: cityFeatures,
+      });
+    }
+
+    // Update the walker marker
+    updateWalkerMarker();
+
+    // Fly to new view position
+    mapInstance.flyTo({
+      center: viewParams.center as [number, number],
+      zoom: viewParams.zoom,
+      bearing: viewParams.bearing,
+      pitch: viewParams.pitch,
+      duration: 2000,
+      essential: true,
+    });
+  }, [routeGeoJSON, cityFeatures, viewParams, mapReady, updateWalkerMarker]);
+
+  // Initialize map
   useEffect(() => {
     mapboxgl.accessToken =
       "pk.eyJ1Ijoiem9rYWFzIiwiYSI6ImNtNnA2bmRubzA0ZDQya3NhZmk3bWQzMG8ifQ.Ej3pG0ieo8JRm-a46W9WGA";
     if (map.current || !mapContainer.current) return;
 
-    try {
-      console.log("Initializing map...");
-      const mapStyle = "mapbox://styles/mapbox/light-v11";
+    const mapStyle = "mapbox://styles/mapbox/light-v11";
 
-      // Use mercator projection for consistency
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: mapStyle,
-        center: [0, 20], // Start with a global view
-        zoom: 2,
-        bearing: 0,
-        pitch: 0,
-        projection: { name: "mercator" }, // Always use mercator
-        attributionControl: false,
-        dragRotate: false,
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: mapStyle,
+      center: viewParams.center as [number, number],
+      zoom: Math.min(viewParams.zoom, 3),
+      bearing: 0,
+      pitch: 0,
+      projection: { name: "mercator" },
+      attributionControl: false,
+      dragRotate: false,
+    });
+
+    map.current.addControl(new mapboxgl.AttributionControl(), "bottom-left");
+    map.current.addControl(
+      new mapboxgl.NavigationControl({
+        showCompass: true,
+        showZoom: true,
+        visualizePitch: true,
+      }),
+      "top-right"
+    );
+    map.current.addControl(
+      new mapboxgl.ScaleControl({ maxWidth: 100, unit: "metric" }),
+      "bottom-right"
+    );
+
+    const mapInstance = map.current;
+
+    mapInstance.on("load", () => {
+      mapInstance.addSource("completed-route", {
+        type: "geojson",
+        data: routeGeoJSON.completed,
       });
-
-      // Add a load event listener
-      map.current.on("load", () => {
-        console.log("Map loaded successfully");
-        if (!map.current) return;
-
-        const mapInstance = map.current;
-
-        try {
-          // Add sources
-          mapInstance.addSource("completed-route", {
-            type: "geojson",
-            data: routeGeoJSON.completed,
-          });
-
-          mapInstance.addSource("upcoming-route", {
-            type: "geojson",
-            data: routeGeoJSON.upcoming,
-          });
-
-          mapInstance.addSource("cities", {
-            type: "geojson",
-            data: { type: "FeatureCollection", features: cityFeatures },
-          });
+      mapInstance.addSource("upcoming-route", {
+        type: "geojson",
+        data: routeGeoJSON.upcoming,
+      });
+      mapInstance.addSource("cities", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: cityFeatures },
+      });
 
       mapInstance.addLayer({
         id: "completed-route-glow",
@@ -662,47 +575,28 @@ export default function Map({ totalKm }: { totalKm: number }) {
 
       updateWalkerMarker();
       setMapReady(true);
+    });
 
-      setTimeout(() => {
-        if (map.current) {
-          map.current.flyTo({
-            center: viewParams.center as [number, number],
-            zoom: viewParams.zoom,
-            bearing: viewParams.bearing,
-            pitch: viewParams.pitch,
-            duration: 2000,
-            essential: true,
-          });
-        }
-      }, 100); 
-          // Don't call updateMapData here, let the useEffect do it
-        } catch (error) {
-          console.error("Error initializing map sources and layers:", error);
-        }
-      });
-
-    } catch (error) {
-      console.error("Error creating map:", error);
-    }
-
-    return () => {
+    const resizeHandler = () => {
       if (map.current) {
-        map.current.remove();
+        map.current.resize();
       }
     };
-  }, [routeGeoJSON.completed, routeGeoJSON.upcoming, cityFeatures]);
+
+    window.addEventListener("resize", resizeHandler);
+
+    return () => {
+      window.removeEventListener("resize", resizeHandler);
+      if (mapInstance) {
+        mapInstance.remove();
+      }
+    };
+  }, []);
 
   // Update map when data changes
   useEffect(() => {
     updateMapData();
   }, [updateMapData]);
-
-  useEffect(() => {
-    if (map.current && mapReady) {
-      // Just log when we're in the Pacific view but don't change projection
-      console.log("Pacific view status:", isPacificView);
-    }
-  }, [isPacificView, mapReady]);
 
   return (
     <div style={styles.pageContainer}>
