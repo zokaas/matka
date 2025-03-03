@@ -108,18 +108,19 @@ const KeyMetrics: React.FC<Props> = ({
             <Award className="w-8 h-8 text-blue-500" />
             <div>
               <h3 className="text-sm font-medium text-gray-500">
-                Pisin treeni
+                Viikon pisin treeni
               </h3>
               {longestMatchingActivities.length > 0 ? (
                 <>
+                  <p className="text-2xl font-bold text-gray-800">
+                    {Math.round(longestMatchingActivities[0].kilometers)} km
+                  </p>
                   <ul className="text-xs text-gray-500 mt-1">
                     {longestMatchingActivities.map((activity, index) => (
                       <li
                         key={index}
-                        className="text-2xl font-bold text-gray-800"
                       >
-                        {activity.username} - {activity.activity} (
-                        {Math.round(activity.kilometers)} km)
+                        {activity.username} - {activity.activity}
                       </li>
                     ))}
                   </ul>
