@@ -266,6 +266,7 @@ export default function Map({ totalKm }: { totalKm: number }) {
       });
   }, [achievedDestinations.length, totalKm]);
 
+  // Calculate view parameters with date line crossing handling
   const viewParams = useMemo(() => {
     const currentIndex = achievedDestinations.length - 1;
     if (currentIndex < 0 || currentIndex >= routeCoordinates.length) {
@@ -276,10 +277,41 @@ export default function Map({ totalKm }: { totalKm: number }) {
     const next = routeCoordinates[currentIndex + 1];
 
     if (current && next) {
-      const centerLng =
-        (current.coordinates.longitude + next.coordinates.longitude) / 2;
+      // Calculate center point correctly even if crossing the date line
+      let centerLng;
       const centerLat =
         (current.coordinates.latitude + next.coordinates.latitude) / 2;
+
+      // Check if we're crossing the International Date Line
+      if (
+        Math.abs(current.coordinates.longitude - next.coordinates.longitude) >
+        180
+      ) {
+        // Date line crossing - adjust one longitude by adding/subtracting 360
+        let adjustedNextLng = next.coordinates.longitude;
+        if (
+          current.coordinates.longitude > 0 &&
+          next.coordinates.longitude < 0
+        ) {
+          // Going from east to west across the line
+          adjustedNextLng += 360;
+        } else if (
+          current.coordinates.longitude < 0 &&
+          next.coordinates.longitude > 0
+        ) {
+          // Going from west to east across the line
+          adjustedNextLng -= 360;
+        }
+
+        // Calculate center with adjusted longitude
+        centerLng = (current.coordinates.longitude + adjustedNextLng) / 2;
+        // Normalize back to -180 to 180 range
+        centerLng = ((centerLng + 180) % 360) - 180;
+      } else {
+        // Regular calculation - no date line crossing
+        centerLng =
+          (current.coordinates.longitude + next.coordinates.longitude) / 2;
+      }
 
       const distance = getDistance(
         current.coordinates.latitude,
@@ -295,6 +327,7 @@ export default function Map({ totalKm }: { totalKm: number }) {
       if (distance < 150) zoom = 7;
       if (distance < 50) zoom = 9;
 
+      // Calculate bearing correctly even for date line crossing
       const bearing = getBearing(
         current.coordinates.latitude,
         current.coordinates.longitude,
@@ -387,7 +420,7 @@ export default function Map({ totalKm }: { totalKm: number }) {
     return Math.round(totalDistance);
   };
 
-  //voi po
+  // Calculate total distance once
   useEffect(() => {
     const totalRouteDistance = calculateTotalRouteDistance();
     console.log(`TÄÄ ON SE: ${totalRouteDistance.toLocaleString()} km`);
@@ -406,10 +439,47 @@ export default function Map({ totalKm }: { totalKm: number }) {
     // Get map instance
     const mapInstance = map.current;
 
+    // Debug logging
+    const currentIndex = achievedDestinations.length - 1;
+    if (currentIndex >= 0 && currentIndex + 1 < routeCoordinates.length) {
+      const current = routeCoordinates[currentIndex];
+      const next = routeCoordinates[currentIndex + 1];
+
+      console.log(
+        "Current city:",
+        current.city,
+        "at [",
+        current.coordinates.longitude,
+        ", ",
+        current.coordinates.latitude,
+        "]"
+      );
+      console.log(
+        "Next city:",
+        next.city,
+        "at [",
+        next.coordinates.longitude,
+        ", ",
+        next.coordinates.latitude,
+        "]"
+      );
+      console.log("Map center:", viewParams.center);
+      console.log(
+        "Is date line crossing:",
+        Math.abs(current.coordinates.longitude - next.coordinates.longitude) >
+          180
+      );
+      console.log("Is Pacific view:", isPacificView);
+      if (map.current) {
+        console.log("Map projection:", map.current.getProjection().name);
+      }
+    }
+
     // Check if we need to change projection based on current view
     const isDateLineCrossing = Math.abs(viewParams.center[0] as number) > 170;
     if (isDateLineCrossing !== isPacificView) {
       setIsPacificView(isDateLineCrossing);
+      console.log("Setting isPacificView to:", isDateLineCrossing);
     }
 
     // Update route sources
@@ -455,6 +525,7 @@ export default function Map({ totalKm }: { totalKm: number }) {
     mapReady,
     updateWalkerMarker,
     isPacificView,
+    achievedDestinations.length,
   ]);
 
   // Initialize map
@@ -465,19 +536,15 @@ export default function Map({ totalKm }: { totalKm: number }) {
 
     const mapStyle = "mapbox://styles/mapbox/light-v11";
 
-    // Use globe projection when in the Pacific view to handle the date line better
-    const projection = isPacificView
-      ? { name: "globe" as const }
-      : { name: "mercator" as const };
-
+    // Use mercator projection for consistency
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: mapStyle,
-      center: viewParams.center as [number, number],
-      zoom: Math.min(viewParams.zoom, 3),
+      center: [0, 20], // Start with a global view
+      zoom: 2,
       bearing: 0,
       pitch: 0,
-      projection,
+      projection: { name: "mercator" }, // Always use mercator
       attributionControl: false,
       dragRotate: false,
     });
@@ -499,6 +566,9 @@ export default function Map({ totalKm }: { totalKm: number }) {
     const mapInstance = map.current;
 
     mapInstance.on("load", () => {
+      // Add console log to confirm when map is ready
+      console.log("Map loaded successfully");
+
       mapInstance.addSource("completed-route", {
         type: "geojson",
         data: routeGeoJSON.completed,
@@ -598,6 +668,20 @@ export default function Map({ totalKm }: { totalKm: number }) {
 
       updateWalkerMarker();
       setMapReady(true);
+
+      // Once map is ready, explicitly fly to the current view
+      setTimeout(() => {
+        if (map.current) {
+          map.current.flyTo({
+            center: viewParams.center as [number, number],
+            zoom: viewParams.zoom,
+            bearing: viewParams.bearing,
+            pitch: viewParams.pitch,
+            duration: 2000,
+            essential: true,
+          });
+        }
+      }, 100); // Short delay to ensure all is ready
     });
 
     const resizeHandler = () => {
@@ -614,25 +698,17 @@ export default function Map({ totalKm }: { totalKm: number }) {
         mapInstance.remove();
       }
     };
-  }, [
-    routeGeoJSON,
-    cityFeatures,
-    isPacificView,
-    updateWalkerMarker,
-    viewParams.center,
-    viewParams.zoom,
-  ]);
+  }, [routeGeoJSON, cityFeatures, updateWalkerMarker, viewParams]);
 
   // Update map when data changes
   useEffect(() => {
     updateMapData();
   }, [updateMapData]);
 
-  // Update projection when Pacific view status changes
   useEffect(() => {
     if (map.current && mapReady) {
-      // Change projection when in Pacific view
-      map.current.setProjection(isPacificView ? "globe" : "mercator");
+      // Just log when we're in the Pacific view but don't change projection
+      console.log("Pacific view status:", isPacificView);
     }
   }, [isPacificView, mapReady]);
 
