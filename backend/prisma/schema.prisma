@@ -8,11 +8,11 @@ generator client {
 }
 
 model User {
-  id          Int        @id @default(autoincrement())
-  username    String     @unique
-  totalKm     Float      @default(0)
-  profilePicture String? // Nullable profile picture field
-  activities  Activity[]
+  id             Int        @id @default(autoincrement())
+  username       String     @unique
+  totalKm        Float      @default(0)
+  profilePicture String?    // Nullable profile picture field
+  activities     Activity[]
 }
 
 model Activity {
@@ -38,7 +38,7 @@ model Comment {
 
 model Reaction {
   id         Int      @id @default(autoincrement())
-  type       String   // Can be "like", "support", "celebrate"
+  type       String   // Can be "like", "support", "celebrate", etc.
   createdAt  DateTime @default(now()) // Timestamp for reaction
   activityId Int
   activity   Activity @relation(fields: [activityId], references: [id], name: "ActivityReactions")
