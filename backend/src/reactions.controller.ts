@@ -33,18 +33,26 @@ export class ReactionsController {
         throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
       }
 
-      // Group reactions by type and count them
-      const reactionCounts: Record<string, number> = activity.reactions.reduce(
-        (acc: Record<string, number>, reaction) => {
-          acc[reaction.type] = (acc[reaction.type] || 0) + 1;
+      // Group reactions by type to get unique timestamps
+      const reactionDetails = activity.reactions.reduce(
+        (
+          acc: Record<string, { count: number; createdAts: string[] }>,
+          reaction,
+        ) => {
+          if (!acc[reaction.type]) {
+            acc[reaction.type] = { count: 0, createdAts: [] };
+          }
+          acc[reaction.type].count++;
+          acc[reaction.type].createdAts.push(reaction.createdAt.toISOString());
           return acc;
         },
         {},
       );
 
-      return Object.entries(reactionCounts).map(([type, count]) => ({
+      return Object.entries(reactionDetails).map(([type, details]) => ({
         type,
-        count,
+        count: details.count,
+        createdAts: details.createdAts,
       }));
     } catch (error) {
       console.error('Error fetching reactions:', error);
@@ -69,49 +77,39 @@ export class ReactionsController {
         throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
       }
 
-      // Check if reaction already exists
-      const existingReaction = await this.reactionRepository.findOne({
-        where: {
-          activity: { id: activity.id },
-          type: reactionData.type,
-        },
-      });
-
-      const currentTime = new Date();
-
-      if (existingReaction) {
-        // Ensure that createdAt is correctly handled
-        if (!existingReaction.createdAt) {
-          throw new HttpException(
-            'Reaction does not have a valid timestamp',
-            HttpStatus.INTERNAL_SERVER_ERROR,
-          );
-        }
-
-        const sessionExpiresAt = new Date(existingReaction.createdAt);
-        sessionExpiresAt.setMinutes(sessionExpiresAt.getMinutes() + 5);
-
-        if (currentTime <= sessionExpiresAt) {
-          await this.reactionRepository.remove(existingReaction);
-          return { added: false, type: reactionData.type };
-        } else {
-          return {
-            added: true,
-            type: reactionData.type,
-            message: 'Reactions are now permanent after session expiration.',
-          };
-        }
-      }
-
-      // Create new reaction (without user)
+      // Always create a new reaction
       const reaction = this.reactionRepository.create({
         type: reactionData.type,
         activity,
-        createdAt: currentTime,
+        createdAt: new Date(), // Always use current timestamp
       });
 
       await this.reactionRepository.save(reaction);
-      return { added: true, type: reactionData.type };
+
+      // Fetch updated reactions to return current state
+      const updatedReactions = await this.reactionRepository.find({
+        where: { activity: { id: activity.id } },
+      });
+
+      // Group reactions to get counts
+      const reactionCounts = updatedReactions.reduce(
+        (acc: Record<string, number>, r) => {
+          acc[r.type] = (acc[r.type] || 0) + 1;
+          return acc;
+        },
+        {},
+      );
+
+      return {
+        added: true,
+        type: reactionData.type,
+        currentReactions: Object.entries(reactionCounts).map(
+          ([type, count]) => ({
+            type,
+            count,
+          }),
+        ),
+      };
     } catch (error) {
       console.error('Error processing reaction:', error);
       throw new HttpException(

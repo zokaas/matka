@@ -82,35 +82,47 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
   }, [activityId]);
 
   // Function to toggle a reaction with optimistic updates
-  const toggleReaction = async (reactionType: string) => {
-    try {
-      setError(null);
+const toggleReaction = async (reactionType: string) => {
+  try {
+    setError(null);
 
-      // Optimistic update
-      const newCounts = { ...counts };
-      newCounts[reactionType] = (newCounts[reactionType] || 0) + 1;
-      setCounts(newCounts);
-      setReactions({ ...reactions, [reactionType]: true });
+    // Optimistic update
+    const newCounts = { ...counts };
+    newCounts[reactionType] = (newCounts[reactionType] || 0) + 1;
+    setCounts(newCounts);
+    setReactions({ ...reactions, [reactionType]: true });
 
-      // Send the API request
-      await apiService.reaction.toggleReaction(activityId, reactionType);
-    } catch (error) {
-      console.error("Error toggling reaction:", error);
+    // Send the API request
+    const response = await apiService.reaction.toggleReaction(
+      activityId,
+      reactionType
+    );
 
-      // Revert optimistic update on error
-      const previousCounts = { ...counts };
-      if (previousCounts[reactionType]) {
-        previousCounts[reactionType]--;
-        if (previousCounts[reactionType] <= 0) {
-          delete previousCounts[reactionType];
-        }
-      }
-      setCounts(previousCounts);
-      setReactions({ ...reactions, [reactionType]: false });
-
-      setError("Failed to save reaction");
+    // Update counts based on server response
+    if (response.currentReactions) {
+      const updatedCounts: Record<string, number> = {};
+      response.currentReactions.forEach((reaction) => {
+        updatedCounts[reaction.type] = reaction.count;
+      });
+      setCounts(updatedCounts);
     }
-  };
+  } catch (error) {
+    console.error("Error toggling reaction:", error);
+
+    // Revert optimistic update on error
+    const previousCounts = { ...counts };
+    if (previousCounts[reactionType]) {
+      previousCounts[reactionType]--;
+      if (previousCounts[reactionType] <= 0) {
+        delete previousCounts[reactionType];
+      }
+    }
+    setCounts(previousCounts);
+    setReactions({ ...reactions, [reactionType]: false });
+
+    setError("Failed to save reaction");
+  }
+};
 
   // Position the emoji picker based on available space
   const getEmojiPickerPosition = () => {

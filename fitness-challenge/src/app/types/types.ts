@@ -90,7 +90,14 @@ export type Comment = {
 export type Reaction = {
   type: string;
   count: number;
-}
+  createdAts?: string[];
+};
+
+export type ReactionResponse = {
+  added: boolean;
+  type: string;
+  currentReactions?: { type: string; count: number }[];
+};
 
 
 export type ActivityWithUser = Activity & {

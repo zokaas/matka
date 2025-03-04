@@ -192,29 +192,34 @@ export const reactionAPI = {
       );
       return handleResponse(response);
     } catch (error) {
-      console.error('Error fetching reactions:', error);
-      throw new Error('Failed to fetch reactions');
+      console.error("Error fetching reactions:", error);
+      throw new Error("Failed to fetch reactions");
     }
   },
 
   // Toggle a reaction on an activity (simplified - no user needed)
+  // Toggle a reaction on an activity (simplified - no user needed)
   toggleReaction: async (
     activityId: number,
     type: string
-  ): Promise<{ added: boolean; type: string }> => {
+  ): Promise<{
+    added: boolean;
+    type: string;
+    currentReactions?: { type: string; count: number }[];
+  }> => {
     try {
       const response = await fetch(
         `${BACKEND_URL}/activity/${activityId}/reactions`,
         {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ type }),
         }
       );
       return handleResponse(response);
     } catch (error) {
-      console.error('Error toggling reaction:', error);
-      throw new Error('Failed to process reaction request');
+      console.error("Error toggling reaction:", error);
+      throw new Error("Failed to process reaction request");
     }
   },
 };
