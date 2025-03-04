@@ -1,5 +1,5 @@
 // src/app/services/apiService.ts
-import { Activity, User, Comment, Reaction, Quote } from "../types/types";
+import { Activity, User, Comment, Reaction, Quote, ReactionResponse } from "../types/types";
 
 const BACKEND_URL = "https://matka-zogy.onrender.com";
 
@@ -187,39 +187,52 @@ export const reactionAPI = {
   // Get reactions for an activity
   getReactions: async (activityId: number): Promise<Reaction[]> => {
     try {
+      console.log(`Fetching reactions for activity ${activityId}`);
       const response = await fetch(
         `${BACKEND_URL}/activity/${activityId}/reactions`
       );
-      return handleResponse(response);
+      
+      if (!response.ok) {
+        console.error('Reaction fetch error:', response.status, response.statusText);
+        throw new Error('Failed to fetch reactions');
+      }
+
+      const data = await response.json();
+      console.log('Received reaction data:', data);
+      return data;
     } catch (error) {
-      console.error("Error fetching reactions:", error);
-      throw new Error("Failed to fetch reactions");
+      console.error('Error fetching reactions:', error);
+      throw new Error('Failed to fetch reactions');
     }
   },
 
-  // Toggle a reaction on an activity (simplified - no user needed)
-  // Toggle a reaction on an activity (simplified - no user needed)
+  // Toggle a reaction on an activity
   toggleReaction: async (
     activityId: number,
     type: string
-  ): Promise<{
-    added: boolean;
-    type: string;
-    currentReactions?: { type: string; count: number }[];
-  }> => {
+  ): Promise<ReactionResponse> => {
     try {
+      console.log(`Toggling reaction for activity ${activityId}: ${type}`);
       const response = await fetch(
         `${BACKEND_URL}/activity/${activityId}/reactions`,
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ type }),
         }
       );
-      return handleResponse(response);
+
+      if (!response.ok) {
+        console.error('Reaction toggle error:', response.status, response.statusText);
+        throw new Error('Failed to toggle reaction');
+      }
+
+      const data = await response.json();
+      console.log('Received reaction toggle response:', data);
+      return data;
     } catch (error) {
-      console.error("Error toggling reaction:", error);
-      throw new Error("Failed to process reaction request");
+      console.error('Error toggling reaction:', error);
+      throw new Error('Failed to process reaction request');
     }
   },
 };
