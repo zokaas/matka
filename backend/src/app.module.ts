@@ -12,6 +12,7 @@ import { Comment } from './comment.entity';
 import { Reaction } from './reaction.entity';
 import { CommentsController } from './comments.controller';
 import { ReactionsController } from './reactions.controller';
+import { ActivitiesController } from './activities.controller';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { ReactionsController } from './reactions.controller';
     QuoteController,
     CommentsController,
     ReactionsController,
+    ActivitiesController,
   ],
   providers: [AppService],
 })

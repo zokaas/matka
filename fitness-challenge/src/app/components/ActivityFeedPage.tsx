@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Activity, User } from "@/app/types/types";
+import { Activity } from "@/app/types/types";
 import ActivityItem from "./ActivityItem";
 
 interface ActivityWithUser extends Activity {
@@ -17,20 +17,46 @@ export default function ActivityFeedPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Fetch activities more efficiently
-  const fetchRecentActivities = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError("");
+  useEffect(() => {
+    async function fetchRecentActivities() {
+      try {
+        setLoading(true);
+        setError("");
 
+        // Use the new backend endpoint that returns pre-sorted activities
+        const response = await fetch(
+          `${backendUrl}/activities/recent?limit=20`
+        );
+
+        if (!response.ok) {
+          throw new Error("Aktiivisuuksien lataaminen epäonnistui.");
+        }
+
+        const recentActivities = await response.json();
+        setActivities(recentActivities);
+      } catch (err) {
+        // If the new endpoint fails (since it might not be deployed yet), fall back to the old method
+        try {
+          await fetchActivitiesLegacy();
+        } catch (legacyErr) {
+          setError(err instanceof Error ? err.message : "Tapahtui virhe.");
+          console.error("Error fetching recent activities:", err);
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Legacy method for backwards compatibility
+    async function fetchActivitiesLegacy() {
       // Fetch all users in one request
       const usersResponse = await fetch(`${backendUrl}/users`);
       if (!usersResponse.ok)
         throw new Error("Käyttäjien lataaminen epäonnistui.");
-      const users: User[] = await usersResponse.json();
+      const users = await usersResponse.json();
 
       // Fetch all activities in parallel for better performance
-      const activityPromises = users.map(async (user) => {
+      const activityPromises = users.map(async (user: { username: string; profilePicture?: string }) => {
         try {
           const response = await fetch(
             `${backendUrl}/users/${user.username}/activities/all`
@@ -39,9 +65,10 @@ export default function ActivityFeedPage() {
             throw new Error(
               `Aktiivisuuden haku epäonnistui käyttäjälle ${user.username}.`
             );
-          const userActivities: Activity[] = await response.json();
+          const userActivities = await response.json();
 
-          return userActivities.map((activity) => ({
+          // Return activities with user information attached
+          return userActivities.map((activity: Activity) => ({
             ...activity,
             username: user.username,
             profilePicture: user.profilePicture,
@@ -51,29 +78,35 @@ export default function ActivityFeedPage() {
             `Error fetching activities for ${user.username}:`,
             error
           );
-          return []; // Ensure errors for one user don’t block others
+          return []; // Ensure errors for one user don't block others
         }
       });
 
       // Wait for all activity requests to finish
       const allActivities = (await Promise.all(activityPromises)).flat();
 
-      // Sort by date (newest first) and limit to 20
+      // Sort with a fallback strategy for activities on the same day
       const recentActivities = allActivities
-        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-        .slice(0, 20);
+        .sort((a, b) => {
+          // Parse date strings to full ISO format
+          const dateA = new Date(a.date).getTime();
+          const dateB = new Date(b.date).getTime();
+
+          // If dates are different, sort by date
+          if (dateB !== dateA) {
+            return dateB - dateA; // Sort in descending order (newest first)
+          }
+
+          // If dates are the same, try to sort by ID
+          return b.id - a.id;
+        })
+        .slice(0, 20); // Limit to 20 most recent activities
 
       setActivities(recentActivities);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Tapahtui virhe.");
-    } finally {
-      setLoading(false);
     }
-  }, []);
 
-  useEffect(() => {
     fetchRecentActivities();
-  }, [fetchRecentActivities]);
+  }, []);
 
   if (loading) {
     return (
