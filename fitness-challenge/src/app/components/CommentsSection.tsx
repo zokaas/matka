@@ -73,38 +73,39 @@ const CommentsSection: React.FC<CommentsProps> = ({
   if (!isExpanded) return null;
 
   return (
-    <div className="space-y-4 bg-white p-4 rounded-lg shadow-md border w-full max-w-lg mx-auto">
-      <form onSubmit={handleSubmitComment} className="flex flex-col space-y-2">
-        <div className="flex items-start border rounded-lg px-3 py-2 bg-gray-100">
+    <div>
+        <form
+          onSubmit={handleSubmitComment}
+          className="flex flex-col bg-gray-100 rounded-lg p-3"
+        >
           <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Kirjoita kommentti..."
-            className="flex-1 bg-transparent focus:outline-none text-sm resize-none overflow-y-auto"
+            className="w-full bg-transparent focus:outline-none text-sm resize-none overflow-y-auto p-2 border rounded-md min-h-[60px] max-h-[180px]"
             maxLength={COMMENT_MAX_LENGTH}
             required
             disabled={submitting}
-            rows={2}
-            style={{ minHeight: "50px", maxHeight: "200px" }}
           />
-          <button
-            type="submit"
-            className={`ml-2 px-3 py-1 rounded text-xs text-white bg-purple-500 hover:bg-purple-600 transition-colors ${
-              submitting ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            disabled={newComment.length === 0 || submitting}
-          >
-            {submitting ? "Lähetetään..." : "Lähetä"}
-          </button>
-        </div>
-        <div
-          className={`text-xs text-right ${
-            charactersLeft < 20 ? "text-red-500" : "text-gray-500"
-          }`}
-        >
-          {charactersLeft} merkkiä jäljellä
-        </div>
-      </form>
+          <div className="flex justify-between items-center mt-2">
+            <span
+              className={`text-xs ${
+                charactersLeft < 20 ? "text-red-500" : "text-gray-500"
+              }`}
+            >
+              {charactersLeft} merkkiä jäljellä
+            </span>
+            <button
+              type="submit"
+              className={`px-4 py-2 rounded-md text-xs text-white bg-purple-500 hover:bg-purple-600 transition-colors ${
+                submitting ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              disabled={newComment.length === 0 || submitting}
+            >
+              {submitting ? "Lähetetään..." : "Lähetä"}
+            </button>
+          </div>
+        </form>
 
       <AnimatePresence>
         {error && (
@@ -119,7 +120,7 @@ const CommentsSection: React.FC<CommentsProps> = ({
         )}
       </AnimatePresence>
 
-      <div className="space-y-3 max-h-64 overflow-auto">
+      <div className="space-y-3 max-h-[50vh] overflow-auto pt-4">
         {loading ? (
           <div className="text-center text-xs text-gray-500 flex items-center justify-center">
             <motion.div
@@ -142,17 +143,23 @@ const CommentsSection: React.FC<CommentsProps> = ({
               exit={{ opacity: 0, y: -5 }}
               className="bg-gray-50 p-3 rounded border text-xs flex justify-between items-start"
             >
-              <p className="text-gray-700 break-words max-w-xs md:max-w-md whitespace-pre-wrap">
+              <p className="text-gray-700 break-words w-full whitespace-pre-wrap">
                 {comment.text}
               </p>
-              <span className="text-gray-500 text-[10px] ml-2">
-                {new Date(comment.createdAt).toLocaleDateString("fi-FI", {
-                  day: "numeric",
-                  month: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </span>
+              <div className="text-gray-500 text-[10px] ml-2 flex flex-col">
+                <span>
+                  {new Date(comment.createdAt).toLocaleDateString("fi-FI", {
+                    day: "numeric",
+                    month: "numeric",
+                  })}
+                </span>
+                <span>
+                  {new Date(comment.createdAt).toLocaleTimeString("fi-FI", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </div>
             </motion.div>
           ))
         )}
