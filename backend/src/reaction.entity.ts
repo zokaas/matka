@@ -1,6 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+  CreateDateColumn,
+} from 'typeorm';
 import { Activity } from './activity.entity';
-import { Users } from './user.entity';
 
 @Entity()
 export class Reaction {
@@ -8,16 +14,17 @@ export class Reaction {
   id: number;
 
   @Column({ type: 'text' })
-  type: string; // "like", "support", "celebrate"
+  type: string; // "like", "support", "celebrate", etc.
+
+  @Column()
+  activityId: number;
 
   @ManyToOne(() => Activity, (activity) => activity.reactions, {
     onDelete: 'CASCADE',
   })
+  @JoinColumn({ name: 'activityId' })
   activity: Activity;
 
-  @ManyToOne(() => Users, { onDelete: 'CASCADE' })
-  user: Users; // Note: User reference is commented out
-
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 }

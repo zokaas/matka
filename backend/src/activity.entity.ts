@@ -4,12 +4,12 @@ import {
   Column,
   ManyToOne,
   OneToMany,
+  JoinColumn,
 } from 'typeorm';
 import { Users } from './user.entity';
 import { Comment } from './comment.entity';
 import { Reaction } from './reaction.entity';
 
-// activity.entity.ts
 @Entity()
 export class Activity {
   @PrimaryGeneratedColumn()
@@ -30,7 +30,11 @@ export class Activity {
   @Column('varchar', { nullable: true })
   bonus: string | null;
 
+  @Column()
+  userId: number;
+
   @ManyToOne(() => Users, (user) => user.activities)
+  @JoinColumn({ name: 'userId' })
   user: Users;
 
   @OneToMany(() => Comment, (comment) => comment.activity)
