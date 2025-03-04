@@ -6,27 +6,14 @@ import {
   Param,
   HttpException,
   HttpStatus,
-  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Activity } from './activity.entity';
 import { Reaction } from './reaction.entity';
 
-// Define interfaces for error and query results
-interface ErrorWithMessage {
-  message: string;
-}
-
-interface ReactionCount {
-  type: string;
-  count: number;
-}
-
 @Controller('activity')
 export class ReactionsController {
-  private readonly logger = new Logger(ReactionsController.name);
-
   constructor(
     @InjectRepository(Activity)
     private activityRepository: Repository<Activity>,
@@ -36,34 +23,23 @@ export class ReactionsController {
 
   @Get(':activityId/reactions')
   async getActivityReactions(@Param('activityId') activityId: string) {
-    this.logger.log(`Fetching reactions for activity ${activityId}`);
-
     try {
-      // First check if the activity exists
       const activity = await this.activityRepository.findOne({
         where: { id: parseInt(activityId, 10) },
+        relations: ['reactions'],
       });
-
-      this.logger.log(`Activity found: ${activity ? 'Yes' : 'No'}`);
 
       if (!activity) {
         throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
       }
 
-      // Use a direct query to get reaction counts
-      const reactions = await this.reactionRepository.find({
-        where: { activityId: parseInt(activityId, 10) },
-      });
-
-      this.logger.log(`Found ${reactions.length} reactions`);
-
-      // Count reactions by type
-      const reactionCounts = reactions.reduce(
-        (acc: Record<string, number>, reaction: Reaction) => {
+      // Group reactions by type and count them
+      const reactionCounts: Record<string, number> = activity.reactions.reduce(
+        (acc: Record<string, number>, reaction) => {
           acc[reaction.type] = (acc[reaction.type] || 0) + 1;
           return acc;
         },
-        {} as Record<string, number>,
+        {},
       );
 
       return Object.entries(reactionCounts).map(([type, count]) => ({
@@ -71,26 +47,20 @@ export class ReactionsController {
         count,
       }));
     } catch (error) {
-      const typedError = error as ErrorWithMessage;
-      this.logger.error('Error fetching reactions:', typedError);
+      console.error('Error fetching reactions:', error);
       throw new HttpException(
-        `Failed to retrieve reactions: ${typedError.message}`,
+        'Failed to retrieve reactions',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   @Post(':activityId/reactions')
-  async addReaction(
+  async toggleReaction(
     @Param('activityId') activityId: string,
     @Body() reactionData: { type: string },
   ) {
-    this.logger.log(
-      `Adding reaction to activity ${activityId}: ${JSON.stringify(reactionData)}`,
-    );
-
     try {
-      // Check if activity exists
       const activity = await this.activityRepository.findOne({
         where: { id: parseInt(activityId, 10) },
       });
@@ -99,54 +69,53 @@ export class ReactionsController {
         throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
       }
 
-      // Create a new reaction - always add a new one
-      const reaction = new Reaction();
-      reaction.activityId = parseInt(activityId, 10);
-      reaction.type = reactionData.type;
+      // Check if reaction already exists
+      const existingReaction = await this.reactionRepository.findOne({
+        where: {
+          activity: { id: activity.id },
+          type: reactionData.type,
+        },
+      });
 
-      const savedReaction = await this.reactionRepository.save(reaction);
-      this.logger.log(`Saved reaction: ${JSON.stringify(savedReaction)}`);
+      const currentTime = new Date();
 
+      if (existingReaction) {
+        // Ensure that createdAt is correctly handled
+        if (!existingReaction.createdAt) {
+          throw new HttpException(
+            'Reaction does not have a valid timestamp',
+            HttpStatus.INTERNAL_SERVER_ERROR,
+          );
+        }
+
+        const sessionExpiresAt = new Date(existingReaction.createdAt);
+        sessionExpiresAt.setMinutes(sessionExpiresAt.getMinutes() + 5);
+
+        if (currentTime <= sessionExpiresAt) {
+          await this.reactionRepository.remove(existingReaction);
+          return { added: false, type: reactionData.type };
+        } else {
+          return {
+            added: true,
+            type: reactionData.type,
+            message: 'Reactions are now permanent after session expiration.',
+          };
+        }
+      }
+
+      // Create new reaction (without user)
+      const reaction = this.reactionRepository.create({
+        type: reactionData.type,
+        activity,
+        createdAt: currentTime,
+      });
+
+      await this.reactionRepository.save(reaction);
       return { added: true, type: reactionData.type };
     } catch (error) {
-      const typedError = error as ErrorWithMessage;
-      this.logger.error('Error adding reaction:', typedError);
+      console.error('Error processing reaction:', error);
       throw new HttpException(
-        `Failed to add reaction: ${typedError.message}`,
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  // Fallback method with raw SQL if the repository methods aren't working
-  @Get(':activityId/reactions/raw')
-  async getRawReactions(@Param('activityId') activityId: string) {
-    this.logger.log(`Fetching raw reactions for activity ${activityId}`);
-
-    try {
-      // Use raw SQL to get reaction counts
-      const rawResults = (await this.reactionRepository.query(
-        `
-        SELECT type, COUNT(*) as count
-        FROM reaction
-        WHERE "activityId" = $1
-        GROUP BY type
-      `,
-        [parseInt(activityId, 10)],
-      )) as ReactionCount[];
-
-      this.logger.log(`Raw query results: ${JSON.stringify(rawResults)}`);
-
-      // Explicitly type the return value and type-check the arguments
-      return rawResults.map((row: ReactionCount) => ({
-        type: row.type,
-        count: parseInt(String(row.count), 10),
-      }));
-    } catch (error: unknown) {
-      const typedError = error as ErrorWithMessage;
-      this.logger.error('Error in raw query:', typedError);
-      throw new HttpException(
-        `Failed to retrieve reactions: ${typedError.message}`,
+        'Failed to process reaction request',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
