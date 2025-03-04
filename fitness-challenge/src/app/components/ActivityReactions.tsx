@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import apiService from "../service/apiService";
 
@@ -8,18 +8,28 @@ interface ReactionsProps {
   activityId: number;
 }
 
+// Enhanced reaction types with more fitness and challenge-related options
 const REACTION_TYPES = [
   { type: "like", emoji: "👍" },
   { type: "support", emoji: "💪" },
   { type: "celebrate", emoji: "🎉" },
   { type: "inspire", emoji: "✨" },
-  { type: "focus", emoji: "🎯" },
   { type: "determination", emoji: "🔥" },
   { type: "teamwork", emoji: "🤝" },
   { type: "global", emoji: "🌍" },
   { type: "love", emoji: "💖" },
   { type: "speed", emoji: "🏃‍♀️" },
   { type: "strong", emoji: "🏋️‍♀️" },
+  { type: "medal", emoji: "🥇" },
+  { type: "trophy", emoji: "🏆" },
+  { type: "bicycle", emoji: "🚴‍♀️" },
+  { type: "swimming", emoji: "🏊‍♀️" },
+  { type: "mountain", emoji: "⛰️" },
+  { type: "gym", emoji: "💯" },
+  { type: "highfive", emoji: "✋" },
+  { type: "clap", emoji: "👏" },
+  { type: "energy", emoji: "⚡" },
+  { type: "rocket", emoji: "🚀" },
 ];
 
 const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
@@ -28,6 +38,22 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Check if device is mobile
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkIfMobile();
+    window.addEventListener("resize", checkIfMobile);
+
+    return () => {
+      window.removeEventListener("resize", checkIfMobile);
+    };
+  }, []);
 
   // Fetch reactions when component mounts
   useEffect(() => {
@@ -86,6 +112,46 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
     }
   };
 
+  // Position the emoji picker based on available space
+  const getEmojiPickerPosition = () => {
+    if (!containerRef.current) return {};
+
+    const container = containerRef.current;
+    const rect = container.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+
+    // For mobile, always position below
+    if (isMobile) {
+      return {
+        top: "100%",
+        left: "0",
+        right: "0",
+        maxWidth: "320px",
+        margin: "0 auto",
+      };
+    }
+
+    // For desktop, check available space
+    if (spaceBelow < 280 && spaceAbove > spaceBelow) {
+      // Position above if there's more space
+      return {
+        bottom: "100%",
+        left: "0",
+        maxWidth: "380px",
+        marginBottom: "8px",
+      };
+    } else {
+      // Position below
+      return {
+        top: "100%",
+        left: "0",
+        maxWidth: "380px",
+        marginTop: "8px",
+      };
+    }
+  };
+
   // Memoized active reactions for efficiency
   const activeReactions = useMemo(
     () =>
@@ -104,7 +170,8 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         showEmojiPicker &&
-        !(event.target as Element).closest(".emoji-picker")
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
       ) {
         setShowEmojiPicker(false);
       }
@@ -115,56 +182,85 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
   }, [showEmojiPicker]);
 
   return (
-    <div className="mt-3 relative">
+    <div className="mt-3 relative" ref={containerRef}>
       {/* Display errors if any */}
-      {error && <div className="text-red-500 text-xs mb-2">{error}</div>}
+      {error && (
+        <div className="text-red-500 text-xs mb-2 rounded bg-red-50 p-2 border border-red-200">
+          {error}
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-2 items-center">
         {/* Display active reactions */}
         {activeReactions.map(({ type, emoji, count }) => (
           <motion.button
             key={type}
-            whileTap={{ scale: 0.9 }}
-            className={`flex items-center bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-full transition-colors shadow-sm ${
-              isLoading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            whileTap={{ scale: 0.95 }}
+            className={`flex items-center bg-white hover:bg-gray-50 
+                       ${isMobile ? "px-2.5 py-1" : "px-3 py-1.5"} 
+                       rounded-full transition-colors shadow-sm border border-gray-200
+                       ${isLoading ? "opacity-50 cursor-not-allowed" : ""}
+                       ${reactions[type] ? "ring-2 ring-purple-300" : ""}`}
             onClick={() => !isLoading && toggleReaction(type)}
             aria-label={type}
             disabled={isLoading}
           >
-            <span className="text-base mr-1">{emoji}</span>
-            <span className="text-sm text-gray-700 font-medium">{count}</span>
+            <span className={`${isMobile ? "text-base" : "text-lg"} mr-1`}>
+              {emoji}
+            </span>
+            <span
+              className={`${
+                isMobile ? "text-xs" : "text-sm"
+              } font-medium text-gray-700`}
+            >
+              {count}
+            </span>
           </motion.button>
         ))}
 
         {/* Add reaction button */}
         <motion.button
-          whileTap={{ scale: 0.9 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => !isLoading && setShowEmojiPicker(!showEmojiPicker)}
-          className={`flex items-center justify-center bg-gray-100 hover:bg-gray-200 active:bg-gray-300 
-                     w-10 h-10 rounded-full transition-colors shadow-sm ${
-                       isLoading ? "opacity-50 cursor-not-allowed" : ""
+          className={`flex items-center justify-center bg-white hover:bg-gray-50 active:bg-gray-100 
+                     ${isMobile ? "w-7 h-7" : "w-8 h-8"}
+                     rounded-full transition-colors shadow-sm border border-gray-200
+                     ${isLoading ? "opacity-50 cursor-not-allowed" : ""}
+                     ${
+                       showEmojiPicker
+                         ? "ring-2 ring-purple-300 bg-purple-50"
+                         : ""
                      }`}
           aria-label="Add reaction"
           disabled={isLoading}
         >
-          <span className="text-gray-500 text-xl">+</span>
+          <span className="text-gray-600 text-base">+</span>
         </motion.button>
 
-        {/* Emoji picker popup */}
+        {/* Emoji picker popup with scrolling for more options */}
         <AnimatePresence>
           {showEmojiPicker && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.2 }}
-              className="emoji-picker absolute z-10 mt-12 p-3 bg-white rounded-lg shadow-lg 
-                         border border-gray-200 flex flex-wrap gap-2 max-w-xs"
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              className={`emoji-picker absolute z-20 p-2 sm:p-3 bg-white rounded-lg shadow-md 
+                         border border-gray-200 grid ${
+                           isMobile
+                             ? "grid-cols-5 gap-1.5"
+                             : "grid-cols-6 gap-2"
+                         }`}
+              style={{
+                ...getEmojiPickerPosition(),
+                maxHeight: isMobile ? "180px" : "240px",
+                overflowY: "auto",
+              }}
             >
               {REACTION_TYPES.map(({ type, emoji }) => (
                 <motion.button
                   key={type}
+                  whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => {
                     if (!isLoading) {
@@ -172,10 +268,12 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
                       setShowEmojiPicker(false);
                     }
                   }}
-                  className={`w-10 h-10 flex items-center justify-center rounded-full text-xl 
-                             transition-colors ${
+                  className={`${
+                    isMobile ? "w-9 h-9" : "w-10 h-10"
+                  } flex items-center justify-center rounded-full text-xl 
+                             transition-all ${
                                reactions[type]
-                                 ? "bg-purple-100 text-purple-600"
+                                 ? "bg-purple-100 text-purple-600 ring-2 ring-purple-300"
                                  : "hover:bg-gray-100"
                              } ${
                     isLoading ? "opacity-50 cursor-not-allowed" : ""
