@@ -13,13 +13,22 @@ const REACTION_EMOJI_MAP: Record<string, string> = {
   support: "💪",
   celebrate: "🎉",
   inspire: "✨",
-  focus: "🎯",
   determination: "🔥",
   teamwork: "🤝",
   global: "🌍",
   love: "💖",
   speed: "🏃‍♀️",
   strong: "🏋️‍♀️",
+  medal: "🥇",
+  trophy: "🏆",
+  bicycle: "🚴‍♀️",
+  swimming: "🏊‍♀️",
+  mountain: "⛰️",
+  gym: "💯",
+  highfive: "✋",
+  clap: "👏",
+  energy: "⚡",
+  rocket: "🚀",
 };
 
 const backendUrl = "https://matka-zogy.onrender.com";
