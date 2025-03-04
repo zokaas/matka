@@ -76,7 +76,7 @@ const CommentsSection: React.FC<CommentsProps> = ({
     <div>
         <form
           onSubmit={handleSubmitComment}
-          className="flex flex-col bg-gray-100 rounded-lg p-3"
+          className="flex flex-col bg-white rounded-lg p-3"
         >
           <textarea
             value={newComment}
@@ -141,7 +141,7 @@ const CommentsSection: React.FC<CommentsProps> = ({
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -5 }}
-              className="bg-gray-50 p-3 rounded border text-xs flex justify-between items-start"
+              className="bg-purple-100 p-3 rounded border text-xs flex justify-between items-start"
             >
               <p className="text-gray-700 break-words w-full whitespace-pre-wrap">
                 {comment.text}
