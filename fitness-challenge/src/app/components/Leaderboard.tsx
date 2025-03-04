@@ -18,7 +18,7 @@ const Leaderboard = ({ users }: LeaderboardProps) => {
   return (
     <section>
       <h2 className="text-xl font-bold text-gray-800 flex items-center mb-4">
-        <span>🏆</span> Sijoitukset
+        <span>🏆 </span> Sijoitukset
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {users

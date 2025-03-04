@@ -109,12 +109,9 @@ export default function ActivityFeedPage() {
     <div className="max-w-5xl mx-auto">
       {/* Header */}
       <header className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-purple-600">
+        <h1 className="text-xl font-bold text-gray-800 flex items-center mb-2">
           Viimeisimmät suoritukset
         </h1>
-        <p className="text-gray-600 mt-2">
-          Katso mitä Petolliset ovat tehneet viime aikoina!
-        </p>
       </header>
 
       {/* Activity Feed */}

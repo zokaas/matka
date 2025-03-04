@@ -84,7 +84,9 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-1"
+            className={`h-5 w-5 mr-1 transition-transform ${
+              isExpanded ? "rotate-180" : "rotate-0"
+            }`}
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -103,7 +105,11 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
       </div>
 
       {/* Comments section */}
-      <div className={`mt-1 ${isExpanded ? "border-t pt-4" : ""}`}>
+      <div
+        className={`mt-2 transition-all duration-300 ease-in-out ${
+          isExpanded ? "border-t pt-4" : "max-h-0 overflow-hidden"
+        }`}
+      >
         <CommentsSection
           activityId={activity.id}
           isExpanded={isExpanded}

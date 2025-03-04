@@ -24,7 +24,7 @@ const getProgressColor = (percentage: number) => {
   return (
     <section>
       <h2 className="text-xl font-bold text-gray-800 flex items-center mb-2">
-        <span>📊</span> Tämän viikon ranking
+        <span>📊 </span> Tämän viikon ranking
       </h2>
       <p className="text-sm text-gray-600 mb-6">
         Tavoite: {targetPaces && Math.round(targetPaces.weeklyPerUser)} km

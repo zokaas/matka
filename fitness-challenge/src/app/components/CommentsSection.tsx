@@ -73,18 +73,19 @@ const CommentsSection: React.FC<CommentsProps> = ({
   if (!isExpanded) return null;
 
   return (
-    <div className="space-y-4 bg-white p-3 md:p-4 rounded-lg shadow-md border w-full max-w-md mx-auto">
+    <div className="space-y-4 bg-white p-4 rounded-lg shadow-md border w-full max-w-lg mx-auto">
       <form onSubmit={handleSubmitComment} className="flex flex-col space-y-2">
-        <div className="flex items-center border rounded-lg px-3 py-2 bg-gray-100">
-          <input
-            type="text"
+        <div className="flex items-start border rounded-lg px-3 py-2 bg-gray-100">
+          <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             placeholder="Kirjoita kommentti..."
-            className="flex-1 bg-transparent focus:outline-none text-sm"
+            className="flex-1 bg-transparent focus:outline-none text-sm resize-none overflow-y-auto"
             maxLength={COMMENT_MAX_LENGTH}
             required
             disabled={submitting}
+            rows={2}
+            style={{ minHeight: "50px", maxHeight: "200px" }}
           />
           <button
             type="submit"
@@ -118,7 +119,7 @@ const CommentsSection: React.FC<CommentsProps> = ({
         )}
       </AnimatePresence>
 
-      <div className="space-y-3">
+      <div className="space-y-3 max-h-64 overflow-auto">
         {loading ? (
           <div className="text-center text-xs text-gray-500 flex items-center justify-center">
             <motion.div
@@ -139,19 +140,19 @@ const CommentsSection: React.FC<CommentsProps> = ({
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -5 }}
-              className="bg-gray-50 p-2 rounded border text-xs"
+              className="bg-gray-50 p-3 rounded border text-xs flex justify-between items-start"
             >
-              <div className="flex justify-between items-start">
-                <p className="text-gray-700">{comment.text}</p>
-                <span className="text-gray-500 text-[10px] ml-2">
-                  {new Date(comment.createdAt).toLocaleDateString("fi-FI", {
-                    day: "numeric",
-                    month: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-              </div>
+              <p className="text-gray-700 break-words max-w-xs md:max-w-md whitespace-pre-wrap">
+                {comment.text}
+              </p>
+              <span className="text-gray-500 text-[10px] ml-2">
+                {new Date(comment.createdAt).toLocaleDateString("fi-FI", {
+                  day: "numeric",
+                  month: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
             </motion.div>
           ))
         )}
