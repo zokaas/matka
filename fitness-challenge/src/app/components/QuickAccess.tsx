@@ -10,6 +10,7 @@ import Map from "./Map"; // Ensure you have a Map component in the specified pat
 import WeeklyProgress from "./WeeklyProgress";
 import { motion } from "framer-motion";
 import Quotes from "./Quotes";
+import WeeklyProgressBar from "./WeeklyProgressBar";
 
 
 const backendUrl = "https://matka-zogy.onrender.com";
@@ -40,7 +41,7 @@ export default function QuickAccess() {
   }, [showActivityFeed, users]);
 
   return (
-        <div className="max-w-5xl mx-auto p-6 space-y-8">
+    <div className="max-w-5xl mx-auto p-6 space-y-8">
       {/* Header Section */}
       <motion.header
         className="p-4 rounded-lg text-center"
@@ -63,7 +64,7 @@ export default function QuickAccess() {
         setShowWeeklyProgress={setShowWeeklyProgress}
         setShowActivityFeed={setShowActivityFeed}
       />
-
+      <WeeklyProgressBar />
       {loading && (
         <div className="text-center text-gray-500 animate-pulse">
           Ladataan käyttäjiä...
