@@ -14,6 +14,7 @@ import styles from "../styles/styles";
 import { calculateVisitDate } from "../utils/progressUtils";
 import InfoPanel from "./InfoPanel";
 import { createWalkerIcon } from "./WalkerIcon";
+import CrazyTriviaModal from "./CityTriviaModal";
 
 const processRouteForMap = (coordinates: [number, number][]) => {
   // If we have too few points, no processing needed
@@ -84,16 +85,16 @@ const createLineString = (coords: [number, number][]) => ({
   properties: {},
   geometry: {
     type: "LineString" as const,
-    coordinates: coords
-  }
+    coordinates: coords,
+  },
 });
 
 // Split coordinates at null values (line breaks) and create multiple LineStrings
 const createMultiLineString = (coords: ([number, number] | null)[]) => {
   const lines: [number, number][][] = [];
   let currentLine: [number, number][] = [];
-  
-  coords.forEach(coord => {
+
+  coords.forEach((coord) => {
     if (coord === null) {
       if (currentLine.length > 0) {
         lines.push(currentLine);
@@ -103,14 +104,14 @@ const createMultiLineString = (coords: ([number, number] | null)[]) => {
       currentLine.push(coord);
     }
   });
-  
+
   if (currentLine.length > 0) {
     lines.push(currentLine);
   }
-  
+
   return {
     type: "FeatureCollection" as const,
-    features: lines.map(line => createLineString(line))
+    features: lines.map((line) => createLineString(line)),
   };
 };
 
@@ -124,6 +125,11 @@ export default function Map({ totalKm }: { totalKm: number }) {
   const [mapReady, setMapReady] = useState(false);
   const [isPacificView, setIsPacificView] = useState(false);
   const [showMap, setShowMap] = useState(true);
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [selectedCityStatus, setSelectedCityStatus] = useState<string | null>(
+    null
+  );
+  const [isCrazyTriviaModalOpen, setIsCrazyTriviaModalOpen] = useState(false);
 
   // Calculate progress and achieved destinations
   const { progressPercentage, achievedDestinations } = useMemo(() => {
@@ -164,7 +170,7 @@ export default function Map({ totalKm }: { totalKm: number }) {
       setShowMap(true);
     }
   }, [totalKm]);
-  
+
   // Find current and next city, and calculate distance to next
   useEffect(() => {
     if (achievedDestinations.length > 0) {
@@ -433,7 +439,9 @@ export default function Map({ totalKm }: { totalKm: number }) {
 
   useEffect(() => {
     const totalRouteDistance = calculateTotalRouteDistance();
-    console.log(`Total route distance: ${totalRouteDistance.toLocaleString()} km`);
+    console.log(
+      `Total route distance: ${totalRouteDistance.toLocaleString()} km`
+    );
 
     // Optionally, validate if it's close to 100,000 km
     const isRouteValid = Math.abs(totalRouteDistance - 100000) / 100000 < 0.05; // Within 5% of 100,000
@@ -441,7 +449,7 @@ export default function Map({ totalKm }: { totalKm: number }) {
       `Route distance validation: ${isRouteValid ? "Valid" : "Not valid"}`
     );
   }, []);
-  
+
   // Update map data when progress changes
   const updateMapData = useCallback(() => {
     if (!map.current || !mapReady) return;
@@ -485,17 +493,16 @@ export default function Map({ totalKm }: { totalKm: number }) {
     });
   }, [routeGeoJSON, cityFeatures, viewParams, mapReady, updateWalkerMarker]);
 
-  // Initialize map
   useEffect(() => {
+    if (map.current || !mapContainer.current) return; // Avoid duplicate initialization
+
     mapboxgl.accessToken =
       "pk.eyJ1Ijoiem9rYWFzIiwiYSI6ImNtNnA2bmRubzA0ZDQya3NhZmk3bWQzMG8ifQ.Ej3pG0ieo8JRm-a46W9WGA";
-    if (map.current || !mapContainer.current) return;
 
-    const mapStyle = "mapbox://styles/mapbox/light-v11";
-
+    // ✅ Initialize Map
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: mapStyle,
+      style: "mapbox://styles/mapbox/light-v11",
       center: viewParams.center as [number, number],
       zoom: Math.min(viewParams.zoom, 3),
       bearing: 0,
@@ -505,8 +512,12 @@ export default function Map({ totalKm }: { totalKm: number }) {
       dragRotate: false,
     });
 
-    map.current.addControl(new mapboxgl.AttributionControl(), "bottom-left");
-    map.current.addControl(
+    map.current.doubleClickZoom.disable(); // Disable double-click zoom
+
+    // ✅ Add Map Controls
+    const mapInstance = map.current;
+    mapInstance.addControl(new mapboxgl.AttributionControl(), "bottom-left");
+    mapInstance.addControl(
       new mapboxgl.NavigationControl({
         showCompass: true,
         showZoom: true,
@@ -514,130 +525,232 @@ export default function Map({ totalKm }: { totalKm: number }) {
       }),
       "top-right"
     );
-    map.current.addControl(
+    mapInstance.addControl(
       new mapboxgl.ScaleControl({ maxWidth: 100, unit: "metric" }),
       "bottom-right"
     );
 
-    const mapInstance = map.current;
-
+    // ✅ Load Event: Add Sources and Layers
     mapInstance.on("load", () => {
-      mapInstance.addSource("completed-route", {
-        type: "geojson",
-        data: routeGeoJSON.completed,
-      });
-      mapInstance.addSource("upcoming-route", {
-        type: "geojson",
-        data: routeGeoJSON.upcoming,
-      });
-      mapInstance.addSource("cities", {
-        type: "geojson",
-        data: { type: "FeatureCollection", features: cityFeatures },
-      });
-
-      mapInstance.addLayer({
-        id: "completed-route-glow",
-        type: "line",
-        source: "completed-route",
-        layout: { "line-join": "round", "line-cap": "round" },
-        paint: {
-          "line-color": "#f7c850", // Vibrant Lemon Yellow
-          "line-width": 6,
-          "line-opacity": 0.7,
-          "line-blur": 3,
-        },
-      });
-
-      mapInstance.addLayer({
-        id: "completed-route-line",
-        type: "line",
-        source: "completed-route",
-        layout: { "line-join": "round", "line-cap": "round" },
-        paint: {
-          "line-color": "#1c2d69", // Deep Blue
-          "line-width": 3,
-        },
-      });
-
-      mapInstance.addLayer({
-        id: "upcoming-route-line",
-        type: "line",
-        source: "upcoming-route",
-        layout: { "line-join": "round", "line-cap": "round" },
-        paint: {
-          "line-color": "#8a8a8a", // Soft Shadow Gray
-          "line-width": 2,
-          "line-dasharray": [2, 1],
-        },
-      });
-
-      mapInstance.addLayer({
-        id: "city-markers",
-        type: "circle",
-        source: "cities",
-        paint: {
-          "circle-radius": [
-            "case",
-            ["==", ["get", "status"], "current"],
-            8,
-            ["==", ["get", "status"], "next"],
-            6,
-            ["==", ["get", "status"], "visited"],
-            4,
-            3,
-          ],
-          "circle-color": [
-            "case",
-            ["==", ["get", "status"], "current"],
-            "#4ea26e", // Mint Green
-            ["==", ["get", "status"], "next"],
-            "#f7c850", // Vibrant Lemon Yellow
-            ["==", ["get", "status"], "visited"],
-            "#1c2d69", // Deep Blue
-            "#8a8a8a", // Soft Shadow Gray
-          ],
-          "circle-stroke-width": 2,
-          "circle-stroke-color": "#ffffff",
-        },
-      });
-
-      mapInstance.addLayer({
-        id: "city-labels",
-        type: "symbol",
-        source: "cities",
-        layout: {
-          "text-field": ["get", "name"],
-          "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
-          "text-size": 12,
-          "text-offset": [0, -1.5],
-          "text-anchor": "bottom",
-        },
-        paint: {
-          "text-color": "#1c2d69", // Deep Blue
-          "text-halo-color": "#ffffff",
-          "text-halo-width": 1.5,
-        },
-      });
-
+      addSourcesToMap(mapInstance);
+      addLayersToMap(mapInstance);
       updateWalkerMarker();
       setMapReady(true);
     });
 
-    const resizeHandler = () => {
-      if (map.current) {
-        map.current.resize();
-      }
-    };
-
+    // ✅ Handle Window Resize
+    const resizeHandler = () => map.current?.resize();
     window.addEventListener("resize", resizeHandler);
 
     return () => {
       window.removeEventListener("resize", resizeHandler);
-      if (mapInstance) {
-        mapInstance.remove();
-      }
+      mapInstance.remove();
     };
   }, []);
+
+  // ✅ Extracted function to add data sources
+  const addSourcesToMap = (mapInstance: mapboxgl.Map) => {
+    mapInstance.addSource("completed-route", {
+      type: "geojson",
+      data: routeGeoJSON.completed,
+    });
+
+    mapInstance.addSource("upcoming-route", {
+      type: "geojson",
+      data: routeGeoJSON.upcoming,
+    });
+
+    mapInstance.addSource("cities", {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: cityFeatures },
+    });
+  };
+
+  // ✅ Extracted function to add map layers
+  const addLayersToMap = (mapInstance: mapboxgl.Map) => {
+    mapInstance.addLayer({
+      id: "completed-route-glow",
+      type: "line",
+      source: "completed-route",
+      layout: { "line-join": "round", "line-cap": "round" },
+      paint: {
+        "line-color": "#f7c850",
+        "line-width": 6,
+        "line-opacity": 0.7,
+        "line-blur": 3,
+      },
+    });
+
+    mapInstance.addLayer({
+      id: "completed-route-line",
+      type: "line",
+      source: "completed-route",
+      layout: { "line-join": "round", "line-cap": "round" },
+      paint: { "line-color": "#1c2d69", "line-width": 3 },
+    });
+
+    mapInstance.addLayer({
+      id: "upcoming-route-line",
+      type: "line",
+      source: "upcoming-route",
+      layout: { "line-join": "round", "line-cap": "round" },
+      paint: {
+        "line-color": "#8a8a8a",
+        "line-width": 2,
+        "line-dasharray": [2, 1],
+      },
+    });
+
+    mapInstance.addLayer({
+      id: "city-markers",
+      type: "circle",
+      source: "cities",
+      paint: {
+        "circle-radius": [
+          "case",
+          ["==", ["get", "status"], "current"],
+          10,
+          ["==", ["get", "status"], "next"],
+          8,
+          ["==", ["get", "status"], "visited"],
+          6,
+          5,
+        ],
+        "circle-color": "#1c2d69",
+        "circle-stroke-width": 2,
+        "circle-stroke-color": "#ffffff",
+        // Add highlight for visited/current cities
+        "circle-opacity": [
+          "case",
+          ["match", ["get", "status"], ["current", "visited"], true, false],
+          1,
+          0.6,
+        ],
+      },
+    });
+
+    mapInstance.addLayer({
+      id: "city-labels",
+      type: "symbol",
+      source: "cities",
+      layout: {
+        "text-field": ["get", "name"],
+        "text-font": ["Open Sans Semibold", "Arial Unicode MS Bold"],
+        "text-size": 12,
+        "text-offset": [0, -1.5],
+        "text-anchor": "bottom",
+      },
+      paint: {
+        "text-color": "#1c2d69",
+        "text-halo-color": "#ffffff",
+        "text-halo-width": 1.5,
+      },
+    });
+
+    // ✅ Click Event for City Markers - UPDATED
+    mapInstance.on("click", "city-markers", (e) => {
+      if (e.features && e.features.length > 0) {
+        const feature = e.features[0];
+        const cityName = feature.properties?.name as string;
+        const status = feature.properties?.status as string;
+
+        // Only show trivia for cities we've already reached (current or visited)
+        if (status === "current" || status === "visited") {
+          setTimeout(
+            () => {
+              setSelectedCity(cityName);
+              setSelectedCityStatus(status);
+              setIsCrazyTriviaModalOpen(true);
+            },
+            window.innerWidth < 768 ? 800 : 0
+          );
+        }
+      }
+    });
+
+    // Add hover effect for the city markers
+    mapInstance.on("mouseenter", "city-markers", (e) => {
+      if (e.features && e.features.length > 0) {
+        const status = e.features[0].properties?.status;
+
+        // Only change cursor for cities we've already reached
+        if (status === "current" || status === "visited") {
+          mapInstance.getCanvas().style.cursor = "pointer";
+        }
+      }
+    });
+
+    mapInstance.on("mouseleave", "city-markers", () => {
+      mapInstance.getCanvas().style.cursor = "";
+    });
+  };
+
+  useEffect(() => {
+    if (!map.current || achievedDestinations.length === 0) return;
+
+    const currentIndex = achievedDestinations.length - 1;
+    const currentCity = routeCoordinates[currentIndex];
+
+    if (!currentCity || !map.current) return;
+
+    const triviaPopup = new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+      anchor: "top",
+      className: "trivia-popup",
+    })
+      .setLngLat([
+        currentCity.coordinates.longitude,
+        currentCity.coordinates.latitude,
+      ])
+      .setHTML(
+        `<div style="
+    display: block;
+    max-width: none;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 6px 14px;
+    text-align: center;
+    background: #fff;
+    border-radius: 10px;
+    color: #222;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease-in-out;
+    line-height: 1.2;
+    cursor: pointer;
+  ">
+    <div style="margin: 0;">📍 <strong>${currentCity.city}</strong></div>
+    <div style="margin: 0;">Näytä kaupungin tiedot</div>
+  </div>`
+      )
+      .addTo(map.current!);
+
+    // ✅ Adjust popup styles
+    setTimeout(() => {
+      document.querySelectorAll(".mapboxgl-popup-content").forEach((el) => {
+        const element = el as HTMLElement;
+        element.style.background = "#fff";
+        element.style.boxShadow = "none";
+        element.style.padding = "0px";
+      });
+
+      document.querySelectorAll(".mapboxgl-popup-tip").forEach((el) => {
+        const element = el as HTMLElement;
+        element.style.borderBottomColor = "#fff";
+      });
+    }, 100);
+
+    triviaPopup.getElement()?.addEventListener("click", () => {
+      setSelectedCity(currentCity.city);
+      setSelectedCityStatus("current");
+      setIsCrazyTriviaModalOpen(true);
+      triviaPopup.remove();
+    });
+
+    return () => {
+      triviaPopup.remove();
+    };
+  }, [mapReady, achievedDestinations]);
 
   // Update map when data changes
   useEffect(() => {
@@ -654,6 +767,15 @@ export default function Map({ totalKm }: { totalKm: number }) {
         nextCity={nextCity || "?"}
         distanceToNext={distanceToNext}
       />
+      {selectedCity && (
+        <CrazyTriviaModal
+          isOpen={isCrazyTriviaModalOpen}
+          onClose={() => setIsCrazyTriviaModalOpen(false)}
+          city={selectedCity}
+          cityStatus={selectedCityStatus || undefined}
+          isMobile={true} // Pass a prop to adjust layout
+        />
+      )}
     </div>
   );
 }

@@ -28,3 +28,6 @@
   z-index: 1000; /* Ensure it's above other elements */
 }
 
+.trivia-popup {
+  z-index: 10000 !important; /* Ensures it appears above other elements */
+}
