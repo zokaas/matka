@@ -15,44 +15,104 @@ import { calculateVisitDate, calculateZoomLevel } from "../utils/progressUtils";
 import InfoPanel from "./InfoPanel";
 import { createWalkerIcon } from "./WalkerIcon";
 
-const processLineStringCoordinates = (
-  coordinates: [number, number][]
-): [number, number][] => {
-  if (!coordinates.length) return [];
+// Function to handle coordinate preprocessing for showing route segments
+const processRouteForMap = (coordinates: [number, number][]) => {
+  // If we have too few points, no processing needed
+  if (coordinates.length <= 1) return coordinates;
 
-  const result: [number, number][] = [coordinates[0]];
+  const result: [number, number][] = [];
 
+  // Initialize with the first point
+  result.push(coordinates[0]);
+
+  // Process each segment point by point
   for (let i = 1; i < coordinates.length; i++) {
     const [prevLng, prevLat] = coordinates[i - 1];
     const [currLng, currLat] = coordinates[i];
 
-    const lngDiff = currLng - prevLng;
+    // Calculate longitude difference
+    const lngDiff = Math.abs(currLng - prevLng);
 
-    // Detect a large longitude jump (crossing the date line)
-    if (Math.abs(lngDiff) > 180) {
-      if (currLng > 0 && prevLng < 0) {
-        // Crossing from west (-180) to east (+180)
-        const ratio =
-          (180 - Math.abs(prevLng)) / (Math.abs(currLng) + Math.abs(prevLng));
-        const latAtCrossing = prevLat + ratio * (currLat - prevLat);
+    // If we detect a possible dateline crossing or very large difference
+    if (lngDiff > 170) {
+      // Determine if this is a date line crossing
+      const isDLCrossing =
+        (prevLng > 0 && currLng < 0 && prevLng > 90 && currLng < -90) ||
+        (prevLng < 0 && currLng > 0 && prevLng < -90 && currLng > 90);
 
-        result.push([prevLng > 0 ? 180 : -180, latAtCrossing]);
-        result.push([currLng > 0 ? -180 : 180, latAtCrossing]); // Jump across
-      } else if (currLng < 0 && prevLng > 0) {
-        // Crossing from east (+180) to west (-180)
-        const ratio =
-          (180 - Math.abs(currLng)) / (Math.abs(currLng) + Math.abs(prevLng));
-        const latAtCrossing = prevLat + ratio * (currLat - prevLat);
+      if (isDLCrossing) {
+        // Calculate lat at the crossing point (simple interpolation)
+        const t = Math.abs(180 - Math.abs(prevLng)) / lngDiff;
+        const latAtCrossing = prevLat + t * (currLat - prevLat);
 
-        result.push([prevLng > 0 ? 180 : -180, latAtCrossing]);
-        result.push([currLng > 0 ? -180 : 180, latAtCrossing]); // Jump across
+        // Insert crossing points at the date line
+        if (prevLng > 0) {
+          // East to West crossing
+          result.push([180, latAtCrossing]);
+          // Break the line
+          result.push(null as any);
+          result.push([-180, latAtCrossing]);
+        } else {
+          // West to East crossing
+          result.push([-180, latAtCrossing]);
+          // Break the line
+          result.push(null as any);
+          result.push([180, latAtCrossing]);
+        }
+      } else {
+        // For very large longitude differences not at the date line,
+        // split the segment with interpolated points to avoid long lines
+        const numInterpolationPoints = 3;
+        for (let j = 1; j <= numInterpolationPoints; j++) {
+          const t = j / (numInterpolationPoints + 1);
+          const interpLng = prevLng + t * (currLng - prevLng);
+          const interpLat = prevLat + t * (currLat - prevLat);
+          result.push([interpLng, interpLat]);
+        }
       }
     }
 
+    // Always add the current point
     result.push([currLng, currLat]);
   }
 
   return result;
+};
+
+// Helper to create GeoJSON from coordinates
+const createLineString = (coords: [number, number][]) => ({
+  type: "Feature" as const,
+  properties: {},
+  geometry: {
+    type: "LineString" as const,
+    coordinates: coords,
+  },
+});
+
+// Split coordinates at null values (line breaks) and create multiple LineStrings
+const createMultiLineString = (coords: ([number, number] | null)[]) => {
+  const lines: [number, number][][] = [];
+  let currentLine: [number, number][] = [];
+
+  coords.forEach((coord) => {
+    if (coord === null) {
+      if (currentLine.length > 0) {
+        lines.push(currentLine);
+        currentLine = [];
+      }
+    } else {
+      currentLine.push(coord);
+    }
+  });
+
+  if (currentLine.length > 0) {
+    lines.push(currentLine);
+  }
+
+  return {
+    type: "FeatureCollection" as const,
+    features: lines.map((line) => createLineString(line)),
+  };
 };
 
 export default function Map({ totalKm }: { totalKm: number }) {
@@ -105,6 +165,7 @@ export default function Map({ totalKm }: { totalKm: number }) {
       setShowMap(true);
     }
   }, [totalKm]);
+
   // Find current and next city, and calculate distance to next
   useEffect(() => {
     if (achievedDestinations.length > 0) {
@@ -196,30 +257,13 @@ export default function Map({ totalKm }: { totalKm: number }) {
           ]
       );
 
-    // Process the coordinates to handle date line crossings
-    const processedCompletedCoords =
-      processLineStringCoordinates(completedCoordinates);
-    const processedUpcomingCoords = processLineStringCoordinates(
-      limitedUpcomingSegment
-    );
+    // Process the coordinates to handle problematic segments
+    const processedCompletedCoords = processRouteForMap(completedCoordinates);
+    const processedUpcomingCoords = processRouteForMap(limitedUpcomingSegment);
 
-    const completed: LineFeature = {
-      type: "Feature",
-      properties: {},
-      geometry: {
-        type: "LineString",
-        coordinates: processedCompletedCoords,
-      },
-    };
-
-    const upcoming: LineFeature = {
-      type: "Feature",
-      properties: {},
-      geometry: {
-        type: "LineString",
-        coordinates: processedUpcomingCoords,
-      },
-    };
+    // Create feature collections that may contain multiple line segments
+    const completed = createMultiLineString(processedCompletedCoords);
+    const upcoming = createMultiLineString(processedUpcomingCoords);
 
     return { completed, upcoming };
   }, [achievedDestinations.length]);
@@ -248,8 +292,6 @@ export default function Map({ totalKm }: { totalKm: number }) {
           cityIndex < currentIndex
             ? calculateVisitDate(cityIndex, currentIndex, totalKm)
             : undefined;
-
-        // Remove the distance calculation from here as it's handled in the useEffect
 
         return {
           type: "Feature",
@@ -390,10 +432,11 @@ export default function Map({ totalKm }: { totalKm: number }) {
     return Math.round(totalDistance);
   };
 
-  //voi po
   useEffect(() => {
     const totalRouteDistance = calculateTotalRouteDistance();
-    console.log(`TÄÄ ON SE: ${totalRouteDistance.toLocaleString()} km`);
+    console.log(
+      `Total route distance: ${totalRouteDistance.toLocaleString()} km`
+    );
 
     // Optionally, validate if it's close to 100,000 km
     const isRouteValid = Math.abs(totalRouteDistance - 100000) / 100000 < 0.05; // Within 5% of 100,000
@@ -401,6 +444,7 @@ export default function Map({ totalKm }: { totalKm: number }) {
       `Route distance validation: ${isRouteValid ? "Valid" : "Not valid"}`
     );
   }, []);
+
   // Update map data when progress changes
   const updateMapData = useCallback(() => {
     if (!map.current || !mapReady) return;
@@ -408,13 +452,14 @@ export default function Map({ totalKm }: { totalKm: number }) {
     // Get map instance
     const mapInstance = map.current;
 
-    // Update route sources
+    // Update completed route source
     if (mapInstance.getSource("completed-route")) {
       (
         mapInstance.getSource("completed-route") as mapboxgl.GeoJSONSource
       ).setData(routeGeoJSON.completed);
     }
 
+    // Update upcoming route source
     if (mapInstance.getSource("upcoming-route")) {
       (
         mapInstance.getSource("upcoming-route") as mapboxgl.GeoJSONSource

@@ -116,7 +116,7 @@ const WeeklyProgressBar = () => {
           {remainingDistance > 0 ? (
             <div className="text-gray-600">
               <span className="font-medium text-purple-600">
-                {remainingDistance} km
+              {remainingDistance.toFixed(0)} km
               </span>{" "}
               jäljellä
             </div>
