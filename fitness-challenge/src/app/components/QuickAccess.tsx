@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { User, Activity } from "@/app/types/types";
 import { fetchRecentActivities, fetchUsersAndTotalKm } from "../utils/utils";
 import ActivityFeedPage from "./ActivityFeedPage";
-import Header from "./Insights/Header";
 import Leaderboard from "./Leaderboard";
 import SubmitQuote from "./SubmitQuote";
 import ToggleButtons from "./ToggleButtons";
@@ -11,9 +10,6 @@ import WeeklyProgress from "./WeeklyProgress";
 import { motion } from "framer-motion";
 import Quotes from "./Quotes";
 import WeeklyProgressBar from "./WeeklyProgressBar";
-
-
-const backendUrl = "https://matka-zogy.onrender.com";
 
 export default function QuickAccess() {
   const [users, setUsers] = useState<User[]>([]);

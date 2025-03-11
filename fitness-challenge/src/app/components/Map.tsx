@@ -9,13 +9,12 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { routeCoordinates } from "../data/routeCoordinates";
 import { getBearing, getDistance } from "../utils/geoUtils";
-import { LineFeature, PointFeature } from "../types/types";
+import { PointFeature } from "../types/types";
 import styles from "../styles/styles";
-import { calculateVisitDate, calculateZoomLevel } from "../utils/progressUtils";
+import { calculateVisitDate } from "../utils/progressUtils";
 import InfoPanel from "./InfoPanel";
 import { createWalkerIcon } from "./WalkerIcon";
 
-// Function to handle coordinate preprocessing for showing route segments
 const processRouteForMap = (coordinates: [number, number][]) => {
   // If we have too few points, no processing needed
   if (coordinates.length <= 1) return coordinates;
@@ -50,13 +49,13 @@ const processRouteForMap = (coordinates: [number, number][]) => {
           // East to West crossing
           result.push([180, latAtCrossing]);
           // Break the line
-          result.push(null as any);
+          result.push(null!);
           result.push([-180, latAtCrossing]);
         } else {
           // West to East crossing
           result.push([-180, latAtCrossing]);
           // Break the line
-          result.push(null as any);
+          result.push(null!);
           result.push([180, latAtCrossing]);
         }
       } else {
@@ -85,16 +84,16 @@ const createLineString = (coords: [number, number][]) => ({
   properties: {},
   geometry: {
     type: "LineString" as const,
-    coordinates: coords,
-  },
+    coordinates: coords
+  }
 });
 
 // Split coordinates at null values (line breaks) and create multiple LineStrings
 const createMultiLineString = (coords: ([number, number] | null)[]) => {
   const lines: [number, number][][] = [];
   let currentLine: [number, number][] = [];
-
-  coords.forEach((coord) => {
+  
+  coords.forEach(coord => {
     if (coord === null) {
       if (currentLine.length > 0) {
         lines.push(currentLine);
@@ -104,14 +103,14 @@ const createMultiLineString = (coords: ([number, number] | null)[]) => {
       currentLine.push(coord);
     }
   });
-
+  
   if (currentLine.length > 0) {
     lines.push(currentLine);
   }
-
+  
   return {
     type: "FeatureCollection" as const,
-    features: lines.map((line) => createLineString(line)),
+    features: lines.map(line => createLineString(line))
   };
 };
 
@@ -165,7 +164,7 @@ export default function Map({ totalKm }: { totalKm: number }) {
       setShowMap(true);
     }
   }, [totalKm]);
-
+  
   // Find current and next city, and calculate distance to next
   useEffect(() => {
     if (achievedDestinations.length > 0) {
@@ -434,9 +433,7 @@ export default function Map({ totalKm }: { totalKm: number }) {
 
   useEffect(() => {
     const totalRouteDistance = calculateTotalRouteDistance();
-    console.log(
-      `Total route distance: ${totalRouteDistance.toLocaleString()} km`
-    );
+    console.log(`Total route distance: ${totalRouteDistance.toLocaleString()} km`);
 
     // Optionally, validate if it's close to 100,000 km
     const isRouteValid = Math.abs(totalRouteDistance - 100000) / 100000 < 0.05; // Within 5% of 100,000
@@ -444,7 +441,7 @@ export default function Map({ totalKm }: { totalKm: number }) {
       `Route distance validation: ${isRouteValid ? "Valid" : "Not valid"}`
     );
   }, []);
-
+  
   // Update map data when progress changes
   const updateMapData = useCallback(() => {
     if (!map.current || !mapReady) return;
