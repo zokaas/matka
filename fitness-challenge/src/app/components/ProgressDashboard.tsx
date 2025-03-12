@@ -503,7 +503,6 @@ const ProgressDashboard = () => {
                       dataKey="dailyKm" 
                       name="Daily Distance" 
                       stroke="#82ca9d"
-                      barSize={20}
                     />
                   </LineChart>
                 </ResponsiveContainer>
