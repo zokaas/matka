@@ -7,7 +7,7 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, L
 const ProgressDashboard = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null); // Fixed type to allow null or string
   const [totalKm, setTotalKm] = useState(0);
   const [activeTab, setActiveTab] = useState('team');
   const [selectedUser, setSelectedUser] = useState(null);
@@ -55,7 +55,83 @@ const ProgressDashboard = () => {
         processUserData(userData);
       }
     }
-  }, [selectedUser, users, timeframe]);
+  }, [selectedUser, users, timeframe, processUserData]);
+  
+  // Use useCallback to memoize the processUserData function to avoid the React hook dependency warning
+  const processUserData = React.useCallback((userData) => {
+    if (!userData?.activities?.length) return;
+    
+    // Filter activities based on the selected timeframe
+    const filteredActivities = userData.activities.filter(activity => {
+      const activityDate = new Date(activity.date);
+      const now = new Date();
+      
+      if (timeframe === 'week') {
+        const weekAgo = new Date();
+        weekAgo.setDate(now.getDate() - 7);
+        return activityDate >= weekAgo;
+      } else if (timeframe === 'month') {
+        const monthAgo = new Date();
+        monthAgo.setMonth(now.getMonth() - 1);
+        return activityDate >= monthAgo;
+      }
+      
+      return true; // 'all' timeframe
+    });
+    
+    // Sort activities by date
+    const sortedActivities = [...filteredActivities].sort((a, b) => 
+      new Date(a.date) - new Date(b.date)
+    );
+    
+    // Process user progress over time
+    const dailyProgress = {};
+    let cumulativeDistance = 0;
+    
+    sortedActivities.forEach(activity => {
+      const dateStr = new Date(activity.date).toISOString().split('T')[0];
+      
+      if (!dailyProgress[dateStr]) {
+        dailyProgress[dateStr] = {
+          date: dateStr,
+          dailyKm: 0,
+          cumulativeKm: 0
+        };
+      }
+      
+      dailyProgress[dateStr].dailyKm += activity.kilometers;
+    });
+    
+    // Calculate cumulative distance
+    const progressData = Object.values(dailyProgress);
+    progressData.forEach((day) => {
+      cumulativeDistance += day.dailyKm;
+      day.cumulativeKm = cumulativeDistance;
+    });
+    
+    // Create activity breakdown by type
+    const activityCounts = {};
+    sortedActivities.forEach(activity => {
+      const type = activity.activity.split('/')[0].trim();
+      if (!activityCounts[type]) {
+        activityCounts[type] = {
+          type,
+          count: 0,
+          kilometers: 0
+        };
+      }
+      
+      activityCounts[type].count += 1;
+      activityCounts[type].kilometers += activity.kilometers;
+    });
+    
+    const activityBreakdownData = Object.values(activityCounts)
+      .sort((a, b) => b.kilometers - a.kilometers)
+      .slice(0, 10); // Top 10 activities
+    
+    setProgressOverTime(progressData);
+    setActivityBreakdown(activityBreakdownData);
+  }, [timeframe]);
   
   const processTeamData = (usersData) => {
     // Process team progress over time
@@ -92,7 +168,7 @@ const ProgressDashboard = () => {
     
     // Calculate cumulative distance
     const progressData = Object.values(dailyProgress);
-    progressData.forEach((day, index) => {
+    progressData.forEach((day) => {
       cumulativeDistance += day.dailyKm;
       day.cumulativeKm = cumulativeDistance;
     });
@@ -156,81 +232,6 @@ const ProgressDashboard = () => {
     setProgressOverTime(progressData);
     setActivityBreakdown(activityBreakdownData);
     setWeeklyComparison(weeklyComparisonData);
-  };
-  
-  const processUserData = (userData) => {
-    if (!userData?.activities?.length) return;
-    
-    // Filter activities based on the selected timeframe
-    const filteredActivities = userData.activities.filter(activity => {
-      const activityDate = new Date(activity.date);
-      const now = new Date();
-      
-      if (timeframe === 'week') {
-        const weekAgo = new Date();
-        weekAgo.setDate(now.getDate() - 7);
-        return activityDate >= weekAgo;
-      } else if (timeframe === 'month') {
-        const monthAgo = new Date();
-        monthAgo.setMonth(now.getMonth() - 1);
-        return activityDate >= monthAgo;
-      }
-      
-      return true; // 'all' timeframe
-    });
-    
-    // Sort activities by date
-    const sortedActivities = [...filteredActivities].sort((a, b) => 
-      new Date(a.date) - new Date(b.date)
-    );
-    
-    // Process user progress over time
-    const dailyProgress = {};
-    let cumulativeDistance = 0;
-    
-    sortedActivities.forEach(activity => {
-      const dateStr = new Date(activity.date).toISOString().split('T')[0];
-      
-      if (!dailyProgress[dateStr]) {
-        dailyProgress[dateStr] = {
-          date: dateStr,
-          dailyKm: 0,
-          cumulativeKm: 0
-        };
-      }
-      
-      dailyProgress[dateStr].dailyKm += activity.kilometers;
-    });
-    
-    // Calculate cumulative distance
-    const progressData = Object.values(dailyProgress);
-    progressData.forEach((day, index) => {
-      cumulativeDistance += day.dailyKm;
-      day.cumulativeKm = cumulativeDistance;
-    });
-    
-    // Create activity breakdown by type
-    const activityCounts = {};
-    sortedActivities.forEach(activity => {
-      const type = activity.activity.split('/')[0].trim();
-      if (!activityCounts[type]) {
-        activityCounts[type] = {
-          type,
-          count: 0,
-          kilometers: 0
-        };
-      }
-      
-      activityCounts[type].count += 1;
-      activityCounts[type].kilometers += activity.kilometers;
-    });
-    
-    const activityBreakdownData = Object.values(activityCounts)
-      .sort((a, b) => b.kilometers - a.kilometers)
-      .slice(0, 10); // Top 10 activities
-    
-    setProgressOverTime(progressData);
-    setActivityBreakdown(activityBreakdownData);
   };
   
   const formatDate = (dateStr) => {
@@ -488,8 +489,8 @@ const ProgressDashboard = () => {
                         nameKey="type"
                         label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                       >
-                        {activityBreakdown.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        {activityBreakdown.map((entry, i) => (
+                          <Cell key={`cell-${i}`} fill={COLORS[i % COLORS.length]} />
                         ))}
                       </Pie>
                       <Tooltip formatter={(value) => [`${Math.round(value)} km`, '']} />
