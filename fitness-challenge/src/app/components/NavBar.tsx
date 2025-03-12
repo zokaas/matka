@@ -104,7 +104,7 @@ export default function Navbar() {
               Tilastot
             </Link>
             <Link
-              href="/ProgressDashboard"
+              href="/dashboard"
               className="hover:bg-purple-500 px-3 py-2 rounded text-sm font-medium"
             >
               Lisää tilastoja
@@ -202,7 +202,7 @@ export default function Navbar() {
             Tilastot
           </Link>
           <Link
-            href="/ProgressDashboard"
+            href="/dashboard"
             className="block px-4 py-2 text-sm font-medium hover:bg-purple-800"
             onClick={() => setIsMenuOpen(false)}
           >
