@@ -4,16 +4,53 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
+// Define types to match your application
+interface Activity {
+  id: number;
+  activity: string;
+  duration: number;
+  date: string;
+  kilometers: number;
+  bonus?: string | null;
+}
+
+interface User {
+  id: string;
+  username: string;
+  totalKm: number;
+  activities: Activity[];
+  profilePicture?: string;
+}
+
+interface DailyProgress {
+  date: string;
+  dailyKm: number;
+  cumulativeKm: number;
+}
+
+interface ActivityStats {
+  type: string;
+  count: number;
+  kilometers: number;
+}
+
+interface WeeklyData {
+  name: string;
+  kilometers: number;
+  activities: number;
+  users: number | Set<string>;
+}
+
 const ProgressDashboard = () => {
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); // Fixed type to allow null or string
+  const [error, setError] = useState<string | null>(null);
   const [totalKm, setTotalKm] = useState(0);
   const [activeTab, setActiveTab] = useState('team');
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [progressOverTime, setProgressOverTime] = useState([]);
-  const [activityBreakdown, setActivityBreakdown] = useState([]);
-  const [weeklyComparison, setWeeklyComparison] = useState([]);
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+  const [progressOverTime, setProgressOverTime] = useState<DailyProgress[]>([]);
+  const [activityBreakdown, setActivityBreakdown] = useState<ActivityStats[]>([]);
+  const [weeklyComparison, setWeeklyComparison] = useState<WeeklyData[]>([]);
   const [timeframe, setTimeframe] = useState('all');
 
   useEffect(() => {
@@ -48,17 +85,8 @@ const ProgressDashboard = () => {
     fetchData();
   }, []);
   
-  useEffect(() => {
-    if (selectedUser && users.length > 0) {
-      const userData = users.find(u => u.username === selectedUser);
-      if (userData) {
-        processUserData(userData);
-      }
-    }
-  }, [selectedUser, users, timeframe, processUserData]);
-  
   // Use useCallback to memoize the processUserData function to avoid the React hook dependency warning
-  const processUserData = React.useCallback((userData) => {
+  const processUserData = React.useCallback((userData: User) => {
     if (!userData?.activities?.length) return;
     
     // Filter activities based on the selected timeframe
@@ -81,11 +109,11 @@ const ProgressDashboard = () => {
     
     // Sort activities by date
     const sortedActivities = [...filteredActivities].sort((a, b) => 
-      new Date(a.date) - new Date(b.date)
+      new Date(a.date).getTime() - new Date(b.date).getTime()
     );
     
     // Process user progress over time
-    const dailyProgress = {};
+    const dailyProgress: Record<string, DailyProgress> = {};
     let cumulativeDistance = 0;
     
     sortedActivities.forEach(activity => {
@@ -110,7 +138,7 @@ const ProgressDashboard = () => {
     });
     
     // Create activity breakdown by type
-    const activityCounts = {};
+    const activityCounts: Record<string, ActivityStats> = {};
     sortedActivities.forEach(activity => {
       const type = activity.activity.split('/')[0].trim();
       if (!activityCounts[type]) {
@@ -133,9 +161,19 @@ const ProgressDashboard = () => {
     setActivityBreakdown(activityBreakdownData);
   }, [timeframe]);
   
-  const processTeamData = (usersData) => {
+  useEffect(() => {
+    if (selectedUser && users.length > 0) {
+      const userData = users.find(u => u.username === selectedUser);
+      if (userData) {
+        processUserData(userData);
+      }
+    }
+  }, [selectedUser, users, timeframe, processUserData]);
+  
+  const processTeamData = (usersData: User[]) => {
     // Process team progress over time
-    const allActivities = [];
+    type EnhancedActivity = Activity & { username: string };
+    const allActivities: EnhancedActivity[] = [];
     
     usersData.forEach(user => {
       user.activities.forEach(activity => {
@@ -148,10 +186,10 @@ const ProgressDashboard = () => {
     });
     
     // Sort activities by date
-    allActivities.sort((a, b) => new Date(a.date) - new Date(b.date));
+    allActivities.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     
     // Aggregate activities by date
-    const dailyProgress = {};
+    const dailyProgress: Record<string, DailyProgress> = {};
     let cumulativeDistance = 0;
     
     allActivities.forEach(activity => {
@@ -174,7 +212,7 @@ const ProgressDashboard = () => {
     });
     
     // Create activity breakdown by type
-    const activityCounts = {};
+    const activityCounts: Record<string, ActivityStats> = {};
     allActivities.forEach(activity => {
       const type = activity.activity.split('/')[0].trim();
       if (!activityCounts[type]) {
@@ -194,7 +232,7 @@ const ProgressDashboard = () => {
       .slice(0, 10); // Top 10 activities
     
     // Weekly comparison
-    const weeklyData = {};
+    const weeklyData: Record<string, WeeklyData> = {};
     const now = new Date();
     
     for (let i = 0; i < 4; i++) {
@@ -212,7 +250,7 @@ const ProgressDashboard = () => {
         name: weekKey,
         kilometers: 0,
         activities: 0,
-        users: new Set()
+        users: new Set<string>()
       };
       
       allActivities.forEach(activity => {
@@ -220,11 +258,11 @@ const ProgressDashboard = () => {
         if (activityDate >= weekStart && activityDate <= weekEnd) {
           weeklyData[weekKey].kilometers += activity.kilometers;
           weeklyData[weekKey].activities += 1;
-          weeklyData[weekKey].users.add(activity.username);
+          (weeklyData[weekKey].users as Set<string>).add(activity.username);
         }
       });
       
-      weeklyData[weekKey].users = weeklyData[weekKey].users.size;
+      weeklyData[weekKey].users = (weeklyData[weekKey].users as Set<string>).size;
     }
     
     const weeklyComparisonData = Object.values(weeklyData).reverse();
@@ -234,7 +272,7 @@ const ProgressDashboard = () => {
     setWeeklyComparison(weeklyComparisonData);
   };
   
-  const formatDate = (dateStr) => {
+  const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     return date.toLocaleDateString('fi-FI', { day: 'numeric', month: 'numeric' });
   };
@@ -373,8 +411,8 @@ const ProgressDashboard = () => {
                     />
                     <YAxis />
                     <Tooltip 
-                      formatter={(value) => [`${Math.round(value)} km`, '']}
-                      labelFormatter={(label) => formatDate(label)}
+                      formatter={(value: number) => [`${Math.round(value)} km`, '']}
+                      labelFormatter={(label: string) => formatDate(label)}
                     />
                     <Legend />
                     <Line 
@@ -404,7 +442,7 @@ const ProgressDashboard = () => {
                         width={100}
                         tick={{ fontSize: 12 }}
                       />
-                      <Tooltip formatter={(value) => [`${Math.round(value)} km`, '']} />
+                      <Tooltip formatter={(value: number) => [`${Math.round(value)} km`, '']} />
                       <Legend />
                       <Bar dataKey="kilometers" name="Total Distance" fill="#8884d8" />
                     </BarChart>
@@ -420,7 +458,7 @@ const ProgressDashboard = () => {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <Tooltip formatter={(value) => [`${Math.round(value)}`, '']} />
+                      <Tooltip formatter={(value: number) => [`${Math.round(value)}`, '']} />
                       <Legend />
                       <Bar dataKey="kilometers" name="Total Distance (km)" fill="#8884d8" />
                       <Bar dataKey="activities" name="Activities" fill="#82ca9d" />
@@ -448,8 +486,8 @@ const ProgressDashboard = () => {
                     />
                     <YAxis />
                     <Tooltip 
-                      formatter={(value) => [`${Math.round(value)} km`, '']}
-                      labelFormatter={(label) => formatDate(label)}
+                      formatter={(value: number) => [`${Math.round(value)} km`, '']}
+                      labelFormatter={(label: string) => formatDate(label)}
                     />
                     <Legend />
                     <Line 
@@ -493,7 +531,7 @@ const ProgressDashboard = () => {
                           <Cell key={`cell-${i}`} fill={COLORS[i % COLORS.length]} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(value) => [`${Math.round(value)} km`, '']} />
+                      <Tooltip formatter={(value: number) => [`${Math.round(value)} km`, '']} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -530,7 +568,7 @@ const ProgressDashboard = () => {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="type" />
                     <YAxis />
-                    <Tooltip formatter={(value) => [`${Math.round(value)} km`, '']} />
+                    <Tooltip formatter={(value: number) => [`${Math.round(value)} km`, '']} />
                     <Legend />
                     <Bar dataKey="kilometers" name="Total Distance" fill="#8884d8" />
                   </BarChart>
