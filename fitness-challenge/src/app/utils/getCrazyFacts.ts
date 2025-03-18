@@ -279,14 +279,44 @@ export const cityCrazyFacts = {
       "City Hall -asema, joka avattiin vuonna 1904, suljettiin 1945 ja on edelleen olemassa, piilotettuna modernin metron alla.",
   },
   Philadelphia: {
-    weirdFact: "Philadelphia oli Yhdysvaltojen ensimmäinen pääkaupunki.",
-    crazyDetail:
-      "Ennen kuin Washington D.C. rakennettiin, Philadelphia toimi Yhdysvaltain pääkaupunkina vuosina 1790–1800.",
+    weirdFact: "Philadelphiassa järjestetään vuosittain omalaatuinen Mummers Parade -paraati, jossa tuhannet ihmiset tanssivat kaupungin läpi pukeutuneina värikkäisiin, höyhenillä koristeltuihin asuihin.",
+    crazyDetail: "Kaupungissa on perinne, jossa fanit kiipeävät lyhtypylväisiin aina urheilujoukkueen voitettua suuren mestaruuden – kaupunki on jopa yrittänyt estää tätä rasvaamalla pylväät!",
   },
   "Washington, D.C.": {
-    weirdFact: "Washington D.C.:ssä ei ole pilvenpiirtäjiä.",
-    crazyDetail:
-      "Lain mukaan yksikään rakennus ei saa olla korkeampi kuin Yhdysvaltain Capitol-rakennus, mikä tekee kaupungista ainutlaatuisen matalan verrattuna muihin suurkaupunkeihin.",
+    weirdFact: "Washingtonissa ei ole lainkaan pilvenpiirtäjiä, sillä laki kieltää rakentamasta Capitol-kukkulan huippua korkeampia rakennuksia.",
+    crazyDetail: "Washington Nationals -baseballjoukkueella on erikoinen tapa järjestää stadionillaan juoksukisoja, joissa kilpailijat käyttävät yli kaksimetrisiä jättimäisiä presidenttien päitä.",
+  },
+  Richmond: {
+    weirdFact: "Richmondissa sijaitsee Edgar Allan Poe -museo, jonka erikoisiin kokoelmiin kuuluvat muun muassa kirjailijan hiussuortuva sekä hänen sukkansa.",
+    crazyDetail: "Kaupunki isännöi vuosittain 'Zombie Walk' -tapahtumaa, jossa sadat ihmiset vaeltavat keskustassa zombiksi pukeutuneina.",
+  },
+  Charlotte: {
+    weirdFact: "Charlotte tunnetaan 'kuningatarkaupunkina', ja sen keskustaa kutsutaan virallisesti nimellä 'Uptown', ei 'Downtown'.",
+    crazyDetail: "NBA-joukkue Charlotte Hornetsin maskotti 'Hugo the Hornet' tunnetaan hurjista tempuistaan, kuten jättimäisistä trampoliinihypyistä koriin – joskus dramaattisesti epäonnistuen.",
+  },
+  Charleston: {
+    weirdFact: "Charlestonin kuuluisan 'Rainbow Row' -kadun pastellinväriset talot maalattiin alun perin 1930-luvulla, jotta humalaiset merimiehet löytäisivät helpommin takaisin kotiinsa.",
+    crazyDetail: "Charlestonissa yli 75 vuotta vanhan rakennuksen purkaminen ilman erityislupaa on edelleen laitonta, mikä aiheuttaa toisinaan koomisia kiistoja paikallisten kesken.",
+  },
+  Jacksonville: {
+    weirdFact: "Jacksonville on pinta-alaltaan Yhdysvaltojen suurin kaupunki – jopa suurempi kuin koko Luxemburg!",
+    crazyDetail: "Jacksonvillessä pelattiin NFL-otteluita niin kovassa sateessa ja mudassa, että pelaajat eivät enää tunnistaneet toisiaan. Tämän seurauksena joukkueen omistaja asennutti kentälle tekonurmen.",
+  },
+  Orlando: {
+    weirdFact: "Orlando tunnetaan teemapuistoistaan, mutta paikallisen legendan mukaan sen järvissä asuu mystisiä olentoja – kuuluisimpana 'Lake Eolan hirviö'.",
+    crazyDetail: "Orlandossa järjestetään vuosittain suosittu kissanäyttely, jossa arvioidaan vakavasti tuhansien kissojen turkkien kampauksia ja muotoilua.",
+  },
+  Miami: {
+    weirdFact: "Miamin Biscayne Bay tunnetaan 'vedenalaisista hautausmaistaan', joihin on tarkoituksella upotettu patsaita ja veneitä sukeltajien tutkittaviksi.",
+    crazyDetail: "Miami Marlins -joukkueen baseball-stadionilla kotipesän takana sijaitsee jättimäinen akvaario. Kaloille on jopa palkattu oma työntekijä rauhoittelemaan niitä äänekkäiden kotijuoksujen aikana.",
+  },
+  Havana: {
+    weirdFact: "Havannassa pelataan baseballia usein katukivillä, koska oikeita palloja ei aina ole saatavilla – monet paikalliset pelaajat ovatkin kehittyneet erinomaisiksi juuri tällä tavalla.",
+    crazyDetail: "Havannassa näkee edelleen säännöllisesti liikenteessä 1950-luvun amerikkalaisautoja, jotka on pidetty ajokunnossa käyttämällä varaosina kaikkea mahdollista teipistä kahvipurkkeihin.",
+  },
+  "Santa Clara": {
+    weirdFact: "Santa Clarassa sijaitsee Che Guevaran mausoleumi, jossa on nähtävillä muun muassa lasiseen rasiaan säilöttyjä partakarvoja.",
+    crazyDetail: "Kaupungin jalkapallofanit ovat kuuluisia siitä, että he pukeutuvat otteluihin kokonaan punaisiin – osa faneista värjää jopa hiuksensa ja kasvonsa osoittaakseen intohimonsa.",
   },
 };
 
