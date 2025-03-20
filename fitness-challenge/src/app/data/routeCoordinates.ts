@@ -468,6 +468,7 @@ export const routeCoordinates = [
       longitude: -74.006,
     },
   },
+  //TÄSSÄ OLLAAAn
   {
     city: "Philadelphia",
     coordinates: {
