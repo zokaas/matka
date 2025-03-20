@@ -39,21 +39,6 @@ const ProgressChart: React.FC<Props> = ({ targetPaces, getTargetLine }) => {
                   ? format(targetPaces.projectedEndDate, "d.M.yyyy")
                   : "ei tiedossa"}
               </strong>
-              .
-              <br />
-              <span className={
-                targetPaces.totalProgress < targetPaces.weeklyPerUser * (new Date().getDay() || 7) 
-                  ? "text-red-600" 
-                  : "text-green-600"
-              }>
-                {targetPaces.totalProgress < targetPaces.weeklyPerUser * (new Date().getDay() || 7) 
-                  ? "🔴 Jäljessä tavoitteesta " 
-                  : "🟢 Edellä tavoitetta "}
-                {Math.abs(
-                  targetPaces.totalProgress - 
-                  (targetPaces.weeklyPerUser * (new Date().getDay() || 7))
-                ).toFixed(1)} km
-              </span>
             </>
           }
         />
