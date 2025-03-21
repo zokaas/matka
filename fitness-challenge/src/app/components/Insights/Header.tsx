@@ -1,6 +1,6 @@
 import React from "react";
 import { format } from "date-fns";
-import { TrendingUp, Calendar, Flag, Clock, AlertCircle, Zap } from "lucide-react";
+import { TrendingUp, Calendar, Flag, Clock, AlertCircle, Zap, ArrowUp } from "lucide-react";
 import { useTargetPace } from "../TargetPaceContext";
 import { formatNumberWithSpaces } from "@/app/utils/formatDate";
 
@@ -68,20 +68,19 @@ const Header: React.FC<HeaderProps> = () => {
       {/* Key Metrics */}
       <div className="p-2.5">
         <div className="grid grid-cols-2 gap-2.5">
-          {/* Current Speed */}
-          <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
-            <div className="text-xs font-medium mb-1 flex items-center justify-center text-purple-700">
-              <TrendingUp className="w-4 h-4 mr-1 text-purple-500" />
-              Nykyinen vauhti
-            </div>
-            <div className="text-2xl font-bold text-center text-purple-600">
-              {formattedHistoricalPace}
-            </div>
-            <div className="text-center text-purple-500 mb-0.5">km/hlö</div>
-            <div className="text-xs text-gray-500 text-center mt-auto">
-              Vauhtikeskiarvo haasteen alusta lähtien
+        {/* Current Speed */}
+        <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
+          <div className="text-xs font-medium mb-1 flex items-center justify-center text-purple-700">
+            <TrendingUp className="w-4 h-4 mr-1 text-purple-500" /> 
+            Vauhtikeskiarvo
+          </div>
+          <div className="text-center">
+            <div className="flex items-baseline justify-center">
+              <span className="text-purple-600 text-2xl font-bold">{formattedHistoricalPace}</span>
+              <span className="text-purple-500 text-sm ml-1">km/hlö/vko</span>
             </div>
           </div>
+        </div>
 
           {/* Remaining Distance */}
           <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
@@ -89,72 +88,37 @@ const Header: React.FC<HeaderProps> = () => {
               <Flag className="w-4 h-4 mr-1 text-green-500" />
               Matkaa jäljellä
             </div>
-            <div className="text-2xl font-bold text-center text-green-600">
-              {formattedRemainingDistance}
+            <div className="text-center">
+            <div className="flex items-baseline justify-center">
+              <span className="text-purple-600 text-2xl font-bold">{formattedRemainingDistance}</span>
+              <span className="text-purple-500 text-sm ml-1">km</span>
             </div>
-            <div className="text-center text-green-500 mb-0.5">km</div>
-            <div className="text-xs text-gray-500 text-center mt-auto">
-              Kokonaistavoite
-            </div>
-            <div className="text-xs text-gray-500 text-center mt-auto">100 000 km
-            </div>
+          </div>
           </div>
 
           {/* Days Left */}
           <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
             <div className="text-xs font-medium mb-1 flex items-center justify-center text-amber-700">
               <Clock className="w-4 h-4 mr-1 text-amber-500" />
-              Päiviä jäljellä
+              Päiviä juhannukseen
             </div>
             <div className="text-2xl font-bold text-center text-amber-600">
               {Math.round(daysRemaining)}
             </div>
-            <div className="text-xs text-gray-500 text-center mt-auto">
-              Haaste alkoi
-            </div>
-            <div className="text-xs text-gray-500 text-center mt-auto">
-6.1.2025
-            </div>
           </div>
 
-                              {/* Estimated Completion */}
-                              <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
+{/* Estimated Completion */}
+          <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
             <div className="text-xs font-medium mb-1 flex items-center justify-center text-blue-700">
               <Calendar className="w-4 h-4 mr-1 text-blue-500" />
-              Arviolta maalissa
+              Nykyvauhdilla maalissa
             </div>
             <div className="text-2xl font-bold text-center text-blue-600">
               {formattedProjectedDate}
             </div>
-            <div className="text-xs text-gray-500 text-center mt-auto">
-Tavoiteaika maaliin
-            </div>
-            <div className="text-xs text-gray-500 text-center mt-auto">
-22.6.2025
-            </div>
           </div>
         </div>
 
-        {/* Behind Target */}
-        {behindAmount > 0 && (
-          <div className="mt-2.5 bg-red-50 border border-red-100 p-3 rounded-xl flex flex-col text-center">
-            <div className="flex justify-center items-center text-red-700 text-xs font-medium mb-1">
-              <AlertCircle className="w-4 h-4 mr-1 text-red-500" />
-              Jäljessä tavoitteesta
-            </div>
-
-            <div className="text-2xl font-bold text-red-600 mb-0.5">
-              {formattedBehindAmount} km
-            </div>
-
-            <div className="text-xs text-red-600 mt-auto">
-              Tavoitteen mukaan pitäisi olla{" "}
-              <span className="font-medium">
-                {formattedExpectedProgress} km
-              </span>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
