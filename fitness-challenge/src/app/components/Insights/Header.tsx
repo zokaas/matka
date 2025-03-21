@@ -1,29 +1,18 @@
+// Updated Header.tsx
 import React from "react";
-import { format, differenceInWeeks } from "date-fns";
+import { format } from "date-fns";
 import { TrendingUp, Calendar, Flag, Clock, AlertCircle, Zap } from "lucide-react";
-
-export interface TargetPaces {
-  weeklyPerUser: number;
-  totalProgress: number;
-  remainingDistance: number;
-  projectedEndDate?: Date | null;
-  extraKmNeeded?: number;
-  nextWeekExtraKm?: number;
-  behindAmount?: number;
-  daysRemaining: number;
-  historicalPace?: number;
-  recentPace?: number;
-  weeklyPace?: number;
-  weightedPace?: number;
-  daysFromTarget?: number;
-}
+import { useTargetPace } from "../TargetPaceContext";
 
 interface HeaderProps {
-  targetPaces: TargetPaces;
-  participantCount?: number;
+  participantCount: number;
 }
 
-const Header: React.FC<HeaderProps> = ({ targetPaces, participantCount = 10 }) => {
+const Header: React.FC<HeaderProps> = () => {
+  // Use the dedicated hook instead of direct context access
+  const targetPaces = useTargetPace();
+
+  // Loading state when data isn't ready yet
   if (!targetPaces) {
     return (
       <div className="bg-gradient-to-r from-[#eef2ff] to-[#f8f9ff] p-5 rounded-lg shadow-md text-center">
@@ -37,56 +26,24 @@ const Header: React.FC<HeaderProps> = ({ targetPaces, participantCount = 10 }) =
     );
   }
 
-  const today = new Date();
-  const targetCompletionDate = new Date("2025-06-22");
-  const challengeStartDate = new Date("2025-01-06");
-  
-  // Laske päivien ja viikkojen määrä haasteen alusta nykyhetkeen
-  const daysLeftUntilTarget = Math.ceil(
-    (targetCompletionDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
-  );
-  
-  // Laske viikkojen määrä haasteen alusta (käytetään kokonaismatkan viikkovauhdin laskemiseen)
-  const weeksFromStart = Math.max(1, differenceInWeeks(today, challengeStartDate) + 1); // +1 jotta saadaan mukaan vajaa viikko
 
-  // Laske nykyinen viikkovauhti koko matkan perusteella
-  const totalWeeklyPace = targetPaces.totalProgress / weeksFromStart;
-  const totalWeeklyPacePerUser = Math.round(totalWeeklyPace / participantCount);
-  
-  // Required pace to finish on time
-  const requiredWeeklyPace = Math.round(targetPaces.remainingDistance / (daysLeftUntilTarget / 7));
-  const requiredWeeklyPacePerUser = Math.round(requiredWeeklyPace / participantCount);
-
-  // Käytä targetPaces.projectedEndDate-arvoa
-  const formattedProjectedDate = targetPaces.projectedEndDate 
-    ? format(new Date(targetPaces.projectedEndDate), "d.M.yyyy") 
+  const formattedProjectedDate = targetPaces.projectedEndDate
+    ? format(new Date(targetPaces.projectedEndDate), "d.M.yyyy")
     : "Ei tiedossa";
 
-  // Laske päivien erotus hookista tulevan päivämäärän perusteella
-  const differenceInDays = targetPaces.projectedEndDate
-    ? Math.ceil((new Date(targetPaces.projectedEndDate).getTime() - targetCompletionDate.getTime()) / (1000 * 60 * 60 * 24))
-    : null;
-
-  // Calculate completion percentage
   const completionPercentage = Math.min(100, Math.round((targetPaces.totalProgress / 100000) * 100));
 
-  // Calculate pace ratio for progress bar
-  const paceRatio = totalWeeklyPacePerUser / requiredWeeklyPacePerUser;
-  const pacePercentage = Math.min(100, Math.round(paceRatio * 100));
+
 
   return (
     <div className="bg-gradient-to-br from-white to-purple-50 rounded-xl shadow-lg border border-purple-100 overflow-hidden">
-      {/* Header */}
       <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-4 text-white">
         <h2 className="text-lg font-bold flex items-center">
           <Zap className="w-5 h-5 mr-2" />
           Eteneminen kohti tavoitetta
         </h2>
         <div className="mt-2 bg-white/20 h-2.5 rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-white rounded-full"
-            style={{ width: `${completionPercentage}%` }}
-          ></div>
+          <div className="h-full bg-white rounded-full" style={{ width: `${completionPercentage}%` }}></div>
         </div>
         <div className="flex justify-between mt-1 text-xs font-medium text-white/90">
           <span>{completionPercentage}% valmis</span>
@@ -94,19 +51,19 @@ const Header: React.FC<HeaderProps> = ({ targetPaces, participantCount = 10 }) =
         </div>
       </div>
 
-      {/* Main Stats Grid */}
       <div className="p-4 sm:p-6">
-        {/* Key Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div className="bg-white p-3 rounded-lg shadow-sm border border-purple-100">
             <div className="flex items-center text-purple-900 text-xs font-semibold mb-1">
               <TrendingUp className="w-3.5 h-3.5 mr-1" />
               <span>Nykyinen vauhti</span>
             </div>
-            <div className="text-lg font-bold text-purple-700">{totalWeeklyPacePerUser} km/hlö</div>
-            <div className="text-xs text-gray-500">Koko matkan keskiarvo</div>
+            <div className="text-lg font-bold text-purple-700">
+              {Math.round(targetPaces.weeklyPace)} km/hlö
+            </div>
+            <div className="text-xs text-gray-500">Keskiarvo alusta lähtien</div>
           </div>
-          
+
           <div className="bg-white p-3 rounded-lg shadow-sm border border-purple-100">
             <div className="flex items-center text-blue-900 text-xs font-semibold mb-1">
               <Calendar className="w-3.5 h-3.5 mr-1" />
@@ -134,9 +91,8 @@ const Header: React.FC<HeaderProps> = ({ targetPaces, participantCount = 10 }) =
             <div className="text-xs text-gray-500">Alkanut: 6.1.2025</div>
           </div>
         </div>
-        
-        {/* Behind Amount Warning */}
-        {targetPaces.behindAmount !== undefined && (
+
+        {targetPaces.behindAmount !== undefined && targetPaces.behindAmount > 0 && (
           <div className="mt-4 bg-red-50 border border-red-200 p-3 rounded-lg flex items-center shadow-sm">
             <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 mr-3">
               <AlertCircle className="w-5 h-5" />
@@ -149,56 +105,6 @@ const Header: React.FC<HeaderProps> = ({ targetPaces, participantCount = 10 }) =
             </div>
           </div>
         )}
-
-        {/* Required vs Current Pace Comparison */}
-        <div className="mt-4 p-4 bg-white rounded-lg border border-purple-100 shadow-sm">
-          <div className="flex items-center mb-3">
-            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 mr-2">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-            <h3 className="font-semibold text-gray-800">Tarvittava vs. nykyinen vauhti</h3>
-          </div>
-          
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <div className="flex items-center">
-                <div className="w-2 h-8 bg-blue-500 rounded-sm mr-3"></div>
-                <div>
-                  <div className="text-xs text-gray-500">Tavoitevauhti (22.6.)</div>
-                  <div className="font-bold text-blue-700">{requiredWeeklyPacePerUser} km/hlö/vko</div>
-                </div>
-              </div>
-              
-              <div className="flex items-center">
-                <div className="w-2 h-8 bg-green-500 rounded-sm mr-3"></div>
-                <div>
-                  <div className="text-xs text-gray-500">Nykyinen vauhti</div>
-                  <div className="font-bold text-green-700">{totalWeeklyPacePerUser} km/hlö/vko</div>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <div className="flex justify-between text-xs text-gray-500 mb-1">
-                <span>Maaliin saapumisen aikataulu</span>
-                <span>Arvioitu maaliin saapuminen</span>
-              </div>
-              
-              <div className="flex justify-between">
-                <div className={`font-bold ${differenceInDays && differenceInDays > 0 ? "text-red-600" : "text-green-600"}`}>
-                  {differenceInDays 
-                    ? differenceInDays > 0 
-                      ? `+${differenceInDays} päivää myöhässä` 
-                      : differenceInDays < 0 
-                        ? `${Math.abs(differenceInDays)} päivää etuajassa` 
-                        : "Täsmälleen aikataulussa!"
-                    : "Aikataulussa!"}
-                </div>
-                <div className="font-bold">{formattedProjectedDate}</div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

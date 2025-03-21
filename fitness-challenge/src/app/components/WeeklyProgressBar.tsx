@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useTargetPaces } from "@/app/hooks/useTargetPaces";
 import { useFetchUsers } from "@/app/hooks/useFetchUsers";
+import { useEnhancedTargetPaces } from "../hooks/useTargetPaces";
 
 const WeeklyProgressBar = () => {
   const { users, loading, error } = useFetchUsers();
@@ -10,7 +10,7 @@ const WeeklyProgressBar = () => {
   const [daysLeft, setDaysLeft] = useState(0);
 
   // Get the target paces from the hook once users are loaded
-  const targetPaces = useTargetPaces(users);
+  const targetPaces = useEnhancedTargetPaces(users);
 
   useEffect(() => {
     if (users.length > 0 && targetPaces.weeklyPerUser > 0) {
@@ -38,7 +38,6 @@ const WeeklyProgressBar = () => {
       // Calculate days left in the week
       const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
       setDaysLeft(daysUntilSunday);
-
       // Calculate the total distance covered this week
       let currentWeekDistance = 0;
       users.forEach((user) => {
@@ -80,10 +79,6 @@ const WeeklyProgressBar = () => {
 
   const progressPercentage =
     weeklyGoal > 0 ? Math.min(100, (weeklyProgress / weeklyGoal) * 100) : 0;
-
-  // Calculate daily target remaining if there are days left in the week
-  const dailyTargetRemaining =
-    daysLeft > 0 ? Math.round(remainingDistance / daysLeft) : 0;
 
   return (
     <div className="bg-white p-4 rounded-lg shadow">

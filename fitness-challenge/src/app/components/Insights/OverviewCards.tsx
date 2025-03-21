@@ -6,7 +6,7 @@ interface Props {
   users: User[];
 }
 
-export default function OverviewCards({ targetPaces }: Props) {
+export default function OverviewCards({ targetPaces }: Readonly<Props>) {
   if (!targetPaces) return null;
 
   return (

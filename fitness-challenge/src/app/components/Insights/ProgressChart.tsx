@@ -9,11 +9,8 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import InsightAlert from "./InsightAlert";
-import { TargetPaces } from "@/app/types/types";
 
 interface Props {
-  targetPaces: TargetPaces;
   getTargetLine: () => {
     date: string;
     distance: number | null;
@@ -22,37 +19,19 @@ interface Props {
   }[];
 }
 
-const ProgressChart: React.FC<Props> = ({ targetPaces, getTargetLine }) => {
+const ProgressChart: React.FC<Props> = ({ getTargetLine }) => {
   // Extract target line data
   const targetLineData = getTargetLine();
   
   // Pyöristä weeklyPerUser näyttöä varten
-  const roundedWeeklyPerUser = Math.round(targetPaces.weeklyPerUser);
   
   // Formatoi projectedEndDate
-  const formattedProjectedDate = targetPaces.projectedEndDate
-    ? format(new Date(targetPaces.projectedEndDate), "d.M.yyyy")
-    : "ei tiedossa";
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm">
-      <div className="flex items-center justify-between mb-4">
-        <InsightAlert
-          title="Eteneminen"
-          description={
-            <>
-              Tavoitevauhti:{" "}
-              <strong>{roundedWeeklyPerUser} km/vko</strong>{" "}
-              per hlö.
-              <br />
-              Nykyisellä tahdilla saavutamme tavoitteen{" "}
-              <strong>
-                {formattedProjectedDate}
-              </strong>
-            </>
-          }
-        />
-      </div>
+      <h3 className="text-xl font-semibold text-gray-800 mb-6">
+        Etenemiskaavio
+      </h3>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={targetLineData}>
           <XAxis

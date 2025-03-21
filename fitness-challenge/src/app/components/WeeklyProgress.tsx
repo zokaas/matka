@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { User } from "@/app/types/types";
-import { useTargetPaces } from "@/app/hooks/useTargetPaces";
+import { useEnhancedTargetPaces } from "@/app/hooks/useTargetPaces";
 import { useWeeklyInsights } from "@/app/hooks/useWeeklyInsights";
 
 interface WeeklyProgressProps {
@@ -12,13 +12,13 @@ interface WeeklyProgressProps {
 }
 
 const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
-  const targetPaces = useTargetPaces(users);
+  const targetPaces = useEnhancedTargetPaces(users);
   const weeklyInsights = useWeeklyInsights(users, targetPaces);
 
   // Function to check user activity status
   const getUserActivityStatus = (username: string) => {
     const user = users.find((u) => u.username === username);
-    if (!user || !user.activities || user.activities.length === 0) {
+    if (!user?.activities?.length) {
       return {
         emoji: "💩",
         days: 7,
@@ -115,15 +115,21 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                     </h4>
                     <div className="flex items-center text-xs text-gray-500">
                       <span className="font-medium">Sijoitus {index + 1}</span>
-                      {index + 1 <= 3 && (
-                        <span className="ml-2 text-yellow-500">
-                          {index + 1 === 1
-                            ? "🥇"
-                            : index + 1 === 2
-                            ? "🥈"
-                            : "🥉"}
-                        </span>
-                      )}
+                      {index + 1 <= 3 && (() => {
+                        let medal;
+                        if (index + 1 === 1) {
+                          medal = "🥇";
+                        } else if (index + 1 === 2) {
+                          medal = "🥈";
+                        } else {
+                          medal = "🥉";
+                        }
+                        return (
+                          <span className="ml-2 text-yellow-500">
+                            {medal}
+                          </span>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>

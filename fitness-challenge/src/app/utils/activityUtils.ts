@@ -1,5 +1,4 @@
 import { User } from "@/app/types/types";
-import { differenceInDays } from "date-fns";
 
 // 🔥 Helper function to get the start and end of the current week
 const getCurrentWeekRange = () => {

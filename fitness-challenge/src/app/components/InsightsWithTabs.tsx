@@ -1,5 +1,5 @@
 import { Loader2, AlertCircle } from "lucide-react";
-import React, { useState } from "react";
+import React from "react";
 import { useFetchUsers } from "../hooks/useFetchUsers";
 import { useWeeklyInsights } from "../hooks/useWeeklyInsights";
 import { getWeekTopSports, getLongestActivities, getWeeklyTopPerformers } from "../utils/activityUtils";
@@ -15,6 +15,7 @@ import WeeklyActivity from "./Insights/WeeklyActivity";
 import WeeklyInsights from "./Insights/WeeklyInsights";
 import PaceProjectionTabs from "./PaceProjectionTabs";
 import { useEnhancedTargetPaces } from "../hooks/useTargetPaces";
+import { TargetPaceProvider } from "./TargetPaceContext";
 
 
 export default function InsightsWithTabs() {
@@ -63,9 +64,9 @@ export default function InsightsWithTabs() {
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
-      <Header targetPaces={targetPaces} />
+      <TargetPaceProvider users={users}>
+<Header participantCount={users.length} />
       <KeyMetrics
-        targetPaces={targetPaces}
         getWeekTopSports={() => getWeekTopSports(users)}
         getLongestActivities={() => getLongestActivities(users)}
         getWeeklyTopPerformers={() => getWeeklyTopPerformers(users)}
@@ -87,6 +88,7 @@ export default function InsightsWithTabs() {
       />
       <WeeklyActivity getLastFourWeeks={getLastFourWeeks} users={users} />
       <PopularSports users={users} />
+      </TargetPaceProvider>
     </div>
   );
 }

@@ -6,7 +6,7 @@ interface Props {
   targetPaces: TargetPaces;
 }
 
-export default function AchievementStats({ targetPaces }: Props) {
+export default function AchievementStats({ targetPaces }: Readonly<Props>) {
   return (
     <div className="grid md:grid-cols-3 gap-6 bg-white p-6 rounded-xl shadow-sm">
       <div className="bg-purple-50 p-4 rounded-lg">

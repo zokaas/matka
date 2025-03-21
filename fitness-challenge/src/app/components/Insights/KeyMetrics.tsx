@@ -1,6 +1,6 @@
 import React from "react";
 import { Award } from "lucide-react";
-import { TargetPaces, Activity } from "@/app/types/types";
+import { Activity } from "@/app/types/types";
 
 interface TopSports {
   count: number;
@@ -17,7 +17,6 @@ interface TopPerformers {
 }
 
 interface Props {
-  targetPaces: TargetPaces;
   getWeekTopSports: () => TopSports | null;
   getLongestActivities: () => LongestActivity[];
   getWeeklyTopPerformers: () => TopPerformers | null;
@@ -50,7 +49,10 @@ const KeyMetrics: React.FC<Props> = ({
     );
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm">
+    <div className="space-y-6">
+      <h3 className="text-xl font-semibold text-gray-800 mb-6">
+        Viikon parhaat
+      </h3>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         {/* Weekly Top Sport */}
         <div className="bg-gray-50 p-6 rounded-xl">
@@ -90,11 +92,11 @@ const KeyMetrics: React.FC<Props> = ({
                     {Math.round(longestMatchingActivities[0].kilometers)} km
                   </p>
                   <ul className="text-xs text-gray-500 mt-1">
-                    {longestMatchingActivities.map((activity, index) => (
+                    {longestMatchingActivities.map((activity) => (
                       <li
-                        key={index}
+                          key={`${activity.username}-${activity.activity}`}
                       >
-                        {activity.username} - {activity.activity}
+                          {activity.username} - {activity.activity}
                       </li>
                     ))}
                   </ul>

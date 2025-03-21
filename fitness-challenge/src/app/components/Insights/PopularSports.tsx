@@ -5,7 +5,7 @@ interface Props {
   users: User[];
 }
 
-export default function PopularSports({ users }: Props) {
+export default function PopularSports({ users }: Readonly<Props>) {
   const sportCounts = users
     .flatMap((user) => user.activities)
     .reduce((acc, activity) => {

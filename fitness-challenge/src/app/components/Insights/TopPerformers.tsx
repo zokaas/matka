@@ -5,7 +5,7 @@ interface Props {
   weeklyInsights: WeeklyInsight[];
 }
 
-export default function TopPerformers({ weeklyInsights }: Props) {
+export default function TopPerformers({ weeklyInsights }: Readonly<Props>) {
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm">
       <h3 className="text-xl font-semibold text-gray-800 mb-6">
