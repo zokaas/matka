@@ -25,6 +25,14 @@ interface Props {
 const ProgressChart: React.FC<Props> = ({ targetPaces, getTargetLine }) => {
   // Extract target line data
   const targetLineData = getTargetLine();
+  
+  // Pyöristä weeklyPerUser näyttöä varten
+  const roundedWeeklyPerUser = Math.round(targetPaces.weeklyPerUser);
+  
+  // Formatoi projectedEndDate
+  const formattedProjectedDate = targetPaces.projectedEndDate
+    ? format(new Date(targetPaces.projectedEndDate), "d.M.yyyy")
+    : "ei tiedossa";
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm">
@@ -34,14 +42,12 @@ const ProgressChart: React.FC<Props> = ({ targetPaces, getTargetLine }) => {
           description={
             <>
               Tavoitevauhti:{" "}
-              <strong>{Math.round(targetPaces.weeklyPerUser)} km/vko</strong>{" "}
+              <strong>{roundedWeeklyPerUser} km/vko</strong>{" "}
               per hlö.
               <br />
               Nykyisellä tahdilla saavutamme tavoitteen{" "}
               <strong>
-                {targetPaces.projectedEndDate
-                  ? format(targetPaces.projectedEndDate, "d.M.yyyy")
-                  : "ei tiedossa"}
+                {formattedProjectedDate}
               </strong>
             </>
           }

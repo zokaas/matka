@@ -38,6 +38,7 @@ export type TargetPaces = {
   dailyPerUser: number;
   weeklyPerUser: number;
   projectedEndDate: Date | null;
+  behindAmount?: number;
 };
 
 export type WeeklyInsight = {
