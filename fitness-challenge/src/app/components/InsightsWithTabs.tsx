@@ -1,5 +1,6 @@
 import { Loader2, AlertCircle } from "lucide-react";
 import React from "react";
+import { format } from "date-fns";
 import { useFetchUsers } from "../hooks/useFetchUsers";
 import { useWeeklyInsights } from "../hooks/useWeeklyInsights";
 import { getWeekTopSports, getLongestActivities, getWeeklyTopPerformers } from "../utils/activityUtils";
@@ -86,6 +87,32 @@ export default function InsightsWithTabs() {
     }
   };
 
+  // Transform Date objects to strings in projections object
+  const getFormattedProjections = () => {
+    if (!targetPaces || !targetPaces.projections) return null;
+    
+    return {
+      historical: {
+        estimatedEndDate: targetPaces.projections.historical.estimatedEndDate 
+          ? format(targetPaces.projections.historical.estimatedEndDate, 'yyyy-MM-dd')
+          : null,
+        daysFromTarget: targetPaces.projections.historical.daysFromTarget
+      },
+      recent: {
+        estimatedEndDate: targetPaces.projections.recent.estimatedEndDate 
+          ? format(targetPaces.projections.recent.estimatedEndDate, 'yyyy-MM-dd')
+          : null,
+        daysFromTarget: targetPaces.projections.recent.daysFromTarget
+      },
+      weekly: {
+        estimatedEndDate: targetPaces.projections.weekly.estimatedEndDate 
+          ? format(targetPaces.projections.weekly.estimatedEndDate, 'yyyy-MM-dd')
+          : null,
+        daysFromTarget: targetPaces.projections.weekly.daysFromTarget
+      }
+    };
+  };
+
   // Loading & Error States
   if (loading) {
     return (
@@ -114,6 +141,9 @@ export default function InsightsWithTabs() {
     );
   }
 
+  // Get formatted projections
+  const formattedProjections = getFormattedProjections();
+
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
       <TargetPaceProvider users={users}>
@@ -130,16 +160,16 @@ export default function InsightsWithTabs() {
         <WeeklyInsights weeklyInsights={weeklyInsights} />
         
         {/* Only render PaceProjectionTabs if we have the necessary data */}
-        {targetPaces && typeof targetPaces.historicalPace === 'number' && (
+        {targetPaces && formattedProjections && typeof targetPaces.historicalPace === 'number' && (
           <PaceProjectionTabs
-  historicalPace={targetPaces.historicalPace}
-  recentPace={targetPaces.recentPace || 0}
-  weeklyPace={targetPaces.weeklyPace || 0}
-  targetDate={new Date("2025-06-22")}
-  remainingDistance={targetPaces.remainingDistance}
-  participantCount={users.length}
-  projections={targetPaces.projections}
-/>
+            historicalPace={targetPaces.historicalPace}
+            recentPace={targetPaces.recentPace || 0}
+            weeklyPace={targetPaces.weeklyPace || 0}
+            targetDate={new Date("2025-06-22")}
+            remainingDistance={targetPaces.remainingDistance}
+            participantCount={users.length}
+            projections={formattedProjections}
+          />
         )}
         
         <ProgressChart
