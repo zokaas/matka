@@ -241,11 +241,6 @@ const fetchRecords = async () => {
             {records.longestWorkout[0].activities.map((activity) => (
               <div key={activity.id}>
                 {activity.activity} ({activity.duration} min)
-                {/* {activity.bonus && (
-                  <span className="text-blue-500 ml-1">
-                    ★ bonukset laskettu
-                  </span>
-                )} */}
               </div>
             ))}
           </div>

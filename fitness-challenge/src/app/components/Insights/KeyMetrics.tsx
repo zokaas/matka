@@ -24,7 +24,6 @@ interface Props {
 }
 
 const KeyMetrics: React.FC<Props> = ({
-  targetPaces,
   getWeekTopSports,
   getLongestActivities,
   getWeeklyTopPerformers,
@@ -53,31 +52,6 @@ const KeyMetrics: React.FC<Props> = ({
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm">
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-        {/* Total Progress */}
-        <div className="bg-purple-50 p-4 rounded-lg">
-          <h3 className="font-medium text-purple-800">Tähän mennessä</h3>
-          <p className="text-2xl font-bold text-purple-600">
-            {Math.round(targetPaces.totalProgress).toLocaleString("fi-FI")} km
-          </p>
-          <p className="text-sm text-purple-600">/ 100 000 km</p>
-        </div>
-
-        {/* Weekly Goal */}
-        <div className="bg-orange-50 p-4 rounded-lg">
-          <h3 className="font-medium text-orange-800">Viikon tavoite</h3>
-          <p className="text-2xl font-bold text-orange-600">
-            {targetPaces.weeklyPerUser.toFixed(0)} km / hlö
-          </p>
-        </div>
-
-        {/* Days Remaining */}
-        <div className="bg-green-50 p-4 rounded-lg">
-          <h3 className="font-medium text-green-800">Aikaa jäljellä</h3>
-          <p className="text-2xl font-bold text-green-600">
-            {targetPaces.daysRemaining} päivää
-          </p>
-        </div>
-
         {/* Weekly Top Sport */}
         <div className="bg-gray-50 p-6 rounded-xl">
           <div className="flex items-center gap-4">

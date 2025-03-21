@@ -18,10 +18,14 @@ interface Props {
     date: string;
     distance: number | null;
     target: number;
+    progressStatus?: 'behind' | 'on track' | 'ahead';
   }[];
 }
 
 const ProgressChart: React.FC<Props> = ({ targetPaces, getTargetLine }) => {
+  // Extract target line data
+  const targetLineData = getTargetLine();
+
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm">
       <div className="flex items-center justify-between mb-4">
@@ -44,7 +48,7 @@ const ProgressChart: React.FC<Props> = ({ targetPaces, getTargetLine }) => {
         />
       </div>
       <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={getTargetLine()}>
+        <LineChart data={targetLineData}>
           <XAxis
             dataKey="date"
             tickFormatter={(date) => format(new Date(date), "d.M.")}
