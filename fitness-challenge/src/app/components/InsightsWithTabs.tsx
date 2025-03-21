@@ -17,7 +17,6 @@ import PaceProjectionTabs from "./PaceProjectionTabs";
 import { useEnhancedTargetPaces } from "../hooks/useTargetPaces";
 import { TargetPaceProvider } from "./TargetPaceContext";
 
-
 export default function InsightsWithTabs() {
   // Fetch users & manage loading/error state
   const { users, loading, error } = useFetchUsers();
@@ -26,22 +25,65 @@ export default function InsightsWithTabs() {
   const targetPaces = useEnhancedTargetPaces(users);
   
   // Weekly insights calculations
-  const weeklyInsights = useWeeklyInsights(users, targetPaces);
+  // Add null check for targetPaces to prevent errors
+  const weeklyInsights = useWeeklyInsights(users, targetPaces || {
+    totalProgress: 0,
+    remainingDistance: 0,
+    daysRemaining: 0,
+    dailyPerUser: 0,
+    weeklyPerUser: 0,
+    projectedEndDate: null,
+  });
 
   // Wrapper function to transform getTargetLine result
   const getTargetLineWrapper = () => {
     if (!users.length) return [];
     
-    const { targetLineData } = getTargetLine(
-      users, 
-      (data) => filterDataByTimeframe(data, "all")
-    );
-    return targetLineData.map(item => ({
-      date: item.date,
-      distance: item.distance,
-      target: item.target,
-      progressStatus: item.progressStatus
-    }));
+    try {
+      const { targetLineData } = getTargetLine(
+        users, 
+        (data) => filterDataByTimeframe(data, "all")
+      );
+      return targetLineData.map(item => ({
+        date: item.date,
+        distance: item.distance,
+        target: item.target,
+        progressStatus: item.progressStatus
+      }));
+    } catch (err) {
+      console.error("Error generating target line data:", err);
+      return [];
+    }
+  };
+
+  // Safe wrapper for getWeekTopSports
+  const safeGetWeekTopSports = () => {
+    try {
+      return getWeekTopSports(users);
+    } catch (err) {
+      console.error("Error getting top sports:", err);
+      return null;
+    }
+  };
+
+  // Safe wrapper for getLongestActivities
+  const safeGetLongestActivities = () => {
+    try {
+      return getLongestActivities(users);
+    } catch (err) {
+      console.error("Error getting longest activities:", err);
+      return [];
+    }
+  };
+
+  // Safe wrapper for getWeeklyTopPerformers
+  const safeGetWeeklyTopPerformers = () => {
+    try {
+      return getWeeklyTopPerformers(users);
+    } catch (err) {
+      console.error("Error getting weekly top performers:", err);
+      return null;
+    }
   };
 
   // Loading & Error States
@@ -62,31 +104,50 @@ export default function InsightsWithTabs() {
     );
   }
 
+  // Make sure all required data is loaded before rendering
+  if (!users || users.length === 0 || !targetPaces) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+        <span className="ml-2">Loading data...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-8">
       <TargetPaceProvider users={users}>
-<Header participantCount={users.length} />
-      <KeyMetrics
-        getWeekTopSports={() => getWeekTopSports(users)}
-        getLongestActivities={() => getLongestActivities(users)}
-        getWeeklyTopPerformers={() => getWeeklyTopPerformers(users)}
-      />
-      <RecordHolders />
-      <WeeklyInsights weeklyInsights={weeklyInsights} />
-            {/* Lisää tähän uusi PaceProjectionTabs-komponentti */}
-            <PaceProjectionTabs
-        historicalPace={targetPaces.historicalPace}
-        recentPace={targetPaces.recentPace}
-        weeklyPace={targetPaces.weeklyPace}
-        targetDate={new Date("2025-06-22")}
-        remainingDistance={targetPaces.remainingDistance}
-        participantCount={users.length}
-      />
-      <ProgressChart
-        getTargetLine={getTargetLineWrapper}
-      />
-      <WeeklyActivity getLastFourWeeks={getLastFourWeeks} users={users} />
-      <PopularSports users={users} />
+        <Header participantCount={users.length} />
+        
+        <KeyMetrics
+          getWeekTopSports={safeGetWeekTopSports}
+          getLongestActivities={safeGetLongestActivities}
+          getWeeklyTopPerformers={safeGetWeeklyTopPerformers}
+        />
+        
+        <RecordHolders />
+        
+        <WeeklyInsights weeklyInsights={weeklyInsights} />
+        
+        {/* Only render PaceProjectionTabs if we have the necessary data */}
+        {targetPaces && typeof targetPaces.historicalPace === 'number' && (
+          <PaceProjectionTabs
+            historicalPace={targetPaces.historicalPace}
+            recentPace={targetPaces.recentPace || 0}
+            weeklyPace={targetPaces.weeklyPace || 0}
+            targetDate={new Date("2025-06-22")}
+            remainingDistance={targetPaces.remainingDistance}
+            participantCount={users.length}
+          />
+        )}
+        
+        <ProgressChart
+          getTargetLine={getTargetLineWrapper}
+        />
+        
+        <WeeklyActivity getLastFourWeeks={getLastFourWeeks} users={users} />
+        
+        <PopularSports users={users} />
       </TargetPaceProvider>
     </div>
   );

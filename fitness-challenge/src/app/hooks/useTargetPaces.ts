@@ -17,8 +17,7 @@ export const useEnhancedTargetPaces = (users: User[]) => {
       requiredPace: 0,
       projectedEndDate: null as Date | null,
       progressStatus: 'on track' as 'behind' | 'on track' | 'ahead',
-      behindAmount: 0, // <-- Added here
-
+      behindAmount: 0,
       projections: {
         historical: {
           estimatedEndDate: null as string | null,
@@ -37,34 +36,41 @@ export const useEnhancedTargetPaces = (users: User[]) => {
   });
 
   useEffect(() => {
-    if (users.length === 0) return;
+    if (!users || users.length === 0) return;
 
     try {
+      // Make sure PaceCalculator exists and has the necessary methods
+      if (!PaceCalculator || typeof PaceCalculator.calculatePaceMetrics !== 'function') {
+        console.error("PaceCalculator is not properly defined");
+        return;
+      }
+
       const paceMetrics = PaceCalculator.calculatePaceMetrics(users);
 
-      const actualWeekly = paceMetrics.weeklyPace.weeklyRate;
-      const requiredWeekly = paceMetrics.requiredPace.weeklyRate;
+      // Safely extract values with fallbacks
+      const actualWeekly = (paceMetrics?.weeklyPace?.weeklyRate || 0);
+      const requiredWeekly = (paceMetrics?.requiredPace?.weeklyRate || 0);
       const behindAmount = Math.max(0, Math.round(requiredWeekly - actualWeekly));
 
       setEnhancedPaces({
-        totalProgress: paceMetrics.totalProgress,
-        remainingDistance: paceMetrics.remainingDistance,
-        daysRemaining: paceMetrics.daysRemaining,
-        dailyPerUser: paceMetrics.requiredPace.dailyRate / users.length,
-        weeklyPerUser: paceMetrics.recentPace.weeklyPerUser, // Using recent as default
-        historicalPace: paceMetrics.historicalPace.weeklyPerUser,
-        recentPace: paceMetrics.recentPace.weeklyPerUser,
-        weeklyPace: paceMetrics.weeklyPace.weeklyPerUser,
-        requiredPace: paceMetrics.requiredPace.weeklyPerUser,
-        projectedEndDate: paceMetrics.projectedEndDate,
-        progressStatus: paceMetrics.progressStatus,
-        behindAmount, // <-- Added here
+        totalProgress: paceMetrics?.totalProgress || 0,
+        remainingDistance: paceMetrics?.remainingDistance || 0,
+        daysRemaining: paceMetrics?.daysRemaining || 0,
+        dailyPerUser: (paceMetrics?.requiredPace?.dailyRate || 0) / Math.max(1, users.length),
+        weeklyPerUser: paceMetrics?.recentPace?.weeklyPerUser || 0,
+        historicalPace: paceMetrics?.historicalPace?.weeklyPerUser || 0,
+        recentPace: paceMetrics?.recentPace?.weeklyPerUser || 0,
+        weeklyPace: paceMetrics?.weeklyPace?.weeklyPerUser || 0,
+        requiredPace: paceMetrics?.requiredPace?.weeklyPerUser || 0,
+        projectedEndDate: paceMetrics?.projectedEndDate || null,
+        progressStatus: paceMetrics?.progressStatus || 'on track',
+        behindAmount,
         projections: {
           historical: {
-            estimatedEndDate: paceMetrics.projectedEndDate
+            estimatedEndDate: paceMetrics?.projectedEndDate
               ? format(paceMetrics.projectedEndDate, 'yyyy-MM-dd')
               : null,
-            daysFromTarget: paceMetrics.projectedEndDate
+            daysFromTarget: paceMetrics?.projectedEndDate && PaceCalculator.CHALLENGE_END_DATE
               ? Math.ceil(
                   (paceMetrics.projectedEndDate.getTime() - PaceCalculator.CHALLENGE_END_DATE.getTime()) /
                   (1000 * 60 * 60 * 24)
@@ -72,10 +78,10 @@ export const useEnhancedTargetPaces = (users: User[]) => {
               : null
           },
           recent: {
-            estimatedEndDate: paceMetrics.projectedEndDate
+            estimatedEndDate: paceMetrics?.projectedEndDate
               ? format(paceMetrics.projectedEndDate, 'yyyy-MM-dd')
               : null,
-            daysFromTarget: paceMetrics.projectedEndDate
+            daysFromTarget: paceMetrics?.projectedEndDate && PaceCalculator.CHALLENGE_END_DATE
               ? Math.ceil(
                   (paceMetrics.projectedEndDate.getTime() - PaceCalculator.CHALLENGE_END_DATE.getTime()) /
                   (1000 * 60 * 60 * 24)
@@ -83,10 +89,10 @@ export const useEnhancedTargetPaces = (users: User[]) => {
               : null
           },
           weekly: {
-            estimatedEndDate: paceMetrics.projectedEndDate
+            estimatedEndDate: paceMetrics?.projectedEndDate
               ? format(paceMetrics.projectedEndDate, 'yyyy-MM-dd')
               : null,
-            daysFromTarget: paceMetrics.projectedEndDate
+            daysFromTarget: paceMetrics?.projectedEndDate && PaceCalculator.CHALLENGE_END_DATE
               ? Math.ceil(
                   (paceMetrics.projectedEndDate.getTime() - PaceCalculator.CHALLENGE_END_DATE.getTime()) /
                   (1000 * 60 * 60 * 24)

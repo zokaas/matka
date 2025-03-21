@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { TrendingUp, Calendar, Clock, History, BarChart2, ChevronRight, ChevronLeft } from 'lucide-react';
 
@@ -22,46 +22,65 @@ interface PaceProjectionTabsProps {
 }
 
 const PaceProjectionTabs: React.FC<PaceProjectionTabsProps> = ({
-  historicalPace,
-  recentPace,
-  weeklyPace,
-  targetDate,
-  remainingDistance,
-  participantCount
+  historicalPace = 0,
+  recentPace = 0,
+  weeklyPace = 0,
+  targetDate = new Date("2025-06-22"),
+  remainingDistance = 0,
+  participantCount = 1
 }) => {
   const [activeTab, setActiveTab] = useState('historical');
   
-  // Calculate date projections
+  // Safely calculate dates and values
   const today = new Date();
   const daysUntilTarget = Math.ceil((targetDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   
   // Calculate required pace to reach target date
-  const requiredWeeklyPace = Math.ceil(remainingDistance / (daysUntilTarget / 7) / participantCount);
+  const requiredWeeklyPace = daysUntilTarget > 0
+    ? Math.ceil(remainingDistance / (daysUntilTarget / 7) / Math.max(1, participantCount))
+    : 0;
+  
+  // Helper function to safely calculate end date
+  function calculateEndDate(weeklyPace: number): Date {
+    if (weeklyPace <= 0) return new Date(targetDate);
+    
+    const weeksNeeded = remainingDistance / Math.max(0.1, weeklyPace);
+    const daysNeeded = Math.ceil(weeksNeeded * 7);
+    
+    const endDate = new Date();
+    endDate.setDate(today.getDate() + daysNeeded);
+    return endDate;
+  }
+  
+  // Helper function to calculate days difference from target
+  function calculateDaysFromTarget(date: Date): number {
+    return Math.ceil((date.getTime() - targetDate.getTime()) / (1000 * 60 * 60 * 24));
+  }
   
   // Calculate different projections
   const projectionEntries = {
     historical: {
         label: "Koko historia",
         description: "Perustuu koko haasteen aikana kertyneeseen keskimääräiseen vauhtiin.",
-        pacePerUser: Math.round(historicalPace),
-      estimatedEndDate: calculateEndDate(historicalPace * participantCount),
-      daysFromTarget: calculateDaysFromTarget(calculateEndDate(historicalPace * participantCount)),
+        pacePerUser: Math.round(historicalPace || 0),
+      estimatedEndDate: calculateEndDate((historicalPace || 0) * Math.max(1, participantCount)),
+      daysFromTarget: calculateDaysFromTarget(calculateEndDate((historicalPace || 0) * Math.max(1, participantCount))),
       icon: <History className="w-5 h-5" />
     },
     recent: {
       label: "Viimeaikaiset",
       description: "Perustuu viimeisen 4 viikon aikana kertyneeseen vauhtiin.",
-      pacePerUser: Math.round(recentPace),
-      estimatedEndDate: calculateEndDate(recentPace * participantCount),
-      daysFromTarget: calculateDaysFromTarget(calculateEndDate(recentPace * participantCount)),
+      pacePerUser: Math.round(recentPace || 0),
+      estimatedEndDate: calculateEndDate((recentPace || 0) * Math.max(1, participantCount)),
+      daysFromTarget: calculateDaysFromTarget(calculateEndDate((recentPace || 0) * Math.max(1, participantCount))),
       icon: <Clock className="w-5 h-5" />
     },
     weekly: {
       label: "Viikottainen",
       description: "Perustuu tämän viikon vauhtiin. Huomioi, että viikkoa saattaa olla jäljellä, luvut saattavat vielä muuttua.",
-      pacePerUser: Math.round(weeklyPace),
-      estimatedEndDate: calculateEndDate(weeklyPace * participantCount),
-      daysFromTarget: calculateDaysFromTarget(calculateEndDate(weeklyPace * participantCount)),
+      pacePerUser: Math.round(weeklyPace || 0),
+      estimatedEndDate: calculateEndDate((weeklyPace || 0) * Math.max(1, participantCount)),
+      daysFromTarget: calculateDaysFromTarget(calculateEndDate((weeklyPace || 0) * Math.max(1, participantCount))),
       icon: <BarChart2 className="w-5 h-5" />
     },
     required: {
@@ -76,27 +95,10 @@ const PaceProjectionTabs: React.FC<PaceProjectionTabsProps> = ({
   
   const projections: Record<string, ProjectionData> = projectionEntries;
   
-  // Helper function to calculate estimated end date based on pace
-  function calculateEndDate(weeklyPace: number): Date {
-    if (weeklyPace <= 0) return new Date(targetDate);
-    
-    const weeksNeeded = remainingDistance / weeklyPace;
-    const daysNeeded = Math.ceil(weeksNeeded * 7);
-    
-    const endDate = new Date();
-    endDate.setDate(today.getDate() + daysNeeded);
-    return endDate;
-  }
-  
-  // Helper function to calculate days difference from target
-  function calculateDaysFromTarget(date: Date): number {
-    return Math.ceil((date.getTime() - targetDate.getTime()) / (1000 * 60 * 60 * 24));
-  }
-  
   // Convert object to array to easier navigate between tabs
   const projectionKeys = Object.keys(projections);
   const activeIndex = projectionKeys.indexOf(activeTab);
-  const activeProjection = projections[activeTab];
+  const activeProjection = projections[activeTab] || projections.historical;
   
   // Navigation functions for mobile swipe-like experience
   const goToNext = () => {

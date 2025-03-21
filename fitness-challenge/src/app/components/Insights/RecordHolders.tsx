@@ -24,6 +24,8 @@ interface Records {
 }
 
 const calculateBestDay = (activities: Activity[]) => {
+  if (!activities || activities.length === 0) return null;
+  
   const grouped = _.groupBy(activities, (a) => new Date(a.date).toISOString().split("T")[0]);
   const dailyTotals = Object.entries(grouped).map(([date, acts]) => ({
     date,
@@ -34,38 +36,48 @@ const calculateBestDay = (activities: Activity[]) => {
 };
 
 const findLongestWorkout = (activities: Activity[]) => {
+  if (!activities || activities.length === 0) return null;
   return _.maxBy(activities, "duration");
 };
 
 const calculateStreak = (activities: Activity[]) => {
-  const dates = Object.keys(
-    _.groupBy(activities, (a) => new Date(a.date).toISOString().split("T")[0])
-  ).sort((a, b) => a.localeCompare(b));
+  if (!activities || activities.length === 0) return null;
+  
+  try {
+    const dates = Object.keys(
+      _.groupBy(activities, (a) => new Date(a.date).toISOString().split("T")[0])
+    ).sort((a, b) => a.localeCompare(b));
 
-  let currentStreak = 0;
-  let maxStreak = 0;
-  let maxStreakStart = "";
-  let tempStart = "";
+    if (dates.length === 0) return null;
 
-  for (let i = 0; i < dates.length; i++) {
-    const currentDate = new Date(dates[i]);
-    const nextDate = i < dates.length - 1 ? new Date(dates[i + 1]) : null;
+    let currentStreak = 0;
+    let maxStreak = 0;
+    let maxStreakStart = "";
+    let tempStart = "";
 
-    if (currentStreak === 0) tempStart = dates[i];
-    currentStreak++;
+    for (let i = 0; i < dates.length; i++) {
+      const currentDate = new Date(dates[i]);
+      const nextDate = i < dates.length - 1 ? new Date(dates[i + 1]) : null;
 
-    const isStreakBroken = !nextDate || Math.floor((nextDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)) > 1;
+      if (currentStreak === 0) tempStart = dates[i];
+      currentStreak++;
 
-    if (isStreakBroken) {
-      if (currentStreak > maxStreak) {
-        maxStreak = currentStreak;
-        maxStreakStart = tempStart;
+      const isStreakBroken = !nextDate || Math.floor((nextDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24)) > 1;
+
+      if (isStreakBroken) {
+        if (currentStreak > maxStreak) {
+          maxStreak = currentStreak;
+          maxStreakStart = tempStart;
+        }
+        currentStreak = 0;
       }
-      currentStreak = 0;
     }
-  }
 
-  return maxStreak > 0 ? { value: maxStreak, date: maxStreakStart } : null;
+    return maxStreak > 0 ? { value: maxStreak, date: maxStreakStart } : null;
+  } catch (error) {
+    console.error('Error calculating streak:', error);
+    return null;
+  }
 };
 
 const mapUserRecord = async (username: string): Promise<{
@@ -78,7 +90,9 @@ const mapUserRecord = async (username: string): Promise<{
     const response = await fetch(`https://matka-zogy.onrender.com/users/${username}?page=1&limit=1000`);
     if (!response.ok) return null;
     const data = await response.json();
-    const activities: Activity[] = data.activities;
+    
+    // Make sure activities exist and are in expected format
+    const activities: Activity[] = data.activities || [];
 
     const bestDay = calculateBestDay(activities);
     const longest = findLongestWorkout(activities);
@@ -86,26 +100,46 @@ const mapUserRecord = async (username: string): Promise<{
 
     return {
       username,
-      bestKm: bestDay ? { username, value: bestDay.kilometers, date: bestDay.date, activities: bestDay.activities } : null,
-      longestWorkout: longest ? { username, value: longest.duration, date: longest.date, activities: [longest] } : null,
-      streak: streak ? { username, value: streak.value, date: streak.date, activities: [] } : null,
+      bestKm: bestDay ? { 
+        username, 
+        value: bestDay.kilometers, 
+        date: bestDay.date, 
+        activities: bestDay.activities 
+      } : null,
+      longestWorkout: longest ? { 
+        username, 
+        value: longest.duration, 
+        date: longest.date, 
+        activities: [longest] 
+      } : null,
+      streak: streak ? { 
+        username, 
+        value: streak.value, 
+        date: streak.date, 
+        activities: [] 
+      } : null,
     };
-  } catch {
+  } catch (error) {
+    console.error('Error mapping user record:', error);
     return null;
   }
 };
 
-const renderHolders = (holders: RecordHolder[]) => (
-  holders.map((holder, index) => (
+const renderHolders = (holders: RecordHolder[]) => {
+  if (!holders || holders.length === 0) return <span>Ei tietoja</span>;
+  
+  return holders.map((holder, index) => (
     <React.Fragment key={holder.username}>
       <span className="font-bold">{holder.username}</span>
       {index < holders.length - 1 && <span className="mx-1">&</span>}
     </React.Fragment>
-  ))
-);
+  ));
+};
 
-const renderActivityList = (activities: Activity[], type: "km" | "min") => (
-  activities.map((activity) => (
+const renderActivityList = (activities: Activity[], type: "km" | "min") => {
+  if (!activities || activities.length === 0) return null;
+  
+  return activities.map((activity) => (
     <div key={activity.id}>
       {activity.activity} (
       {type === "km"
@@ -116,8 +150,8 @@ const renderActivityList = (activities: Activity[], type: "km" | "min") => (
         <span className="text-purple-500 ml-1">★ bonukset laskettu mukaan</span>
       )}
     </div>
-  ))
-);
+  ));
+};
 
 const renderRecordCard = (
   title: string,
@@ -126,19 +160,30 @@ const renderRecordCard = (
   valueLabel: string,
   dateLabel: string,
   activityType: "km" | "min"
-) => (
-  <div className="bg-white rounded-lg shadow p-4">
-    <div className={`text-sm ${colorClass} font-medium mb-1`}>{title}</div>
-    <div>{renderHolders(holders)}</div>
-    <div className={`text-2xl font-bold ${colorClass} mt-1`}>{valueLabel}</div>
-    <div className="text-sm text-gray-500">{dateLabel}</div>
-    {holders[0].activities.length > 0 && (
-      <div className="mt-2 text-xs text-gray-500">
-        {renderActivityList(holders[0].activities, activityType)}
+) => {
+  if (!holders || holders.length === 0) {
+    return (
+      <div className="bg-white rounded-lg shadow p-4">
+        <div className={`text-sm ${colorClass} font-medium mb-1`}>{title}</div>
+        <div>Ei tietoja saatavilla</div>
       </div>
-    )}
-  </div>
-);
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-lg shadow p-4">
+      <div className={`text-sm ${colorClass} font-medium mb-1`}>{title}</div>
+      <div>{renderHolders(holders)}</div>
+      <div className={`text-2xl font-bold ${colorClass} mt-1`}>{valueLabel}</div>
+      <div className="text-sm text-gray-500">{dateLabel}</div>
+      {holders[0]?.activities && holders[0].activities.length > 0 && (
+        <div className="mt-2 text-xs text-gray-500">
+          {renderActivityList(holders[0].activities, activityType)}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const RecordHolders = () => {
   const [records, setRecords] = useState<Records | null>(null);
@@ -155,25 +200,43 @@ const RecordHolders = () => {
         const allRecords = await Promise.all(users.map((u: { username: string }) => mapUserRecord(u.username)));
         const valid = allRecords.filter(Boolean);
 
-        const maxByField = (field: keyof Records) =>
-          Math.max(...valid.map((r) => r?.[field]?.value || 0));
+        // Handle empty records case
+        if (valid.length === 0) {
+          setRecords({
+            bestKm: [],
+            longestWorkout: [],
+            longestStreak: []
+          });
+          return;
+        }
+
+        const maxByField = (field: "bestKm" | "longestWorkout" | "streak") => {
+          // Safe calculation with proper null handling
+          const values = valid
+            .map(r => r?.[field]?.value)
+            .filter((v): v is number => v !== null && v !== undefined);
+          
+          return values.length > 0 ? Math.max(...values) : 0;
+        };
 
         const maxKm = maxByField("bestKm");
         const maxWorkout = maxByField("longestWorkout");
-        const maxStreak = maxByField("longestStreak");
+        const maxStreak = maxByField("streak");
 
-        const filterMax = (field: keyof Records, max: number) =>
-          valid
-            .filter((r) => r?.[field]?.value === max)
-            .map((r) => r![field])
-            .filter(Boolean) as RecordHolder[];
+        const filterMax = (field: "bestKm" | "longestWorkout" | "streak", max: number) => {
+          return valid
+            .filter(r => r?.[field]?.value === max)
+            .map(r => r![field])
+            .filter((item): item is RecordHolder => item !== null && item !== undefined);
+        };
 
         setRecords({
           bestKm: filterMax("bestKm", maxKm),
           longestWorkout: filterMax("longestWorkout", maxWorkout),
-          longestStreak: filterMax("longestStreak", maxStreak),
+          longestStreak: filterMax("streak", maxStreak),
         });
       } catch (err) {
+        console.error("Record holder error:", err);
         setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
         setLoading(false);
@@ -185,42 +248,70 @@ const RecordHolders = () => {
 
   if (loading) return <div className="text-center p-4">Ladataan ennätyksiä...</div>;
   if (error) return <div className="text-center text-red-500 p-4">{error}</div>;
-  if (!records) return null;
+  if (!records) return <div className="text-center p-4">Ei tietoja saatavilla</div>;
+
+  // Ensure we have valid records before rendering cards
+  const hasBestKm = records.bestKm && records.bestKm.length > 0 && records.bestKm[0];
+  const hasLongestWorkout = records.longestWorkout && records.longestWorkout.length > 0 && records.longestWorkout[0];
+  const hasLongestStreak = records.longestStreak && records.longestStreak.length > 0 && records.longestStreak[0];
 
   return (
     <div className="space-y-6">
       <h3 className="text-xl font-semibold text-gray-800 mb-6">Nykyiset ennätykset</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {renderRecordCard(
-          "Eniten kilometrejä päivässä",
-          "text-purple-600",
-          records.bestKm,
-          `${records.bestKm[0].value.toFixed(1)} km`,
-          new Date(records.bestKm[0].date).toLocaleDateString("fi-FI"),
-          "km"
-        )}
-        {renderRecordCard(
-          "Pisin treeni",
-          "text-blue-600",
-          records.longestWorkout,
-          `${records.longestWorkout[0].value} min`,
-          new Date(records.longestWorkout[0].date).toLocaleDateString("fi-FI"),
-          "min"
-        )}
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="text-sm text-green-600 font-medium mb-1">
-            Pisin urheiluputki
+        {hasBestKm ? (
+          renderRecordCard(
+            "Eniten kilometrejä päivässä",
+            "text-purple-600",
+            records.bestKm,
+            `${records.bestKm[0].value.toFixed(1)} km`,
+            new Date(records.bestKm[0].date).toLocaleDateString("fi-FI"),
+            "km"
+          )
+        ) : (
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm text-purple-600 font-medium mb-1">Eniten kilometrejä päivässä</div>
+            <div>Ei tietoja saatavilla</div>
           </div>
-          <div>{renderHolders(records.longestStreak)}</div>
-          <div className="text-2xl font-bold text-green-600 mt-1">
-            {records.longestStreak[0].value} päivää
+        )}
+        
+        {hasLongestWorkout ? (
+          renderRecordCard(
+            "Pisin treeni",
+            "text-blue-600",
+            records.longestWorkout,
+            `${records.longestWorkout[0].value} min`,
+            new Date(records.longestWorkout[0].date).toLocaleDateString("fi-FI"),
+            "min"
+          )
+        ) : (
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm text-blue-600 font-medium mb-1">Pisin treeni</div>
+            <div>Ei tietoja saatavilla</div>
           </div>
-          {records.longestStreak[0].date && (
-            <div className="text-sm text-gray-500">
-              Alkaen {new Date(records.longestStreak[0].date).toLocaleDateString("fi-FI")}
+        )}
+        
+        {hasLongestStreak ? (
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm text-green-600 font-medium mb-1">
+              Pisin urheiluputki
             </div>
-          )}
-        </div>
+            <div>{renderHolders(records.longestStreak)}</div>
+            <div className="text-2xl font-bold text-green-600 mt-1">
+              {records.longestStreak[0].value} päivää
+            </div>
+            {records.longestStreak[0].date && (
+              <div className="text-sm text-gray-500">
+                Alkaen {new Date(records.longestStreak[0].date).toLocaleDateString("fi-FI")}
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow p-4">
+            <div className="text-sm text-green-600 font-medium mb-1">Pisin urheiluputki</div>
+            <div>Ei tietoja saatavilla</div>
+          </div>
+        )}
       </div>
     </div>
   );
