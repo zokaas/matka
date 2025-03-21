@@ -83,7 +83,6 @@ export default function InsightsWithTabs() {
         participantCount={users.length}
       />
       <ProgressChart
-        targetPaces={targetPaces}
         getTargetLine={getTargetLineWrapper}
       />
       <WeeklyActivity getLastFourWeeks={getLastFourWeeks} users={users} />
