@@ -39,6 +39,7 @@ export type TargetPaces = {
   weeklyPerUser: number;
   projectedEndDate: Date | null;
   behindAmount?: number;
+  expectedProgressToday?: number
 };
 
 export type WeeklyInsight = {

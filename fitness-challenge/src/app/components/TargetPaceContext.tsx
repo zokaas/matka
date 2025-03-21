@@ -16,6 +16,7 @@ const defaultTargetPace = {
   projectedEndDate: null,
   progressStatus: 'on track' as 'behind' | 'on track' | 'ahead',
   behindAmount: 0,
+  expectedProgressToday: 0,
   projections: {
     historical: {
       estimatedEndDate: null,

@@ -132,13 +132,14 @@ export default function InsightsWithTabs() {
         {/* Only render PaceProjectionTabs if we have the necessary data */}
         {targetPaces && typeof targetPaces.historicalPace === 'number' && (
           <PaceProjectionTabs
-            historicalPace={targetPaces.historicalPace}
-            recentPace={targetPaces.recentPace || 0}
-            weeklyPace={targetPaces.weeklyPace || 0}
-            targetDate={new Date("2025-06-22")}
-            remainingDistance={targetPaces.remainingDistance}
-            participantCount={users.length}
-          />
+  historicalPace={targetPaces.historicalPace}
+  recentPace={targetPaces.recentPace || 0}
+  weeklyPace={targetPaces.weeklyPace || 0}
+  targetDate={new Date("2025-06-22")}
+  remainingDistance={targetPaces.remainingDistance}
+  participantCount={users.length}
+  projections={targetPaces.projections}
+/>
         )}
         
         <ProgressChart

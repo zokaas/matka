@@ -1,107 +1,157 @@
-// Updated Header.tsx
 import React from "react";
 import { format } from "date-fns";
 import { TrendingUp, Calendar, Flag, Clock, AlertCircle, Zap } from "lucide-react";
 import { useTargetPace } from "../TargetPaceContext";
+import { formatNumberWithSpaces } from "@/app/utils/formatDate";
 
 interface HeaderProps {
   participantCount: number;
 }
 
 const Header: React.FC<HeaderProps> = () => {
-  // Use the dedicated hook instead of direct context access
   const targetPaces = useTargetPace();
 
-  // Loading state when data isn't ready yet
+  // Loading state
   if (!targetPaces) {
     return (
-      <div className="bg-gradient-to-r from-[#eef2ff] to-[#f8f9ff] p-5 rounded-lg shadow-md text-center">
-        <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-blue-200 rounded w-3/4 mx-auto"></div>
-          <div className="h-4 bg-blue-200 rounded w-1/2 mx-auto"></div>
-          <div className="h-4 bg-blue-200 rounded w-2/3 mx-auto"></div>
+      <div className="bg-purple-500 p-3 rounded-xl text-center">
+        <div className="animate-pulse space-y-2">
+          <div className="h-2 bg-purple-300 rounded w-3/4 mx-auto"></div>
+          <div className="h-2 bg-purple-300 rounded w-1/2 mx-auto"></div>
         </div>
-        <p className="text-sm text-[#5555cc] font-medium mt-4">Ladataan tietoja...</p>
+        <p className="text-xs text-white font-medium mt-2">Ladataan tietoja...</p>
       </div>
     );
   }
 
-
-  const formattedProjectedDate = targetPaces.projectedEndDate
-    ? format(new Date(targetPaces.projectedEndDate), "d.M.yyyy")
+  // Calculate values once
+  const { 
+    totalProgress, 
+    projectedEndDate, 
+    historicalPace, 
+    remainingDistance, 
+    daysRemaining, 
+    behindAmount,
+    expectedProgressToday 
+  } = targetPaces;
+  
+  const formattedProjectedDate = projectedEndDate
+    ? format(new Date(projectedEndDate), "d.M.yyyy")
     : "Ei tiedossa";
 
-  const completionPercentage = Math.min(100, Math.round((targetPaces.totalProgress / 100000) * 100));
-
-
+  const completionPercentage = Math.min(100, Math.round((totalProgress / 100000) * 100));
+  
+  // Format numbers once
+  const formattedTotalProgress = formatNumberWithSpaces(Math.round(totalProgress));
+  const formattedHistoricalPace = formatNumberWithSpaces(Math.round(historicalPace));
+  const formattedRemainingDistance = formatNumberWithSpaces(Math.round(remainingDistance));
+  const formattedBehindAmount = formatNumberWithSpaces(Math.round(behindAmount));
+  const formattedExpectedProgress = formatNumberWithSpaces(Math.round(expectedProgressToday));
 
   return (
-    <div className="bg-gradient-to-br from-white to-purple-50 rounded-xl shadow-lg border border-purple-100 overflow-hidden">
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-4 text-white">
-        <h2 className="text-lg font-bold flex items-center">
-          <Zap className="w-5 h-5 mr-2" />
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden max-w-md mx-auto">
+      {/* Progress Bar Section */}
+      <div className="bg-purple-600 p-3 text-white">
+        <h2 className="text-base font-medium flex items-center">
+          <Zap className="w-4 h-4 mr-1.5" />
           Eteneminen kohti tavoitetta
         </h2>
-        <div className="mt-2 bg-white/20 h-2.5 rounded-full overflow-hidden">
+        <div className="mt-2 bg-white/20 h-2 rounded-full overflow-hidden">
           <div className="h-full bg-white rounded-full" style={{ width: `${completionPercentage}%` }}></div>
         </div>
-        <div className="flex justify-between mt-1 text-xs font-medium text-white/90">
+        <div className="flex justify-between mt-1.5 text-xs">
           <span>{completionPercentage}% valmis</span>
-          <span>{Math.round(targetPaces.totalProgress).toLocaleString()} / 100 000 km</span>
+          <span>{formattedTotalProgress} / 100 000 km</span>
         </div>
       </div>
 
-      <div className="p-4 sm:p-6">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="bg-white p-3 rounded-lg shadow-sm border border-purple-100">
-            <div className="flex items-center text-purple-900 text-xs font-semibold mb-1">
-              <TrendingUp className="w-3.5 h-3.5 mr-1" />
-              <span>Nykyinen vauhti</span>
+      {/* Key Metrics */}
+      <div className="p-2.5">
+        <div className="grid grid-cols-2 gap-2.5">
+          {/* Current Speed */}
+          <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
+            <div className="text-xs font-medium mb-1 flex items-center justify-center text-purple-700">
+              <TrendingUp className="w-4 h-4 mr-1 text-purple-500" />
+              Nykyinen vauhti
             </div>
-            <div className="text-lg font-bold text-purple-700">
-              {Math.round(targetPaces.weeklyPace)} km/hlö
+            <div className="text-2xl font-bold text-center text-purple-600">
+              {formattedHistoricalPace}
             </div>
-            <div className="text-xs text-gray-500">Keskiarvo alusta lähtien</div>
+            <div className="text-center text-purple-500 mb-0.5">km/hlö</div>
+            <div className="text-xs text-gray-500 text-center mt-auto">
+              Vauhtikeskiarvo haasteen alusta lähtien
+            </div>
           </div>
 
-          <div className="bg-white p-3 rounded-lg shadow-sm border border-purple-100">
-            <div className="flex items-center text-blue-900 text-xs font-semibold mb-1">
-              <Calendar className="w-3.5 h-3.5 mr-1" />
-              <span>Arvioitu valmistuminen</span>
+          {/* Remaining Distance */}
+          <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
+            <div className="text-xs font-medium mb-1 flex items-center justify-center text-green-700">
+              <Flag className="w-4 h-4 mr-1 text-green-500" />
+              Matkaa jäljellä
             </div>
-            <div className="text-lg font-bold text-blue-700">{formattedProjectedDate}</div>
-            <div className="text-xs text-gray-500">Tavoite: 22.6.2025</div>
+            <div className="text-2xl font-bold text-center text-green-600">
+              {formattedRemainingDistance}
+            </div>
+            <div className="text-center text-green-500 mb-0.5">km</div>
+            <div className="text-xs text-gray-500 text-center mt-auto">
+              Kokonaistavoite
+            </div>
+            <div className="text-xs text-gray-500 text-center mt-auto">100 000 km
+            </div>
           </div>
 
-          <div className="bg-white p-3 rounded-lg shadow-sm border border-purple-100">
-            <div className="flex items-center text-green-900 text-xs font-semibold mb-1">
-              <Flag className="w-3.5 h-3.5 mr-1" />
-              <span>Jäljellä</span>
+          {/* Days Left */}
+          <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
+            <div className="text-xs font-medium mb-1 flex items-center justify-center text-amber-700">
+              <Clock className="w-4 h-4 mr-1 text-amber-500" />
+              Päiviä jäljellä
             </div>
-            <div className="text-lg font-bold text-green-700">{Math.round(targetPaces.remainingDistance).toLocaleString()} km</div>
-            <div className="text-xs text-gray-500">Kokonaistavoite: 100 000 km</div>
+            <div className="text-2xl font-bold text-center text-amber-600">
+              {Math.round(daysRemaining)}
+            </div>
+            <div className="text-xs text-gray-500 text-center mt-auto">
+              Haaste alkoi
+            </div>
+            <div className="text-xs text-gray-500 text-center mt-auto">
+6.1.2025
+            </div>
           </div>
 
-          <div className="bg-white p-3 rounded-lg shadow-sm border border-purple-100">
-            <div className="flex items-center text-orange-900 text-xs font-semibold mb-1">
-              <Clock className="w-3.5 h-3.5 mr-1" />
-              <span>Päiviä jäljellä</span>
+                              {/* Estimated Completion */}
+                              <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
+            <div className="text-xs font-medium mb-1 flex items-center justify-center text-blue-700">
+              <Calendar className="w-4 h-4 mr-1 text-blue-500" />
+              Arviolta maalissa
             </div>
-            <div className="text-lg font-bold text-orange-700">{Math.round(targetPaces.daysRemaining)}</div>
-            <div className="text-xs text-gray-500">Alkanut: 6.1.2025</div>
+            <div className="text-2xl font-bold text-center text-blue-600">
+              {formattedProjectedDate}
+            </div>
+            <div className="text-xs text-gray-500 text-center mt-auto">
+Tavoiteaika maaliin
+            </div>
+            <div className="text-xs text-gray-500 text-center mt-auto">
+22.6.2025
+            </div>
           </div>
         </div>
 
-        {targetPaces.behindAmount !== undefined && targetPaces.behindAmount > 0 && (
-          <div className="mt-4 bg-red-50 border border-red-200 p-3 rounded-lg flex items-center shadow-sm">
-            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-red-100 text-red-600 mr-3">
-              <AlertCircle className="w-5 h-5" />
+        {/* Behind Target */}
+        {behindAmount > 0 && (
+          <div className="mt-2.5 bg-red-50 border border-red-100 p-3 rounded-xl flex flex-col text-center">
+            <div className="flex justify-center items-center text-red-700 text-xs font-medium mb-1">
+              <AlertCircle className="w-4 h-4 mr-1 text-red-500" />
+              Jäljessä tavoitteesta
             </div>
-            <div>
-              <p className="font-medium text-red-800">Jäljessä tavoitteesta</p>
-              <p className="text-sm text-red-700">
-                Tarvitaan <strong>{Math.round(targetPaces.behindAmount).toLocaleString()} km</strong> lisää pysyäksemme aikataulussa
-              </p>
+
+            <div className="text-2xl font-bold text-red-600 mb-0.5">
+              {formattedBehindAmount} km
+            </div>
+
+            <div className="text-xs text-red-600 mt-auto">
+              Tavoitteen mukaan pitäisi olla{" "}
+              <span className="font-medium">
+                {formattedExpectedProgress} km
+              </span>
             </div>
           </div>
         )}
