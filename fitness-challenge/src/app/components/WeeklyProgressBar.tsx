@@ -7,37 +7,48 @@ const WeeklyProgressBar = () => {
   const [weeklyProgress, setWeeklyProgress] = useState(0);
   const [weeklyGoal, setWeeklyGoal] = useState(0);
   const [remainingDistance, setRemainingDistance] = useState(0);
-  const [daysLeft, setDaysLeft] = useState(0);
-
+  const [weekStartKey, setWeekStartKey] = useState("");
+  
   // Get the target paces from the hook once users are loaded
   const targetPaces = useEnhancedTargetPaces(users);
 
   useEffect(() => {
-    if (users.length > 0 && targetPaces.weeklyPerUser > 0) {
-      // Calculate the weekly goal based on the number of users and the weekly target per user
-      const calculatedWeeklyGoal = Math.round(
-        targetPaces.weeklyPerUser * users.length
-      );
-      setWeeklyGoal(calculatedWeeklyGoal);
+    // Calculate the current week's key (to identify the week)
+    const today = new Date();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() + mondayOffset);
+    weekStart.setHours(0, 0, 0, 0); // Start of Monday
 
-      // Calculate current week's progress
-      const today = new Date();
-      const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    // Create a key for this week (e.g., "2025-W12")
+    const weekYear = weekStart.getFullYear();
+    const weekNum = Math.ceil((weekStart.getTime() - new Date(weekYear, 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000));
+    const currentWeekKey = `${weekYear}-W${weekNum}`;
+    
+    setWeekStartKey(currentWeekKey);
 
-      // Determine the Monday of the current week
-      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() + mondayOffset);
-      weekStart.setHours(0, 0, 0, 0); // Start of Monday
+    // Try to get the stored weekly goal for this week
+    const storedWeeklyGoalKey = `weekly-goal-${currentWeekKey}`;
+    const storedWeeklyGoal = localStorage.getItem(storedWeeklyGoalKey);
+    
+    if (users.length > 0) {
+      // If we already have a stored goal for this week, use it
+      if (storedWeeklyGoal) {
+        setWeeklyGoal(parseInt(storedWeeklyGoal, 10));
+      } 
+      // Otherwise calculate a new goal and store it
+      else if (targetPaces && targetPaces.requiredPace) {
+        const calculatedWeeklyGoal = Math.round(targetPaces.requiredPace * users.length);
+        setWeeklyGoal(calculatedWeeklyGoal);
+        localStorage.setItem(storedWeeklyGoalKey, calculatedWeeklyGoal.toString());
+      }
 
-      // Determine the Sunday of the current week
+      // Calculate the current week's progress
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekStart.getDate() + 6);
       weekEnd.setHours(23, 59, 59, 999); // End of Sunday
-
-      // Calculate days left in the week
-      const daysUntilSunday = dayOfWeek === 0 ? 0 : 7 - dayOfWeek;
-      setDaysLeft(daysUntilSunday);
+      
       // Calculate the total distance covered this week
       let currentWeekDistance = 0;
       users.forEach((user) => {
@@ -55,11 +66,10 @@ const WeeklyProgressBar = () => {
       });
 
       setWeeklyProgress(Math.round(currentWeekDistance));
-      setRemainingDistance(
-        Math.max(0, calculatedWeeklyGoal - currentWeekDistance)
-      );
+      const remaining = Math.max(0, (weeklyGoal || 0) - currentWeekDistance);
+      setRemainingDistance(remaining);
     }
-  }, [users, targetPaces]);
+  }, [users, targetPaces, weekStartKey]);
 
   if (loading) {
     return (
@@ -88,14 +98,14 @@ const WeeklyProgressBar = () => {
           <span className="text-purple-600">{weeklyProgress}</span>
           <span className="text-gray-500"> / {weeklyGoal} km</span>
           <span className="text-xs text-gray-400 ml-1">
-            ({progressPercentage.toFixed(0)}%)
+            ({Math.round(progressPercentage)}%)
           </span>
         </div>
       </div>
 
-      <div className="w-full bg-gray-100 rounded-full h-2 mb-3">
+      <div className="w-full bg-gray-200 rounded-full h-2.5 mb-3">
         <div
-          className="h-2 rounded-full transition-all duration-300"
+          className="h-2.5 rounded-full transition-all duration-300"
           style={{
             width: `${progressPercentage}%`,
             backgroundColor:
@@ -111,7 +121,7 @@ const WeeklyProgressBar = () => {
           {remainingDistance > 0 ? (
             <div className="text-gray-600">
               <span className="font-medium text-purple-600">
-              {remainingDistance.toFixed(0)} km
+              {Math.round(remainingDistance)} km
               </span>{" "}
               jäljellä
             </div>
@@ -122,7 +132,7 @@ const WeeklyProgressBar = () => {
           )}
         </div>
         <div className="text-gray-500">
-          {Math.round(targetPaces.weeklyPerUser)} km/hlö
+          {Math.round(weeklyGoal / Math.max(1, users.length))} km/hlö
         </div>
       </div>
     </div>
