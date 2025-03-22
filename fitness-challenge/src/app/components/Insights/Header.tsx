@@ -90,8 +90,8 @@ const Header: React.FC<HeaderProps> = () => {
             </div>
             <div className="text-center">
             <div className="flex items-baseline justify-center">
-              <span className="text-purple-600 text-2xl font-bold">{formattedRemainingDistance}</span>
-              <span className="text-purple-500 text-sm ml-1">km</span>
+              <span className="text-green-500 text-2xl font-bold">{formattedRemainingDistance}</span>
+              <span className="text-green-400 text-sm ml-1">km</span>
             </div>
           </div>
           </div>
