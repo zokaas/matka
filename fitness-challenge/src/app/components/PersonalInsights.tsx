@@ -55,7 +55,7 @@ const translations = {
   totalActivities: "Suoritukset",
   totalHours: "Tunnit",
   totalKm: "Kilometrit",
-  weeklyKm: "Viikko km",
+  weeklyKm: "Viikko ka",
   currentStreak: "Nykyinen putki",
   longestStreak: "Pisin putki",
   days: "päivää",
@@ -118,153 +118,179 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
     fetchAllActivities();
   }, [username, activities]);
 
-  // Process activity data for insights using ALL activities
-  const insights = useMemo<InsightsData>(() => {
-    const activitiesToUse = allActivities.length > 0 ? allActivities : activities;
-    
-    if (!activitiesToUse || activitiesToUse.length === 0) {
-      return {
-        totalActivities: 0,
-        totalDuration: 0,
-        totalKilometers: 0,
-        averageDuration: 0,
-        mostFrequentActivity: "",
-        trendData: [],
-        activityBreakdown: [],
-        weekdayBreakdown: [],
-        streakData: { currentStreak: 0, longestStreak: 0 },
-        avgWeeklyKm: 0,
-      };
-    }
-
-    // Sort activities by date
-    const sortedActivities = _.sortBy(activitiesToUse, (a) => new Date(a.date));
-
-    // Total stats
-    const totalActivities = activitiesToUse.length;
-    const totalDuration = _.sumBy(activitiesToUse, "duration");
-    const totalKilometers = _.sumBy(activitiesToUse, "kilometers");
-    const averageDuration = totalDuration / totalActivities;
-
-    // Most frequent activity
-    const activityCounts = _.countBy(activitiesToUse, "activity");
-    const mostFrequentActivity = Object.entries(activityCounts).reduce(
-      (max, [activity, count]) => (count > max[1] ? [activity, count] : max),
-      ["", 0]
-    )[0];
-
-    // Trend data (last 30 activities)
-    const last30Activities = sortedActivities.slice(-30);
-    const trendData = last30Activities.map((activity) => ({
-      date: new Date(activity.date).toLocaleDateString("fi-FI"),
-      kilometers: activity.kilometers,
-      duration: activity.duration,
-    }));
-
-    // Activity breakdown
-    const activityBreakdown = Object.entries(activityCounts)
-      .map(([activity, count]) => ({
-        activity,
-        count,
-        percentage: Math.round((count / totalActivities) * 100),
-      }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5); // Top 5 activities
-
-    // Weekday breakdown
-    const weekdayData = _.groupBy(activitiesToUse, (a) => new Date(a.date).getDay());
-    const weekdays = [
-      "Sunnuntai",
-      "Maanantai",
-      "Tiistai",
-      "Keskiviikko",
-      "Torstai",
-      "Perjantai",
-      "Lauantai",
-    ];
-
-    const weekdayBreakdown = weekdays.map((day, index) => ({
-      name: day,
-      activities: weekdayData[index] ? weekdayData[index].length : 0,
-    }));
-
-    // Calculate average weekly kilometers
-    const firstDate = new Date(sortedActivities[0].date);
-    const lastDate = new Date(sortedActivities[sortedActivities.length - 1].date);
-    
-    // Calculate the number of weeks between first and last activity
-    const weeksDiff = Math.max(
-      1,
-      Math.ceil((lastDate.getTime() - firstDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
-    );
-    
-    // Calculate average weekly kilometers
-    const avgWeeklyKm = totalKilometers / weeksDiff;
-
-    // Calculate streak data
-    let currentStreak = 0;
-    let longestStreak = 0;
-    let tempStreak = 0;
-
-    // Helper to check if dates are consecutive
-    const isConsecutiveDay = (date1: string, date2: string): boolean => {
-      const d1 = new Date(date1);
-      const d2 = new Date(date2);
-      const diffTime = Math.abs(d2.getTime() - d1.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays === 1;
+// Process activity data for insights using ALL activities
+const insights = useMemo<InsightsData>(() => {
+  const activitiesToUse = allActivities.length > 0 ? allActivities : activities;
+  
+  if (!activitiesToUse || activitiesToUse.length === 0) {
+    return {
+      totalActivities: 0,
+      totalDuration: 0,
+      totalKilometers: 0,
+      averageDuration: 0,
+      mostFrequentActivity: "",
+      trendData: [],
+      activityBreakdown: [],
+      weekdayBreakdown: [],
+      streakData: { currentStreak: 0, longestStreak: 0 },
+      avgWeeklyKm: 0,
     };
+  }
 
-    // Calculate streaks
-    for (let i = 0; i < sortedActivities.length; i++) {
-      if (i === 0) {
-        tempStreak = 1;
-      } else if (
-        isConsecutiveDay(sortedActivities[i - 1].date, sortedActivities[i].date)
-      ) {
+  // Sort activities by date
+  const sortedActivities = _.sortBy(activitiesToUse, (a) => new Date(a.date));
+
+  // Total stats
+  const totalActivities = activitiesToUse.length;
+  const totalDuration = _.sumBy(activitiesToUse, "duration");
+  const totalKilometers = _.sumBy(activitiesToUse, "kilometers");
+  const averageDuration = totalDuration / totalActivities;
+
+  // Most frequent activity
+  const activityCounts = _.countBy(activitiesToUse, "activity");
+  const mostFrequentActivity = Object.entries(activityCounts).reduce(
+    (max, [activity, count]) => (count > max[1] ? [activity, count] : max),
+    ["", 0]
+  )[0];
+
+  // Trend data (last 30 activities)
+  const last30Activities = sortedActivities.slice(-30);
+  const trendData = last30Activities.map((activity) => ({
+    date: new Date(activity.date).toLocaleDateString("fi-FI"),
+    kilometers: activity.kilometers,
+    duration: activity.duration,
+  }));
+
+  // Activity breakdown
+  const activityBreakdown = Object.entries(activityCounts)
+    .map(([activity, count]) => ({
+      activity,
+      count,
+      percentage: Math.round((count / totalActivities) * 100),
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5); // Top 5 activities
+
+  // Weekday breakdown
+  const weekdayData = _.groupBy(activitiesToUse, (a) => new Date(a.date).getDay());
+  const weekdays = [
+    "Sunnuntai",
+    "Maanantai",
+    "Tiistai",
+    "Keskiviikko",
+    "Torstai",
+    "Perjantai",
+    "Lauantai",
+  ];
+
+  const weekdayBreakdown = weekdays.map((day, index) => ({
+    name: day,
+    activities: weekdayData[index] ? weekdayData[index].length : 0,
+  }));
+
+  // Calculate average weekly kilometers
+  const firstDate = new Date(sortedActivities[0].date);
+  const lastDate = new Date(sortedActivities[sortedActivities.length - 1].date);
+  
+  // Calculate the number of weeks between first and last activity
+  const weeksDiff = Math.max(
+    1,
+    Math.ceil((lastDate.getTime() - firstDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
+  );
+  
+  // Calculate average weekly kilometers
+  const avgWeeklyKm = totalKilometers / weeksDiff;
+
+  // ============ REPLACED STREAK CALCULATION CODE STARTS HERE ============
+  
+  // First, group activities by date to handle multiple activities on the same day
+  const activityDates = sortedActivities
+    .map(activity => new Date(activity.date).toISOString().split('T')[0])
+    .filter((date, index, self) => self.indexOf(date) === index) // Remove duplicates
+    .sort(); // Ensure dates are sorted ascending (oldest first)
+
+  // Now calculate streaks properly
+  let currentStreak = 0;
+  let longestStreak = 0;
+  let tempStreak = 0;
+
+  // Loop through the unique dates
+  for (let i = 0; i < activityDates.length; i++) {
+    const currentDate = new Date(activityDates[i]);
+    
+    if (i === 0) {
+      // First activity starts a streak
+      tempStreak = 1;
+    } else {
+      const prevDate = new Date(activityDates[i-1]);
+      const dayDiff = Math.round((currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (dayDiff === 1) {
+        // Consecutive day, continue streak
         tempStreak++;
       } else {
+        // Gap detected, reset streak
         tempStreak = 1;
       }
-
-      if (tempStreak > longestStreak) {
-        longestStreak = tempStreak;
-      }
     }
+    
+    // Update longest streak if current one is longer
+    if (tempStreak > longestStreak) {
+      longestStreak = tempStreak;
+    }
+  }
 
-    // Current streak (check if last activity was yesterday or today)
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+  // Calculate current streak (check if the most recent activity was today or yesterday)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
 
-    const lastActivityDate = new Date(
-      sortedActivities[sortedActivities.length - 1].date
-    );
+  // Only calculate current streak if there are any activity dates
+  if (activityDates.length > 0) {
+    // Need to get the most recent activity date
+    const mostRecentActivityDate = new Date(activityDates[activityDates.length - 1]);
+    mostRecentActivityDate.setHours(0, 0, 0, 0);
 
-    if (
-      lastActivityDate.toDateString() === today.toDateString() ||
-      lastActivityDate.toDateString() === yesterday.toDateString()
-    ) {
-      currentStreak = tempStreak;
+    // Check if the most recent activity was today or yesterday
+    if (mostRecentActivityDate.getTime() === today.getTime() || 
+        mostRecentActivityDate.getTime() === yesterday.getTime()) {
+      // If so, count back from the most recent date to find the current streak
+      currentStreak = 1;
+      for (let i = activityDates.length - 2; i >= 0; i--) {
+        const currentDate = new Date(activityDates[i]);
+        const nextDate = new Date(activityDates[i + 1]);
+        const dayDiff = Math.round((nextDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (dayDiff === 1) {
+          currentStreak++;
+        } else {
+          break; // Streak is broken
+        }
+      }
     } else {
+      // Most recent activity is older than yesterday, so no current streak
       currentStreak = 0;
     }
+  }
 
-    const streakData = { currentStreak, longestStreak };
+  const streakData = { currentStreak, longestStreak };
+  
+  // ============ REPLACED STREAK CALCULATION CODE ENDS HERE ============
 
-    return {
-      totalActivities,
-      totalDuration,
-      totalKilometers,
-      averageDuration,
-      mostFrequentActivity,
-      trendData,
-      activityBreakdown,
-      weekdayBreakdown,
-      streakData,
-      avgWeeklyKm,
-    };
-  }, [allActivities, activities]);
+  return {
+    totalActivities,
+    totalDuration,
+    totalKilometers,
+    averageDuration,
+    mostFrequentActivity,
+    trendData,
+    activityBreakdown,
+    weekdayBreakdown,
+    streakData,
+    avgWeeklyKm,
+  };
+}, [allActivities, activities]);
 
   if (!activities || activities.length === 0) {
     return (
