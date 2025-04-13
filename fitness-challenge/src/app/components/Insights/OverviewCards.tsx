@@ -1,3 +1,4 @@
+// fitness-challenge/src/app/components/Insights/OverviewCards.tsx
 import React from "react";
 import { User, TargetPaces } from "../../types/types";
 
@@ -22,7 +23,7 @@ export default function OverviewCards({ targetPaces }: Readonly<Props>) {
       <div className="bg-orange-50 p-4 rounded-lg">
         <h3 className="font-medium text-orange-800">Viikon tavoite</h3>
         <p className="text-2xl font-bold text-orange-600">
-          {targetPaces.weeklyPerUser.toFixed(0)} km / hlö
+          {Math.round(targetPaces.weeklyPerUser)} km / hlö
         </p>
       </div>
 
