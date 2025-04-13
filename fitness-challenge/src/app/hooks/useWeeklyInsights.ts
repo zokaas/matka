@@ -1,3 +1,4 @@
+// fitness-challenge/src/app/hooks/useWeeklyInsights.ts
 import { useState, useEffect } from "react";
 import { User, WeeklyInsight, TargetPaces } from "@/app/types/types";
 
@@ -24,7 +25,8 @@ export const useWeeklyInsights = (users: User[], targetPaces: TargetPaces) => {
     // Calculate days remaining until Sunday
     const daysRemaining = 7 - (dayOfWeek === 0 ? 7 : dayOfWeek);
 
-    const weeklyGoal = targetPaces.weeklyPerUser;
+    // Use the consistent weekly goal value from targetPaces
+    const weeklyGoal = targetPaces.weeklyPerUser || 0;
 
     const insights: WeeklyInsight[] = users.map((user) => {
       // Filter activities that occurred between this Monday and Sunday
@@ -42,12 +44,12 @@ export const useWeeklyInsights = (users: User[], targetPaces: TargetPaces) => {
         weeklyGoal > 0 ? Math.round((weeklyProgress / weeklyGoal) * 100) : 0;
 
       const remainingWeeklyDistance = Math.max(0, weeklyGoal - weeklyProgress);
-const dailyTarget =
-    remainingWeeklyDistance > 0
-      ? daysRemaining > 0
-        ? Math.round(remainingWeeklyDistance / daysRemaining) // Round to whole number
-        : Math.round(remainingWeeklyDistance) // Show remaining distance for last day
-      : 0;
+      const dailyTarget =
+          remainingWeeklyDistance > 0
+            ? daysRemaining > 0
+              ? Math.round(remainingWeeklyDistance / daysRemaining) // Round to whole number
+              : Math.round(remainingWeeklyDistance) // Show remaining distance for last day
+            : 0;
 
       // Calculate daily progress (optional, can adjust if needed)
       const dailyProgress =
