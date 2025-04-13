@@ -1,3 +1,4 @@
+// fitness-challenge/src/app/components/Insights/Header.tsx
 import React from "react";
 import { format } from "date-fns";
 import { TrendingUp, Calendar, Flag, Clock, AlertCircle, Zap, ArrowUp } from "lucide-react";
@@ -32,7 +33,8 @@ const Header: React.FC<HeaderProps> = () => {
     remainingDistance, 
     daysRemaining, 
     behindAmount,
-    expectedProgressToday 
+    expectedProgressToday,
+    weeklyPerUser // Use the same value from targetPaces that other components use
   } = targetPaces;
   
   const formattedProjectedDate = projectedEndDate
@@ -47,6 +49,7 @@ const Header: React.FC<HeaderProps> = () => {
   const formattedRemainingDistance = formatNumberWithSpaces(Math.round(remainingDistance));
   const formattedBehindAmount = formatNumberWithSpaces(Math.round(behindAmount));
   const formattedExpectedProgress = formatNumberWithSpaces(Math.round(expectedProgressToday));
+  const formattedWeeklyPace = formatNumberWithSpaces(Math.round(weeklyPerUser));
 
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden max-w-md mx-auto">
@@ -72,12 +75,12 @@ const Header: React.FC<HeaderProps> = () => {
         <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
           <div className="text-xs font-medium mb-1 flex items-center justify-center text-purple-700">
             <TrendingUp className="w-4 h-4 mr-1 text-purple-500" /> 
-            Vauhtikeskiarvo
+            Viikon tavoite / hlö
           </div>
           <div className="text-center">
             <div className="flex items-baseline justify-center">
-              <span className="text-purple-600 text-2xl font-bold">{formattedHistoricalPace}</span>
-              <span className="text-purple-500 text-sm ml-1">km/hlö/vko</span>
+              <span className="text-purple-600 text-2xl font-bold">{formattedWeeklyPace}</span>
+              <span className="text-purple-500 text-sm ml-1">km/hlö</span>
             </div>
           </div>
         </div>
@@ -122,6 +125,6 @@ const Header: React.FC<HeaderProps> = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Header;
