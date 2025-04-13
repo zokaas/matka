@@ -7,10 +7,6 @@ import "react-circular-progressbar/dist/styles.css";
 import { User } from "@/app/types/types";
 import { useState, useEffect } from "react";
 
-// Target completion parameters
-const TARGET_DATE = new Date("2025-06-22"); // Juhannus 2025
-const TOTAL_CHALLENGE_DISTANCE = 100000; // km
-
 interface WeeklyProgressProps {
   users: User[];
 }
@@ -28,7 +24,6 @@ interface WeeklyInsight {
 const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
   const [weeklyInsights, setWeeklyInsights] = useState<WeeklyInsight[]>([]);
   const [weeklyGoal, setWeeklyGoal] = useState(0);
-  const [weeklyPerUser, setWeeklyPerUser] = useState(0);
 
   useEffect(() => {
     if (!users || users.length === 0) return;
@@ -50,45 +45,22 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
     const storedWeeklyGoalKey = `weekly-goal-${currentWeekKey}`;
     const storedWeeklyGoal = localStorage.getItem(storedWeeklyGoalKey);
     
-    // Get the weekly per-user goal
-    let individualWeeklyGoal;
+    // Calculate individual goals based on team weekly goal
+    let calculatedWeeklyGoal = 0;
     
     if (storedWeeklyGoal) {
-      // If there's a stored goal for this week, use it
-      const storedTeamGoal = parseInt(storedWeeklyGoal, 10);
-      setWeeklyGoal(storedTeamGoal);
-      
-      // Calculate individual goal
-      individualWeeklyGoal = storedTeamGoal / users.length;
-      setWeeklyPerUser(Math.round(individualWeeklyGoal));
-    } 
-    else {
-      // Calculate total kilometers completed so far
-      const totalKmCompleted = users.reduce((sum, user) => sum + user.totalKm, 0);
-      
-      // Calculate remaining kilometers to goal
-      const remainingKm = Math.max(0, TOTAL_CHALLENGE_DISTANCE - totalKmCompleted);
-      
-      // Calculate days remaining until target date
-      const daysRemaining = Math.max(1, Math.ceil((TARGET_DATE.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
-      
-      // Calculate weeks remaining (rounding up)
-      const weeksRemaining = Math.max(1, Math.ceil(daysRemaining / 7));
-      
-      // Calculate the required weekly rate for the whole team
-      const requiredWeeklyRate = Math.ceil(remainingKm / weeksRemaining);
-      
-      // Calculate required weekly rate per person
-      individualWeeklyGoal = Math.ceil(requiredWeeklyRate / users.length);
-      setWeeklyPerUser(individualWeeklyGoal);
-      
-      // Set team weekly goal
-      const teamWeeklyGoal = individualWeeklyGoal * users.length;
-      setWeeklyGoal(teamWeeklyGoal);
-      
-      // Store for future use
-      localStorage.setItem(storedWeeklyGoalKey, teamWeeklyGoal.toString());
+      calculatedWeeklyGoal = parseInt(storedWeeklyGoal, 10);
+    } else {
+      // If no stored goal, calculate a default one
+      // This is a simple placeholder calculation - adjust as needed
+      calculatedWeeklyGoal = Math.round(400 * users.length);
+      localStorage.setItem(storedWeeklyGoalKey, calculatedWeeklyGoal.toString());
     }
+    
+    setWeeklyGoal(calculatedWeeklyGoal);
+    
+    // Individual goal per user for this week
+    const individualGoal = calculatedWeeklyGoal / users.length;
 
     // Calculate weekly progress for each user
     const weekEnd = new Date(weekStart);
@@ -114,16 +86,16 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
       // Calculate percentage of goal
       const weeklyPercentage = Math.min(
         200, // Cap at 200%
-        individualWeeklyGoal > 0 ? Math.round((weeklyProgress / individualWeeklyGoal) * 100) : 0
+        individualGoal > 0 ? Math.round((weeklyProgress / individualGoal) * 100) : 0
       );
 
       // Calculate daily target (remaining km / remaining days)
-      const remainingKm = Math.max(0, individualWeeklyGoal - weeklyProgress);
+      const remainingKm = Math.max(0, individualGoal - weeklyProgress);
       const dailyTarget = daysRemaining > 0 ? Math.round(remainingKm / daysRemaining) : 0;
 
       return {
         username: user.username,
-        weeklyGoal: Math.round(individualWeeklyGoal),
+        weeklyGoal: Math.round(individualGoal),
         weeklyProgress: Math.round(weeklyProgress),
         weeklyPercentage,
         dailyTarget,
