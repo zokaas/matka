@@ -7,6 +7,11 @@ import "react-circular-progressbar/dist/styles.css";
 import { User } from "@/app/types/types";
 import { useState, useEffect } from "react";
 
+// Constants for the challenge
+const CHALLENGE_START_DATE = new Date("2025-01-06");
+const CHALLENGE_END_DATE = new Date("2025-06-22");
+const TOTAL_CHALLENGE_DISTANCE = 100000; // 100,000 km
+
 interface WeeklyProgressProps {
   users: User[];
 }
@@ -17,14 +22,13 @@ interface WeeklyInsight {
   weeklyProgress: number;
   weeklyPercentage: number;
   dailyTarget: number;
-  dailyProgress: number;
   rank: number;
 }
 
 const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
   const [weeklyInsights, setWeeklyInsights] = useState<WeeklyInsight[]>([]);
-  const [weeklyGoal, setWeeklyGoal] = useState(0);
-
+  const [weeklyGoalPerUser, setWeeklyGoalPerUser] = useState(0);
+  
   useEffect(() => {
     if (!users || users.length === 0) return;
 
@@ -36,40 +40,52 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
     weekStart.setDate(today.getDate() + mondayOffset);
     weekStart.setHours(0, 0, 0, 0); // Start of Monday
 
-    // Generate week key format
-    const weekYear = weekStart.getFullYear();
-    const weekNum = Math.ceil((weekStart.getTime() - new Date(weekYear, 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000));
-    const currentWeekKey = `${weekYear}-W${weekNum}`;
-    
-    // Try to get stored weekly goal
-    const storedWeeklyGoalKey = `weekly-goal-${currentWeekKey}`;
-    const storedWeeklyGoal = localStorage.getItem(storedWeeklyGoalKey);
-    
-    // Calculate individual goals based on team weekly goal
-    let calculatedWeeklyGoal = 0;
-    
-    if (storedWeeklyGoal) {
-      calculatedWeeklyGoal = parseInt(storedWeeklyGoal, 10);
-    } else {
-      // If no stored goal, calculate a default one
-      // This is a simple placeholder calculation - adjust as needed
-      calculatedWeeklyGoal = Math.round(400 * users.length);
-      localStorage.setItem(storedWeeklyGoalKey, calculatedWeeklyGoal.toString());
-    }
-    
-    setWeeklyGoal(calculatedWeeklyGoal);
-    
-    // Individual goal per user for this week
-    const individualGoal = calculatedWeeklyGoal / users.length;
-
-    // Calculate weekly progress for each user
+    // Determine the end of the week
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
     weekEnd.setHours(23, 59, 59, 999); // End of Sunday
 
+    // Create a key for this week (e.g., "2025-W12")
+    const weekYear = weekStart.getFullYear();
+    const weekNum = Math.ceil((weekStart.getTime() - new Date(weekYear, 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000));
+    const currentWeekKey = `${weekYear}-W${weekNum}`;
+
     // Calculate days remaining until Sunday
     const daysRemaining = 7 - (dayOfWeek === 0 ? 7 : dayOfWeek);
 
+    // Get the stored weekly goal if it exists
+    const storedWeeklyGoal = localStorage.getItem(`weekly-goal-${currentWeekKey}`);
+    let weeklyGoal;
+    
+    if (storedWeeklyGoal) {
+      // Use the stored goal
+      weeklyGoal = parseInt(storedWeeklyGoal, 10);
+    } else {
+      // Calculate a new weekly goal based on remaining challenge distance and time
+      
+      // Get total progress so far
+      const totalProgress = users.reduce((sum, user) => sum + user.totalKm, 0);
+      
+      // Calculate remaining distance to the challenge goal
+      const remainingChallengeDistance = Math.max(0, TOTAL_CHALLENGE_DISTANCE - totalProgress);
+      
+      // Calculate days left until challenge end
+      const daysUntilEnd = Math.max(1, Math.ceil((CHALLENGE_END_DATE.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
+      
+      // Calculate weeks remaining (round up to ensure we have a safety margin)
+      const weeksRemaining = Math.ceil(daysUntilEnd / 7);
+      
+      // Calculate required weekly distance for the team
+      weeklyGoal = Math.ceil(remainingChallengeDistance / weeksRemaining);
+      
+      // Store this week's goal
+      localStorage.setItem(`weekly-goal-${currentWeekKey}`, weeklyGoal.toString());
+    }
+    
+    // Calculate individual goal per user
+    const individualGoal = Math.round(weeklyGoal / users.length);
+    setWeeklyGoalPerUser(individualGoal);
+    
     const insights = users.map((user) => {
       // Filter activities for current week
       const weekActivities = user.activities.filter((activity) => {
@@ -83,9 +99,9 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
         0
       );
 
-      // Calculate percentage of goal
+      // Calculate percentage of weekly goal
       const weeklyPercentage = Math.min(
-        200, // Cap at 200%
+        200, // Cap at 200% for display purposes
         individualGoal > 0 ? Math.round((weeklyProgress / individualGoal) * 100) : 0
       );
 
@@ -95,11 +111,10 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
 
       return {
         username: user.username,
-        weeklyGoal: Math.round(individualGoal),
+        weeklyGoal: individualGoal,
         weeklyProgress: Math.round(weeklyProgress),
         weeklyPercentage,
         dailyTarget,
-        dailyProgress: Math.round(weeklyProgress / Math.max(1, 7 - daysRemaining)),
         rank: 0
       };
     });
@@ -238,7 +253,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                   <div className="w-16 h-16">
                     <CircularProgressbar
                       value={insight.weeklyPercentage}
-                      text={`${insight.weeklyPercentage > 200 ? "200+" : insight.weeklyPercentage}%`}
+                      text={`${insight.weeklyPercentage}%`}
                       styles={buildStyles({
                         pathColor: getProgressColor(insight.weeklyPercentage),
                         textColor: "#374151",
@@ -251,7 +266,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
 
                   <div className="text-right">
                     <div className="text-xl font-bold text-purple-600">
-                      {Math.round(insight.weeklyProgress).toLocaleString("fi-FI")}{" "}
+                      {insight.weeklyProgress.toLocaleString("fi-FI")}{" "}
                       km
                     </div>
                     <div className="text-xs text-gray-500">
