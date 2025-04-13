@@ -1,6 +1,7 @@
+// fitness-challenge/src/app/components/WeeklyProgressBar.tsx
 import React, { useState, useEffect } from "react";
 import { useFetchUsers } from "@/app/hooks/useFetchUsers";
-import { useEnhancedTargetPaces } from "../hooks/useTargetPaces";
+import { useTargetPace } from "../components/TargetPaceContext";
 
 const WeeklyProgressBar = () => {
   const { users, loading, error } = useFetchUsers();
@@ -9,8 +10,8 @@ const WeeklyProgressBar = () => {
   const [remainingDistance, setRemainingDistance] = useState(0);
   const [weekStartKey, setWeekStartKey] = useState("");
   
-  // Get the target paces from the hook once users are loaded
-  const targetPaces = useEnhancedTargetPaces(users);
+  // Get the target paces from the context
+  const targetPaces = useTargetPace();
 
   useEffect(() => {
     // Calculate the current week's key (to identify the week)
@@ -28,20 +29,20 @@ const WeeklyProgressBar = () => {
     
     setWeekStartKey(currentWeekKey);
 
-    // Try to get the stored weekly goal for this week
-    const storedWeeklyGoalKey = `weekly-goal-${currentWeekKey}`;
-    const storedWeeklyGoal = localStorage.getItem(storedWeeklyGoalKey);
-    
     if (users.length > 0) {
-      // If we already have a stored goal for this week, use it
-      if (storedWeeklyGoal) {
-        setWeeklyGoal(parseInt(storedWeeklyGoal, 10));
-      } 
-      // Otherwise calculate a new goal and store it
-      else if (targetPaces && targetPaces.requiredPace) {
-        const calculatedWeeklyGoal = Math.round(targetPaces.requiredPace * users.length);
+      // Use the weeklyPerUser value from targetPaces and multiply by user count
+      // This ensures consistency with other components
+      if (targetPaces && targetPaces.weeklyPerUser) {
+        const calculatedWeeklyGoal = Math.round(targetPaces.weeklyPerUser * users.length);
         setWeeklyGoal(calculatedWeeklyGoal);
-        localStorage.setItem(storedWeeklyGoalKey, calculatedWeeklyGoal.toString());
+        // Store this value in localStorage for persistence
+        localStorage.setItem(`weekly-goal-${currentWeekKey}`, calculatedWeeklyGoal.toString());
+      } else {
+        // Fallback to stored value if available
+        const storedWeeklyGoal = localStorage.getItem(`weekly-goal-${currentWeekKey}`);
+        if (storedWeeklyGoal) {
+          setWeeklyGoal(parseInt(storedWeeklyGoal, 10));
+        }
       }
 
       // Calculate the current week's progress
@@ -132,7 +133,9 @@ const WeeklyProgressBar = () => {
           )}
         </div>
         <div className="text-gray-500">
-          {Math.round(weeklyGoal / Math.max(1, users.length))} km/hlö
+          {targetPaces?.weeklyPerUser ? 
+            `${Math.round(targetPaces.weeklyPerUser)} km/hlö` : 
+            `${Math.round(weeklyGoal / Math.max(1, users.length))} km/hlö`}
         </div>
       </div>
     </div>
