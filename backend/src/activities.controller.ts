@@ -10,6 +10,11 @@ import { Repository } from 'typeorm';
 import { Activity } from './activity.entity';
 import { Users } from './user.entity';
 
+interface ActivityWithUser extends Omit<Activity, 'user'> {
+  username: string;
+  profilePicture?: string;
+}
+
 @Controller('activities')
 export class ActivitiesController {
   constructor(
@@ -20,7 +25,9 @@ export class ActivitiesController {
   ) {}
 
   @Get('recent')
-  async getRecentActivities(@Query('limit') limit = 20) {
+  async getRecentActivities(
+    @Query('limit') limit = 20,
+  ): Promise<ActivityWithUser[]> {
     try {
       // Parse limit to number and ensure it's reasonable
       const parsedLimit = Math.min(
@@ -39,6 +46,7 @@ export class ActivitiesController {
           'activity.date',
           'activity.kilometers',
           'activity.bonus',
+          'activity.userId',
           'user.username',
           'user.profilePicture',
         ])
@@ -47,7 +55,7 @@ export class ActivitiesController {
         .take(parsedLimit)
         .getMany();
 
-      // Transform the result to include username and profilePicture directly in the activity object
+      // Transform the result to maintain type consistency
       return activities.map((activity) => ({
         id: activity.id,
         activity: activity.activity,
@@ -55,8 +63,11 @@ export class ActivitiesController {
         date: activity.date,
         kilometers: activity.kilometers,
         bonus: activity.bonus,
+        userId: activity.userId,
         username: activity.user.username,
         profilePicture: activity.user.profilePicture,
+        comments: activity.comments || [], // Ensure comments are included
+        reactions: activity.reactions || [], // Ensure reactions are included
       }));
     } catch (error) {
       console.error('Error fetching recent activities:', error);

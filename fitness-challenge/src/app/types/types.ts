@@ -15,15 +15,16 @@ export type Activity = {
   duration: number;
   date: string;
   kilometers: number;
-  bonus?: string | null;
+  bonus: string | null;  // Always use string | null, not undefined
+  userId?: number;       // Add userId for consistency with backend
 };
 
 export type User = {
-  profilePicture?: string;
-  id: string;
+  id: number;            // Changed from string to number to match backend
   username: string;
   totalKm: number;
   activities: Activity[];
+  profilePicture?: string;
 };
 
 export type AchievementStats = {
@@ -87,18 +88,18 @@ export type Comment = {
   id: number;
   text: string;
   createdAt: string;
+  activityId?: number;   // Add for consistency with backend
 };
 
 export type Reaction = {
   type: string;
   count: number;
-  createdAts?: string[];
 };
 
 export type ReactionResponse = {
   added: boolean;
   type: string;
-  currentReactions?: { type: string; count: number }[];
+  currentReactions: Reaction[];  
 };
 
 

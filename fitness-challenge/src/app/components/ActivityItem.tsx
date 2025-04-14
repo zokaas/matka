@@ -5,15 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import CommentsSection from "@/app/components/CommentsSection";
 import ActivityReactions from "@/app/components/ActivityReactions";
+import { Activity } from "@/app/types/types";
+import { format, parseISO, isValid } from "date-fns";
+import { fi } from "date-fns/locale";
 
 interface ActivityItemProps {
-  activity: {
-    id: number;
-    activity: string;
-    duration: number;
-    date: string;
-    kilometers: number;
-    bonus?: string | null;
+  activity: Activity & {
     username: string;
     profilePicture?: string;
   };
@@ -23,13 +20,17 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
 
+  // Consistent date formatting using date-fns
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("fi-FI", {
-      day: "numeric",
-      month: "numeric",
-      year: "numeric",
-    });
+    try {
+      const date = parseISO(dateString);
+      if (!isValid(date)) return "Invalid date";
+      
+      return format(date, "d.M.yyyy", { locale: fi });
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "Invalid date";
+    }
   };
 
   const handleCommentCountUpdate = (count: number) => {
