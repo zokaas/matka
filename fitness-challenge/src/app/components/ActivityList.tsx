@@ -1,3 +1,6 @@
+// Rename to ActivityList.tsx
+import React from "react";
+
 interface Activity {
   id: number;
   activity: string;
@@ -46,13 +49,13 @@ const ActivityList: React.FC<Props> = ({ activities, onEdit, onDelete }) => {
               </div>
               <div className="flex space-x-2">
                 <button
-                  className="text-purple-500"
+                  className="text-purple-500 hover:text-purple-700 transition-colors"
                   onClick={() => onEdit(activity.id)}
                 >
                   Edit
                 </button>
                 <button
-                  className="text-red-500"
+                  className="text-red-500 hover:text-red-700 transition-colors"
                   onClick={() => onDelete(activity.id)}
                 >
                   Delete

@@ -1,10 +1,62 @@
-import { format } from "date-fns";
+import { format, isValid, Locale, parseISO } from "date-fns";
 import { User } from "../types/types";
+import { fi } from "date-fns/locale";
 
-// 🔥 Format a Date
-export const formatDate = (date: Date, formatString = "d.M.yyyy") => {
-  return format(date, formatString);
-};
+/**
+ * Format a date to the specified format with robust error handling
+ */
+export function formatDate(
+  date: string | Date,
+  formatString: string = "d.M.yyyy",
+  options: { locale?: Locale } = { locale: fi }
+): string {
+  try {
+    // Handle both string and Date inputs
+    const parsedDate = date instanceof Date ? date : parseISO(date);
+    
+    // Check if the parsed date is valid
+    if (!isValid(parsedDate)) {
+      console.warn(`Invalid date received: ${date}`);
+      return "Invalid date";
+    }
+    
+    return format(parsedDate, formatString, options);
+  } catch (error) {
+    console.error(`Error formatting date: ${date}`, error);
+    return "Invalid date";
+  }
+}
+
+/**
+ * Format a number with locale-specific separators
+ */
+export function formatNumber(
+  num: number, 
+  options: { 
+    maximumFractionDigits?: number,
+    minimumFractionDigits?: number
+  } = {}
+): string {
+  try {
+    return num.toLocaleString("fi-FI", options);
+  } catch (error) {
+    console.error(`Error formatting number: ${num}`, error);
+    return num.toString();
+  }
+}
+
+/**
+ * Parse a date string safely
+ */
+export function parseDate(dateString: string): Date | null {
+  try {
+    const parsedDate = parseISO(dateString);
+    return isValid(parsedDate) ? parsedDate : null;
+  } catch (error) {
+    console.error(`Error parsing date: ${dateString}`, error);
+    return null;
+  }
+}
 
 // 🔥 Get Last Four Weeks Summary
 export const getLastFourWeeks = (users: User[]) => {

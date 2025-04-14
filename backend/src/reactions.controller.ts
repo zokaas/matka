@@ -42,7 +42,8 @@ export class ReactionsController {
         {},
       );
 
-      // Convert to array of reactions
+      // Convert to array of reactions with consistent structure
+      // matching what the frontend expects
       return Object.entries(reactionDetails).map(([type, count]) => ({
         type,
         count,
@@ -95,7 +96,7 @@ export class ReactionsController {
         {},
       );
 
-      // Return current state of reactions
+      // Ensure we return the exact structure expected by the frontend
       return {
         added: true,
         type: reactionData.type,

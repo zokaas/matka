@@ -3,35 +3,28 @@ import { Activity, User, Comment, Reaction, Quote, ReactionResponse } from "../t
 
 const BACKEND_URL = "https://matka-zogy.onrender.com";
 
-// Central error handling
-const handleResponse = async (response: Response) => {
+const handleResponse = async <T>(response: Response): Promise<T> => {
   if (!response.ok) {
-    // Use a try-catch block to safely handle any parsing errors
+    // Extract error details if possible
     try {
-      const errorText = await response.text();
-      let errorMessage;
-
-      // Only parse as JSON if it's actually JSON format
-      if (errorText && errorText.trim().startsWith("{")) {
-        const errorData = JSON.parse(errorText);
-        errorMessage =
-          errorData.message ||
-          `Error ${response.status}: ${response.statusText}`;
-      } else {
-        errorMessage = `Error ${response.status}: ${response.statusText}`;
-      }
-
-      throw new Error(errorMessage);
-    } catch (parseError) {
-      // If there's any error in parsing, default to a standard error message
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || `Error ${response.status}: ${response.statusText}`
+      );
+    } catch {
+      // If parsing fails, use standard error
       throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
   }
 
-  // For successful responses, check if there's any content before trying to parse
+  // For empty responses (like 204 No Content)
+  if (response.status === 204) {
+    return {} as T;
+  }
+
+  // Parse JSON for non-empty responses
   try {
-    const text = await response.text();
-    return text ? JSON.parse(text) : null;
+    return await response.json();
   } catch (parseError) {
     console.error("Error parsing response:", parseError);
     throw new Error("Failed to parse server response");
@@ -81,7 +74,7 @@ export const userAPI = {
   // Get total kilometers for all users
   getTotalKilometers: async (): Promise<number> => {
     const response = await fetch(`${BACKEND_URL}/total-kilometers`);
-    const data = await handleResponse(response);
+    const data = await handleResponse<{ totalKm: number }>(response);
     return data.totalKm;
   },
 };
@@ -183,27 +176,14 @@ export const commentAPI = {
 /**
  * Reactions-related API calls
  */
+// Consistent error handling for reactionAPI
 export const reactionAPI = {
   // Get reactions for an activity
   getReactions: async (activityId: number): Promise<Reaction[]> => {
-    try {
-      console.log(`Fetching reactions for activity ${activityId}`);
-      const response = await fetch(
-        `${BACKEND_URL}/activity/${activityId}/reactions`
-      );
-      
-      if (!response.ok) {
-        console.error('Reaction fetch error:', response.status, response.statusText);
-        throw new Error('Failed to fetch reactions');
-      }
-
-      const data = await response.json();
-      console.log('Received reaction data:', data);
-      return data;
-    } catch (error) {
-      console.error('Error fetching reactions:', error);
-      throw new Error('Failed to fetch reactions');
-    }
+    const response = await fetch(
+      `${BACKEND_URL}/activity/${activityId}/reactions`
+    );
+    return handleResponse(response);
   },
 
   // Toggle a reaction on an activity
@@ -211,32 +191,17 @@ export const reactionAPI = {
     activityId: number,
     type: string
   ): Promise<ReactionResponse> => {
-    try {
-      console.log(`Toggling reaction for activity ${activityId}: ${type}`);
-      const response = await fetch(
-        `${BACKEND_URL}/activity/${activityId}/reactions`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type }),
-        }
-      );
-
-      if (!response.ok) {
-        console.error('Reaction toggle error:', response.status, response.statusText);
-        throw new Error('Failed to toggle reaction');
+    const response = await fetch(
+      `${BACKEND_URL}/activity/${activityId}/reactions`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type }),
       }
-
-      const data = await response.json();
-      console.log('Received reaction toggle response:', data);
-      return data;
-    } catch (error) {
-      console.error('Error toggling reaction:', error);
-      throw new Error('Failed to process reaction request');
-    }
+    );
+    return handleResponse(response);
   },
 };
-
 /**
  * Quotes-related API calls
  */
