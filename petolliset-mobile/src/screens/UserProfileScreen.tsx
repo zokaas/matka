@@ -1,5 +1,5 @@
 // src/screens/UserProfileScreen.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet, View, Alert, RefreshControl } from 'react-native';
 import { Text, Card, FAB, List, Button, Avatar } from 'react-native-paper';
 import { useRoute } from '@react-navigation/native';
@@ -13,7 +13,6 @@ export default function UserProfileScreen() {
   const { username } = route.params as { username: string };
   const { user, loading, error, refetch } = useUser(username);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingActivity, setEditingActivity] = useState(null);
 
   const handleDeleteActivity = async (activityId: number, activityName: string) => {
     Alert.alert(
@@ -136,7 +135,7 @@ export default function UserProfileScreen() {
                   <List.Item
                     key={activity.id}
                     title={activity.activity}
-                    description={`${activity.kilometers.toFixed(1)} km • ${activity.duration} min • ${formatDate(activity.date)}`}
+                    description={`${activity.kilometers.toFixed(1)} km • ${activity.duration} min • ${formatDate(activity.date)}${getBonusText(activity.bonus ?? null)}`}
                     right={() => (
                       <View style={styles.activityActions}>
                         <Button
@@ -247,38 +246,5 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: theme.colors.primary,
-  },
-});
-      </Card>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-    padding: theme.spacing.md,
-  },
-  card: {
-    marginTop: theme.spacing.lg,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: theme.spacing.md,
-    color: theme.colors.text,
-  },
-  subtitle: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: theme.spacing.md,
-    color: theme.colors.textSecondary,
-  },
-  description: {
-    fontSize: 14,
-    lineHeight: 20,
-    color: theme.colors.text,
   },
 });

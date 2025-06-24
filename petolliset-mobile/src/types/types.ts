@@ -1,4 +1,4 @@
-// src/types/types.ts
+// src/types/types.ts - Updated to match web app types
 export interface Activity {
   id: number;
   activity: string;
@@ -41,4 +41,56 @@ export interface Comment {
 export interface Reaction {
   type: string;
   count: number;
+  createdAts?: string[];
+}
+
+export interface ReactionResponse {
+  added: boolean;
+  type: string;
+  currentReactions?: { type: string; count: number }[];
+}
+
+export interface ActivityWithUser extends Activity {
+  username: string;
+  profilePicture?: string;
+}
+
+export interface TargetPaces {
+  totalProgress: number;
+  remainingDistance: number;
+  daysRemaining: number;
+  dailyPerUser: number;
+  weeklyPerUser: number;
+  projectedEndDate: Date | null;
+  behindAmount?: number;
+  expectedProgressToday?: number;
+}
+
+export interface WeeklyData {
+  week: number;
+  startDate: Date;
+  endDate: Date;
+  kilometers: number;
+  activeDays: number;
+  sports: {
+    name: string;
+    kilometers: number;
+    count: number;
+  }[];
+}
+
+export interface DailyStats {
+  date: string;
+  kilometers: number;
+  duration: number;
+  activities: Activity[];
+}
+
+export interface UserStats {
+  bestKmDay?: DailyStats;
+  longestWorkoutDay?: DailyStats;
+  currentStreak: {
+    start: string;
+    days: number;
+  };
 }

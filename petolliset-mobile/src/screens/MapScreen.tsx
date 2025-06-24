@@ -26,65 +26,31 @@ export default function MapScreen() {
   );
 }
 
-return (
-  <View style={styles.container}>
-    <Card style={styles.card}>
-      <Card.Content>
-        <Text style={styles.title}>Profiili</Text>
-        <Text style={styles.welcomeText}>
-          Tervetuloa, {username}!
-        </Text>
-        
-        <Button
-          mode="contained"
-          onPress={goToUserProfile}
-          style={styles.button}
-          buttonColor={theme.colors.primary}
-        >
-          Näytä omat suoritukset
-        </Button>
-        
-        <Button
-          mode="outlined"
-          onPress={handleLogout}
-          style={styles.button}
-          textColor={theme.colors.error}
-        >
-          Kirjaudu ulos
-        </Button>
-      </Card.Content>
-    </Card>
-  </View>
-);
-}
-
 const styles = StyleSheet.create({
-container: {
-  flex: 1,
-  backgroundColor: theme.colors.background,
-  justifyContent: 'center',
-  padding: theme.spacing.lg,
-},
-card: {
-  padding: theme.spacing.md,
-},
-title: {
-  fontSize: 24,
-  fontWeight: 'bold',
-  textAlign: 'center',
-  marginBottom: theme.spacing.lg,
-  color: theme.colors.text,
-},
-welcomeText: {
-  fontSize: 18,
-  textAlign: 'center',
-  marginBottom: theme.spacing.lg,
-  color: theme.colors.text,
-},
-input: {
-  marginBottom: theme.spacing.lg,
-},
-button: {
-  marginTop: theme.spacing.md,
-},
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    padding: theme.spacing.md,
+  },
+  card: {
+    marginTop: theme.spacing.lg,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: theme.spacing.md,
+    color: theme.colors.text,
+  },
+  subtitle: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: theme.spacing.md,
+    color: theme.colors.textSecondary,
+  },
+  description: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: theme.colors.text,
+  },
 });
