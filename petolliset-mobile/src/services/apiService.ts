@@ -4,7 +4,7 @@ import { User, Activity, Quote, Comment, Reaction } from '../types/types';
 const BACKEND_URL = 'https://matka-zogy.onrender.com'; // Same as web app
 
 // Central error handling
-const handleResponse = async (response: Response) => {
+export const handleResponse = async (response: Response) => {
   if (!response.ok) {
     try {
       const errorText = await response.text();
@@ -119,9 +119,34 @@ export const activityAPI = {
     return handleResponse(response);
   },
 
-  getRecentActivities: async (limit: number = 20): Promise<Activity[]> => {
-    const response = await fetch(`${BACKEND_URL}/activities/recent?limit=${limit}`);
-    return handleResponse(response);
+    getRecentActivities: async (limit: number = 20): Promise<any[]> => {
+    try {
+      const response = await fetch(`${BACKEND_URL}/activities/recent?limit=${limit}`);
+      return handleResponse(response);
+    } catch (error) {
+      // Fallback to fetching from all users if new endpoint doesn't exist
+      const users = await userAPI.getAllUsers();
+      const allActivities: any[] = [];
+
+      for (const user of users) {
+        try {
+          const userActivities = await userAPI.getUserActivities(user.username);
+          userActivities.forEach(activity => {
+            allActivities.push({
+              ...activity,
+              username: user.username,
+              profilePicture: user.profilePicture,
+            });
+          });
+        } catch (userError) {
+          console.warn(`Failed to fetch activities for ${user.username}:`, userError);
+        }
+      }
+
+      return allActivities
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, limit);
+    }
   },
 };
 

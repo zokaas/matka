@@ -22,7 +22,7 @@ const handleResponse = async (response: Response) => {
       }
 
       throw new Error(errorMessage);
-    } catch (parseError) {
+    } catch {
       // If there's any error in parsing, default to a standard error message
       throw new Error(`Error ${response.status}: ${response.statusText}`);
     }

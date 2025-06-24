@@ -19,11 +19,13 @@ export const ActivityFeed: React.FC = () => {
       // Try the new recent activities endpoint first
       try {
         const recentActivities = await apiService.activity.getRecentActivities(20);
-        setActivities(recentActivities.map(activity => ({
-          ...activity,
-          username: activity.username || 'Unknown',
-          profilePicture: activity.profilePicture,
-        })));
+        setActivities(
+          recentActivities.map(activity => ({
+            ...activity,
+            username: (activity as any).username || (activity as any).user || 'Unknown',
+            profilePicture: (activity as any).profilePicture,
+          }))
+        );
       } catch (recentError) {
         // Fallback to fetching from all users
         const users = await apiService.user.getAllUsers();
