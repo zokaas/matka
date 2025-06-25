@@ -56,7 +56,7 @@ export const ActivityForm: React.FC<ActivityFormProps> = ({
         selectedActivity = `${customActivity.trim()} / ${activity}`;
       }
 
-      await apiService.addActivity(username, {
+      await apiService.activity.addActivity(username, {
         activity: selectedActivity,
         duration: parseInt(duration),
         date: date.toISOString().split('T')[0],

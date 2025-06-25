@@ -1,7 +1,7 @@
-// src/services/apiService.ts - Updated to match web app
-import { User, Activity, Quote, Comment, Reaction } from '../types/types';
+// src/services/apiService.ts - Complete API service matching web app
+import { User, Activity, Quote, Comment, Reaction, ActivityWithUser } from '../types/types';
 
-const BACKEND_URL = 'https://matka-zogy.onrender.com'; // Same as web app
+const BACKEND_URL = 'https://matka-zogy.onrender.com';
 
 // Central error handling
 export const handleResponse = async (response: Response) => {
@@ -119,14 +119,15 @@ export const activityAPI = {
     return handleResponse(response);
   },
 
-    getRecentActivities: async (limit: number = 20): Promise<any[]> => {
+  getRecentActivities: async (limit: number = 20): Promise<ActivityWithUser[]> => {
     try {
       const response = await fetch(`${BACKEND_URL}/activities/recent?limit=${limit}`);
       return handleResponse(response);
     } catch (error) {
       // Fallback to fetching from all users if new endpoint doesn't exist
+      console.log('Falling back to legacy activity fetching method');
       const users = await userAPI.getAllUsers();
-      const allActivities: any[] = [];
+      const allActivities: ActivityWithUser[] = [];
 
       for (const user of users) {
         try {
@@ -219,7 +220,7 @@ export const healthAPI = {
   },
 };
 
-// Export default object with all APIs
+// Export convenience methods that match the web app
 const apiService = {
   user: userAPI,
   activity: activityAPI,
@@ -227,6 +228,29 @@ const apiService = {
   reaction: reactionAPI,
   quote: quoteAPI,
   health: healthAPI,
+
+  // Convenience methods to match web app exactly
+  getAllUsers: userAPI.getAllUsers,
+  getUser: userAPI.getUser,
+  getUserActivities: userAPI.getUserActivities,
+  addUser: userAPI.addUser,
+  getTotalKilometers: userAPI.getTotalKilometers,
+  
+  addActivity: activityAPI.addActivity,
+  updateActivity: activityAPI.updateActivity,
+  deleteActivity: activityAPI.deleteActivity,
+  getRecentActivities: activityAPI.getRecentActivities,
+  
+  getAllQuotes: quoteAPI.getAllQuotes,
+  addQuote: quoteAPI.addQuote,
+  
+  getComments: commentAPI.getComments,
+  addComment: commentAPI.addComment,
+  
+  getReactions: reactionAPI.getReactions,
+  toggleReaction: reactionAPI.toggleReaction,
+  
+  checkHealth: healthAPI.checkHealth,
 };
 
 export default apiService;

@@ -51,7 +51,7 @@ function ProfileStack() {
           headerStyle: { backgroundColor: '#9333ea' },
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
-        })}
+        })} 
       />
     </Stack.Navigator>
   );

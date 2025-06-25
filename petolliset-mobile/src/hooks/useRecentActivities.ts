@@ -12,7 +12,7 @@ export const useRecentActivities = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await apiService.getRecentActivities(20);
+      const data = await apiService.activity.getRecentActivities(20);
       setActivities(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch activities');

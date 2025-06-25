@@ -1,11 +1,13 @@
-// src/screens/HomeScreen.tsx - Updated to match web app functionality
-import React, { useState, useEffect } from 'react';
+// Updated src/screens/HomeScreen.tsx - Add WeeklyProgressBar
+import React, { useState } from 'react';
 import { ScrollView, StyleSheet, RefreshControl, View, Text } from 'react-native';
+import { Button } from 'react-native-paper';
 import { useFetchUsers } from '../hooks/useFetchUsers';
 import { useWeeklyProgress } from '../hooks/useWeeklyProgress';
 import { ProgressCard } from '../components/ProgressCard';
 import { Leaderboard } from '../components/Leaderboard';
 import { WeeklyProgressCard } from '../components/WeeklyProgressCard';
+import { WeeklyProgressBar } from '../components/WeeklyProgressBar';
 import { QuoteCard } from '../components/QuoteCard';
 import { ActivityFeed } from '../components/ActivityFeed';
 import { theme } from '../constants/theme';
@@ -13,18 +15,21 @@ import { theme } from '../constants/theme';
 export default function HomeScreen() {
   const { users, totalKm, loading, error, refetch } = useFetchUsers();
   const { weeklyInsights } = useWeeklyProgress(users);
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeView, setActiveView] = useState<'home' | 'feed' | 'weekly'>('home');
 
   if (error) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Virhe: {error}</Text>
+        <Button mode="contained" onPress={refetch} style={styles.retryButton}>
+          Yritä uudelleen
+        </Button>
       </View>
     );
   }
 
-  const renderTabContent = () => {
-    switch (activeTab) {
+  const renderContent = () => {
+    switch (activeView) {
       case 'feed':
         return <ActivityFeed />;
       case 'weekly':
@@ -33,9 +38,9 @@ export default function HomeScreen() {
         return (
           <>
             <ProgressCard totalKm={totalKm} />
+            <WeeklyProgressBar users={users} />
             <QuoteCard />
             <Leaderboard users={users} />
-            <WeeklyProgressCard weeklyInsights={weeklyInsights} />
           </>
         );
     }
@@ -43,24 +48,38 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Header with Logo */}
+      <View style={styles.header}>
+        <Text style={styles.logo}>🌍 MAAILMAN YMPÄRI 🌍</Text>
+        <Text style={styles.subtitle}>PETOLLISET🔥</Text>
+      </View>
+
       {/* Tab Navigation */}
       <View style={styles.tabContainer}>
         <View style={styles.tabButtons}>
           {[
-            { key: 'home', label: 'Etusivu' },
+            { key: 'home', label: 'Sijoitukset' },
             { key: 'weekly', label: 'Viikon tilanne' },
-            { key: 'feed', label: 'Suoritukset' },
+            { key: 'feed', label: 'Kannustus' },
           ].map((tab) => (
-            <Text
+            <Button
               key={tab.key}
+              mode={activeView === tab.key ? 'contained' : 'outlined'}
+              onPress={() => setActiveView(tab.key as any)}
               style={[
                 styles.tabButton,
-                activeTab === tab.key && styles.activeTabButton,
+                activeView === tab.key && styles.activeTabButton,
               ]}
-              onPress={() => setActiveTab(tab.key)}
+              labelStyle={[
+                styles.tabButtonText,
+                activeView === tab.key && styles.activeTabButtonText,
+              ]}
+              buttonColor={activeView === tab.key ? theme.colors.primary : 'transparent'}
+              textColor={activeView === tab.key ? '#fff' : theme.colors.textSecondary}
+              compact
             >
               {tab.label}
-            </Text>
+            </Button>
           ))}
         </View>
       </View>
@@ -72,16 +91,36 @@ export default function HomeScreen() {
         }
         showsVerticalScrollIndicator={false}
       >
-        {renderTabContent()}
+        {renderContent()}
       </ScrollView>
     </View>
   );
 }
 
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  header: {
+    backgroundColor: theme.colors.primary,
+    paddingVertical: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.md,
+    alignItems: 'center',
+  },
+  logo: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+    marginTop: theme.spacing.xs,
+    textAlign: 'center',
   },
   scrollContainer: {
     flex: 1,
@@ -97,36 +136,45 @@ const styles = StyleSheet.create({
     color: theme.colors.error,
     fontSize: 16,
     textAlign: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  retryButton: {
+    marginTop: theme.spacing.md,
   },
   tabContainer: {
     backgroundColor: theme.colors.surface,
     paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing.sm,
+    paddingVertical: theme.spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
   tabButtons: {
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-around',
     backgroundColor: theme.colors.background,
     borderRadius: theme.borderRadius.lg,
     padding: theme.spacing.xs,
-    marginBottom: theme.spacing.sm,
   },
   tabButton: {
     flex: 1,
-    textAlign: 'center',
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    fontSize: 14,
-    fontWeight: '500',
-    color: theme.colors.textSecondary,
+    marginHorizontal: theme.spacing.xs,
     borderRadius: theme.borderRadius.md,
-    overflow: 'hidden',
   },
   activeTabButton: {
-    backgroundColor: theme.colors.primary,
-    color: theme.colors.surface,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.22,
+    shadowRadius: 2.22,
+  },
+  tabButtonText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  activeTabButtonText: {
     fontWeight: '600',
   },
 });

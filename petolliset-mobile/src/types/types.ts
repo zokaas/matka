@@ -1,4 +1,3 @@
-// src/types/types.ts - Updated to match web app types
 export interface Activity {
   id: number;
   activity: string;
@@ -53,6 +52,7 @@ export interface ReactionResponse {
 export interface ActivityWithUser extends Activity {
   username: string;
   profilePicture?: string;
+  status?: "coming_soon" | "available";
 }
 
 export interface TargetPaces {
@@ -93,4 +93,32 @@ export interface UserStats {
     start: string;
     days: number;
   };
+}
+
+export interface PointFeature {
+  type: "Feature";
+  properties: {
+    name: string;
+    status: string;
+    visitDate?: string;
+    distanceToNext?: number;
+  };
+  geometry: {
+    type: "Point";
+    coordinates: [number, number];
+  };
+}
+
+export interface LineFeature {
+  type: "Feature";
+  properties: Record<string, unknown>;
+  geometry: {
+    type: "LineString";
+    coordinates: [number, number][];
+  };
+}
+
+export interface AchievementStats {
+  totalDistance: number;
+  totalActivities: number;
 }

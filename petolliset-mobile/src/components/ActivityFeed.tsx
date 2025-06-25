@@ -1,7 +1,7 @@
-// src/components/ActivityFeed.tsx - Activity feed for mobile app
+// src/components/ActivityFeed.tsx - Enhanced with better styling
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, RefreshControl } from 'react-native';
-import { Card, Button, Chip } from 'react-native-paper';
+import { View, Text, StyleSheet, FlatList, Image, RefreshControl, TouchableOpacity } from 'react-native';
+import { Card, Button, Chip, Avatar } from 'react-native-paper';
 import { ActivityWithUser } from '../types/types';
 import { theme } from '../constants/theme';
 import apiService from '../services/apiService';
@@ -16,43 +16,8 @@ export const ActivityFeed: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      // Try the new recent activities endpoint first
-      try {
-        const recentActivities = await apiService.activity.getRecentActivities(20);
-        setActivities(
-          recentActivities.map(activity => ({
-            ...activity,
-            username: (activity as any).username || (activity as any).user || 'Unknown',
-            profilePicture: (activity as any).profilePicture,
-          }))
-        );
-      } catch (recentError) {
-        // Fallback to fetching from all users
-        const users = await apiService.user.getAllUsers();
-        const allActivities: ActivityWithUser[] = [];
-
-        for (const user of users) {
-          try {
-            const userActivities = await apiService.user.getUserActivities(user.username);
-            userActivities.forEach(activity => {
-              allActivities.push({
-                ...activity,
-                username: user.username,
-                profilePicture: user.profilePicture,
-              });
-            });
-          } catch (userError) {
-            console.warn(`Failed to fetch activities for ${user.username}:`, userError);
-          }
-        }
-
-        // Sort by date and take the most recent 20
-        const sortedActivities = allActivities
-          .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-          .slice(0, 20);
-
-        setActivities(sortedActivities);
-      }
+      const recentActivities = await apiService.getRecentActivities(20);
+      setActivities(recentActivities);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Virhe suoritusten lataamisessa');
       console.error('Error fetching activities:', err);
@@ -67,10 +32,17 @@ export const ActivityFeed: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 1) return 'Eilen';
+    if (diffDays === 0) return 'Tänään';
+    if (diffDays <= 7) return `${diffDays} päivää sitten`;
+    
     return date.toLocaleDateString('fi-FI', {
       day: 'numeric',
       month: 'numeric',
-      year: 'numeric',
     });
   };
 
@@ -93,13 +65,13 @@ export const ActivityFeed: React.FC = () => {
       <Card.Content>
         <View style={styles.header}>
           <View style={styles.userInfo}>
-            <Image
+            <Avatar.Image
+              size={40}
               source={{
                 uri: item.profilePicture
                   ? `https://matka-xi.vercel.app/${item.username}.png`
                   : `https://api.dicebear.com/7.x/adventurer/svg?seed=${item.username}`,
               }}
-              style={styles.avatar}
             />
             <View style={styles.userDetails}>
               <Text style={styles.username}>{item.username}</Text>
@@ -111,16 +83,21 @@ export const ActivityFeed: React.FC = () => {
         <View style={styles.activityDetails}>
           <Text style={styles.activityName}>{item.activity}</Text>
           <View style={styles.stats}>
-            <Text style={styles.stat}>{item.kilometers.toFixed(1)} km</Text>
-            <Text style={styles.stat}>{item.duration} min</Text>
+            <View style={styles.statBadge}>
+              <Text style={styles.statText}>{item.kilometers.toFixed(1)} km</Text>
+            </View>
+            <View style={styles.statBadge}>
+              <Text style={styles.statText}>{item.duration} min</Text>
+            </View>
             {item.bonus && (
               <Chip
                 mode="outlined"
                 compact
                 textStyle={styles.bonusText}
                 style={styles.bonusChip}
+                icon="star"
               >
-                🎉 {getBonusText(item.bonus)}
+                {getBonusText(item.bonus)}
               </Chip>
             )}
           </View>
@@ -142,7 +119,11 @@ export const ActivityFeed: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Viimeisimmät suoritukset</Text>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>💪 Viimeisimmät suoritukset</Text>
+        <Text style={styles.subtitle}>Kannustakaa toisianne!</Text>
+      </View>
+      
       <FlatList
         data={activities}
         renderItem={renderActivity}
@@ -162,6 +143,7 @@ export const ActivityFeed: React.FC = () => {
             </View>
           )
         }
+        contentContainerStyle={styles.listContainer}
       />
     </View>
   );
@@ -170,18 +152,32 @@ export const ActivityFeed: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  titleContainer: {
     padding: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
   },
   title: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: theme.colors.text,
-    marginBottom: theme.spacing.md,
     textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    marginTop: theme.spacing.xs,
+  },
+  listContainer: {
+    padding: theme.spacing.md,
   },
   activityCard: {
     marginBottom: theme.spacing.md,
     elevation: 2,
+    borderRadius: theme.borderRadius.lg,
   },
   header: {
     marginBottom: theme.spacing.sm,
@@ -190,13 +186,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    marginRight: theme.spacing.sm,
-  },
   userDetails: {
+    marginLeft: theme.spacing.sm,
     flex: 1,
   },
   username: {
@@ -216,25 +207,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: theme.colors.text,
-    marginBottom: theme.spacing.xs,
+    marginBottom: theme.spacing.sm,
   },
   stats: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
   },
-  stat: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-    marginRight: theme.spacing.md,
+  statBadge: {
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.borderRadius.sm,
+    marginRight: theme.spacing.sm,
+  },
+  statText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.colors.text,
   },
   bonusChip: {
     backgroundColor: theme.colors.primaryLight,
     marginLeft: theme.spacing.sm,
   },
   bonusText: {
-    fontSize: 12,
+    fontSize: 11,
     color: theme.colors.primary,
+    fontWeight: '600',
   },
   errorContainer: {
     flex: 1,

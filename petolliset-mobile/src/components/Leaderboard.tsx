@@ -1,9 +1,10 @@
-// src/components/Leaderboard.tsx
+
+// src/components/Leaderboard.tsx - Updated with proper navigation
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { Card, Title, List, Avatar, Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import type { StackNavigationProp } from '@react-navigation/stack';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { User } from '../types/types';
 import { theme } from '../constants/theme';
 
@@ -17,7 +18,6 @@ type RootStackParamList = {
 
 export const Leaderboard: React.FC<LeaderboardProps> = ({ users }) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-//   const navigation = useNavigation();
 
   const sortedUsers = [...users].sort((a, b) => b.totalKm - a.totalKm);
 
