@@ -42,11 +42,7 @@ function ProfileStack() {
       <Stack.Screen 
         name="UserProfile" 
         component={UserProfileScreen} 
-        options={({
-          route,
-        }: {
-          route: { params?: { username?: string } };
-        }) => ({
+        options={({ route }: { route: { params?: { username?: string } } }) => ({ 
           title: route.params?.username || 'Käyttäjä',
           headerStyle: { backgroundColor: '#9333ea' },
           headerTintColor: '#fff',
