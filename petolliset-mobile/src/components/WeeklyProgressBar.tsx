@@ -1,4 +1,4 @@
-// src/components/WeeklyProgressBar.tsx - Weekly progress bar like web app
+// src/components/WeeklyProgressBar.tsx - Fixed version matching web app logic
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Card, Text, ProgressBar } from 'react-native-paper';
@@ -22,9 +22,9 @@ export const WeeklyProgressBar: React.FC<WeeklyProgressBarProps> = ({ users }) =
   useEffect(() => {
     if (!users || users.length === 0) return;
 
-    // Calculate current week
+    // Calculate current week (Monday to Sunday)
     const today = new Date();
-    const dayOfWeek = today.getDay();
+    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
     const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() + mondayOffset);
@@ -34,11 +34,16 @@ export const WeeklyProgressBar: React.FC<WeeklyProgressBarProps> = ({ users }) =
     weekEnd.setDate(weekStart.getDate() + 6);
     weekEnd.setHours(23, 59, 59, 999);
 
-    // Calculate weekly goal
+    // Create week key for localStorage equivalent (we'll use memory for mobile)
+    const weekYear = weekStart.getFullYear();
+    const weekNum = Math.ceil((weekStart.getTime() - new Date(weekYear, 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000));
+    const currentWeekKey = `${weekYear}-W${weekNum}`;
+
+    // Calculate weekly goal based on remaining challenge distance and time
     const totalProgress = users.reduce((sum, user) => sum + user.totalKm, 0);
     const remainingChallengeDistance = Math.max(0, TOTAL_CHALLENGE_DISTANCE - totalProgress);
-    const daysRemaining = Math.max(1, Math.ceil((CHALLENGE_END_DATE.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
-    const weeksRemaining = Math.ceil(daysRemaining / 7);
+    const daysUntilEnd = Math.max(1, Math.ceil((CHALLENGE_END_DATE.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
+    const weeksRemaining = Math.ceil(daysUntilEnd / 7);
     const requiredWeeklyDistance = Math.ceil(remainingChallengeDistance / weeksRemaining);
 
     setWeeklyGoal(requiredWeeklyDistance);
@@ -73,7 +78,7 @@ export const WeeklyProgressBar: React.FC<WeeklyProgressBarProps> = ({ users }) =
         
         <View style={styles.progressInfo}>
           <Text style={styles.progressText}>
-            {weeklyProgress} / {weeklyGoal} km
+            {weeklyProgress.toLocaleString('fi-FI')} / {weeklyGoal.toLocaleString('fi-FI')} km
           </Text>
           <Text style={styles.percentageText}>
             ({Math.round(progressPercentage)}%)
@@ -89,7 +94,7 @@ export const WeeklyProgressBar: React.FC<WeeklyProgressBarProps> = ({ users }) =
         <View style={styles.footer}>
           {remainingDistance > 0 ? (
             <Text style={styles.remainingText}>
-              <Text style={styles.remainingNumber}>{remainingDistance} km</Text> jäljellä
+              <Text style={styles.remainingNumber}>{remainingDistance.toLocaleString('fi-FI')} km</Text> jäljellä
             </Text>
           ) : (
             <Text style={styles.completedText}>
