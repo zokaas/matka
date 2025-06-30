@@ -1,6 +1,6 @@
 // src/components/PopularSports.tsx - Popular sports component
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Text } from 'react-native';
 import { Card, Title, List } from 'react-native-paper';
 import { User } from '../types/types';
 import { theme } from '../constants/theme';

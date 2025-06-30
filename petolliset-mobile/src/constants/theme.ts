@@ -1,18 +1,23 @@
 // src/constants/theme.ts
 export const theme = {
   colors: {
-    primary: '#9333ea',
-    primaryLight: '#a855f7',
-    primaryDark: '#7c3aed',
-    secondary: '#06b6d4',
-    background: '#f8fafc',
-    surface: '#ffffff',
-    error: '#ef4444',
-    success: '#22c55e',
-    warning: '#f59e0b',
-    text: '#1f2937',
-    textSecondary: '#6b7280',
-    border: '#e5e7eb',
+    primary: '#c4a7e7',       // pastel purple
+    primaryLight: '#e1ccf7',  // soft lavender
+    primaryDark: '#a88fd0',   // dusty violet
+
+    secondary: '#99d9ea',     // pastel turquoise
+
+    background: '#fdf6f0',    // very light peach
+    surface: '#ffffff',       // clean white card
+
+    error: '#f8b4b4',         // soft rose
+    success: '#a7f3d0',       // pastel mint
+    warning: '#fde68a',       // soft yellow
+
+    text: '#374151',          // muted dark gray
+    textSecondary: '#9ca3af', // soft gray
+
+    border: '#e5e7eb',        // light neutral border
   },
   spacing: {
     xs: 4,

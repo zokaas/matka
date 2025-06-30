@@ -28,23 +28,28 @@ export default function HomeScreen() {
     );
   }
 
-  const renderContent = () => {
-    switch (activeView) {
-      case 'feed':
-        return <ActivityFeed />;
-      case 'weekly':
-        return <WeeklyProgressCard weeklyInsights={weeklyInsights} />;
-      default:
-        return (
-          <>
-            <ProgressCard totalKm={totalKm} />
-            <WeeklyProgressBar users={users} />
-            <QuoteCard />
-            <Leaderboard users={users} />
-          </>
-        );
-    }
-  };
+const renderContent = () => {
+  switch (activeView) {
+    case 'feed':
+      return <ActivityFeed />; // FlatList inside — DO NOT wrap with ScrollView
+    case 'weekly':
+      return <WeeklyProgressCard weeklyInsights={weeklyInsights} />; // FlatList inside
+    default:
+      return (
+        <ScrollView
+          style={styles.scrollContainer}
+          refreshControl={<RefreshControl refreshing={loading} onRefresh={refetch} />}
+          showsVerticalScrollIndicator={false}
+        >
+          <ProgressCard totalKm={totalKm} />
+          <WeeklyProgressBar users={users} />
+          <QuoteCard />
+          <Leaderboard users={users} />
+        </ScrollView>
+      );
+  }
+};
+
 
   return (
     <View style={styles.container}>
@@ -84,15 +89,7 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <ScrollView
-        style={styles.scrollContainer}
-        refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={refetch} />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {renderContent()}
-      </ScrollView>
+{renderContent()}
     </View>
   );
 }
@@ -162,13 +159,7 @@ const styles = StyleSheet.create({
   },
   activeTabButton: {
     elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.22,
-    shadowRadius: 2.22,
+    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.22)',
   },
   tabButtonText: {
     fontSize: 12,

@@ -73,7 +73,7 @@ const ChallengeClosedPage = () => {
             Haaste päättynyt!
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Maailmanympäri-haaste on päättynyt. Kiitos kaikille osallistujille uskomattomasta matkasta!
+            Maailmanympäri-haaste on päättynyt. Kiitos kaikille osallistujille matkasta!
           </p>
           <p className="text-purple-600 font-medium mt-6">
             💪 Keskimäärin {users.length > 0 ? Math.round(totalKm / users.length).toLocaleString('fi-FI') : 0} km per henkilö - hyvä suoritus!
@@ -120,32 +120,6 @@ const ChallengeClosedPage = () => {
           </div>
         </motion.div>
 
-        {/* Main Content */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="bg-white rounded-2xl shadow-xl p-8 md:p-12 mb-12"
-        >
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">
-              Mitä seuraavaksi?
-            </h2>
-            <p className="text-lg text-gray-600 mb-6">
-              Tämä oli vasta alkua! Olemme suunnittelemassa vielä suurempaa ja parempaa haastetta.
-            </p>
-          </div>
-
-          {/* Coming Soon Section */}
-          <div className="bg-gradient-to-r from-purple-500 to-blue-600 rounded-xl p-8 text-white text-center">
-            <Calendar className="w-16 h-16 mx-auto mb-4 text-white" />
-            <h3 className="text-2xl font-bold mb-4">Palaamme syyskuussa!</h3>
-            <p className="text-lg mb-6 opacity-90">
-              Uusi haaste alkaa syyskuussa 2025. Tule mukaan seuraavalle uskomattomalle matkalle!
-            </p>
-          </div>
-        </motion.div>
-
         {/* Thank You Section with Leaderboard */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -155,10 +129,8 @@ const ChallengeClosedPage = () => {
         >
           <div className="bg-gradient-to-r from-yellow-400 to-orange-500 rounded-2xl p-8 text-white mb-8">
             <h2 className="text-3xl font-bold mb-4">Kiitos kaikille!</h2>
-            <p className="text-lg mb-6 opacity-90">
-              Tämä matka ei olisi ollut mahdollinen ilman teidän uskomattomaa sitoutumista ja intoa. 
-              Jokainen kilometri, jokainen suoritus ja jokainen kannustava kommentti teki tästä haasteesta 
-              jotain todella erityistä.
+                        <p className="text-gray-600 mb-6 text-center">
+🌍 Afrikka jäi valitettavasti vailla ystävyyttä taas kerran - ehkä ensi kerralla!
             </p>
           </div>
 
@@ -167,9 +139,6 @@ const ChallengeClosedPage = () => {
             <h3 className="text-2xl font-bold text-gray-800 mb-6">
               📊 Lopulliset sijoitukset
             </h3>
-            <p className="text-gray-600 mb-6 text-center">
-              Vaikka tavoite jäi saavuttamatta, jokainen osallistuja ansaitsee tunnustuksen yrityksestä.
-            </p>
             <div className="grid gap-4 max-w-2xl mx-auto">
               {users
                 .sort((a, b) => b.totalKm - a.totalKm)
