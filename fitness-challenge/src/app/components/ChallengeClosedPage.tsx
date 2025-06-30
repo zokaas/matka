@@ -57,6 +57,7 @@ const ChallengeClosedPage = () => {
       </div>
     );
   }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-purple-50">
       <div className="max-w-4xl mx-auto px-6 py-12">
@@ -74,17 +75,9 @@ const ChallengeClosedPage = () => {
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Maailmanympäri-haaste on päättynyt. Kiitos kaikille osallistujille uskomattomasta matkasta!
           </p>
-        {/* Future Plans */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          className="bg-white rounded-2xl shadow-xl p-8 mb-12"
-        >   
-            <p className="text-purple-600 font-medium mt-6">
-              💪 Keskimäärin {users.length > 0 ? Math.round(totalKm / users.length).toLocaleString('fi-FI') : 0} km per henkilö - hyvä suoritus!
-            </p>
-          </div>
+          <p className="text-purple-600 font-medium mt-6">
+            💪 Keskimäärin {users.length > 0 ? Math.round(totalKm / users.length).toLocaleString('fi-FI') : 0} km per henkilö - hyvä suoritus!
+          </p>
         </motion.div>
 
         {/* Statistics Cards */}
