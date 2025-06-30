@@ -9,12 +9,24 @@ const ChallengeClosedPage = () => {
   const [totalKm, setTotalKm] = useState(0);
   const [totalActivities, setTotalActivities] = useState(0);
   const [topPerformer, setTopPerformer] = useState<User | null>(null);
+  const [completionPercentage, setCompletionPercentage] = useState(0);
+  const [remainingKm, setRemainingKm] = useState(0);
+
+  const GOAL_KM = 100000; // Alkuperäinen tavoite
 
   useEffect(() => {
     if (users && users.length > 0) {
       // Laske kokonaiskilometrit
       const total = users.reduce((sum, user) => sum + user.totalKm, 0);
       setTotalKm(total);
+
+      // Laske toteutusprosentti
+      const percentage = Math.round((total / GOAL_KM) * 100);
+      setCompletionPercentage(percentage);
+
+      // Laske jäljellä oleva matka
+      const remaining = Math.max(0, GOAL_KM - total);
+      setRemainingKm(remaining);
 
       // Laske yhteensä aktiviteetit
       const activities = users.reduce((sum, user) => sum + user.activities.length, 0);
@@ -62,6 +74,17 @@ const ChallengeClosedPage = () => {
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Maailmanympäri-haaste on päättynyt. Kiitos kaikille osallistujille uskomattomasta matkasta!
           </p>
+        {/* Future Plans */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.5 }}
+          className="bg-white rounded-2xl shadow-xl p-8 mb-12"
+        >   
+            <p className="text-purple-600 font-medium mt-6">
+              💪 Keskimäärin {users.length > 0 ? Math.round(totalKm / users.length).toLocaleString('fi-FI') : 0} km per henkilö - hyvä suoritus!
+            </p>
+          </div>
         </motion.div>
 
         {/* Statistics Cards */}
@@ -71,21 +94,22 @@ const ChallengeClosedPage = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="grid md:grid-cols-4 gap-6 mb-12"
         >
-          <div className="bg-white rounded-xl shadow-lg p-6 text-center border border-purple-100">
-            <Trophy className="w-12 h-12 text-yellow-500 mx-auto mb-4" />
+          <div className="bg-white rounded-xl shadow-lg p-6 text-center border border-gray-200">
+            <Trophy className="w-12 h-12 text-orange-500 mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-gray-800 mb-2">
               {Math.round(totalKm).toLocaleString('fi-FI')} km
             </h3>
             <p className="text-gray-600">Yhteensä kuljettu matka</p>
+            <p className="text-sm text-orange-600 mt-1">{completionPercentage}% tavoitteesta</p>
           </div>
           
-          <div className="bg-white rounded-xl shadow-lg p-6 text-center border border-purple-100">
+          <div className="bg-white rounded-xl shadow-lg p-6 text-center border border-gray-200">
             <Users className="w-12 h-12 text-blue-500 mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-gray-800 mb-2">{users.length}</h3>
-            <p className="text-gray-600">Upeaa urheilijaa</p>
+            <p className="text-gray-600">Rohkeaa yrittäjää</p>
           </div>
           
-          <div className="bg-white rounded-xl shadow-lg p-6 text-center border border-purple-100">
+          <div className="bg-white rounded-xl shadow-lg p-6 text-center border border-gray-200">
             <Activity className="w-12 h-12 text-green-500 mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-gray-800 mb-2">
               {totalActivities.toLocaleString('fi-FI')}
@@ -93,17 +117,13 @@ const ChallengeClosedPage = () => {
             <p className="text-gray-600">Suoritusta yhteensä</p>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-6 text-center border border-purple-100">
-            <Award className="w-12 h-12 text-purple-500 mx-auto mb-4" />
+          <div className="bg-white rounded-xl shadow-lg p-6 text-center border border-gray-200">
+            <MapPin className="w-12 h-12 text-red-500 mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-gray-800 mb-2">
-              {topPerformer ? Math.round(topPerformer.totalKm).toLocaleString('fi-FI') : 0} km
+              {Math.round(remainingKm).toLocaleString('fi-FI')} km
             </h3>
-            <p className="text-gray-600">Paras suoritus</p>
-            {topPerformer && (
-              <p className="text-sm text-purple-600 font-medium mt-1">
-                {topPerformer.username}
-              </p>
-            )}
+            <p className="text-gray-600">Jäi puuttumaan</p>
+            <p className="text-sm text-red-600 mt-1">tavoitteesta</p>
           </div>
         </motion.div>
 
@@ -130,26 +150,6 @@ const ChallengeClosedPage = () => {
             <p className="text-lg mb-6 opacity-90">
               Uusi haaste alkaa syyskuussa 2025. Tule mukaan seuraavalle uskomattomalle matkalle!
             </p>
-            
-            <div className="grid md:grid-cols-2 gap-6 text-left">
-              <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
-                <h4 className="font-semibold mb-2">🌟 Uusia ominaisuuksia</h4>
-                <ul className="text-sm space-y-1 opacity-90">
-                  <li>• Reaaliaikainen karttaseuranta</li>
-                  <li>• Tiimi-haasteet</li>
-                  <li>• Palkinnot ja saavutukset</li>
-                </ul>
-              </div>
-              
-              <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
-                <h4 className="font-semibold mb-2">🚀 Uusi reitti</h4>
-                <ul className="text-sm space-y-1 opacity-90">
-                  <li>• Avaruusmatka kuuhun</li>
-                  <li>• Vielä enemmän kaupunkeja</li>
-                  <li>• Interaktiivisia kohteita</li>
-                </ul>
-              </div>
-            </div>
           </div>
         </motion.div>
 
@@ -167,25 +167,16 @@ const ChallengeClosedPage = () => {
               Jokainen kilometri, jokainen suoritus ja jokainen kannustava kommentti teki tästä haasteesta 
               jotain todella erityistä.
             </p>
-            
-            <div className="flex flex-wrap justify-center gap-4 mb-6">
-              <span className="bg-white/20 rounded-full px-4 py-2 text-sm font-medium">
-                #Petolliset
-              </span>
-              <span className="bg-white/20 rounded-full px-4 py-2 text-sm font-medium">
-                #MaailmanYmpäri
-              </span>
-              <span className="bg-white/20 rounded-full px-4 py-2 text-sm font-medium">
-                #YhdessäVahvempia
-              </span>
-            </div>
           </div>
 
           {/* Final Leaderboard */}
           <div className="bg-white rounded-2xl shadow-xl p-8">
             <h3 className="text-2xl font-bold text-gray-800 mb-6">
-              🏆 Lopulliset sijoitukset
+              📊 Lopulliset sijoitukset
             </h3>
+            <p className="text-gray-600 mb-6 text-center">
+              Vaikka tavoite jäi saavuttamatta, jokainen osallistuja ansaitsee tunnustuksen yrityksestä.
+            </p>
             <div className="grid gap-4 max-w-2xl mx-auto">
               {users
                 .sort((a, b) => b.totalKm - a.totalKm)
@@ -222,18 +213,6 @@ const ChallengeClosedPage = () => {
                 ))}
             </div>
           </div>
-        </motion.div>
-
-        {/* Footer */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.8 }}
-          className="text-center mt-12 text-gray-500"
-        >
-          <p className="text-sm">
-            Seuraa meitä sosiaalisessa mediassa saadaksesi päivityksiä tulevista haasteista
-          </p>
         </motion.div>
       </div>
     </div>
