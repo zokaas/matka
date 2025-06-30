@@ -116,7 +116,6 @@ const ChallengeClosedPage = () => {
               {Math.round(remainingKm).toLocaleString('fi-FI')} km
             </h3>
             <p className="text-gray-600">Jäi puuttumaan</p>
-            <p className="text-sm text-red-600 mt-1">tavoitteesta</p>
           </div>
         </motion.div>
 
