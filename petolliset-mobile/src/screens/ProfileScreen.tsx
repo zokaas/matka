@@ -1,123 +1,193 @@
-// src/screens/ProfileScreen.tsx
-import React, { useState } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
-import { Text, Card, Button, TextInput } from 'react-native-paper';
+// src/screens/ProfileScreen.tsx - Simplified with authentication context
+import React from 'react';
+import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { Text, Card, Button, List, Avatar, Divider } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../contexts/AuthContext';
+import { useUser } from '../hooks/useUser';
 import { theme } from '../constants/theme';
 
 type RootStackParamList = {
   UserProfile: { username: string };
+  Settings: undefined;
 };
 
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 
 export default function ProfileScreen() {
-  const [username, setUsername] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user: authUser, logout, recentUsers, switchUser } = useAuth();
+  const { user: userProfile, loading } = useUser(authUser?.username || null);
   const navigation = useNavigation<NavigationProp>();
 
-  React.useEffect(() => {
-    checkLoginStatus();
-  }, []);
-
-  const checkLoginStatus = async () => {
-    try {
-      const savedUsername = await AsyncStorage.getItem('username');
-      if (savedUsername) {
-        setUsername(savedUsername);
-        setIsLoggedIn(true);
-      }
-    } catch (error) {
-      console.error('Error checking login status:', error);
-    }
+  const handleLogout = () => {
+    Alert.alert(
+      'Kirjaudu ulos',
+      'Haluatko varmasti kirjautua ulos?',
+      [
+        { text: 'Peruuta', style: 'cancel' },
+        {
+          text: 'Kirjaudu ulos',
+          style: 'destructive',
+          onPress: async () => {
+            await logout();
+          },
+        },
+      ]
+    );
   };
 
-  const handleLogin = async () => {
-    if (!username.trim()) {
-      Alert.alert('Virhe', 'Anna käyttäjänimi');
-      return;
-    }
-
-    try {
-      await AsyncStorage.setItem('username', username.trim());
-      setIsLoggedIn(true);
-    } catch (error) {
-      Alert.alert('Virhe', 'Kirjautuminen epäonnistui');
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await AsyncStorage.removeItem('username');
-      setUsername('');
-      setIsLoggedIn(false);
-    } catch (error) {
-      Alert.alert('Virhe', 'Uloskirjautuminen epäonnistui');
-    }
+  const handleSwitchUser = (username: string) => {
+    Alert.alert(
+      'Vaihda käyttäjää',
+      `Haluatko vaihtaa käyttäjään ${username}?`,
+      [
+        { text: 'Peruuta', style: 'cancel' },
+        {
+          text: 'Vaihda',
+          onPress: async () => {
+            const result = await switchUser(username);
+            if (!result.success) {
+              Alert.alert('Virhe', result.error || 'Käyttäjän vaihtaminen epäonnistui');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const goToUserProfile = () => {
-    navigation.navigate('UserProfile', { username });
+    if (authUser?.username) {
+      navigation.navigate('UserProfile', { username: authUser.username });
+    }
   };
 
-  if (!isLoggedIn) {
-    return (
-      <View style={styles.container}>
-        <Card style={styles.card}>
-          <Card.Content>
-            <Text style={styles.title}>Kirjaudu sisään</Text>
-            <TextInput
-              label="Käyttäjänimi"
-              value={username}
-              onChangeText={setUsername}
-              style={styles.input}
-              placeholder="Anna käyttäjänimesi"
-            />
-            <Button
-              mode="contained"
-              onPress={handleLogin}
-              style={styles.button}
-              buttonColor={theme.colors.primary}
-            >
-              Kirjaudu
-            </Button>
-          </Card.Content>
-        </Card>
-      </View>
-    );
-  }
+  const goToSettings = () => {
+    navigation.navigate('Settings');
+  };
 
   return (
-    <View style={styles.container}>
-      <Card style={styles.card}>
+    <ScrollView style={styles.container}>
+      {/* User Info Card */}
+      <Card style={styles.userCard}>
+        <Card.Content style={styles.userContent}>
+          <View style={styles.userHeader}>
+            <Avatar.Text
+              size={60}
+              label={authUser?.username?.charAt(0).toUpperCase() || '?'}
+              style={styles.avatar}
+            />
+            <View style={styles.userInfo}>
+              <Text style={styles.username}>{authUser?.username}</Text>
+              {userProfile && (
+                <Text style={styles.userStats}>
+                  {Math.round(userProfile.totalKm)} km • {userProfile.activities.length} suoritusta
+                </Text>
+              )}
+              <Text style={styles.memberSince}>
+                Jäsen {new Date(authUser?.loginTime || Date.now()).toLocaleDateString('fi-FI')} lähtien
+              </Text>
+            </View>
+          </View>
+        </Card.Content>
+      </Card>
+
+      {/* Quick Actions */}
+      <Card style={styles.actionsCard}>
         <Card.Content>
-          <Text style={styles.title}>Profiili</Text>
-          <Text style={styles.welcomeText}>
-            Tervetuloa, {username}!
-          </Text>
+          <Text style={styles.sectionTitle}>Pika-toiminnot</Text>
           
-          <Button
-            mode="contained"
+          <List.Item
+            title="Omat suoritukset"
+            description="Katso ja hallinnoi suorituksiasi"
+            left={() => <List.Icon icon="fitness" color={theme.colors.primary} />}
+            right={() => <List.Icon icon="chevron-right" />}
             onPress={goToUserProfile}
-            style={styles.button}
-            buttonColor={theme.colors.primary}
-          >
-            Näytä omat suoritukset
-          </Button>
+            style={styles.listItem}
+          />
           
+          <Divider />
+          
+          <List.Item
+            title="Asetukset"
+            description="Ilmoitukset ja sovelluksen asetukset"
+            left={() => <List.Icon icon="cog" color={theme.colors.primary} />}
+            right={() => <List.Icon icon="chevron-right" />}
+            onPress={goToSettings}
+            style={styles.listItem}
+          />
+        </Card.Content>
+      </Card>
+
+      {/* Recent Users - Quick Switch */}
+      {recentUsers.length > 1 && (
+        <Card style={styles.recentCard}>
+          <Card.Content>
+            <Text style={styles.sectionTitle}>Vaihda käyttäjää</Text>
+            <Text style={styles.sectionDescription}>
+              Paina käyttäjänimeä vaihtaaksesi nopeasti
+            </Text>
+            
+            {recentUsers
+              .filter(username => username !== authUser?.username)
+              .map((username) => (
+                <List.Item
+                  key={username}
+                  title={username}
+                  description="Vaihda tähän käyttäjään"
+                  left={() => (
+                    <Avatar.Text
+                      size={40}
+                      label={username.charAt(0).toUpperCase()}
+                      style={styles.recentAvatar}
+                    />
+                  )}
+                  right={() => <List.Icon icon="account-switch" />}
+                  onPress={() => handleSwitchUser(username)}
+                  style={styles.listItem}
+                />
+              ))}
+          </Card.Content>
+        </Card>
+      )}
+
+      {/* App Info */}
+      <Card style={styles.infoCard}>
+        <Card.Content>
+          <Text style={styles.sectionTitle}>Sovellustiedot</Text>
+          
+          <List.Item
+            title="Versio"
+            description="1.0.0"
+            left={() => <List.Icon icon="information" color={theme.colors.textMuted} />}
+            style={styles.listItem}
+          />
+          
+          <List.Item
+            title="Kehittäjä"
+            description="Petolliset Team 🔥"
+            left={() => <List.Icon icon="code-tags" color={theme.colors.textMuted} />}
+            style={styles.listItem}
+          />
+        </Card.Content>
+      </Card>
+
+      {/* Logout Button */}
+      <Card style={styles.logoutCard}>
+        <Card.Content>
           <Button
             mode="outlined"
             onPress={handleLogout}
-            style={styles.button}
+            style={styles.logoutButton}
             textColor={theme.colors.error}
+            icon="logout"
           >
             Kirjaudu ulos
           </Button>
         </Card.Content>
       </Card>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -125,29 +195,73 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
-    justifyContent: 'center',
-    padding: theme.spacing.lg,
-  },
-  card: {
     padding: theme.spacing.md,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: theme.spacing.lg,
+  userCard: {
+    marginBottom: theme.spacing.md,
+    ...theme.shadows.md,
+  },
+  userContent: {
+    padding: theme.spacing.lg,
+  },
+  userHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatar: {
+    backgroundColor: theme.colors.primary,
+  },
+  userInfo: {
+    marginLeft: theme.spacing.lg,
+    flex: 1,
+  },
+  username: {
+    ...theme.typography.h3,
     color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
   },
-  welcomeText: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: theme.spacing.lg,
+  userStats: {
+    ...theme.typography.bodyMedium,
+    color: theme.colors.primary,
+    marginBottom: theme.spacing.xs,
+  },
+  memberSince: {
+    ...theme.typography.caption,
+    color: theme.colors.textSecondary,
+  },
+  actionsCard: {
+    marginBottom: theme.spacing.md,
+    ...theme.shadows.md,
+  },
+  recentCard: {
+    marginBottom: theme.spacing.md,
+    ...theme.shadows.md,
+  },
+  infoCard: {
+    marginBottom: theme.spacing.md,
+    ...theme.shadows.md,
+  },
+  logoutCard: {
+    marginBottom: theme.spacing.xl,
+    ...theme.shadows.md,
+  },
+  sectionTitle: {
+    ...theme.typography.h4,
     color: theme.colors.text,
+    marginBottom: theme.spacing.xs,
   },
-  input: {
-    marginBottom: theme.spacing.lg,
+  sectionDescription: {
+    ...theme.typography.caption,
+    color: theme.colors.textSecondary,
+    marginBottom: theme.spacing.md,
   },
-  button: {
-    marginTop: theme.spacing.md,
+  listItem: {
+    paddingVertical: theme.spacing.xs,
+  },
+  recentAvatar: {
+    backgroundColor: theme.colors.secondary,
+  },
+  logoutButton: {
+    borderColor: theme.colors.error,
   },
 });

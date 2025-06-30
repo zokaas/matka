@@ -1,4 +1,4 @@
-// App.tsx - Enhanced with notification and image services
+// App.tsx - Minimal Expo-safe version
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -6,239 +6,233 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { PaperProvider } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import { Alert, AppState } from 'react-native';
-import * as Notifications from 'expo-notifications';
+import { View, Text, Platform, Alert } from 'react-native';
+
+
+// Import contexts
+import { AuthProvider, useAuth } from './src/contexts/AuthContext';
 
 // Import screens
+import LoginScreen from './src/screens/LoginScreen';
 import HomeScreen from './src/screens/HomeScreen';
-import MapScreen from './src/screens/MapScreen';
 import AddActivityScreen from './src/screens/AddActivityScreen';
 import InsightsScreen from './src/screens/InsightsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import UserProfileScreen from './src/screens/UserProfileScreen';
-
-// Import services
-import { NotificationService } from './src/services/notificationService';
-import { ImageService } from './src/services/imageService';
-import { OfflineStorageService } from './src/services/offlineStorageService';
-import { OfflineSyncService } from './src/hooks/useOfflineSync';
 import SettingsScreen from './src/screens/SettingsScreen';
 
-const theme = {
+import { theme } from './src/constants/theme';
+
+// Simple Paper theme
+const paperTheme = {
   colors: {
-    primary: '#9333ea',
-    background: '#f8fafc',
+    primary: theme.colors.primary,
+    onPrimary: theme.colors.textOnPrimary,
+    primaryContainer: theme.colors.primaryLight,
+    background: theme.colors.background,
+    surface: theme.colors.surface,
+    onSurface: theme.colors.text,
+    outline: theme.colors.border,
+    error: theme.colors.error,
   },
 };
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-// Stack navigator for Profile tab (includes UserProfile screen)
-function ProfileStack() {
-  return (
-    <Stack.Navigator>
-      <Stack.Screen 
-        name="ProfileMain" 
-        component={ProfileScreen} 
-        options={{ 
-          title: 'Profiili',
-          headerStyle: { backgroundColor: '#9333ea' },
-          headerTintColor: '#fff',
-          headerTitleStyle: { fontWeight: 'bold' },
-        }} 
-      />
-      <Stack.Screen 
-        name="UserProfile" 
-        component={UserProfileScreen} 
-        options={({ route }: { route: { params?: { username?: string } } }) => ({ 
-          title: route.params?.username || 'Käyttäjä',
-          headerStyle: { backgroundColor: '#9333ea' },
-          headerTintColor: '#fff',
-          headerTitleStyle: { fontWeight: 'bold' },
-        })} 
-      />
-      <Stack.Screen 
-        name="Settings" 
-        component={SettingsScreen} 
-        options={{ 
-          title: 'Asetukset',
-          headerStyle: { backgroundColor: '#9333ea' },
-          headerTintColor: '#fff',
-          headerTitleStyle: { fontWeight: 'bold' },
-        }} 
-      />
-    </Stack.Navigator>
-  );
+// Simple Error Boundary
+class ErrorBoundary extends React.Component {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: any, errorInfo: any) {
+    console.error('App Error:', error, errorInfo);
+  }
+
+  render() {
+    if ((this.state as any).hasError) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ fontSize: 18, textAlign: 'center', marginBottom: 20 }}>
+            Oops! Jotain meni pieleen
+          </Text>
+          <Text style={{ fontSize: 14, textAlign: 'center', color: '#666' }}>
+            Käynnistä sovellus uudelleen
+          </Text>
+        </View>
+      );
+    }
+
+    return (this.props as any).children;
+  }
 }
 
+// Loading Screen
+const LoadingScreen = () => (
+  <View style={{ 
+    flex: 1, 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    backgroundColor: theme.colors.background 
+  }}>
+    <Text style={{ 
+      fontSize: 18, 
+      color: theme.colors.text,
+      marginTop: 16 
+    }}>
+      Ladataan...
+    </Text>
+  </View>
+);
+
+// Main tabs with safe icon handling
 function MainTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap;
+          let iconName = 'circle';
 
-          switch (route.name) {
-            case 'Home':
-              iconName = focused ? 'home' : 'home-outline';
-              break;
-            case 'Map':
-              iconName = focused ? 'map' : 'map-outline';
-              break;
-            case 'Add':
-              iconName = focused ? 'add-circle' : 'add-circle-outline';
-              break;
-            case 'Insights':
-              iconName = focused ? 'stats-chart' : 'stats-chart-outline';
-              break;
-            default:
-              iconName = focused ? 'person' : 'person-outline';
+          try {
+            switch (route.name) {
+              case 'Home':
+                iconName = focused ? 'home' : 'home-outline';
+                break;
+              case 'Add':
+                iconName = focused ? 'add-circle' : 'add-circle-outline';
+                break;
+              case 'Insights':
+                iconName = focused ? 'stats-chart' : 'stats-chart-outline';
+                break;
+              case 'Profile':
+                iconName = focused ? 'person' : 'person-outline';
+                break;
+            }
+
+            return <Ionicons name={iconName as any} size={size} color={color} />;
+          } catch (error) {
+            console.warn('Icon error:', iconName, error);
+            return <Ionicons name="help" size={size} color={color} />;
           }
-
-          return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#9333ea',
-        tabBarInactiveTintColor: '#6b7280',
-        headerStyle: { backgroundColor: '#9333ea' },
+        tabBarActiveTintColor: theme.colors.primary,
+        tabBarInactiveTintColor: theme.colors.textMuted,
+        tabBarStyle: {
+          backgroundColor: theme.colors.surface,
+          borderTopColor: theme.colors.border,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 8,
+          height: Platform.OS === 'ios' ? 80 : 60,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '500',
+        },
+        headerStyle: { 
+          backgroundColor: theme.colors.primary,
+        },
         headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: 'bold' },
+        headerTitleStyle: { 
+          fontWeight: 'bold',
+          fontSize: 18,
+        },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Etusivu' }} />
-      <Tab.Screen name="Map" component={MapScreen} options={{ title: 'Kartta' }} />
-      <Tab.Screen name="Add" component={AddActivityScreen} options={{ title: 'Lisää' }} />
-      <Tab.Screen name="Insights" component={InsightsScreen} options={{ title: 'Tilastot' }} />
-      <Tab.Screen name="Profile" component={ProfileStack} options={{ title: 'Profiili', headerShown: false }} />
+      <Tab.Screen 
+        name="Home" 
+        component={HomeScreen} 
+        options={{ 
+          title: 'Koti',
+          headerShown: false,
+        }} 
+      />
+      <Tab.Screen 
+        name="Add" 
+        component={AddActivityScreen} 
+        options={{ 
+          title: 'Lisää',
+        }} 
+      />
+      <Tab.Screen 
+        name="Insights" 
+        component={InsightsScreen} 
+        options={{ 
+          title: 'Tilastot',
+          headerShown: false,
+        }} 
+      />
+      <Tab.Screen 
+        name="Profile" 
+        component={ProfileScreen} 
+        options={{ 
+          title: 'Profiili',
+        }} 
+      />
     </Tab.Navigator>
   );
 }
 
+// App navigator
+function AppNavigator() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {isAuthenticated ? (
+          <Stack.Screen name="MainTabs" component={MainTabs} />
+        ) : (
+          <Stack.Screen name="Login" component={LoginScreen} />
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+// Main App component
 export default function App() {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    initializeApp();
-  }, []);
-
-  useEffect(() => {
-    // Handle app state changes for offline sync
-    const handleAppStateChange = (nextAppState: string) => {
-      if (nextAppState === 'active') {
-        // App became active, sync offline data
-        OfflineSyncService.syncOfflineData().catch(console.error);
+    // Simple initialization
+    const initializeApp = async () => {
+      try {
+        console.log('App initializing...');
+        // Minimal initialization
+        await new Promise(resolve => setTimeout(resolve, 100));
+        console.log('App initialized');
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('App initialization error:', error);
+        Alert.alert('Alustusvirhe', 'Sovelluksen käynnistäminen epäonnistui');
+        setIsInitialized(true); // Continue anyway
       }
     };
 
-    const subscription = AppState.addEventListener('change', handleAppStateChange);
-    return () => subscription?.remove();
+    initializeApp();
   }, []);
 
-  const initializeApp = async () => {
-    try {
-      // Initialize services
-      await Promise.all([
-        NotificationService.initialize(),
-        ImageService.initialize(),
-        OfflineStorageService.clearCache(), // Optional: clear old cache on startup
-      ]);
-
-      // Set up notification listeners
-      const notificationListener = NotificationService.addNotificationReceivedListener(
-        (notification) => {
-          console.log('Notification received:', notification);
-        }
-      );
-
-      const responseListener = NotificationService.addNotificationResponseReceivedListener(
-        (response) => {
-          console.log('Notification response:', response);
-          handleNotificationResponse(response);
-        }
-      );
-
-      setIsInitialized(true);
-
-      // Clean up listeners
-      return () => {
-        notificationListener.remove();
-        responseListener.remove();
-      };
-    } catch (error) {
-      console.error('Error initializing app:', error);
-      Alert.alert(
-        'Alustusvirhe',
-        'Sovelluksen alustamisessa tapahtui virhe. Jotkin ominaisuudet eivät välttämättä toimi oikein.',
-        [{ text: 'OK' }]
-      );
-      setIsInitialized(true); // Continue anyway
-    }
-  };
-
-  const handleNotificationResponse = (response: Notifications.NotificationResponse) => {
-    const data = response.notification.request.content.data;
-    
-    switch (data?.type) {
-      case 'daily_motivation':
-        // Navigate to add activity screen
-        console.log('Navigate to add activity');
-        break;
-      case 'weekly_goal_reminder':
-        // Navigate to insights screen
-        console.log('Navigate to insights');
-        break;
-      case 'milestone':
-        // Navigate to leaderboard
-        console.log('Navigate to leaderboard');
-        break;
-      case 'activity_celebration':
-        // Navigate to user profile
-        console.log('Navigate to user profile:', data.username);
-        break;
-      default:
-        console.log('Unknown notification type:', data?.type);
-    }
-  };
-
   if (!isInitialized) {
-    // You could show a splash screen here
-    return null;
+    return <LoadingScreen />;
   }
 
   return (
-    <PaperProvider theme={theme}>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="MainTabs" component={MainTabs} />
-          <Stack.Screen 
-            name="UserProfile" 
-            component={UserProfileScreen}
-            options={({
-              route,
-            }: {
-              route: { params?: { username?: string } };
-            }) => ({
-              title: route.params?.username || 'Käyttäjä',
-              headerShown: true,
-              headerStyle: { backgroundColor: '#9333ea' },
-              headerTintColor: '#fff',
-              headerTitleStyle: { fontWeight: 'bold' },
-            })}
-          />
-          <Stack.Screen 
-            name="Settings" 
-            component={SettingsScreen}
-            options={{
-              title: 'Asetukset',
-              headerShown: true,
-              headerStyle: { backgroundColor: '#9333ea' },
-              headerTintColor: '#fff',
-              headerTitleStyle: { fontWeight: 'bold' },
-            }}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-      <StatusBar style="auto" />
-    </PaperProvider>
+    <ErrorBoundary>
+      <PaperProvider theme={paperTheme}>
+        <AuthProvider>
+          <AppNavigator />
+          <StatusBar style="auto" />
+        </AuthProvider>
+      </PaperProvider>
+    </ErrorBoundary>
   );
 }

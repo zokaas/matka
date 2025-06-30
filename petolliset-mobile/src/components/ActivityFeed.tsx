@@ -1,7 +1,8 @@
-// src/components/ActivityFeed.tsx - Enhanced with better styling
+// src/components/ActivityFeed.tsx - Enhanced with new theme and better interactions
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, RefreshControl, TouchableOpacity } from 'react-native';
-import { Card, Button, Chip, Avatar } from 'react-native-paper';
+import { View, Text, StyleSheet, FlatList, Image, RefreshControl, TouchableOpacity, Alert } from 'react-native';
+import { Card, Button, Chip, Avatar, IconButton } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
 import { ActivityWithUser } from '../types/types';
 import { theme } from '../constants/theme';
 import apiService from '../services/apiService';
@@ -42,108 +43,203 @@ export const ActivityFeed: React.FC = () => {
     
     return date.toLocaleDateString('fi-FI', {
       day: 'numeric',
-      month: 'numeric',
+      month: 'short',
     });
   };
 
-  const getBonusText = (bonus: string | null | undefined) => {
+  const getBonusInfo = (bonus: string | null | undefined) => {
     if (!bonus) return null;
-    switch (bonus) {
-      case 'juhlapäivä':
-        return '2x km';
-      case 'enemmän kuin kolme urheilee yhdessä':
-        return '1.5x km';
-      case 'kaikki yhdessä':
-        return '3x km';
-      default:
-        return bonus;
-    }
+    
+    const bonusMap = {
+      'juhlapäivä': { text: '2x', icon: 'calendar', color: theme.colors.accent },
+      'enemmän kuin kolme urheilee yhdessä': { text: '1.5x', icon: 'people', color: theme.colors.secondary },
+      'kaikki yhdessä': { text: '3x', icon: 'heart', color: theme.colors.error },
+    };
+    
+    return bonusMap[bonus as keyof typeof bonusMap] || { text: bonus, icon: 'star', color: theme.colors.primary };
   };
 
-  const renderActivity = ({ item }: { item: ActivityWithUser }) => (
-    <Card style={styles.activityCard}>
-      <Card.Content>
-        <View style={styles.header}>
-          <View style={styles.userInfo}>
-            <Avatar.Image
-              size={40}
-              source={{
-                uri: item.profilePicture
-                  ? `https://matka-xi.vercel.app/${item.username}.png`
-                  : `https://api.dicebear.com/7.x/adventurer/svg?seed=${item.username}`,
-              }}
-            />
-            <View style={styles.userDetails}>
-              <Text style={styles.username}>{item.username}</Text>
-              <Text style={styles.date}>{formatDate(item.date)}</Text>
-            </View>
-          </View>
-        </View>
+  const getActivityIcon = (activity: string) => {
+    const iconMap: Record<string, string> = {
+      'Juoksu': 'walk',
+      'Sali': 'barbell',
+      'Tennis': 'tennisball',
+      'Pyöräily': 'bicycle',
+      'Hiihto': 'snow',
+      'Uinti': 'water',
+      'Crossfit': 'fitness',
+      'Spinning': 'bicycle',
+      'Jooga': 'leaf',
+      'Golf': 'golf',
+      'Jalkapallo': 'football',
+    };
+    
+    return iconMap[activity] || 'fitness';
+  };
 
-        <View style={styles.activityDetails}>
-          <Text style={styles.activityName}>{item.activity}</Text>
-          <View style={styles.stats}>
-            <View style={styles.statBadge}>
-              <Text style={styles.statText}>{item.kilometers.toFixed(1)} km</Text>
+  const handleCelebrate = (username: string, activity: string) => {
+    const celebrations = [
+      `Mahtavaa ${username}! 🔥`,
+      `Hienoa työtä ${username}! 💪`,
+      `Loistavaa ${username}! ⭐`,
+      `Erinomaista ${username}! 🚀`,
+    ];
+    
+    const randomCelebration = celebrations[Math.floor(Math.random() * celebrations.length)];
+    Alert.alert('Kannustus lähetetty!', randomCelebration);
+  };
+
+  const renderActivity = ({ item, index }: { item: ActivityWithUser; index: number }) => {
+    const bonusInfo = getBonusInfo(item.bonus);
+    const activityIcon = getActivityIcon(item.activity);
+    
+    return (
+      <Card style={[styles.activityCard, { marginTop: index === 0 ? theme.spacing.md : 0 }]}>
+        <Card.Content style={styles.cardContent}>
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.userSection}>
+              <Avatar.Image
+                size={48}
+                source={{
+                  uri: item.profilePicture
+                    ? `https://matka-xi.vercel.app/${item.username}.png`
+                    : `https://api.dicebear.com/7.x/adventurer/svg?seed=${item.username}`,
+                }}
+                style={styles.avatar}
+              />
+              <View style={styles.userInfo}>
+                <Text style={styles.username}>{item.username}</Text>
+                <View style={styles.timeContainer}>
+                  <Ionicons name="time-outline" size={12} color={theme.colors.textMuted} />
+                  <Text style={styles.time}>{formatDate(item.date)}</Text>
+                </View>
+              </View>
             </View>
-            <View style={styles.statBadge}>
-              <Text style={styles.statText}>{item.duration} min</Text>
-            </View>
-            {item.bonus && (
-              <Chip
-                mode="outlined"
-                compact
-                textStyle={styles.bonusText}
-                style={styles.bonusChip}
-                icon="star"
-              >
-                {getBonusText(item.bonus)}
-              </Chip>
-            )}
+            
+            <IconButton
+              icon="heart-outline"
+              size={20}
+              iconColor={theme.colors.primary}
+              onPress={() => handleCelebrate(item.username, item.activity)}
+            />
           </View>
-        </View>
-      </Card.Content>
-    </Card>
+
+          {/* Activity Details */}
+          <View style={styles.activitySection}>
+            <View style={styles.activityHeader}>
+              <View style={styles.activityIconContainer}>
+                <Ionicons 
+                  name={activityIcon as any} 
+                  size={20} 
+                  color={theme.colors.primary} 
+                />
+              </View>
+              <Text style={styles.activityName}>{item.activity}</Text>
+            </View>
+            
+            {/* Stats */}
+            <View style={styles.statsContainer}>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{item.kilometers.toFixed(1)}</Text>
+                <Text style={styles.statLabel}>km</Text>
+              </View>
+              
+              <View style={styles.statDivider} />
+              
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{item.duration}</Text>
+                <Text style={styles.statLabel}>min</Text>
+              </View>
+              
+              {bonusInfo && (
+                <>
+                  <View style={styles.statDivider} />
+                  <View style={styles.bonusContainer}>
+                    <Chip
+                      mode="outlined"
+                      compact
+                      icon={bonusInfo.icon}
+                      textStyle={[styles.bonusText, { color: bonusInfo.color }]}
+                      style={[styles.bonusChip, { borderColor: bonusInfo.color }]}
+                    >
+                      {bonusInfo.text}
+                    </Chip>
+                  </View>
+                </>
+              )}
+            </View>
+          </View>
+        </Card.Content>
+      </Card>
+    );
+  };
+
+  const renderEmptyState = () => (
+    <View style={styles.emptyContainer}>
+      <View style={styles.emptyContent}>
+        <Ionicons name="fitness-outline" size={64} color={theme.colors.textMuted} />
+        <Text style={styles.emptyTitle}>Ei suorituksia vielä</Text>
+        <Text style={styles.emptyText}>
+          Kun joku lisää suorituksen, se näkyy täällä
+        </Text>
+      </View>
+    </View>
+  );
+
+  const renderHeader = () => (
+    <View style={styles.feedHeader}>
+      <View style={styles.feedTitleContainer}>
+        <Ionicons name="flash" size={24} color={theme.colors.primary} />
+        <Text style={styles.feedTitle}>Viimeisimmät suoritukset</Text>
+      </View>
+      <Text style={styles.feedSubtitle}>Kannustakaa toisianne! 💪</Text>
+    </View>
   );
 
   if (error) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{error}</Text>
-        <Button mode="contained" onPress={fetchActivities} style={styles.retryButton}>
-          Yritä uudelleen
-        </Button>
+        <Card style={styles.errorCard}>
+          <Card.Content style={styles.errorContent}>
+            <Ionicons name="alert-circle" size={48} color={theme.colors.error} />
+            <Text style={styles.errorTitle}>Virhe lataamisessa</Text>
+            <Text style={styles.errorText}>{error}</Text>
+            <Button 
+              mode="contained" 
+              onPress={fetchActivities} 
+              style={styles.retryButton}
+              buttonColor={theme.colors.primary}
+            >
+              Yritä uudelleen
+            </Button>
+          </Card.Content>
+        </Card>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.titleContainer}>
-        <Text style={styles.title}>💪 Viimeisimmät suoritukset</Text>
-        <Text style={styles.subtitle}>Kannustakaa toisianne!</Text>
-      </View>
-      
       <FlatList
         data={activities}
         renderItem={renderActivity}
         keyExtractor={(item) => `${item.username}-${item.id}`}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={loading} onRefresh={fetchActivities} />
+          <RefreshControl 
+            refreshing={loading} 
+            onRefresh={fetchActivities}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
+          />
         }
-        ListEmptyComponent={
-          loading ? (
-            <View style={styles.loadingContainer}>
-              <Text style={styles.loadingText}>Ladataan suorituksia...</Text>
-            </View>
-          ) : (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>Ei suorituksia saatavilla</Text>
-            </View>
-          )
-        }
-        contentContainerStyle={styles.listContainer}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={!loading ? renderEmptyState : null}
+        contentContainerStyle={[
+          styles.listContainer,
+          activities.length === 0 && styles.emptyListContainer
+        ]}
       />
     </View>
   );
@@ -152,88 +248,158 @@ export const ActivityFeed: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  titleContainer: {
-    padding: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: theme.colors.text,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    marginTop: theme.spacing.xs,
+    backgroundColor: theme.colors.background,
   },
   listContainer: {
-    padding: theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
+    paddingBottom: theme.spacing.xl,
+  },
+  emptyListContainer: {
+    flexGrow: 1,
+  },
+  feedHeader: {
+    paddingVertical: theme.spacing.lg,
+    alignItems: 'center',
+  },
+  feedTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.xs,
+  },
+  feedTitle: {
+    ...theme.typography.h3,
+    color: theme.colors.text,
+    marginLeft: theme.spacing.sm,
+    fontWeight: '700',
+  },
+  feedSubtitle: {
+    ...theme.typography.body,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
   },
   activityCard: {
     marginBottom: theme.spacing.md,
-    elevation: 2,
     borderRadius: theme.borderRadius.lg,
+    ...theme.shadows.md,
+  },
+  cardContent: {
+    padding: theme.spacing.lg,
   },
   header: {
-    marginBottom: theme.spacing.sm,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.md,
   },
-  userInfo: {
+  userSection: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
-  userDetails: {
-    marginLeft: theme.spacing.sm,
+  avatar: {
+    borderWidth: 2,
+    borderColor: theme.colors.primary,
+  },
+  userInfo: {
+    marginLeft: theme.spacing.md,
     flex: 1,
   },
   username: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: theme.colors.primary,
-    marginBottom: 2,
-  },
-  date: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-  },
-  activityDetails: {
-    marginTop: theme.spacing.sm,
-  },
-  activityName: {
-    fontSize: 16,
-    fontWeight: '500',
+    ...theme.typography.bodyMedium,
     color: theme.colors.text,
-    marginBottom: theme.spacing.sm,
+    fontWeight: '600',
   },
-  stats: {
+  timeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'wrap',
+    marginTop: 2,
   },
-  statBadge: {
-    backgroundColor: theme.colors.background,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
+  time: {
+    ...theme.typography.small,
+    color: theme.colors.textMuted,
+    marginLeft: 4,
+  },
+  activitySection: {
+    backgroundColor: theme.colors.surfaceElevated,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+  },
+  activityHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  activityIconContainer: {
+    width: 32,
+    height: 32,
     borderRadius: theme.borderRadius.sm,
+    backgroundColor: theme.colors.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: theme.spacing.sm,
   },
-  statText: {
-    fontSize: 12,
-    fontWeight: '600',
+  activityName: {
+    ...theme.typography.bodyMedium,
     color: theme.colors.text,
+    fontWeight: '600',
+    flex: 1,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statValue: {
+    ...theme.typography.h4,
+    color: theme.colors.primary,
+    fontWeight: '700',
+  },
+  statLabel: {
+    ...theme.typography.small,
+    color: theme.colors.textMuted,
+    marginTop: 2,
+  },
+  statDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: theme.colors.border,
+    marginHorizontal: theme.spacing.md,
+  },
+  bonusContainer: {
+    flex: 1,
+    alignItems: 'flex-end',
   },
   bonusChip: {
-    backgroundColor: theme.colors.primaryLight,
-    marginLeft: theme.spacing.sm,
+    backgroundColor: 'transparent',
   },
   bonusText: {
     fontSize: 11,
-    color: theme.colors.primary,
     fontWeight: '600',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.xxl,
+  },
+  emptyContent: {
+    alignItems: 'center',
+    maxWidth: 250,
+  },
+  emptyTitle: {
+    ...theme.typography.h3,
+    color: theme.colors.text,
+    marginTop: theme.spacing.lg,
+    marginBottom: theme.spacing.sm,
+    textAlign: 'center',
+  },
+  emptyText: {
+    ...theme.typography.body,
+    color: theme.colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
   },
   errorContainer: {
     flex: 1,
@@ -241,30 +407,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: theme.spacing.lg,
   },
+  errorCard: {
+    width: '100%',
+    maxWidth: 300,
+    ...theme.shadows.lg,
+  },
+  errorContent: {
+    alignItems: 'center',
+    padding: theme.spacing.xl,
+  },
+  errorTitle: {
+    ...theme.typography.h3,
+    color: theme.colors.text,
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+  },
   errorText: {
-    color: theme.colors.error,
-    fontSize: 16,
+    ...theme.typography.body,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
   },
   retryButton: {
     marginTop: theme.spacing.md,
-  },
-  loadingContainer: {
-    padding: theme.spacing.lg,
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: theme.colors.textSecondary,
-    fontSize: 16,
-  },
-  emptyContainer: {
-    padding: theme.spacing.lg,
-    alignItems: 'center',
-  },
-  emptyText: {
-    color: theme.colors.textSecondary,
-    fontSize: 16,
-    textAlign: 'center',
   },
 });

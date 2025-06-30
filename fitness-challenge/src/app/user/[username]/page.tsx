@@ -106,6 +106,9 @@ const UserProfile = () => {
   // Add state to toggle between activity form and insights
   const [showInsights, setShowInsights] = useState(false);
 
+
+  const isActivitySubmissionDisabled = true;
+
   const backendUrl = "https://matka-zogy.onrender.com";
   const formRef = useRef<HTMLDivElement>(null);
 
@@ -327,6 +330,11 @@ const UserProfile = () => {
 
       {/* Conditionally render the activity form or insights */}
       {!showInsights ? (
+          isActivitySubmissionDisabled ? (
+    <div className="text-center text-gray-500">
+      Aktiviteettien lisääminen on suljettu, koska haaste on päättynyt.
+    </div>
+  ) : (
         <section ref={formRef} className="bg-white p-6 rounded-lg shadow">
           <h2 className="text-lg font-semibold mb-4">
             {isEditing ? translations.updateActivity : translations.addActivity}
@@ -434,7 +442,8 @@ const UserProfile = () => {
             </div>
           </form>
         </section>
-      ) : (
+      ) 
+    ): (
         <PersonalInsights
           activities={user.activities}
           username={user.username}
