@@ -5,7 +5,7 @@ import ActivityFeedPage from "./ActivityFeedPage";
 import Leaderboard from "./Leaderboard";
 import SubmitQuote from "./SubmitQuote";
 import ToggleButtons from "./ToggleButtons";
-import Map from "./Map"; // Ensure you have a Map component in the specified path
+// import Map from "./Map"; // Ensure you have a Map component in the specified path
 import WeeklyProgress from "./WeeklyProgress";
 import { motion } from "framer-motion";
 import Quotes from "./Quotes";
@@ -53,7 +53,7 @@ export default function QuickAccess() {
           <Quotes />
         </motion.div>
       </motion.header>
-      <Map totalKm={totalKm} />
+      {/* <Map totalKm={totalKm} /> */}
       <ToggleButtons
         showWeeklyProgress={showWeeklyProgress}
         showActivityFeed={showActivityFeed}
