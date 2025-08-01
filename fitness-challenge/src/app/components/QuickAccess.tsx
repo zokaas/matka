@@ -44,9 +44,9 @@ export default function QuickAccess() {
         animate={{ opacity: [0, 1], y: [-20, 0] }}
         transition={{ duration: 1 }}
       >
-        <h1 className="text-2xl font-bold text-purple-600">PETOLLISET🔥</h1>
+        <h1 className="text-2xl font-bold text-slate-600">PETOLLISET🔥</h1>
         <motion.div
-          className="mt-4 text-lg font-bold text-purple-500"
+          className="mt-4 text-lg font-bold text-slate-500"
           animate={{ scale: [1, 1.1, 1] }}
           transition={{ repeat: Infinity, duration: 2 }}
         >

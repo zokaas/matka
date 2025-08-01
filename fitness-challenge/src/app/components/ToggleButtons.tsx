@@ -26,7 +26,7 @@ const ToggleButtons = ({
               type="button"
               className={`px-5 py-2 text-sm font-medium border border-purple-300 ${
                 isActive
-                  ? "bg-purple-600 text-white"
+                  ? "bg-slate-800 text-white"
                   : "bg-white text-gray-700 hover:bg-gray-50"
               } ${
                 index === 0 ? "rounded-l-lg" : index === 2 ? "rounded-r-lg" : ""

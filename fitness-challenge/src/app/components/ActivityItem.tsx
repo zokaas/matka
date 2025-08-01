@@ -56,7 +56,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
         <div>
           <Link
             href={`/user/${activity.username}`}
-            className="font-medium text-purple-600 hover:underline"
+            className="font-medium text-slate-600 hover:underline"
           >
             {activity.username}
           </Link>
@@ -70,7 +70,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
           <span>{activity.kilometers.toFixed(1)} km</span>
           <span>{activity.duration} min</span>
           {activity.bonus && (
-            <span className="text-purple-500">🎉 {activity.bonus}</span>
+            <span className="text-slate-500">🎉 {activity.bonus}</span>
           )}
         </div>
       </div>
@@ -80,7 +80,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
       <div className="flex justify-between border-t pt-3 mt-3">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="text-gray-600 hover:text-purple-600 text-sm flex items-center"
+          className="text-gray-600 hover:text-slate-600 text-sm flex items-center"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

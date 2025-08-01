@@ -25,7 +25,7 @@ export default function PopularSports({ users }: Readonly<Props>) {
       <ul className="space-y-2">
         {topSports.map(([sport, count], index) => (
           <li key={sport} className="flex items-center p-2 bg-gray-50 rounded">
-            <span className="w-8 text-center font-bold text-purple-600">
+            <span className="w-8 text-center font-bold text-slate-600">
               {index + 1}.
             </span>
             <span className="text-gray-800 font-medium">{sport}</span>

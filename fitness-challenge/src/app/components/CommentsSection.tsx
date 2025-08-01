@@ -97,7 +97,7 @@ const CommentsSection: React.FC<CommentsProps> = ({
             </span>
             <button
               type="submit"
-              className={`px-4 py-2 rounded-md text-xs text-white bg-purple-500 hover:bg-purple-600 transition-colors ${
+              className={`px-4 py-2 rounded-md text-xs text-white bg-slate-500 hover:slate-800 transition-colors ${
                 submitting ? "opacity-50 cursor-not-allowed" : ""
               }`}
               disabled={newComment.length === 0 || submitting}
@@ -141,7 +141,7 @@ const CommentsSection: React.FC<CommentsProps> = ({
               initial={{ opacity: 0, y: 5 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -5 }}
-              className="bg-purple-100 p-3 rounded border text-xs flex justify-between items-start"
+              className="bg-slate-100 p-3 rounded border text-xs flex justify-between items-start"
             >
               <p className="text-gray-700 break-words w-full whitespace-pre-wrap">
                 {comment.text}

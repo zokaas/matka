@@ -31,7 +31,7 @@ const ActivityList: React.FC<Props> = ({ activities, onEdit, onDelete }) => {
                   {activity.kilometers.toFixed(1)} km | {activity.duration} mins
                 </p>
                 {activity.bonus && (
-                  <p className="text-sm text-purple-500">
+                  <p className="text-sm text-slate-500">
                     🎉 Bonus: {activity.bonus}
                     {activity.bonus === "juhlapäivä"
                       ? " (2x km)"
@@ -46,7 +46,7 @@ const ActivityList: React.FC<Props> = ({ activities, onEdit, onDelete }) => {
               </div>
               <div className="flex space-x-2">
                 <button
-                  className="text-purple-500"
+                  className="text-slate-500"
                   onClick={() => onEdit(activity.id)}
                 >
                   Edit

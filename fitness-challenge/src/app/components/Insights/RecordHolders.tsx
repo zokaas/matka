@@ -147,7 +147,7 @@ const renderActivityList = (activities: Activity[], type: "km" | "min") => {
         : `${activity.duration} min`}
       )
       {activity.bonus && type === "km" && (
-        <span className="text-purple-500 ml-1">★ bonukset laskettu mukaan</span>
+        <span className="text-slate-500 ml-1">★ bonukset laskettu mukaan</span>
       )}
     </div>
   ));
@@ -262,7 +262,7 @@ const RecordHolders = () => {
         {hasBestKm ? (
           renderRecordCard(
             "Eniten kilometrejä päivässä",
-            "text-purple-600",
+            "text-slate-600",
             records.bestKm,
             `${records.bestKm[0].value.toFixed(1)} km`,
             new Date(records.bestKm[0].date).toLocaleDateString("fi-FI"),
@@ -270,7 +270,7 @@ const RecordHolders = () => {
           )
         ) : (
           <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-purple-600 font-medium mb-1">Eniten kilometrejä päivässä</div>
+            <div className="text-sm text-slate-600 font-medium mb-1">Eniten kilometrejä päivässä</div>
             <div>Ei tietoja saatavilla</div>
           </div>
         )}
@@ -278,7 +278,7 @@ const RecordHolders = () => {
         {hasLongestWorkout ? (
           renderRecordCard(
             "Pisin treeni",
-            "text-blue-600",
+            "text-slate-600",
             records.longestWorkout,
             `${records.longestWorkout[0].value} min`,
             new Date(records.longestWorkout[0].date).toLocaleDateString("fi-FI"),
@@ -286,18 +286,18 @@ const RecordHolders = () => {
           )
         ) : (
           <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-blue-600 font-medium mb-1">Pisin treeni</div>
+            <div className="text-sm text-slate-600 font-medium mb-1">Pisin treeni</div>
             <div>Ei tietoja saatavilla</div>
           </div>
         )}
         
         {hasLongestStreak ? (
           <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-green-600 font-medium mb-1">
+            <div className="text-sm text-slate-600 font-medium mb-1">
               Pisin urheiluputki
             </div>
             <div>{renderHolders(records.longestStreak)}</div>
-            <div className="text-2xl font-bold text-green-600 mt-1">
+            <div className="text-2xl font-bold bg-slate-600 mt-1">
               {records.longestStreak[0].value} päivää
             </div>
             {records.longestStreak[0].date && (
@@ -308,7 +308,7 @@ const RecordHolders = () => {
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-green-600 font-medium mb-1">Pisin urheiluputki</div>
+            <div className="text-sm text-slate-600 font-medium mb-1">Pisin urheiluputki</div>
             <div>Ei tietoja saatavilla</div>
           </div>
         )}

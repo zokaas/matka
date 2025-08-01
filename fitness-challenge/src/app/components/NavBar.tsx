@@ -82,8 +82,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Logo / Home */}
-          <Link href="/" className="text-xl font-bold hover:text-cyan-300 transition-colors flex items-center">
-            <Mountain className="w-6 h-6 mr-2" />
+          <Link href="/" className="text-xl font-bold transition-colors flex items-center ">
             🏔️ TOUR DE FRANCE 🏔️
           </Link>
 
@@ -202,7 +201,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-slate-800 border-t border-slate-700">
+        <div className="md:hidden bg-800 border-t border-slate-700">
           <Link
             href="/"
             className="block px-4 py-2 text-sm font-medium hover:bg-slate-700 transition-colors"
@@ -249,7 +248,7 @@ export default function Navbar() {
                       <Link
                         key={user.username}
                         href={`/user/${user.username}`}
-                        className="block px-6 py-2 text-sm hover:bg-slate-800 transition-colors"
+                        className="block px-6 py-2 text-sm hover:bg-800 transition-colors"
                         onClick={() => {
                           setIsMenuOpen(false);
                           setIsDropdownOpen(false);

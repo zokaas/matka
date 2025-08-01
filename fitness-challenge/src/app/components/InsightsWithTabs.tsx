@@ -117,7 +117,7 @@ export default function InsightsWithTabs() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-slate-500" />
       </div>
     );
   }
@@ -135,7 +135,7 @@ export default function InsightsWithTabs() {
   if (!users || users.length === 0 || !targetPaces) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-slate-500" />
         <span className="ml-2">Loading data...</span>
       </div>
     );

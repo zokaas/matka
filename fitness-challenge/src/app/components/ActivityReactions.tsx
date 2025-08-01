@@ -158,7 +158,7 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
           onClick={() => !isLoading && setShowEmojiPicker(!showEmojiPicker)}
           className={`flex items-center justify-center w-8 h-8 bg-white hover:bg-gray-50 active:bg-gray-100 rounded-full transition-colors shadow-sm border border-gray-200 ${
             isLoading ? "opacity-50 cursor-not-allowed" : ""
-          } ${showEmojiPicker ? "ring-2 ring-purple-300 bg-purple-50" : ""}`}
+          } ${showEmojiPicker ? "ring-2 ring-purple-300 bg-slate-50" : ""}`}
           aria-label="Add reaction"
           disabled={isLoading}
         >

@@ -122,7 +122,7 @@ const CommentAndReactionView: React.FC<CommentAndReactionViewProps> = ({
       {comments.length > 0 && (
         <button
           onClick={loadFullComments}
-          className="text-purple-600 hover:text-purple-800 text-sm flex items-center mt-2 transition-colors"
+          className="text-slate-600 hover:text-slate-800 text-sm flex items-center mt-2 transition-colors"
         >
           <motion.svg
             xmlns="http://www.w3.org/2000/svg"

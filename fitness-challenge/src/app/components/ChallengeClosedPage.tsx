@@ -69,10 +69,10 @@ const ChallengeClosedPage = () => {
   className="text-center"
 >
   <div className="text-8xl mb-4">🚴‍♂️</div>
-  <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-yellow-600 to-blue-600 bg-clip-text text-transparent mb-4">
+  <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-yellow-600 to-slate-600 bg-clip-text text-transparent mb-4">
     🏆 TOUR DE FRANCE CHALLENGE 🏆
   </h1>
-  <p className="text-xl text-gray-600">Peloton pääsee Pariisiin yhdessä!</p>
+  <p className="text-xl text-gray-600">Peloton polkee yhdessä Pariisiin! 🚴‍♂️🚴‍♀️</p>
 </motion.div>
 
 {/* 👇 UUSI ILMOITUS TÄHÄN */}
@@ -80,11 +80,11 @@ const ChallengeClosedPage = () => {
   initial={{ opacity: 0, y: 30 }}
   animate={{ opacity: 1, y: 0 }}
   transition={{ duration: 0.7, delay: 0.5 }}
-  className="mt-12 p-8 rounded-2xl bg-gradient-to-r from-purple-100 via-pink-50 to-blue-100 shadow-md backdrop-blur-sm text-center"
+  className="mt-12 p-8 rounded-2xl bg-gradient-to-r from-purple-100 via-pink-50 to-slate-100 shadow-md backdrop-blur-sm text-center"
 >
-  <h2 className="text-xl font-semibold text-gray-800 mb-3">🚴‍♀️ Uusi haaste alkaa 4.8.!</h2>
+  <h2 className="text-xl font-semibold text-gray-800 mb-3">Uusi haaste starttaa sunnuntaina 4.8.</h2>
   <p className="text-l text-gray-700">
-    Yksityiskohdat julkaistaan pian – valmistaudu inspiroitumaan ja mukaan seikkailuun. 💪
+    Yksityiskohdat julkaistaan pian – valmistaudu inspiroitumaan ja lähtemään mukaan unohtumattomalle seikkailulle!
   </p>
 </motion.div>
    
@@ -97,7 +97,7 @@ const ChallengeClosedPage = () => {
           className="grid md:grid-cols-4 gap-6 mb-12"
         >
           <div className="bg-white rounded-xl shadow-lg p-6 text-center border border-gray-200">
-            <Trophy className="w-12 h-12 text-orange-500 mx-auto mb-4" />
+            <Trophy className="w-12 h-12 text-bg-slate mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-gray-800 mb-2">
               {Math.round(totalKm).toLocaleString('fi-FI')} km
             </h3>
@@ -106,13 +106,13 @@ const ChallengeClosedPage = () => {
           </div>
           
           <div className="bg-white rounded-xl shadow-lg p-6 text-center border border-gray-200">
-            <Users className="w-12 h-12 text-blue-500 mx-auto mb-4" />
+            <Users className="w-12 h-12 text-slate-500 mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-gray-800 mb-2">{users.length}</h3>
             <p className="text-gray-600">Rohkeaa yrittäjää</p>
           </div>
           
           <div className="bg-white rounded-xl shadow-lg p-6 text-center border border-gray-200">
-            <Activity className="w-12 h-12 text-green-500 mx-auto mb-4" />
+            <Activity className="w-12 h-12 text-slate-500 mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-gray-800 mb-2">
               {totalActivities.toLocaleString('fi-FI')}
             </h3>
@@ -170,7 +170,7 @@ const ChallengeClosedPage = () => {
                 </span>
               </div>
               <div className="text-right">
-                <span className="font-bold text-purple-600">
+                <span className="font-bold text-slate-600">
                   {Math.round(user.totalKm).toLocaleString('fi-FI')} km
                 </span>
                 <div className="text-sm text-gray-500">

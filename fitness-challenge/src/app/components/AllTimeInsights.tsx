@@ -126,7 +126,7 @@ const AllTimeInsights = ({ username }: { username: string }) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg shadow p-4">
           <h3 className="font-semibold mb-2">Eniten kilometrejä</h3>
-          <div className="text-2xl font-bold text-purple-600">
+          <div className="text-2xl font-bold text-slate-600">
             {stats.bestKmDay.kilometers.toFixed(1)} km
           </div>
           <div className="text-sm text-gray-600">
@@ -138,7 +138,7 @@ const AllTimeInsights = ({ username }: { username: string }) => {
                 {activity.activity}: {activity.kilometers.toFixed(1)} km (
                 {activity.duration} min)
                 {activity.bonus && (
-                  <span className="text-purple-500 ml-1">
+                  <span className="text-slate-500 ml-1">
                     ★ bonukset laskettu mukaan
                   </span>
                 )}
@@ -149,7 +149,7 @@ const AllTimeInsights = ({ username }: { username: string }) => {
 
         <div className="bg-white rounded-lg shadow p-4">
           <h3 className="font-semibold mb-2">Pisimmät treenit</h3>
-          <div className="text-2xl font-bold text-blue-600">
+          <div className="text-2xl font-bold text-slate-600">
             {stats.longestWorkoutDay.duration} min
           </div>
           <div className="text-sm text-gray-600">
@@ -161,7 +161,7 @@ const AllTimeInsights = ({ username }: { username: string }) => {
                 {activity.activity}: {activity.duration} min (
                 {activity.kilometers.toFixed(1)} km)
                 {/* {activity.bonus && (
-                  <span className="text-purple-500 ml-1">
+                  <span className="text-slate-500 ml-1">
                     ★ bonukset laskettu mukaan
                   </span>
                 )} */}
@@ -172,7 +172,7 @@ const AllTimeInsights = ({ username }: { username: string }) => {
 
         <div className="bg-white rounded-lg shadow p-4">
           <h3 className="font-semibold mb-2">Nykyinen putki</h3>
-          <div className="text-2xl font-bold text-green-600">
+          <div className="text-2xl font-bold text-slate-600">
             {stats.currentStreak.days} päivää
           </div>
           {stats.currentStreak.start && (

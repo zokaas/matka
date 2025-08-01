@@ -53,7 +53,7 @@ const TourDeFranceDashboard = () => {
       description: 'First mountain challenge to Turin',
       stageType: 'Mountain',
       weather: 'Variable',
-      color: 'from-blue-400 to-blue-600',
+      color: 'from-slate-400 to-slate-600',
       location: 'Col du Galibier'
     },
     { 
@@ -213,7 +213,7 @@ const TourDeFranceDashboard = () => {
       description: 'Ski resort summit finish',
       stageType: 'Mountain',
       weather: 'Storm',
-      color: 'from-blue-500 to-blue-700',
+      color: 'from-slate-500 to-slate-700',
       location: 'Station de Ski'
     },
     { 
@@ -266,23 +266,23 @@ const TourDeFranceDashboard = () => {
   };
 
   const stageColors: Record<StageType, string> = {
-    'Flat': 'text-green-600',
+    'Flat': 'text-slate-600',
     'Hilly': 'text-yellow-600',
     'Mountain': 'text-red-600',
-    'Time Trial': 'text-blue-600',
-    'Sprint': 'text-purple-600'
+    'Time Trial': 'text-slate-600',
+    'Sprint': 'text-slate-600'
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-slate-50 flex items-center justify-center">
         <div className="animate-spin h-12 w-12 border-4 border-yellow-500 rounded-full border-t-transparent"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-blue-50 text-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-slate-50 text-gray-800">
       <div className="max-w-6xl mx-auto space-y-8 p-6">
         
         {/* Header */}
@@ -292,7 +292,7 @@ const TourDeFranceDashboard = () => {
           className="text-center"
         >
           <div className="text-8xl mb-4">🚴‍♂️</div>
-          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-yellow-600 to-blue-600 bg-clip-text text-transparent mb-4">
+          <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-yellow-600 to-slate-600 bg-clip-text text-transparent mb-4">
             🏆 TOUR DE FRANCE CHALLENGE 🏆
           </h1>
           <p className="text-xl text-gray-600">Peloton pääsee Pariisiin yhdessä!</p>
@@ -348,7 +348,7 @@ const TourDeFranceDashboard = () => {
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-xl font-semibold flex items-center">
-                <MapPin className="w-6 h-6 mr-2 text-blue-500" />
+                <MapPin className="w-6 h-6 mr-2 text-slate-500" />
                 Seuraava etappi: {nextStage.name} {nextStage.emoji}
               </h3>
               <span className={`px-3 py-1 rounded-full text-sm ${stageColors[nextStage.stageType]} bg-white/60`}>
@@ -359,7 +359,7 @@ const TourDeFranceDashboard = () => {
             <div className="relative mb-4">
               <div className="h-6 bg-gray-200 rounded-full overflow-hidden">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-yellow-400 to-blue-500 rounded-full flex items-center justify-end pr-2"
+                  className="h-full bg-gradient-to-r from-yellow-400 to-slate-500 rounded-full flex items-center justify-end pr-2"
                   initial={{ width: 0 }}
                   animate={{ width: `${progressToNext}%` }}
                   transition={{ duration: 1.5, ease: "easeOut" }}
@@ -374,7 +374,7 @@ const TourDeFranceDashboard = () => {
             </div>
             
             <div className="text-center">
-              <span className="text-2xl font-bold text-blue-600">
+              <span className="text-2xl font-bold text-slate-600">
                 {(nextStage.pointsRequired - totalPoints).toLocaleString('fi-FI')} pistettä
               </span>
               <span className="text-gray-500 ml-2">seuraavaan etappiin</span>
@@ -413,7 +413,7 @@ const TourDeFranceDashboard = () => {
                 <div className="flex-1">
                   <div className="flex items-center space-x-3 mb-1">
                     <h4 className={`font-medium text-lg ${
-                      index <= currentStage ? 'text-green-600' : 'text-gray-600'
+                      index <= currentStage ? 'text-slate-600' : 'text-gray-600'
                     }`}>
                       Étape {index + 1}: {stage.name}
                     </h4>
@@ -432,12 +432,12 @@ const TourDeFranceDashboard = () => {
                 </div>
                 <div className="text-right">
                   <div className={`font-bold text-xl ${
-                    index <= currentStage ? 'text-green-600' : 'text-gray-400'
+                    index <= currentStage ? 'text-slate-600' : 'text-gray-400'
                   }`}>
                     {stage.pointsRequired.toLocaleString('fi-FI')} pts
                   </div>
                   {index <= currentStage ? (
-                    <div className="text-green-500 text-sm flex items-center">
+                    <div className="text-slate-500 text-sm flex items-center">
                       <Award className="w-4 h-4 mr-1" />
                       Completed
                     </div>
@@ -472,18 +472,18 @@ const TourDeFranceDashboard = () => {
             <p className="text-sm text-yellow-100">coureurs actifs</p>
           </div>
           
-          <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-6 shadow-lg text-white">
+          <div className="bg-gradient-to-br from-slate-500 to-slate-700 rounded-2xl p-6 shadow-lg text-white">
             <Trophy className="w-8 h-8 mb-3" />
             <h4 className="text-lg font-semibold mb-2">Progression</h4>
             <p className="text-3xl font-bold">{Math.round(progressPercentage)}%</p>
-            <p className="text-sm text-blue-100">vers Paris</p>
+            <p className="text-sm text-slate-100">vers Paris</p>
           </div>
           
           <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-2xl p-6 shadow-lg text-white">
             <Activity className="w-8 h-8 mb-3" />
             <h4 className="text-lg font-semibold mb-2">Objectif quotidien</h4>
             <p className="text-3xl font-bold">{Math.round((TOTAL_TOUR_POINTS - totalPoints) / 140)}</p>
-            <p className="text-sm text-green-100">pts/jour vers larrivée</p>
+            <p className="text-sm text-slate-100">pts/jour vers larrivée</p>
           </div>
         </motion.div>
 

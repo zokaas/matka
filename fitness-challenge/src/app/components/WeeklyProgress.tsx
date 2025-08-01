@@ -265,7 +265,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                   </div>
 
                   <div className="text-right">
-                    <div className="text-xl font-bold text-purple-600">
+                    <div className="text-xl font-bold text-slate-600">
                       {insight.weeklyProgress.toLocaleString("fi-FI")}{" "}
                       km
                     </div>
@@ -274,7 +274,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                     </div>
 
                     {insight.dailyTarget > 0 && insight.weeklyPercentage < 100 && (
-                      <div className="mt-1 text-xs bg-purple-50 text-purple-700 rounded-full px-2 py-0.5">
+                      <div className="mt-1 text-xs bg-slate-50 text-slate-700 rounded-full px-2 py-0.5">
                         {insight.dailyTarget} km/pvä tarvitaan
                       </div>
                     )}

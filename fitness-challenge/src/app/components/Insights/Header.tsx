@@ -14,10 +14,10 @@ const Header: React.FC<HeaderProps> = () => {
   // Loading state
   if (!targetPaces) {
     return (
-      <div className="bg-purple-500 p-3 rounded-xl text-center">
+      <div className="bg-slate-500 p-3 rounded-xl text-center">
         <div className="animate-pulse space-y-2">
-          <div className="h-2 bg-purple-300 rounded w-3/4 mx-auto"></div>
-          <div className="h-2 bg-purple-300 rounded w-1/2 mx-auto"></div>
+          <div className="h-2 bg-slate-300 rounded w-3/4 mx-auto"></div>
+          <div className="h-2 bg-slate-300 rounded w-1/2 mx-auto"></div>
         </div>
         <p className="text-xs text-white font-medium mt-2">Ladataan tietoja...</p>
       </div>
@@ -51,7 +51,7 @@ const Header: React.FC<HeaderProps> = () => {
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden max-w-md mx-auto">
       {/* Progress Bar Section */}
-      <div className="bg-purple-600 p-3 text-white">
+      <div className="bg-slate-800 p-3 text-white">
         <h2 className="text-base font-medium flex items-center">
           <Zap className="w-4 h-4 mr-1.5" />
           Eteneminen kohti tavoitetta
@@ -70,50 +70,50 @@ const Header: React.FC<HeaderProps> = () => {
         <div className="grid grid-cols-2 gap-2.5">
         {/* Current Speed */}
         <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
-          <div className="text-xs font-medium mb-1 flex items-center justify-center text-purple-700">
-            <TrendingUp className="w-4 h-4 mr-1 text-purple-500" /> 
+          <div className="text-xs font-medium mb-1 flex items-center justify-center text-slate-700">
+            <TrendingUp className="w-4 h-4 mr-1 text-slate-500" /> 
             Vauhtikeskiarvo
           </div>
           <div className="text-center">
             <div className="flex items-baseline justify-center">
-              <span className="text-purple-600 text-2xl font-bold">{formattedHistoricalPace}</span>
-              <span className="text-purple-500 text-sm ml-1">km/hlö/vko</span>
+              <span className="text-slate-600 text-2xl font-bold">{formattedHistoricalPace}</span>
+              <span className="text-slate-500 text-sm ml-1">km/hlö/vko</span>
             </div>
           </div>
         </div>
 
           {/* Remaining Distance */}
           <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
-            <div className="text-xs font-medium mb-1 flex items-center justify-center text-green-700">
-              <Flag className="w-4 h-4 mr-1 text-green-500" />
+            <div className="text-xs font-medium mb-1 flex items-center justify-center text-slate-700">
+              <Flag className="w-4 h-4 mr-1 text-slate-500" />
               Matkaa jäljellä
             </div>
             <div className="text-center">
             <div className="flex items-baseline justify-center">
-              <span className="text-green-500 text-2xl font-bold">{formattedRemainingDistance}</span>
-              <span className="text-green-400 text-sm ml-1">km</span>
+              <span className="text-slate-500 text-2xl font-bold">{formattedRemainingDistance}</span>
+              <span className="text-slate-400 text-sm ml-1">km</span>
             </div>
           </div>
           </div>
 
           {/* Days Left */}
           <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
-            <div className="text-xs font-medium mb-1 flex items-center justify-center text-amber-700">
-              <Clock className="w-4 h-4 mr-1 text-amber-500" />
+            <div className="text-xs font-medium mb-1 flex items-center justify-center text-slate-700">
+              <Clock className="w-4 h-4 mr-1 text-slate-500" />
               Päiviä juhannukseen
             </div>
-            <div className="text-2xl font-bold text-center text-amber-600">
+            <div className="text-2xl font-bold text-center text-slate-600">
               {Math.round(daysRemaining)}
             </div>
           </div>
 
 {/* Estimated Completion */}
           <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
-            <div className="text-xs font-medium mb-1 flex items-center justify-center text-blue-700">
-              <Calendar className="w-4 h-4 mr-1 text-blue-500" />
+            <div className="text-xs font-medium mb-1 flex items-center justify-center text-slate-700">
+              <Calendar className="w-4 h-4 mr-1 text-slate-500" />
               Nykyvauhdilla maalissa
             </div>
-            <div className="text-2xl font-bold text-center text-blue-600">
+            <div className="text-2xl font-bold text-center text-slate-600">
               {formattedProjectedDate}
             </div>
           </div>

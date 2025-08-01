@@ -18,12 +18,12 @@ const WeeklyActivity: React.FC<Props> = ({ users, getLastFourWeeks }) => {
       <h3 className="text-xl font-semibold text-gray-800 mb-6">
         Viikkoaktiivisuus
       </h3>
-      <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+      <div className="bg-slate-50 p-4 rounded-lg border border-blue-100">
         <div className="flex items-start gap-3">
-          <div className="text-blue-500 mt-1">
+          <div className="text-slate-500 mt-1">
             <InfoIcon className="w-5 h-5" />
           </div>
-          <div className="space-y-2 text-sm text-blue-800">
+          <div className="space-y-2 text-sm text-slate-800">
             <p>Viikot laskettu maanantaista sunnuntaihin</p>
           </div>
         </div>

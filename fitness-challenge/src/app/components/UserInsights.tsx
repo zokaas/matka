@@ -170,8 +170,8 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
           <CardContent>
             <h3 className="font-semibold mb-2">Today vs Last Week</h3>
             <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4 bg-purple-50 rounded-lg">
-                <div className="text-2xl font-bold text-purple-600">
+              <div className="text-center p-4 bg-slate-50 rounded-lg">
+                <div className="text-2xl font-bold text-slate-600">
                   {todayData.totalKm.toFixed(1)} /{" "}
                   {lastWeekSameDay.totalKm.toFixed(1)}
                 </div>
@@ -187,8 +187,8 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
                   </div>
                 )}
               </div>
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">
+              <div className="text-center p-4 bg-slate-50 rounded-lg">
+                <div className="text-2xl font-bold bg-slate-600">
                   {todayData.totalActivities} /{" "}
                   {lastWeekSameDay.totalActivities}
                 </div>
@@ -205,7 +205,7 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
             <h3 className="font-semibold mb-2">Week Comparison</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold bg-slate-600">
                   {thisWeek.totalKm.toFixed(1)} / {lastWeek.totalKm.toFixed(1)}
                 </div>
                 <div className="text-sm text-gray-600">
@@ -283,7 +283,7 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
                 <div
                   key={day.date}
                   className={`flex justify-between items-center p-2 rounded ${
-                    isToday ? "bg-purple-50" : "bg-gray-50"
+                    isToday ? "bg-slate-50" : "bg-gray-50"
                   }`}
                 >
                   <div className="w-24">
@@ -309,7 +309,7 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
                       <div
                         className={`text-sm ${
                           day.totalKm > lastWeekDay.totalKm
-                            ? "text-green-600"
+                            ? "bg-slate-600"
                             : "text-red-600"
                         }`}
                       >

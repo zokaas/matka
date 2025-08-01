@@ -122,7 +122,7 @@ const WeeklyProgressBar = () => {
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-base font-medium text-gray-800">Viikon tavoite</h2>
         <div className="text-sm font-medium">
-          <span className="text-purple-600">{weeklyProgress}</span>
+          <span className="text-slate-600">{weeklyProgress}</span>
           <span className="text-gray-500"> / {weeklyGoal} km</span>
           <span className="text-xs text-gray-400 ml-1">
             ({Math.round(progressPercentage)}%)
@@ -147,13 +147,13 @@ const WeeklyProgressBar = () => {
         <div>
           {remainingDistance > 0 ? (
             <div className="text-gray-600">
-              <span className="font-medium text-purple-600">
+              <span className="font-medium text-slate-600">
               {Math.round(remainingDistance)} km
               </span>{" "}
               jäljellä
             </div>
           ) : (
-            <div className="text-green-600 font-medium">
+            <div className="bg-slate-600 font-medium">
               Viikkotavoite saavutettu! 🎉
             </div>
           )}

@@ -13,7 +13,7 @@ const WeeklyInsights: React.FC<Props> = ({ weeklyInsights }) => {
       </h3>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse rounded-xl overflow-hidden shadow-sm">
-          <thead className="bg-purple-100 text-purple-800 sticky top-0">
+          <thead className="bg-slate-100 text-slate-800 sticky top-0">
             <tr>
               {[
                 "Petollinen",

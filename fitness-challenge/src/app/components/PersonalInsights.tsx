@@ -327,7 +327,7 @@ const insights = useMemo<InsightsData>(() => {
         <button
           className={`px-4 py-2 ${
             activeTab === "overview"
-              ? "border-b-2 border-purple-500 text-purple-600"
+              ? "border-b-2 border-purple-500 text-slate-600"
               : "text-gray-600"
           }`}
           onClick={() => setActiveTab("overview")}
@@ -337,7 +337,7 @@ const insights = useMemo<InsightsData>(() => {
         <button
           className={`px-4 py-2 ${
             activeTab === "activity"
-              ? "border-b-2 border-purple-500 text-purple-600"
+              ? "border-b-2 border-purple-500 text-slate-600"
               : "text-gray-600"
           }`}
           onClick={() => setActiveTab("activity")}
@@ -351,16 +351,16 @@ const insights = useMemo<InsightsData>(() => {
         <div className="space-y-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-purple-50 p-4 rounded-lg">
-              <h3 className="text-sm text-purple-800 font-medium">
+            <div className="bg-slate-50 p-4 rounded-lg">
+              <h3 className="text-sm text-slate-800 font-medium">
                 {translations.totalActivities}
               </h3>
               <p className="text-2xl font-bold">
                 {Math.round(insights.totalActivities)}
               </p>
             </div>
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <h3 className="text-sm text-blue-800 font-medium">
+            <div className="bg-slate-50 p-4 rounded-lg">
+              <h3 className="text-sm bg-slate-800 font-medium">
                 {translations.totalHours}
               </h3>
               <p className="text-2xl font-bold">
@@ -368,7 +368,7 @@ const insights = useMemo<InsightsData>(() => {
               </p>
             </div>
             <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="text-sm text-green-800 font-medium">
+              <h3 className="text-sm bg-slate-800 font-medium">
                 {translations.totalKm}
               </h3>
               <p className="text-2xl font-bold">
@@ -408,8 +408,8 @@ const insights = useMemo<InsightsData>(() => {
           </div>
 
           {/* Favorite Activity */}
-          <div className="bg-purple-50 p-4 rounded-lg">
-            <h3 className="text-sm text-purple-800 font-medium">
+          <div className="bg-slate-50 p-4 rounded-lg">
+            <h3 className="text-sm text-slate-800 font-medium">
               {translations.mostFrequentActivity}
             </h3>
             <p className="text-xl font-bold">{insights.mostFrequentActivity}</p>
@@ -461,7 +461,7 @@ const insights = useMemo<InsightsData>(() => {
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
                     <div
-                      className="bg-purple-600 h-2.5 rounded-full"
+                      className="bg-slate-800 h-2.5 rounded-full"
                       style={{ width: `${item.percentage}%` }}
                     ></div>
                   </div>

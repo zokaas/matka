@@ -57,7 +57,7 @@ const KeyMetrics: React.FC<Props> = ({
         {/* Weekly Top Sport */}
         <div className="bg-gray-50 p-6 rounded-xl">
           <div className="flex items-center gap-4">
-            <Award className="w-8 h-8 text-green-500" />
+            <Award className="w-8 h-8" />
             <div>
               <h3 className="text-sm font-medium text-gray-500">
                 Viikon suosituimmat
@@ -81,7 +81,7 @@ const KeyMetrics: React.FC<Props> = ({
         {/* Longest Workout */}
         <div className="bg-gray-50 p-6 rounded-xl">
           <div className="flex items-center gap-4">
-            <Award className="w-8 h-8 text-blue-500" />
+            <Award className="w-8 h-8" />
             <div>
               <h3 className="text-sm font-medium text-gray-500">
                 Viikon pisin treeni
@@ -111,7 +111,7 @@ const KeyMetrics: React.FC<Props> = ({
         {/* Weekly Top Performer */}
         <div className="bg-gray-50 p-6 rounded-xl">
           <div className="flex items-center gap-4">
-            <Award className="w-8 h-8 text-orange-500" />
+            <Award className="w-8 h-8 text-bg-slate" />
             <div>
               <h3 className="text-sm font-medium text-gray-500">
                 Viikon ahkerimmat

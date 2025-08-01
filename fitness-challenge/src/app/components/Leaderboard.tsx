@@ -71,7 +71,7 @@ const Leaderboard = ({ users }: LeaderboardProps) => {
                     {user.username}
                   </h3>
                   {/* Distance */}
-                  <p className="font-bold text-xl text-purple-600 mt-1">
+                  <p className="font-bold text-xl text-slate-600 mt-1">
                     {Math.round(user.totalKm).toLocaleString("fi-FI")} km
                   </p>
                 </div>

@@ -271,12 +271,12 @@ const UserProfile = () => {
   // Show login required message if not logged in
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex items-center justify-center p-4">
-        <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl p-8 text-center text-white max-w-md">
-          <Lock className="w-16 h-16 mx-auto mb-4 text-blue-400" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-bg-slate-800 flex items-center justify-center p-4">
+        <div className="bg-800/90 backdrop-blur-sm rounded-2xl p-8 text-center text-white max-w-md">
+          <Lock className="w-16 h-16 mx-auto mb-4 text-slate-400" />
           <h2 className="text-2xl font-bold mb-4">🏔️ {translations.loginRequired}</h2>
           <p className="text-gray-300 mb-6">Vain kirjautuneet kiipeilijät voivat tarkastella profiileja.</p>
-          <Link href="/" className="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg font-medium transition-colors">
+          <Link href="/" className="bg-slate-600 hover:bg-slate-700 px-6 py-3 rounded-lg font-medium transition-colors">
             Takaisin basecampiin
           </Link>
         </div>
@@ -286,16 +286,16 @@ const UserProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex items-center justify-center">
-        <div className="animate-spin h-12 w-12 border-4 border-blue-400 rounded-full border-t-transparent"></div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-bg-slate-800 flex items-center justify-center">
+        <div className="animate-spin h-12 w-12 border-4 border-slate-400 rounded-full border-t-transparent"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex items-center justify-center">
-        <div className="text-center text-red-400 p-4 bg-slate-800/50 rounded-lg">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-bg-slate-800 flex items-center justify-center">
+        <div className="text-center text-red-400 p-4 bg-800/50 rounded-lg">
           <Mountain className="w-16 h-16 mx-auto mb-4" />
           {error}
         </div>
@@ -305,8 +305,8 @@ const UserProfile = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 flex items-center justify-center">
-        <div className="text-center text-gray-300 p-4 bg-slate-800/50 rounded-lg">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-bg-slate-800 flex items-center justify-center">
+        <div className="text-center text-gray-300 p-4 bg-800/50 rounded-lg">
           <UserIcon className="w-16 h-16 mx-auto mb-4" />
           {translations.userNotFound}
         </div>
@@ -315,10 +315,10 @@ const UserProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-bg-slate-800 text-white">
       <div className="max-w-4xl mx-auto p-6 space-y-8">
         {/* Header */}
-        <header className="flex justify-between items-center bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+        <header className="flex justify-between items-center bg-800/50 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
           <div className="flex items-center space-x-6">
             <div className="relative">
               {/* Climbing equipment badge overlay for profile pic */}
@@ -332,16 +332,16 @@ const UserProfile = () => {
                 alt="Climber Avatar"
                 width={80}
                 height={80}
-                className="rounded-full border-4 border-blue-400/50"
+                className="rounded-full border-4 border-slate-400/50"
                 unoptimized
               />
             </div>
             <div>
               <h1 className="text-3xl font-bold flex items-center">
                 🏔️ {user.username}
-                {currentUser === username && <span className="ml-2 text-sm bg-blue-600 px-2 py-1 rounded">Sinä</span>}
+                {currentUser === username && <span className="ml-2 text-sm bg-slate-600 px-2 py-1 rounded">Sinä</span>}
               </h1>
-              <p className="text-xl text-blue-300 flex items-center">
+              <p className="text-xl text-slate-300 flex items-center">
                 <Mountain className="w-5 h-5 mr-2" />
                 {user.totalKm.toFixed(0)} {translations.meters} {translations.altitude}
               </p>
@@ -364,12 +364,12 @@ const UserProfile = () => {
           <>
             {/* Toggle button */}
             <div className="flex justify-center">
-              <div className="bg-slate-800/80 backdrop-blur-sm rounded-full p-1 shadow inline-flex border border-white/10">
+              <div className="bg-800/80 backdrop-blur-sm rounded-full p-1 shadow inline-flex border border-white/10">
                 <button
                   onClick={() => setShowInsights(false)}
                   className={`px-6 py-3 rounded-full text-sm font-medium transition-colors flex items-center ${
                     !showInsights
-                      ? "bg-blue-600 text-white"
+                      ? "bg-slate-600 text-white"
                       : "text-gray-300 hover:bg-slate-700"
                   }`}
                 >
@@ -380,7 +380,7 @@ const UserProfile = () => {
                   onClick={() => setShowInsights(true)}
                   className={`px-6 py-3 rounded-full text-sm font-medium transition-colors flex items-center ${
                     showInsights
-                      ? "bg-blue-600 text-white"
+                      ? "bg-slate-600 text-white"
                       : "text-gray-300 hover:bg-slate-700"
                   }`}
                 >
@@ -393,16 +393,16 @@ const UserProfile = () => {
             {/* Activity Form or Insights */}
             {!showInsights ? (
               isActivitySubmissionDisabled ? (
-                <div className="text-center bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+                <div className="text-center bg-800/50 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
                   <Mountain className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                   <p className="text-gray-300">
                     Kiipeilysuoritusten lisääminen on suljettu, koska expeditio on päättynyt.
                   </p>
                 </div>
               ) : (
-                <section ref={formRef} className="bg-slate-800/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/10">
+                <section ref={formRef} className="bg-800/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/10">
                   <h2 className="text-2xl font-semibold mb-6 flex items-center">
-                    <Mountain className="w-6 h-6 mr-2 text-blue-400" />
+                    <Mountain className="w-6 h-6 mr-2 text-slate-400" />
                     {isEditing ? translations.updateActivity : translations.addActivity}
                   </h2>
                   <form
@@ -416,7 +416,7 @@ const UserProfile = () => {
                       <select
                         value={activity}
                         onChange={(e) => setActivity(e.target.value)}
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-slate-400 focus:border-transparent"
                         required
                       >
                         <option value="">{translations.selectActivity}</option>
@@ -438,7 +438,7 @@ const UserProfile = () => {
                           type="text"
                           value={customActivity}
                           onChange={(e) => setCustomActivity(e.target.value)}
-                          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-slate-400 focus:border-transparent"
                           required
                           placeholder={translations.enterActivityName}
                         />
@@ -454,7 +454,7 @@ const UserProfile = () => {
                           type="number"
                           value={duration}
                           onChange={(e) => setDuration(e.target.value)}
-                          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-slate-400 focus:border-transparent"
                           required
                         />
                       </div>
@@ -466,7 +466,7 @@ const UserProfile = () => {
                           type="date"
                           value={date}
                           onChange={(e) => setDate(e.target.value)}
-                          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-slate-400 focus:border-transparent"
                           required
                         />
                       </div>
@@ -479,7 +479,7 @@ const UserProfile = () => {
                       <select
                         value={bonus || ""}
                         onChange={(e) => setBonus(e.target.value || null)}
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-slate-400 focus:border-transparent"
                       >
                         <option value="">{translations.noBonus}</option>
                         <option value="juhlapäivä">🌞 Täydelliset sääolosuhteet (2x korkeutta)</option>
@@ -502,7 +502,7 @@ const UserProfile = () => {
                       )}
                       <button
                         type="submit"
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition-colors font-medium"
+                        className="flex-1 bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-lg transition-colors font-medium"
                       >
                         {isEditing ? translations.updateActivity : translations.addActivity}
                       </button>
@@ -511,7 +511,7 @@ const UserProfile = () => {
                 </section>
               )
             ) : (
-              <div className="bg-slate-800/80 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+              <div className="bg-800/80 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
                 <PersonalInsights
                   activities={user.activities}
                   username={user.username}
@@ -521,7 +521,7 @@ const UserProfile = () => {
           </>
         ) : (
           // Show insights only for other users' profiles
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+          <div className="bg-800/50 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
             <div className="text-center mb-6">
               <Lock className="w-12 h-12 mx-auto mb-4 text-gray-400" />
               <p className="text-gray-300">
@@ -538,17 +538,17 @@ const UserProfile = () => {
         {/* Activities List */}
         <div className="space-y-4">
           <h3 className="text-xl font-semibold flex items-center">
-            <Mountain className="w-5 h-5 mr-2 text-blue-400" />
+            <Mountain className="w-5 h-5 mr-2 text-slate-400" />
             Kiipeilysuoritukset
           </h3>
           {user.activities.map((activity) => (
-            <div key={activity.id} className="bg-slate-800/50 backdrop-blur-sm p-6 rounded-xl shadow border border-white/10">
+            <div key={activity.id} className="bg-800/50 backdrop-blur-sm p-6 rounded-xl shadow border border-white/10">
               <div className="flex justify-between">
                 <div className="flex-1">
                   <h4 className="font-semibold text-lg text-white mb-2">{activity.activity}</h4>
                   <div className="flex items-center space-x-4 text-sm text-gray-300 mb-2">
                     <span className="flex items-center">
-                      <Mountain className="w-4 h-4 mr-1 text-blue-400" />
+                      <Mountain className="w-4 h-4 mr-1 text-slate-400" />
                       {activity.kilometers.toFixed(0)} {translations.meters}
                     </span>
                     <span>🕒 {activity.duration} {translations.mins}</span>
@@ -570,7 +570,7 @@ const UserProfile = () => {
                 {canEditProfile && (
                   <div className="flex space-x-2 ml-4">
                     <button
-                      className="text-blue-400 hover:text-blue-300 transition-colors px-3 py-1 rounded"
+                      className="text-slate-400 hover:text-slate-300 transition-colors px-3 py-1 rounded"
                       onClick={() => startEdit(activity)}
                     >
                       {translations.edit}
@@ -608,7 +608,7 @@ const UserProfile = () => {
 
         {/* Quote submission - only for current user */}
         {canEditProfile && (
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+          <div className="bg-800/50 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
             <SubmitQuote />
           </div>
         )}

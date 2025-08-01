@@ -118,7 +118,7 @@ const PaceProjectionTabs: React.FC<PaceProjectionTabsProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-md p-4 mb-6">
       <h3 className="text-lg font-semibold mb-4 flex items-center">
-        <TrendingUp className="w-5 h-5 mr-2 text-purple-600" />
+        <TrendingUp className="w-5 h-5 mr-2 text-slate-600" />
         Vauhtiennusteet
       </h3>
 
@@ -130,7 +130,7 @@ const PaceProjectionTabs: React.FC<PaceProjectionTabsProps> = ({
             onClick={() => setActiveTab(key)}
             className={`px-4 py-2 text-sm font-medium ${
               activeTab === key
-                ? 'border-b-2 border-purple-500 text-purple-600'
+                ? 'border-b-2 border-purple-500 text-slate-600'
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
@@ -147,7 +147,7 @@ const PaceProjectionTabs: React.FC<PaceProjectionTabsProps> = ({
         <button onClick={goToPrevious} className="bg-gray-100 rounded-full p-1 text-gray-600 hover:bg-gray-200">
           <ChevronLeft className="w-5 h-5" />
         </button>
-        <div className="flex items-center px-2 text-purple-600">
+        <div className="flex items-center px-2 text-slate-600">
           {activeProjection.icon}
           <span className="ml-1 font-medium">{activeProjection.label}</span>
         </div>
@@ -160,14 +160,14 @@ const PaceProjectionTabs: React.FC<PaceProjectionTabsProps> = ({
       <p className="text-sm text-gray-600 mb-3">{activeProjection.description}</p>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-purple-50 p-3 rounded-lg">
-          <div className="text-sm text-purple-700 font-medium">Vauhti / hlö</div>
-          <div className="text-xl font-bold text-purple-800">{activeProjection.pacePerUser} km/vko</div>
+        <div className="bg-slate-50 p-3 rounded-lg">
+          <div className="text-sm text-slate-700 font-medium">Vauhti / hlö</div>
+          <div className="text-xl font-bold text-slate-800">{activeProjection.pacePerUser} km/vko</div>
         </div>
 
-        <div className="bg-blue-50 p-3 rounded-lg">
-          <div className="text-sm text-blue-700 font-medium">Arvioitu valmistuminen</div>
-          <div className="text-xl font-bold text-blue-800">
+        <div className="bg-slate-50 p-3 rounded-lg">
+          <div className="text-sm text-slate-700 font-medium">Arvioitu valmistuminen</div>
+          <div className="text-xl font-bold text-slate-800">
             {activeProjection.estimatedEndDate 
               ? format(activeProjection.estimatedEndDate, 'd.M.yyyy')
               : 'Ei tietoa'}
@@ -188,7 +188,7 @@ const PaceProjectionTabs: React.FC<PaceProjectionTabsProps> = ({
               activeProjection.daysFromTarget > 0
                 ? 'text-red-700'
                 : activeProjection.daysFromTarget < 0
-                ? 'text-green-700'
+                ? 'bg-slate-700'
                 : 'text-gray-700'
             }`}
           >
@@ -199,7 +199,7 @@ const PaceProjectionTabs: React.FC<PaceProjectionTabsProps> = ({
               activeProjection.daysFromTarget > 0
                 ? 'text-red-800'
                 : activeProjection.daysFromTarget < 0
-                ? 'text-green-800'
+                ? 'bg-slate-800'
                 : 'text-gray-800'
             }`}
           >

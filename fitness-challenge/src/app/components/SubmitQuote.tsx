@@ -52,7 +52,7 @@ export default function SubmitQuote() {
           className={`w-full py-2 rounded-lg font-semibold transition ${
             loading
               ? "bg-gray-400 cursor-not-allowed"
-              : "bg-purple-600 text-white hover:bg-purple-700"
+              : "bg-slate-800 text-white hover:bg-slate-700"
           }`}
         >
           {loading ? "Submitting..." : "Submit"}

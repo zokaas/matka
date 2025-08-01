@@ -17,7 +17,7 @@ export default function TopPerformers({ weeklyInsights }: Readonly<Props>) {
             key={user.username}
             className="flex items-center p-2 bg-gray-50 rounded"
           >
-            <span className="w-8 text-center font-bold text-blue-600">
+            <span className="w-8 text-center font-bold bg-slate-600">
               {index + 1}.
             </span>
             <span className="text-gray-800 font-medium">{user.username}</span>
