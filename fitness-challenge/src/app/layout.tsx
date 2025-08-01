@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import NavBar from "./components/NavBar";
+import { AuthProvider } from "./contexts/AuthContext";
 
 export const metadata: Metadata = {
-  title: "Petolliset",
-  description: "Petolliset",
+  title: "Huippujen Valloitus",
+  description: "Kiipeä Everesin huipulle yhdessä!",
 };
 
 export default function RootLayout({
@@ -13,9 +14,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="fi">
       <head>
-        {/* ✅ Force browser to reload favicon */}
         <link rel="icon" href="/favicon.ico?v=2" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=2" />
         <meta
@@ -26,8 +26,10 @@ export default function RootLayout({
         <meta httpEquiv="Expires" content="0" />
       </head>
       <body className="antialiased">
-        <NavBar />
-        {children}
+        <AuthProvider>
+          <NavBar />
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

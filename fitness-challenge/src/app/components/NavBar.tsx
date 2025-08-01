@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { LogOut, Mountain } from "lucide-react";
 
 interface User {
   username: string;
@@ -14,6 +16,8 @@ export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const { currentUser, logout, isLoggedIn } = useAuth();
 
   // Refs for dropdown buttons and content
   const dropdownButtonRef = useRef<HTMLButtonElement>(null);
@@ -40,10 +44,8 @@ export default function Navbar() {
   // Handle clicks anywhere in the document
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Skip if dropdown is not open
       if (!isDropdownOpen) return;
 
-      // Check if click is outside both dropdown button and content
       const clickedElement = event.target as Node;
 
       const isOutsideDesktopDropdown =
@@ -58,8 +60,6 @@ export default function Navbar() {
         mobileDropdownContentRef.current &&
         !mobileDropdownContentRef.current.contains(clickedElement);
 
-      // If mobile menu is not open, we only need to check desktop
-      // If mobile menu is open, we need to check the mobile dropdown
       if (isMenuOpen) {
         if (isOutsideMobileDropdown) {
           setIsDropdownOpen(false);
@@ -71,93 +71,109 @@ export default function Navbar() {
       }
     };
 
-    // Add event listener
     document.addEventListener("mousedown", handleClickOutside);
-
-    // Clean up
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isDropdownOpen, isMenuOpen]);
 
   return (
-    <nav className="bg-purple-600 text-white shadow">
+    <nav className="bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-xl border-b border-slate-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Logo / Home */}
-          <Link href="/" className="text-xl font-bold hover:text-purple-300">
-            🌍 MAAILMAN YMPÄRI 🌍
+          <Link href="/" className="text-xl font-bold hover:text-cyan-300 transition-colors flex items-center">
+            <Mountain className="w-6 h-6 mr-2" />
+            🏔️ HUIPPUJEN VALLOITUS 🏔️
           </Link>
 
           {/* Links for Desktop */}
           <div className="hidden md:flex space-x-4 items-center">
             <Link
               href="/"
-              className="hover:bg-purple-500 px-3 py-2 rounded text-sm font-medium"
+              className="hover:bg-slate-700 px-3 py-2 rounded text-sm font-medium transition-colors"
             >
               Etusivu
             </Link>
             <Link
               href="/insights"
-              className="hover:bg-purple-500 px-3 py-2 rounded text-sm font-medium"
+              className="hover:bg-slate-700 px-3 py-2 rounded text-sm font-medium transition-colors"
             >
               Tilastot
             </Link>
-            {/* <Link
-              href="/feed"
-              className="hover:bg-purple-500 px-3 py-2 rounded text-sm font-medium"
-            >
-              Suoritukset
-            </Link> */}
-            {/* Dropdown for Users */}
-            <div className="relative">
-              <button
-                ref={dropdownButtonRef}
-                onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className="hover:bg-purple-500 px-3 py-2 rounded text-sm font-medium flex items-center"
-              >
-                Käyttäjät
-                <svg
-                  className="ml-1 h-4 w-4"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.72-3.72a.75.75 0 011.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-              {isDropdownOpen && (
-                <div
-                  ref={dropdownContentRef}
-                  className="absolute right-0 mt-2 bg-white text-gray-800 rounded shadow w-48 z-10"
-                >
-                  {loading ? (
-                    <p className="text-gray-500 px-4 py-2">
-                      Ladataan käyttäjiä...
-                    </p>
-                  ) : error ? (
-                    <p className="text-red-500 px-4 py-2">
-                      Virhe käyttäjien haussa
-                    </p>
-                  ) : (
-                    users.map((user) => (
-                      <Link
-                        key={user.username}
-                        href={`/user/${user.username}`}
-                        className="block px-4 py-2 hover:bg-gray-200"
-                        onClick={() => setIsDropdownOpen(false)}
-                      >
-                        {user.username}
-                      </Link>
-                    ))
+            
+            {/* User-specific links */}
+            {isLoggedIn && (
+              <>
+                {/* Dropdown for Users */}
+                <div className="relative">
+                  <button
+                    ref={dropdownButtonRef}
+                    onClick={() => setIsDropdownOpen((prev) => !prev)}
+                    className="hover:bg-slate-700 px-3 py-2 rounded text-sm font-medium flex items-center transition-colors"
+                  >
+                    Kiipeilijät
+                    <svg
+                      className="ml-1 h-4 w-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.72-3.72a.75.75 0 011.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </button>
+                  {isDropdownOpen && (
+                    <div
+                      ref={dropdownContentRef}
+                      className="absolute right-0 mt-2 bg-slate-800 text-white rounded shadow-xl w-48 z-10 border border-slate-700"
+                    >
+                      {loading ? (
+                        <p className="text-gray-400 px-4 py-2">
+                          Ladataan kiipeilijöitä...
+                        </p>
+                      ) : error ? (
+                        <p className="text-red-400 px-4 py-2">
+                          Virhe kiipeilijöiden haussa
+                        </p>
+                      ) : (
+                        users.map((user) => (
+                          <Link
+                            key={user.username}
+                            href={`/user/${user.username}`}
+                            className="block px-4 py-2 hover:bg-slate-700 transition-colors"
+                            onClick={() => setIsDropdownOpen(false)}
+                          >
+                            🧗‍♂️ {user.username}
+                          </Link>
+                        ))
+                      )}
+                    </div>
                   )}
                 </div>
-              )}
-            </div>
+
+                {/* Current User Display */}
+                <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-slate-600">
+                  <Link
+                    href={`/user/${currentUser}`}
+                    className="hover:text-cyan-300 transition-colors flex items-center"
+                  >
+                    <span className="text-2xl mr-1">🧗‍♂️</span>
+                    {currentUser}
+                  </Link>
+                  <button
+                    onClick={logout}
+                    className="hover:bg-red-600 px-3 py-2 rounded text-sm font-medium transition-colors flex items-center"
+                    title="Kirjaudu ulos"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Hamburger Menu for Mobile */}
@@ -186,69 +202,87 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="md:hidden bg-purple-500">
+        <div className="md:hidden bg-slate-800 border-t border-slate-700">
           <Link
             href="/"
-            className="block px-4 py-2 text-sm font-medium hover:bg-purple-800"
+            className="block px-4 py-2 text-sm font-medium hover:bg-slate-700 transition-colors"
             onClick={() => setIsMenuOpen(false)}
           >
             Etusivu
           </Link>
           <Link
             href="/insights"
-            className="block px-4 py-2 text-sm font-medium hover:bg-purple-800"
+            className="block px-4 py-2 text-sm font-medium hover:bg-slate-700 transition-colors"
             onClick={() => setIsMenuOpen(false)}
           >
             Tilastot
           </Link>
-          {/* <Link
-            href="/feed"
-            className="block px-4 py-2 text-sm font-medium hover:bg-purple-800"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Suoritukset
-          </Link> */}
-          <div>
-            <button
-              ref={mobileDropdownButtonRef}
-              onClick={() => setIsDropdownOpen((prev) => !prev)}
-              className="block w-full text-left px-4 py-2 text-sm font-medium hover:bg-purple-800"
-            >
-              Käyttäjät
-              <svg
-                className="ml-1 h-4 w-4 inline-block"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.72-3.72a.75.75 0 011.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-            {isDropdownOpen && (
-              <div
-                ref={mobileDropdownContentRef}
-                className="bg-purple-800 text-white"
-              >
-                {users.map((user) => (
-                  <Link
-                    key={user.username}
-                    href={`/user/${user.username}`}
-                    className="block px-4 py-2 text-sm hover:bg-purple-900"
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      setIsDropdownOpen(false);
-                    }}
+          
+          {isLoggedIn && (
+            <>
+              <div>
+                <button
+                  ref={mobileDropdownButtonRef}
+                  onClick={() => setIsDropdownOpen((prev) => !prev)}
+                  className="block w-full text-left px-4 py-2 text-sm font-medium hover:bg-slate-700 transition-colors"
+                >
+                  Kiipeilijät
+                  <svg
+                    className="ml-1 h-4 w-4 inline-block"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    {user.username}
-                  </Link>
-                ))}
+                    <path
+                      fillRule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.72-3.72a.75.75 0 011.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+                {isDropdownOpen && (
+                  <div
+                    ref={mobileDropdownContentRef}
+                    className="bg-slate-900 text-white"
+                  >
+                    {users.map((user) => (
+                      <Link
+                        key={user.username}
+                        href={`/user/${user.username}`}
+                        className="block px-6 py-2 text-sm hover:bg-slate-800 transition-colors"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          setIsDropdownOpen(false);
+                        }}
+                      >
+                        🧗‍♂️ {user.username}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+              
+              <div className="border-t border-slate-700 pt-2">
+                <Link
+                  href={`/user/${currentUser}`}
+                  className="block px-4 py-2 text-sm hover:bg-slate-700 transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  🧗‍♂️ Oma profiili ({currentUser})
+                </Link>
+                <button
+                  onClick={() => {
+                    logout();
+                    setIsMenuOpen(false);
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm hover:bg-red-700 transition-colors"
+                >
+                  <LogOut className="w-4 h-4 inline mr-2" />
+                  Kirjaudu ulos
+                </button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </nav>
