@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import CommentsSection from "@/app/components/CommentsSection";
 import ActivityReactions from "@/app/components/ActivityReactions";
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface ActivityItemProps {
   activity: {
@@ -20,6 +21,7 @@ interface ActivityItemProps {
 }
 
 const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
+  const { t } = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
 
@@ -68,7 +70,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
         <h3 className="font-semibold text-lg">{activity.activity}</h3>
         <div className="flex space-x-4 text-sm text-gray-600">
           <span>{activity.kilometers.toFixed(1)} km</span>
-          <span>{activity.duration} min</span>
+          <span>{activity.duration} {t.insights.mins}</span>
           {activity.bonus && (
             <span className="text-slate-500">🎉 {activity.bonus}</span>
           )}
@@ -99,8 +101,8 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
             />
           </svg>
           {isExpanded
-            ? "Sulje kommentit"
-            : `Kommentit${commentCount > 0 ? ` (${commentCount})` : ""}`}
+            ? t.comments.hideComments
+            : `${t.comments.showComments}${commentCount > 0 ? ` (${commentCount})` : ""}`}
         </button>
       </div>
 

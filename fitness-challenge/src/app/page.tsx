@@ -20,8 +20,6 @@ export default function Home() {
 
   return (
     <>
-      {/* <ThemedStageDashboard />      
-      <QuickAccess /> */}
       <Dashboard />
       <div className="p-4"></div>
     </>

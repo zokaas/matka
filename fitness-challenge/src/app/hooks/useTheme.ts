@@ -1,17 +1,16 @@
-import { useState } from 'react';
-import { themes } from '@/app/themes/themeManager';
+import { useMemo } from 'react';
+import { tourDeFranceTheme } from '@/app/themes/tourDeFranceTheme';
 
-export const useTheme = () => {
-  const [selectedTheme] = useState(
-    localStorage.getItem('selectedTheme') || 'tour'
-  );
-  
-  const currentTheme = themes[selectedTheme as keyof typeof themes];
-  const { translations: t } = currentTheme;
-
-  return {
-    theme: currentTheme,
-    t,
-    selectedTheme
-  };
+const themes = {
+  tour: tourDeFranceTheme,
 };
+
+export function useTheme() {
+  const selectedThemeKey = localStorage.getItem('theme') || 'tour';
+  const theme = themes[selectedThemeKey as keyof typeof themes] || tourDeFranceTheme;
+
+  const t = theme.translations;
+  const colors = theme.colors;
+
+  return { t, colors, theme }; 
+}

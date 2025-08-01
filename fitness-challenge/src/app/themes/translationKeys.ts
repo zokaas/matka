@@ -49,6 +49,41 @@ export interface ThemeTranslations {
   loading: string;
   error: string;
 
+  // Navbar translations
+  navbar: {
+    title: string;
+    statistics: string;
+    climbers: string;
+    loadingClimbers: string;
+    errorLoadingClimbers: string;
+    logout: string;
+    ownProfile: string;
+    failedToFetchUsers: string;
+  };
+
+  // WeeklyProgressBar translations
+  weeklyProgressBar: {
+    weeklyGoal: string;
+    remaining: string;
+    goalAchieved: string;
+    kmPerPerson: string;
+    errorLoadingData: string;
+  };
+
+  // Reactions translations
+  reactions: {
+    failedToLoad: string;
+    failedToSave: string;
+    addReaction: string;
+  };
+
+  // ActivityForm translations
+  activityForm: {
+    noActivitiesFound: string;
+    bonusCalculated: string;
+    bonus: string;
+  };
+
   // Leaderboard translations
   leaderboard: {
     title: string;
@@ -236,17 +271,94 @@ export interface ThemeTranslations {
     time: string;
   };
 
-  // Activity form translations
-  activityForm: {
-    noActivitiesFound: string;
-    bonusCalculated: string;
-  };
-
   // Challenge closed translations
   challengeClosed: {
     newChallengeStarts: string;
     detailsWillBeReleased: string;
     prepareToBe: string;
     inspired: string;
+  };
+
+  // CommentAndReactionView translations
+  commentReactionView: {
+    failedToLoadReactionsOrComments: string;
+    failedToLoadComments: string;
+  };
+
+  // UserProfile translations
+  userProfile: {
+    failedToFetchUser: string;
+    failedToDeleteActivity: string;
+    failedToAddActivity: string;
+    failedToUpdateActivity: string;
+    loginRequired: string;
+    onlyLoggedInClimbersCanView: string;
+    backToBasecamp: string;
+    userNotFound: string;
+    climberAvatar: string;
+    you: string;
+    meters: string;
+    altitude: string;
+    height: string;
+    climbingPerformances: string;
+    climbingStatistics: string;
+    addPerformance: string;
+    updatePerformance: string;
+    submissionClosed: string;
+    activityType: string;
+    selectActivity: string;
+    specifyActivity: string;
+    enterActivityName: string;
+    duration: string;
+    date: string;
+    noBonus: string;
+    perfectWeatherConditions: string;
+    groupClimbing: string;
+    wholeTeamAtSummit: string;
+    canViewStats: string;
+  };
+
+  // SubmitQuote translations
+  submitQuote: {
+    pleaseEnterQuote: string;
+    quoteSubmittedSuccessfully: string;
+    failedToSubmitQuote: string;
+    submitting: string;
+  };
+
+  // Quotes translations
+  quotes: {
+    noQuotesAvailable: string;
+    couldNotLoadQuotes: string;
+    loadingQuote: string;
+  };
+
+  // OverviewCards translations
+  overviewCards: {
+    soFar: string;
+    weeklyGoal: string;
+    person: string;
+    timeRemaining: string;
+    days: string;
+  };
+
+  // PopularSports translations
+  popularSports: {
+    title: string;
+    time: string;
+    times: string;
+  };
+
+  // TopPerformers translations
+  topPerformers: {
+    title: string;
+  };
+
+  // WeeklyInsights translations
+  weeklyInsights: {
+    title: string;
+    participant: string;
+    weeklyProgress: string;
+    remainingWeeklyDailyTarget: string;
   };
 }

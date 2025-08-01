@@ -1,24 +1,27 @@
 import React from "react";
 import { WeeklyInsight } from "@/app/types/types";
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface Props {
   weeklyInsights: WeeklyInsight[];
 }
 
 const WeeklyInsights: React.FC<Props> = ({ weeklyInsights }) => {
+  const { t } = useTheme();
+  
   return (
     <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200 mt-6">
       <h3 className="text-xl font-semibold text-gray-800 mb-6">
-        Kuluvan viikon statsit
+        {t.weeklyInsights.title}
       </h3>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse rounded-xl overflow-hidden shadow-sm">
           <thead className="bg-slate-100 text-slate-800 sticky top-0">
             <tr>
               {[
-                "Petollinen",
-                "Viikon edistyminen",
-                "Loppuviikon päiväkohtainen tavoite",
+                t.weeklyInsights.participant,
+                t.weeklyInsights.weeklyProgress,
+                t.weeklyInsights.remainingWeeklyDailyTarget,
               ].map((heading) => (
                 <th
                   key={heading}

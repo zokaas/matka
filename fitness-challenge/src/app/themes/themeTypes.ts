@@ -1,6 +1,7 @@
 // themeTypes.ts
 import { ThemeTranslations } from './translationKeys';
 
+
 export interface Stage {
   name: string;
   pointsRequired: number;
@@ -19,6 +20,20 @@ export interface Theme {
   totalPoints: number;
   stages: Stage[];
   translations: ThemeTranslations;
-  weatherIcons: Record<string, string>;       // ✅ add this
-  stageColors: Record<string, string>;        // ✅ add this
+  weatherIcons: Record<string, string>;
+  stageColors: Record<string, string>;
+  colors: ThemeColors;
+}
+
+export type ThemeId = "tour";
+
+export interface ThemeColors {
+  primary: string;
+  background: string;
+  card: string;
+  text: string;
+  mutedText: string;
+  border: string;
+  accent: string;
+  button: string;
 }

@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import _ from "lodash";
+import { useTheme } from "@/app/hooks/useTheme";
 
 const Card = ({
   children,
@@ -64,6 +65,7 @@ const formatDate = (date: string) =>
   });
 
 const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
+  const { t } = useTheme();
   const [thisWeek, setThisWeek] = useState<WeekData | null>(null);
   const [lastWeek, setLastWeek] = useState<WeekData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -145,10 +147,10 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
   }, [username]);
 
   if (loading)
-    return <div className="text-center p-4">Loading insights...</div>;
+    return <div className="text-center p-4">{t.userInsights.title}</div>;
   if (error) return <div className="text-center text-red-500 p-4">{error}</div>;
   if (!thisWeek || !lastWeek)
-    return <div className="text-center p-4">No data available</div>;
+    return <div className="text-center p-4">{t.userInsights.noDataAvailable}</div>;
 
   // Prepare data for the comparison chart
   const chartData = thisWeek.days.map((day, index) => ({
@@ -168,14 +170,14 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Card>
           <CardContent>
-            <h3 className="font-semibold mb-2">Today vs Last Week</h3>
+            <h3 className="font-semibold mb-2">{t.userInsights.todayVsLastWeek}</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-slate-50 rounded-lg">
                 <div className="text-2xl font-bold text-slate-600">
                   {todayData.totalKm.toFixed(1)} /{" "}
                   {lastWeekSameDay.totalKm.toFixed(1)}
                 </div>
-                <div className="text-sm text-gray-600">Km Today/Last Week</div>
+                <div className="text-sm text-gray-600">{t.userInsights.kmTodayLastWeek}</div>
                 {lastWeekSameDay.totalKm > 0 && (
                   <div className="text-xs text-gray-500">
                     {(
@@ -183,7 +185,7 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
                         lastWeekSameDay.totalKm) *
                       100
                     ).toFixed(1)}
-                    % change
+                    % {t.userInsights.change}
                   </div>
                 )}
               </div>
@@ -193,7 +195,7 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
                   {lastWeekSameDay.totalActivities}
                 </div>
                 <div className="text-sm text-gray-600">
-                  Activities Today/Last Week
+                  {t.userInsights.activitiesTodayLastWeek}
                 </div>
               </div>
             </div>
@@ -202,14 +204,14 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
 
         <Card>
           <CardContent>
-            <h3 className="font-semibold mb-2">Week Comparison</h3>
+            <h3 className="font-semibold mb-2">{t.userInsights.weekComparison}</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-green-50 rounded-lg">
                 <div className="text-2xl font-bold bg-slate-600">
                   {thisWeek.totalKm.toFixed(1)} / {lastWeek.totalKm.toFixed(1)}
                 </div>
                 <div className="text-sm text-gray-600">
-                  Total Km This/Last Week
+                  {t.userInsights.totalKmThisLastWeek}
                 </div>
                 {lastWeek.totalKm > 0 && (
                   <div className="text-xs text-gray-500">
@@ -218,7 +220,7 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
                         lastWeek.totalKm) *
                       100
                     ).toFixed(1)}
-                    % change
+                    % {t.userInsights.change}
                   </div>
                 )}
               </div>
@@ -227,7 +229,7 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
                   {thisWeek.totalActivities} / {lastWeek.totalActivities}
                 </div>
                 <div className="text-sm text-gray-600">
-                  Activities This/Last Week
+                  {t.userInsights.activitiesThisLastWeek}
                 </div>
               </div>
             </div>
@@ -237,7 +239,7 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
 
       <Card>
         <CardContent className="h-64">
-          <h3 className="font-semibold mb-2">Week-over-Week Comparison</h3>
+          <h3 className="font-semibold mb-2">{t.userInsights.weekOverWeekComparison}</h3>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -272,7 +274,7 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
 
       <Card>
         <CardContent>
-          <h3 className="font-semibold mb-2">Daily Comparison</h3>
+          <h3 className="font-semibold mb-2">{t.userInsights.dailyComparison}</h3>
           <div className="space-y-2">
             {thisWeek.days.map((day, index) => {
               const lastWeekDay = lastWeek.days[index];

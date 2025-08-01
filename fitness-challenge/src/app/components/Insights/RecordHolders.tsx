@@ -126,7 +126,7 @@ const mapUserRecord = async (username: string): Promise<{
   }
 };
 
-const renderHolders = (holders: RecordHolder[], t: any) => {
+const renderHolders = (holders: RecordHolder[], t: ReturnType<typeof useTheme>['t']) => {
   if (!holders || holders.length === 0) return <span>{t.records.noDataAvailable}</span>;
   
   return holders.map((holder, index) => (
@@ -137,7 +137,7 @@ const renderHolders = (holders: RecordHolder[], t: any) => {
   ));
 };
 
-const renderActivityList = (activities: Activity[], type: "km" | "min") => {
+const renderActivityList = (activities: Activity[], type: "km" | "min", t: ReturnType<typeof useTheme>['t']) => {
   if (!activities || activities.length === 0) return null;
   
   return activities.map((activity) => (
@@ -161,7 +161,7 @@ const renderRecordCard = (
   valueLabel: string,
   dateLabel: string,
   activityType: "km" | "min",
-  t: any
+  t: ReturnType<typeof useTheme>['t']
 ) => {
   if (!holders || holders.length === 0) {
     return (
@@ -180,7 +180,7 @@ const renderRecordCard = (
       <div className="text-sm text-gray-500">{dateLabel}</div>
       {holders[0]?.activities && holders[0].activities.length > 0 && (
         <div className="mt-2 text-xs text-gray-500">
-          {renderActivityList(holders[0].activities, activityType)}
+          {renderActivityList(holders[0].activities, activityType, t)}
         </div>
       )}
     </div>

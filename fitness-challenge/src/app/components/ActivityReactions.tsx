@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import apiService from "../service/apiService";
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface ReactionsProps {
   activityId: number;
@@ -33,6 +34,7 @@ const REACTION_EMOJI_MAP: Record<string, string> = {
 };
 
 const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
+  const { t } = useTheme();
   const [reactions, setReactions] = useState<Record<string, number>>({});
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,14 +60,14 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
         setReactions(reactionCounts);
       } catch (error) {
         console.error("Error fetching reactions:", error);
-        setError("Failed to load reactions");
+        setError(t.reactions.failedToLoad);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchReactions();
-  }, [activityId]);
+  }, [activityId, t.reactions.failedToLoad]);
 
   // Function to toggle a reaction with optimistic updates
   const toggleReaction = async (reactionType: string) => {
@@ -109,7 +111,7 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
       }
       setReactions(previousReactions);
 
-      setError("Failed to save reaction");
+      setError(t.reactions.failedToSave);
     } finally {
       setIsLoading(false);
     }
@@ -159,7 +161,7 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
           className={`flex items-center justify-center w-8 h-8 bg-white hover:bg-gray-50 active:bg-gray-100 rounded-full transition-colors shadow-sm border border-gray-200 ${
             isLoading ? "opacity-50 cursor-not-allowed" : ""
           } ${showEmojiPicker ? "ring-2 ring-purple-300 bg-slate-50" : ""}`}
-          aria-label="Add reaction"
+          aria-label={t.reactions.addReaction}
           disabled={isLoading}
         >
           <span className="text-gray-600 text-base">+</span>

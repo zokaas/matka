@@ -7,13 +7,14 @@ import {
   getDaysRemaining,
 } from "@/app/utils/dateUtils";
 import { challengeParams } from "../constants/challengeParams";
+import { useTheme } from "@/app/hooks/useTheme";
 
 const CHALLENGE_START_DATE = new Date(challengeParams.startDate);
 const CHALLENGE_END_DATE = new Date(challengeParams.endDate);
 const TOTAL_CHALLENGE_DISTANCE = challengeParams.totalDistance;
 
-
 const WeeklyProgressBar = () => {
+  const { t } = useTheme();
   const { users, loading, error } = useFetchUsers();
   const [weeklyProgress, setWeeklyProgress] = useState(0);
   const [weeklyGoal, setWeeklyGoal] = useState(0);
@@ -84,7 +85,7 @@ const WeeklyProgressBar = () => {
   if (error) {
     return (
       <div className="p-3 rounded text-red-500 text-center text-sm">
-        Error loading data
+        {t.weeklyProgressBar.errorLoadingData}
       </div>
     );
   }
@@ -96,7 +97,7 @@ const WeeklyProgressBar = () => {
   return (
     <div className="bg-white p-4 rounded-lg shadow">
       <div className="flex justify-between items-center mb-2">
-        <h2 className="text-base font-medium text-gray-800">Viikon tavoite</h2>
+        <h2 className="text-base font-medium text-gray-800">{t.weeklyProgressBar.weeklyGoal}</h2>
         <div className="text-sm font-medium">
           <span className="text-slate-600">{weeklyProgress}</span>
           <span className="text-gray-500"> / {weeklyGoal} km</span>
@@ -126,15 +127,15 @@ const WeeklyProgressBar = () => {
               <span className="font-medium text-slate-600">
                 {Math.round(remainingDistance)} km
               </span>{" "}
-              jäljellä
+              {t.weeklyProgressBar.remaining}
             </div>
           ) : (
             <div className="bg-slate-600 font-medium">
-              Viikkotavoite saavutettu! 🎉
+              {t.weeklyProgressBar.goalAchieved} 🎉
             </div>
           )}
         </div>
-        <div className="text-gray-500">{weeklyKmPerPerson} km/hlö</div>
+        <div className="text-gray-500">{weeklyKmPerPerson} {t.weeklyProgressBar.kmPerPerson}</div>
       </div>
     </div>
   );

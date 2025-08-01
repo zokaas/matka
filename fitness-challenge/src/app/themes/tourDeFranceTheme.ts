@@ -1,11 +1,21 @@
-import { Theme } from './themeTypes';
-import { ThemeTranslations } from './translationKeys';
+import { Theme } from "./themeTypes";
+import { ThemeTranslations } from "./translationKeys";
 
 export const tourDeFranceTheme: Theme = {
   name: "Tour de France 2025",
   totalStages: 21,
   totalDistance: 3338.8,
   totalPoints: 3338.8,
+  colors: {
+    primary: "#facc15", // yellow
+    background: "#fffefc",
+    card: "#ffffff",
+    text: "#1e293b",
+    mutedText: "#64748b",
+    border: "#e2e8f0",
+    accent: "#facc15",
+    button: "#facc15",
+  },
 
   stages: [
     {
@@ -16,7 +26,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "flat",
       weather: "Sunny",
       location: "Lille, France",
-      color: "from-yellow-200 to-yellow-400"
+      color: "from-yellow-200 to-yellow-400",
     },
     {
       name: "Lauwin‑Planque → Boulogne‑sur‑Mer",
@@ -26,7 +36,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "hilly",
       weather: "Windy",
       location: "Boulogne-sur-Mer, France",
-      color: "from-blue-200 to-blue-400"
+      color: "from-blue-200 to-blue-400",
     },
     {
       name: "Valenciennes → Dunkerque",
@@ -36,7 +46,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "flat",
       weather: "Cloudy",
       location: "Dunkerque, France",
-      color: "from-indigo-200 to-indigo-400"
+      color: "from-indigo-200 to-indigo-400",
     },
     {
       name: "Amiens Métropole → Rouen",
@@ -46,7 +56,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "flat",
       weather: "Variable",
       location: "Rouen, France",
-      color: "from-gray-200 to-gray-400"
+      color: "from-gray-200 to-gray-400",
     },
     {
       name: "Caen → Caen (ITT)",
@@ -56,7 +66,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "time_trial",
       weather: "Cloudy",
       location: "Caen, France",
-      color: "from-cyan-300 to-cyan-500"
+      color: "from-cyan-300 to-cyan-500",
     },
     {
       name: "Bayeux → Vire Normandie",
@@ -66,7 +76,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "hilly",
       weather: "Cloudy",
       location: "Vire Normandie, France",
-      color: "from-green-300 to-green-500"
+      color: "from-green-300 to-green-500",
     },
     {
       name: "Saint‑Malo → Mûr‑de‑Bretagne Guerlédan",
@@ -76,7 +86,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "hilly",
       weather: "Variable",
       location: "Mûr-de-Bretagne, France",
-      color: "from-lime-400 to-lime-600"
+      color: "from-lime-400 to-lime-600",
     },
     {
       name: "Saint‑Méen‑le‑Grand → Laval Espace Mayenne",
@@ -86,7 +96,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "flat",
       weather: "Sunny",
       location: "Laval, France",
-      color: "from-amber-300 to-amber-500"
+      color: "from-amber-300 to-amber-500",
     },
     {
       name: "Chinon → Châteauroux",
@@ -96,7 +106,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "flat",
       weather: "Cloudy",
       location: "Châteauroux, France",
-      color: "from-rose-300 to-rose-500"
+      color: "from-rose-300 to-rose-500",
     },
     {
       name: "Ennezat → Le Mont‑Dore (Puy de Sancy)",
@@ -106,7 +116,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "mountain",
       weather: "Windy",
       location: "Le Mont-Dore, France",
-      color: "from-red-400 to-red-600"
+      color: "from-red-400 to-red-600",
     },
     {
       name: "Toulouse → Toulouse",
@@ -116,7 +126,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "flat",
       weather: "Sunny",
       location: "Toulouse, France",
-      color: "from-yellow-200 to-yellow-400"
+      color: "from-yellow-200 to-yellow-400",
     },
     {
       name: "Auch → Hautacam",
@@ -126,7 +136,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "mountain",
       weather: "Cloudy",
       location: "Hautacam, France",
-      color: "from-blue-500 to-blue-700"
+      color: "from-blue-500 to-blue-700",
     },
     {
       name: "Loudenvielle → Peyragudes (TTT)",
@@ -136,7 +146,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "time_trial",
       weather: "Variable",
       location: "Peyragudes, France",
-      color: "from-cyan-400 to-cyan-600"
+      color: "from-cyan-400 to-cyan-600",
     },
     {
       name: "Pau → Luchon‑Superbagnères",
@@ -146,7 +156,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "mountain",
       weather: "Storm",
       location: "Luchon-Superbagnères, France",
-      color: "from-violet-500 to-violet-700"
+      color: "from-violet-500 to-violet-700",
     },
     {
       name: "Muret → Carcassonne",
@@ -156,7 +166,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "hilly",
       weather: "Cloudy",
       location: "Carcassonne, France",
-      color: "from-green-400 to-green-600"
+      color: "from-green-400 to-green-600",
     },
     {
       name: "Montpellier → Mont Ventoux",
@@ -166,7 +176,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "mountain",
       weather: "Windy",
       location: "Mont Ventoux, France",
-      color: "from-slate-400 to-slate-600"
+      color: "from-slate-400 to-slate-600",
     },
     {
       name: "Bollène → Valence",
@@ -176,7 +186,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "flat",
       weather: "Sunny",
       location: "Valence, France",
-      color: "from-orange-300 to-orange-500"
+      color: "from-orange-300 to-orange-500",
     },
     {
       name: "Vif → Courchevel (Col de la Loze)",
@@ -186,7 +196,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "mountain",
       weather: "Cloudy",
       location: "Courchevel, France",
-      color: "from-teal-400 to-teal-600"
+      color: "from-teal-400 to-teal-600",
     },
     {
       name: "Albertville → La Plagne",
@@ -196,7 +206,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "mountain",
       weather: "Storm",
       location: "La Plagne, France",
-      color: "from-gray-500 to-gray-700"
+      color: "from-gray-500 to-gray-700",
     },
     {
       name: "Nantua → Pontarlier",
@@ -206,7 +216,7 @@ export const tourDeFranceTheme: Theme = {
       stageType: "hilly",
       weather: "Variable",
       location: "Pontarlier, France",
-      color: "from-emerald-400 to-emerald-600"
+      color: "from-emerald-400 to-emerald-600",
     },
     {
       name: "Mantes‑la‑Ville → Paris (Champs‑Élysées)",
@@ -216,8 +226,8 @@ export const tourDeFranceTheme: Theme = {
       stageType: "ceremonial",
       weather: "Sunny",
       location: "Paris, France",
-      color: "from-yellow-400 to-yellow-600"
-    }
+      color: "from-yellow-400 to-yellow-600",
+    },
   ],
 
   weatherIcons: {
@@ -225,7 +235,7 @@ export const tourDeFranceTheme: Theme = {
     Cloudy: "☁️",
     Windy: "💨",
     Variable: "🌤️",
-    Storm: "⛈️"
+    Storm: "⛈️",
   },
 
   stageColors: {
@@ -233,7 +243,7 @@ export const tourDeFranceTheme: Theme = {
     hilly: "text-green-600",
     mountain: "text-red-600",
     time_trial: "text-purple-600",
-    ceremonial: "text-slate-600"
+    ceremonial: "text-slate-600",
   },
 
   translations: {
@@ -265,7 +275,7 @@ export const tourDeFranceTheme: Theme = {
     tabs: {
       leaderboard: "Sijoitukset",
       weekly: "Viikon tilanne",
-      quotes: "Kannustus"
+      quotes: "Kannustus",
     },
     submitQuoteTitle: "Kannusta joukkuettasi",
     submitQuotePlaceholder: "Kirjoita kannustava viesti...",
@@ -278,7 +288,42 @@ export const tourDeFranceTheme: Theme = {
     loading: "Ladataan...",
     error: "Tapahtui virhe.",
 
-    // New Leaderboard translations
+    // Navbar translations
+    navbar: {
+      title: "TOUR DE FRANCE",
+      statistics: "Tilastot",
+      climbers: "Kiipeilijät",
+      loadingClimbers: "Ladataan kiipeilijöitä",
+      errorLoadingClimbers: "Virhe kiipeilijöiden haussa",
+      logout: "Kirjaudu ulos",
+      ownProfile: "Oma profiili",
+      failedToFetchUsers: "Käyttäjien lataaminen epäonnistui",
+    },
+
+    // WeeklyProgressBar translations
+    weeklyProgressBar: {
+      weeklyGoal: "Viikon tavoite",
+      remaining: "jäljellä",
+      goalAchieved: "Viikkotavoite saavutettu!",
+      kmPerPerson: "km/hlö",
+      errorLoadingData: "Virhe tietojen lataamisessa",
+    },
+
+    // Reactions translations
+    reactions: {
+      failedToLoad: "Reaktioiden lataaminen epäonnistui",
+      failedToSave: "Reaktion tallentaminen epäonnistui",
+      addReaction: "Lisää reaktio",
+    },
+
+    // ActivityForm translations
+    activityForm: {
+      noActivitiesFound: "Aktiviteetteja ei löytynyt.",
+      bonusCalculated: "bonukset laskettu mukaan",
+      bonus: "Bonus",
+    },
+
+    // Leaderboard translations
     leaderboard: {
       title: "Sijoitukset",
       rankings: "Tulokset",
@@ -287,10 +332,10 @@ export const tourDeFranceTheme: Theme = {
       noActivities: "Ei suorituksia",
       goldMedal: "Kultamitali",
       silverMedal: "Hopeamitali",
-      bronzeMedal: "Pronssimitali"
+      bronzeMedal: "Pronssimitali",
     },
 
-    // New WeeklyProgress translations  
+    // WeeklyProgress translations
     weeklyProgress: {
       title: "Viikon tilanne",
       thisWeek: "Tämä viikko",
@@ -300,10 +345,10 @@ export const tourDeFranceTheme: Theme = {
       dailyTarget: "Päivätavoite",
       weeklyTarget: "Viikkotavoite",
       daysAgo: "päivää sitten",
-      position: "Sija"
+      position: "Sija",
     },
 
-    // New ActivityFeed translations
+    // ActivityFeed translations
     activityFeed: {
       title: "Viimeisimmät suoritukset",
       recentActivities: "Tuoreimmat aktiviteetit",
@@ -312,7 +357,7 @@ export const tourDeFranceTheme: Theme = {
       completedWorkout: "suoritti treenin",
       timeAgo: "sitten",
       showComments: "Näytä kommentit",
-      hideComments: "Piilota kommentit"
+      hideComments: "Piilota kommentit",
     },
 
     // General UI translations
@@ -326,7 +371,7 @@ export const tourDeFranceTheme: Theme = {
       next: "Seuraava",
       previous: "Edellinen",
       viewProfile: "Näytä profiili",
-      backToHome: "Takaisin etusivulle"
+      backToHome: "Takaisin etusivulle",
     },
 
     // PersonalInsights translations
@@ -349,7 +394,7 @@ export const tourDeFranceTheme: Theme = {
       km: "km",
       activityBreakdown: "Aktiviteettijakauma",
       times: "kertaa",
-      addActivitiesToSee: "Lisää aktiviteetteja nähdäksesi tilastot."
+      addActivitiesToSee: "Lisää aktiviteetteja nähdäksesi tilastot.",
     },
 
     // Comments translations
@@ -362,7 +407,7 @@ export const tourDeFranceTheme: Theme = {
       noComments: "Ei kommentteja vielä.",
       showComments: "Näytä kommentit",
       hideComments: "Piilota kommentit",
-      loadingComments: "Ladataan..."
+      loadingComments: "Ladataan",
     },
 
     // Pagination translations
@@ -370,7 +415,7 @@ export const tourDeFranceTheme: Theme = {
       previous: "Edellinen",
       next: "Seuraava",
       page: "Sivu",
-      of: "/"
+      of: "/",
     },
 
     // Modal translations
@@ -380,7 +425,7 @@ export const tourDeFranceTheme: Theme = {
       activityLabel: "Laji",
       dateLabel: "Päivämäärä",
       durationLabel: "Kesto",
-      areYouSure: "Oletko varma?"
+      areYouSure: "Oletko varma?",
     },
 
     // AllTime insights translations
@@ -394,29 +439,30 @@ export const tourDeFranceTheme: Theme = {
       longestWorkouts: "min",
       currentStreakDays: "päivää",
       since: "Alkaen",
-      bonusIncluded: "bonukset laskettu mukaan"
+      bonusIncluded: "bonukset laskettu mukaan",
     },
 
     // User insights translations
     userInsights: {
-      title: "Loading insights...",
-      todayVsLastWeek: "Today vs Last Week",
-      weekComparison: "Week Comparison",
-      kmTodayLastWeek: "Km Today/Last Week",
-      activitiesTodayLastWeek: "Activities Today/Last Week",
-      totalKmThisLastWeek: "Total Km This/Last Week",
-      activitiesThisLastWeek: "Activities This/Last Week",
-      weekOverWeekComparison: "Week-over-Week Comparison",
-      dailyComparison: "Daily Comparison",
-      change: "change",
-      noDataAvailable: "No data available"
+      title: "Ladataan tilastoja...",
+      todayVsLastWeek: "Tänään vs. viime viikko",
+      weekComparison: "Viikkovertailu",
+      kmTodayLastWeek: "Km tänään/viime viikko",
+      activitiesTodayLastWeek: "Aktiviteetit tänään/viime viikko",
+      totalKmThisLastWeek: "Yhteensä km tämä/viime viikko",
+      activitiesThisLastWeek: "Aktiviteetit tämä/viime viikko",
+      weekOverWeekComparison: "Viikkojen välinen vertailu",
+      dailyComparison: "Päivittäinen vertailu",
+      change: "muutos",
+      noDataAvailable: "Ei tietoja saatavilla",
     },
 
     // PaceProjection translations
     paceProjection: {
       title: "Vauhtiennusteet",
       fullHistoryLabel: "Koko historia",
-      fullHistoryDesc: "Perustuu koko haasteen aikana kertyneeseen keskimääräiseen vauhtiin.",
+      fullHistoryDesc:
+        "Perustuu koko haasteen aikana kertyneeseen keskimääräiseen vauhtiin.",
       recentLabel: "Viimeaikaiset",
       recentDesc: "Perustuu viimeisen 4 viikon aikana kertyneeseen vauhtiin.",
       weeklyLabel: "Viikon",
@@ -430,7 +476,7 @@ export const tourDeFranceTheme: Theme = {
       daysLate: "päivää myöhässä",
       daysEarly: "päivää etuajassa",
       kmPerWeek: "km/vko",
-      noData: "Ei tietoa"
+      noData: "Ei tietoa",
     },
 
     // Records/Statistics translations
@@ -449,7 +495,7 @@ export const tourDeFranceTheme: Theme = {
       weeklyTopPerformers: "Viikon ahkerimmat",
       performancesThisWeek: "suoritusta tällä viikolla",
       kmThisWeek: "km tällä viikolla",
-      noPerformancesYet: "Ei vielä suorituksia"
+      noPerformancesYet: "Ei vielä suorituksia",
     },
 
     // Weekly activity translations
@@ -462,21 +508,102 @@ export const tourDeFranceTheme: Theme = {
       lastWeek: "Viime viikko",
       total: "Yhteensä",
       times: "kertaa",
-      time: "kerta"
-    },
-
-    // Activity form translations
-    activityForm: {
-      noActivitiesFound: "No activities found.",
-      bonusCalculated: "bonukset laskettu mukaan"
+      time: "kerta",
     },
 
     // Challenge closed translations
     challengeClosed: {
       newChallengeStarts: "Uusi haaste starttaa sunnuntaina 4.8.",
       detailsWillBeReleased: "Yksityiskohdat julkaistaan pian",
-      prepareToBe: "valmistaudu inspiroitumaan ja lähtemään mukaan unohtumattomalle seikkailulle!",
-      inspired: "inspiroituneeksi"
-    }
-  } satisfies ThemeTranslations
+      prepareToBe:
+        "valmistaudu inspiroitumaan ja lähtemään mukaan unohtumattomalle seikkailulle!",
+      inspired: "inspiroituneeksi",
+    },
+    // CommentAndReactionView translations
+    commentReactionView: {
+      failedToLoadReactionsOrComments:
+        "Reaktioiden tai kommenttien lataaminen epäonnistui.",
+      failedToLoadComments: "Kommenttien lataaminen epäonnistui.",
+    },
+
+    // UserProfile translations
+    userProfile: {
+      failedToFetchUser: "Käyttäjätietojen lataaminen epäonnistui",
+      failedToDeleteActivity: "Suorituksen poistaminen epäonnistui",
+      failedToAddActivity: "Suorituksen lisääminen epäonnistui",
+      failedToUpdateActivity: "Suorituksen päivittäminen epäonnistui",
+      loginRequired: "Kirjautuminen vaaditaan",
+      onlyLoggedInClimbersCanView:
+        "Vain kirjautuneet kiipeilijät voivat tarkastella profiileja.",
+      backToBasecamp: "Takaisin basecampiin",
+      userNotFound: "Käyttäjää ei löytynyt",
+      climberAvatar: "Kiipeilijän avatar",
+      you: "Sinä",
+      meters: "metriä",
+      altitude: "korkeutta",
+      height: "korkeutta",
+      climbingPerformances: "Kiipeilysuoritukset",
+      climbingStatistics: "Kiipeilytilastot",
+      addPerformance: "Lisää suoritus",
+      updatePerformance: "Päivitä suoritus",
+      submissionClosed:
+        "Kiipeilysuoritusten lisääminen on suljettu, koska expeditio on päättynyt.",
+      activityType: "Laji",
+      selectActivity: "Valitse laji",
+      specifyActivity: "Tarkenna laji",
+      enterActivityName: "Kirjoita mikä laji",
+      duration: "Kesto (minuutit)",
+      date: "Päivämäärä",
+      noBonus: "Ei bonuksia",
+      perfectWeatherConditions: "Täydelliset sääolosuhteet",
+      groupClimbing: "Ryhmäkiipeily",
+      wholeTeamAtSummit: "Koko tiimi huipulla",
+      canViewStats:
+        "Voit tarkastella {username}:n kiipeilytilastoja, mutta vain omat suoritukset ovat muokattavissa.",
+    },
+
+    // SubmitQuote translations
+    submitQuote: {
+      pleaseEnterQuote: "Ole hyvä ja kirjoita lainaus!",
+      quoteSubmittedSuccessfully: "Lainaus lähetetty onnistuneesti!",
+      failedToSubmitQuote: "Lainauksen lähettäminen epäonnistui",
+      submitting: "Lähetetään...",
+    },
+
+    // Quotes translations
+    quotes: {
+      noQuotesAvailable: "Ei lainauksia vielä saatavilla.",
+      couldNotLoadQuotes: "⚠️ Lainausten lataaminen epäonnistui.",
+      loadingQuote: "Ladataan lainausta",
+    },
+
+    // OverviewCards translations
+    overviewCards: {
+      soFar: "Tähän mennessä",
+      weeklyGoal: "Viikon tavoite",
+      person: "hlö",
+      timeRemaining: "Aikaa jäljellä",
+      days: "päivää",
+    },
+
+    // PopularSports translations
+    popularSports: {
+      title: "Suosituimmat lajit",
+      time: "kerta",
+      times: "kertaa",
+    },
+
+    // TopPerformers translations
+    topPerformers: {
+      title: "Viikon parhaat suorittajat",
+    },
+
+    // WeeklyInsights translations
+    weeklyInsights: {
+      title: "Kuluvan viikon tilastot",
+      participant: "Osallistuja",
+      weeklyProgress: "Viikon edistyminen",
+      remainingWeeklyDailyTarget: "Loppuviikon päiväkohtainen tavoite",
+    },
+  } satisfies ThemeTranslations,
 };

@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import apiService from "../service/apiService";
+import { useTheme } from "@/app/hooks/useTheme";
 
 export default function Quotes() {
+  const { t } = useTheme();
   const [quote, setQuote] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,22 +20,22 @@ export default function Quotes() {
             quotesData[Math.floor(Math.random() * quotesData.length)].text;
           setQuote(randomQuote);
         } else {
-          setQuote("No quotes available yet.");
+          setQuote(t.quotes.noQuotesAvailable);
         }
       } catch (error) {
-        setError("⚠️ Could not load quotes.");
+        setError(t.quotes.couldNotLoadQuotes);
       } finally {
         setLoading(false);
       }
     };
 
     fetchQuotes();
-  }, []);
+  }, [t.quotes.noQuotesAvailable, t.quotes.couldNotLoadQuotes]);
 
   return (
     <section className="bg-white p-6 rounded-lg shadow-lg text-center">
       {loading ? (
-        <p className="text-gray-500">Loading quote...</p>
+        <p className="text-gray-500">{t.quotes.loadingQuote}...</p>
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (

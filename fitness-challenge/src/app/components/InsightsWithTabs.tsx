@@ -1,6 +1,9 @@
-import { AlertCircle } from "lucide-react";
+"use client";
+
 import React from "react";
 import { format } from "date-fns";
+import { AlertCircle } from "lucide-react";
+
 import { useFetchUsers } from "../hooks/useFetchUsers";
 import { useWeeklyInsights } from "../hooks/useWeeklyInsights";
 import {
@@ -9,6 +12,7 @@ import {
   getWeeklyTopPerformers,
 } from "../utils/activityUtils";
 import { getLastFourWeeks } from "../utils/dateUtils";
+
 import Header from "./Insights/Header";
 import KeyMetrics from "./Insights/KeyMetrics";
 import PopularSports from "./Insights/PopularSports";
@@ -16,12 +20,16 @@ import RecordHolders from "./Insights/RecordHolders";
 import WeeklyActivity from "./Insights/WeeklyActivity";
 import WeeklyInsights from "./Insights/WeeklyInsights";
 import PaceProjectionTabs from "./PaceProjectionTabs";
+
 import { useEnhancedTargetPaces } from "../hooks/useTargetPaces";
 import { TargetPaceProvider } from "./TargetPaceContext";
 import { challengeParams } from "../constants/challengeParams";
 import Loader from "./common/Loader";
+import { useTheme } from "@/app/hooks/useTheme";
 
 export default function InsightsWithTabs() {
+  const { colors } = useTheme(); // 💡 Theme integration
+
   // Fetch users & manage loading/error state
   const { users, loading, error } = useFetchUsers();
 
@@ -29,7 +37,6 @@ export default function InsightsWithTabs() {
   const targetPaces = useEnhancedTargetPaces(users);
 
   // Weekly insights calculations
-  // Add null check for targetPaces to prevent errors
   const weeklyInsights = useWeeklyInsights(
     users,
     targetPaces || {
@@ -42,7 +49,6 @@ export default function InsightsWithTabs() {
     }
   );
 
-  // Safe wrapper for getWeekTopSports
   const safeGetWeekTopSports = () => {
     try {
       return getWeekTopSports(users);
@@ -52,7 +58,6 @@ export default function InsightsWithTabs() {
     }
   };
 
-  // Safe wrapper for getLongestActivities
   const safeGetLongestActivities = () => {
     try {
       return getLongestActivities(users);
@@ -62,7 +67,6 @@ export default function InsightsWithTabs() {
     }
   };
 
-  // Safe wrapper for getWeeklyTopPerformers
   const safeGetWeeklyTopPerformers = () => {
     try {
       return getWeeklyTopPerformers(users);
@@ -72,7 +76,6 @@ export default function InsightsWithTabs() {
     }
   };
 
-  // Transform Date objects to strings in projections object
   const getFormattedProjections = () => {
     if (!targetPaces || !targetPaces.projections) return null;
 
@@ -107,34 +110,34 @@ export default function InsightsWithTabs() {
     };
   };
 
-  // Loading & Error States
-  if (loading) {
-    return (
-<Loader/>
-    );
-  }
+  if (loading) return <Loader />;
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-64 text-red-500">
+      <div
+        className="flex items-center justify-center h-64"
+        style={{ color: colors.accent }}
+      >
         <AlertCircle className="w-6 h-6 mr-2" />
         <span>{error}</span>
       </div>
     );
   }
 
-  // Make sure all required data is loaded before rendering
   if (!users || users.length === 0 || !targetPaces) {
-    return (
-      <Loader />
-    );
+    return <Loader />;
   }
 
-  // Get formatted projections
   const formattedProjections = getFormattedProjections();
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-8">
+    <div
+      className="min-h-screen max-w-7xl mx-auto p-6 space-y-8"
+      style={{
+        backgroundColor: colors.background,
+        color: colors.text,
+      }}
+    >
       <TargetPaceProvider users={users}>
         <Header participantCount={users.length} />
 
@@ -145,10 +148,8 @@ export default function InsightsWithTabs() {
         />
 
         <RecordHolders />
-
         <WeeklyInsights weeklyInsights={weeklyInsights} />
 
-        {/* Only render PaceProjectionTabs if we have the necessary data */}
         {targetPaces &&
           formattedProjections &&
           typeof targetPaces.historicalPace === "number" && (
@@ -164,7 +165,6 @@ export default function InsightsWithTabs() {
           )}
 
         <WeeklyActivity getLastFourWeeks={getLastFourWeeks} users={users} />
-
         <PopularSports users={users} />
       </TargetPaceProvider>
     </div>

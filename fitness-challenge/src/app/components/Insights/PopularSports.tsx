@@ -1,11 +1,14 @@
 import React from "react";
 import { User } from "../../types/types";
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface Props {
   users: User[];
 }
 
 export default function PopularSports({ users }: Readonly<Props>) {
+  const { t } = useTheme();
+  
   const sportCounts = users
     .flatMap((user) => user.activities)
     .reduce((acc, activity) => {
@@ -20,7 +23,7 @@ export default function PopularSports({ users }: Readonly<Props>) {
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm">
       <h3 className="text-xl font-semibold text-gray-800 mb-6">
-        Suosituimmat lajit
+        {t.popularSports.title}
       </h3>
       <ul className="space-y-2">
         {topSports.map(([sport, count], index) => (
@@ -29,7 +32,9 @@ export default function PopularSports({ users }: Readonly<Props>) {
               {index + 1}.
             </span>
             <span className="text-gray-800 font-medium">{sport}</span>
-            <span className="ml-auto text-gray-500">{count} kertaa</span>
+            <span className="ml-auto text-gray-500">
+              {count} {count === 1 ? t.popularSports.time : t.popularSports.times}
+            </span>
           </li>
         ))}
       </ul>

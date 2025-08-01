@@ -5,13 +5,12 @@ import {
   Calendar,
   Flag,
   Clock,
-  AlertCircle,
   Zap,
-  ArrowUp,
 } from "lucide-react";
 import { useTargetPace } from "../TargetPaceContext";
 import { formatNumberWithSpaces } from "@/app/utils/formatDate";
 import Loader from "../common/Loader";
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface HeaderProps {
   participantCount: number;
@@ -19,13 +18,10 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = () => {
   const targetPaces = useTargetPace();
+  const { colors } = useTheme();
 
-  // Loading state
-  if (!targetPaces) {
-    return <Loader />;
-  }
+  if (!targetPaces) return <Loader />;
 
-  // Calculate values once
   const {
     totalProgress,
     projectedEndDate,
@@ -45,35 +41,31 @@ const Header: React.FC<HeaderProps> = () => {
     Math.round((totalProgress / 100000) * 100)
   );
 
-  // Format numbers once
-  const formattedTotalProgress = formatNumberWithSpaces(
-    Math.round(totalProgress)
-  );
-  const formattedHistoricalPace = formatNumberWithSpaces(
-    Math.round(historicalPace)
-  );
-  const formattedRemainingDistance = formatNumberWithSpaces(
-    Math.round(remainingDistance)
-  );
-  const formattedBehindAmount = formatNumberWithSpaces(
-    Math.round(behindAmount)
-  );
-  const formattedExpectedProgress = formatNumberWithSpaces(
-    Math.round(expectedProgressToday)
-  );
+  const formattedTotalProgress = formatNumberWithSpaces(Math.round(totalProgress));
+  const formattedHistoricalPace = formatNumberWithSpaces(Math.round(historicalPace));
+  const formattedRemainingDistance = formatNumberWithSpaces(Math.round(remainingDistance));
 
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden max-w-md mx-auto">
+    <div
+      className="rounded-xl shadow-sm overflow-hidden max-w-md mx-auto"
+      style={{ backgroundColor: colors.card, color: colors.text }}
+    >
       {/* Progress Bar Section */}
-      <div className="bg-slate-800 p-3 text-white">
+      <div
+        className="p-3"
+        style={{ backgroundColor: colors.primary, color: colors.background }}
+      >
         <h2 className="text-base font-medium flex items-center">
           <Zap className="w-4 h-4 mr-1.5" />
           Eteneminen kohti tavoitetta
         </h2>
-        <div className="mt-2 bg-white/20 h-2 rounded-full overflow-hidden">
+        <div className="mt-2 h-2 rounded-full overflow-hidden" style={{ backgroundColor: colors.border }}>
           <div
-            className="h-full bg-white rounded-full"
-            style={{ width: `${completionPercentage}%` }}
+            className="h-full rounded-full"
+            style={{
+              width: `${completionPercentage}%`,
+              backgroundColor: colors.background,
+            }}
           ></div>
         </div>
         <div className="flex justify-between mt-1.5 text-xs">
@@ -85,59 +77,28 @@ const Header: React.FC<HeaderProps> = () => {
       {/* Key Metrics */}
       <div className="p-2.5">
         <div className="grid grid-cols-2 gap-2.5">
-          {/* Current Speed */}
-          <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
-            <div className="text-xs font-medium mb-1 flex items-center justify-center text-slate-700">
-              <TrendingUp className="w-4 h-4 mr-1 text-slate-500" />
-              Vauhtikeskiarvo
-            </div>
-            <div className="text-center">
-              <div className="flex items-baseline justify-center">
-                <span className="text-slate-600 text-2xl font-bold">
-                  {formattedHistoricalPace}
-                </span>
-                <span className="text-slate-500 text-sm ml-1">km/hlö/vko</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Remaining Distance */}
-          <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
-            <div className="text-xs font-medium mb-1 flex items-center justify-center text-slate-700">
-              <Flag className="w-4 h-4 mr-1 text-slate-500" />
-              Matkaa jäljellä
-            </div>
-            <div className="text-center">
-              <div className="flex items-baseline justify-center">
-                <span className="text-slate-500 text-2xl font-bold">
-                  {formattedRemainingDistance}
-                </span>
-                <span className="text-slate-400 text-sm ml-1">km</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Days Left */}
-          <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
-            <div className="text-xs font-medium mb-1 flex items-center justify-center text-slate-700">
-              <Clock className="w-4 h-4 mr-1 text-slate-500" />
-              Päiviä juhannukseen
-            </div>
-            <div className="text-2xl font-bold text-center text-slate-600">
-              {Math.round(daysRemaining)}
-            </div>
-          </div>
-
-          {/* Estimated Completion */}
-          <div className="bg-white rounded-xl border border-gray-100 p-3 flex flex-col">
-            <div className="text-xs font-medium mb-1 flex items-center justify-center text-slate-700">
-              <Calendar className="w-4 h-4 mr-1 text-slate-500" />
-              Nykyvauhdilla maalissa
-            </div>
-            <div className="text-2xl font-bold text-center text-slate-600">
-              {formattedProjectedDate}
-            </div>
-          </div>
+          <StatCard
+            icon={<TrendingUp className="w-4 h-4" />}
+            value={`${formattedHistoricalPace}`}
+            label="Vauhtikeskiarvo"
+            unit="km/hlö/vko"
+          />
+          <StatCard
+            icon={<Flag className="w-4 h-4" />}
+            value={formattedRemainingDistance}
+            label="Matkaa jäljellä"
+            unit="km"
+          />
+          <StatCard
+            icon={<Clock className="w-4 h-4" />}
+            value={Math.round(daysRemaining).toString()}
+            label="Päiviä juhannukseen"
+          />
+          <StatCard
+            icon={<Calendar className="w-4 h-4" />}
+            value={formattedProjectedDate}
+            label="Nykyvauhdilla maalissa"
+          />
         </div>
       </div>
     </div>
@@ -145,3 +106,40 @@ const Header: React.FC<HeaderProps> = () => {
 };
 
 export default Header;
+
+function StatCard({
+  icon,
+  value,
+  label,
+  unit,
+}: {
+  icon: React.ReactNode;
+  value: string;
+  label: string;
+  unit?: string;
+}) {
+  const { colors } = useTheme();
+
+  return (
+    <div
+      className="rounded-xl p-3 flex flex-col"
+      style={{
+        backgroundColor: colors.card,
+        border: `1px solid ${colors.border}`,
+      }}
+    >
+      <div className="text-xs font-medium mb-1 flex items-center justify-center" style={{ color: colors.mutedText }}>
+        {icon}
+        <span className="ml-1">{label}</span>
+      </div>
+      <div className="text-center">
+        <div className="flex items-baseline justify-center">
+          <span className="text-2xl font-bold" style={{ color: colors.text }}>
+            {value}
+          </span>
+          {unit && <span className="text-sm ml-1" style={{ color: colors.mutedText }}>{unit}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}

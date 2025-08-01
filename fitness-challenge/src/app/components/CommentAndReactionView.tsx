@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Comment, Reaction } from "../types/types";
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface CommentAndReactionViewProps {
   activityId: number;
@@ -36,6 +37,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
 const CommentAndReactionView: React.FC<CommentAndReactionViewProps> = ({
   activityId,
 }) => {
+  const { t } = useTheme();
   const [comments, setComments] = useState<Comment[]>([]);
   const [reactions, setReactions] = useState<Reaction[]>([]);
   const [showComments, setShowComments] = useState(false);
@@ -58,9 +60,9 @@ const CommentAndReactionView: React.FC<CommentAndReactionViewProps> = ({
         setComments(await commentsResponse.json());
       }
     } catch (err) {
-      setError("Reaktioiden tai kommenttien lataaminen epäonnistui.");
+      setError(t.commentReactionView.failedToLoadReactionsOrComments);
     }
-  }, [activityId]);
+  }, [activityId, t.commentReactionView.failedToLoadReactionsOrComments]);
 
   useEffect(() => {
     fetchReactionsAndComments();
@@ -77,12 +79,12 @@ const CommentAndReactionView: React.FC<CommentAndReactionViewProps> = ({
       const response = await fetch(
         `${backendUrl}/activity/${activityId}/comments`
       );
-      if (!response.ok) throw new Error("Kommenttien lataaminen epäonnistui.");
+      if (!response.ok) throw new Error(t.commentReactionView.failedToLoadComments);
 
       setComments(await response.json());
       setShowComments(true);
     } catch (err) {
-      setError("Kommenttien lataaminen epäonnistui.");
+      setError(t.commentReactionView.failedToLoadComments);
     } finally {
       setLoading(false);
     }
@@ -140,8 +142,8 @@ const CommentAndReactionView: React.FC<CommentAndReactionViewProps> = ({
             />
           </motion.svg>
           {showComments
-            ? "Piilota kommentit"
-            : `Näytä kommentit (${comments.length})`}
+            ? t.comments.hideComments
+            : `${t.comments.showComments} (${comments.length})`}
         </button>
       )}
 
@@ -161,7 +163,7 @@ const CommentAndReactionView: React.FC<CommentAndReactionViewProps> = ({
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1, repeat: Infinity }}
                 />
-                Ladataan kommentteja...
+                {t.comments.loadingComments}...
               </div>
             ) : (
               comments.map((comment) => (

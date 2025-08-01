@@ -12,6 +12,7 @@ import Pagination from "@/app/components/Pagination";
 import SubmitQuote from "@/app/components/SubmitQuote";
 import PersonalInsights from "@/app/components/PersonalInsights";
 import CommentAndReactionView from "@/app/components/CommentAndReactionView";
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface Activity {
   id: number;
@@ -63,37 +64,13 @@ const sportsOptions = [
   "Muu(50km/h)",
 ];
 
-// Finnish translations
-const translations = {
-  back: "Takaisin etusivulle",
-  addActivity: "Lisää suoritus",
-  updateActivity: "Päivitä suoritus",
-  activityType: "Laji",
-  selectActivity: "Valitse laji",
-  specifyName: "Tarkenna laji ",
-  enterActivityName: "Kirjoita mikä laji",
-  duration: "Kesto (minuutit)",
-  date: "Päivämäärä",
-  bonus: "Bonus",
-  noBonus: "Ei bonuksia",
-  cancel: "Peruuta",
-  edit: "Muokkaa",
-  delete: "Poista",
-  userNotFound: "Käyttäjää ei löytynyt",
-  mins: "min",
-  meters: "m",
-  altitude: "Korkeutta",
-  insights: "Kiipeilytilastot",
-  unauthorized: "Voit muokata vain omaa profiiliasi",
-  loginRequired: "Kirjaudu sisään nähdäksesi profiilin",
-};
-
 const itemsPerPage = 10;
 
 const UserProfile = () => {
   const params = useParams();
   const username = params?.username as string;
   const { currentUser, isLoggedIn } = useAuth();
+  const { t, colors } = useTheme();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -116,7 +93,7 @@ const UserProfile = () => {
   const isActivitySubmissionDisabled = true;
   const canEditProfile = isLoggedIn && currentUser === username;
 
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
   const formRef = useRef<HTMLDivElement>(null);
 
   const fetchUser = useCallback(async () => {
@@ -125,7 +102,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
       const response = await fetch(
         `${backendUrl}/users/${username}?page=${page}&limit=${itemsPerPage}`
       );
-      if (!response.ok) throw new Error("Failed to fetch user data");
+      if (!response.ok) throw new Error(t.userProfile.failedToFetchUser);
       const data = await response.json();
       setUser(data);
     } catch (err) {
@@ -133,7 +110,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
     } finally {
       setLoading(false);
     }
-  }, [username, page]);
+  }, [username, page, t.userProfile.failedToFetchUser]);
 
   useEffect(() => {
     fetchUser();
@@ -149,7 +126,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
           headers: { "Content-Type": "application/json" },
         }
       );
-      if (!response.ok) throw new Error("Failed to delete activity");
+      if (!response.ok) throw new Error(t.userProfile.failedToDeleteActivity);
       setIsModalOpen(false);
       setActivityToDelete(null);
       fetchUser();
@@ -186,7 +163,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
         }
       );
 
-      if (!response.ok) throw new Error("Failed to add activity");
+      if (!response.ok) throw new Error(t.userProfile.failedToAddActivity);
 
       resetForm();
       fetchUser();
@@ -223,7 +200,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
         }
       );
 
-      if (!response.ok) throw new Error("Failed to update activity");
+      if (!response.ok) throw new Error(t.userProfile.failedToUpdateActivity);
 
       resetForm();
       fetchUser();
@@ -268,16 +245,29 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
     formRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const getBonusText = (bonus: string) => {
+    switch (bonus) {
+      case "juhlapäivä":
+        return `🌞 ${t.userProfile.perfectWeatherConditions} (2x ${t.userProfile.height})`;
+      case "enemmän kuin kolme urheilee yhdessä":
+        return `👥 ${t.userProfile.groupClimbing} (1.5x ${t.userProfile.height})`;
+      case "kaikki yhdessä":
+        return `🏔️ ${t.userProfile.wholeTeamAtSummit} (3x ${t.userProfile.height})`;
+      default:
+        return `🌟 ${t.activityForm.bonus}: ${bonus}`;
+    }
+  };
+
   // Show login required message if not logged in
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-bg-slate-800 flex items-center justify-center p-4">
         <div className="bg-800/90 backdrop-blur-sm rounded-2xl p-8 text-center text-white max-w-md">
           <Lock className="w-16 h-16 mx-auto mb-4 text-slate-400" />
-          <h2 className="text-2xl font-bold mb-4">🏔️ {translations.loginRequired}</h2>
-          <p className="text-gray-300 mb-6">Vain kirjautuneet kiipeilijät voivat tarkastella profiileja.</p>
+          <h2 className="text-2xl font-bold mb-4">🏔️ {t.userProfile.loginRequired}</h2>
+          <p className="text-gray-300 mb-6">{t.userProfile.onlyLoggedInClimbersCanView}</p>
           <Link href="/" className="bg-slate-600 hover:bg-slate-700 px-6 py-3 rounded-lg font-medium transition-colors">
-            Takaisin basecampiin
+            {t.userProfile.backToBasecamp}
           </Link>
         </div>
       </div>
@@ -308,17 +298,26 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-bg-slate-800 flex items-center justify-center">
         <div className="text-center text-gray-300 p-4 bg-800/50 rounded-lg">
           <UserIcon className="w-16 h-16 mx-auto mb-4" />
-          {translations.userNotFound}
+          {t.userProfile.userNotFound}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-bg-slate-800 text-white">
-      <div className="max-w-4xl mx-auto p-6 space-y-8">
-        {/* Header */}
-        <header className="flex justify-between items-center bg-800/50 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+  <div
+    className="min-h-screen"
+    style={{ background: `linear-gradient(to bottom right, ${colors.background}, ${colors.background})`, color: colors.text }}
+  >
+    <div className="max-w-4xl mx-auto p-6 space-y-8">
+      <header
+        className="flex justify-between items-center rounded-2xl p-6 border"
+        style={{
+          backgroundColor: colors.card,
+          backdropFilter: "blur(8px)",
+          borderColor: colors.border,
+        }}
+      >
           <div className="flex items-center space-x-6">
             <div className="relative">
               {/* Climbing equipment badge overlay for profile pic */}
@@ -329,7 +328,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
                     ? `https://matka-xi.vercel.app/${user.username}.png`
                     : `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.username}`
                 }
-                alt="Climber Avatar"
+                alt={t.userProfile.climberAvatar}
                 width={80}
                 height={80}
                 className="rounded-full border-4 border-slate-400/50"
@@ -339,14 +338,13 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
             <div>
               <h1 className="text-3xl font-bold flex items-center">
                 🏔️ {user.username}
-                {currentUser === username && <span className="ml-2 text-sm bg-slate-600 px-2 py-1 rounded">Sinä</span>}
               </h1>
               <p className="text-xl text-slate-300 flex items-center">
                 <Mountain className="w-5 h-5 mr-2" />
-                {user.totalKm.toFixed(0)} {translations.meters} {translations.altitude}
+                {user.totalKm.toFixed(0)} {t.userProfile.meters} {t.userProfile.altitude}
               </p>
               <p className="text-sm text-gray-400">
-                Kiipeilysuorituksia: {user.activities.length}
+                {t.userProfile.climbingPerformances}: {user.activities.length}
               </p>
             </div>
           </div>
@@ -355,16 +353,21 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
             className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition-colors flex items-center"
           >
             <Mountain className="w-4 h-4 mr-2" />
-            {translations.back}
+            {t.ui.backToHome}
           </Link>
         </header>
 
         {/* Only show edit controls for own profile */}
-        {canEditProfile ? (
-          <>
-            {/* Toggle button */}
-            <div className="flex justify-center">
-              <div className="bg-800/80 backdrop-blur-sm rounded-full p-1 shadow inline-flex border border-white/10">
+      {canEditProfile ? (
+        <>
+          <div
+            className="flex justify-center"
+            style={{
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+            }}
+          >
+
                 <button
                   onClick={() => setShowInsights(false)}
                   className={`px-6 py-3 rounded-full text-sm font-medium transition-colors flex items-center ${
@@ -374,7 +377,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
                   }`}
                 >
                   <Mountain className="w-4 h-4 mr-2" />
-                  {translations.addActivity}
+                  {t.userProfile.addPerformance}
                 </button>
                 <button
                   onClick={() => setShowInsights(true)}
@@ -385,25 +388,34 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
                   }`}
                 >
                   <TrendingUp className="w-4 h-4 mr-2" />
-                  {translations.insights}
+                  {t.userProfile.climbingStatistics}
                 </button>
               </div>
-            </div>
 
-            {/* Activity Form or Insights */}
-            {!showInsights ? (
-              isActivitySubmissionDisabled ? (
-                <div className="text-center bg-800/50 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+          {!showInsights ? (
+            isActivitySubmissionDisabled ? (
+              <div
+                className="text-center rounded-2xl p-8 border"
+                style={{ backgroundColor: colors.card, borderColor: colors.border }}
+              >
                   <Mountain className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                   <p className="text-gray-300">
-                    Kiipeilysuoritusten lisääminen on suljettu, koska expeditio on päättynyt.
+                    {t.userProfile.submissionClosed}
                   </p>
                 </div>
               ) : (
-                <section ref={formRef} className="bg-800/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/10">
+              <section
+                ref={formRef}
+                className="p-8 rounded-2xl shadow-xl border"
+                style={{
+                  backgroundColor: colors.card,
+                  borderColor: colors.border,
+                  backdropFilter: "blur(8px)",
+                }}
+              >
                   <h2 className="text-2xl font-semibold mb-6 flex items-center">
                     <Mountain className="w-6 h-6 mr-2 text-slate-400" />
-                    {isEditing ? translations.updateActivity : translations.addActivity}
+                    {isEditing ? t.userProfile.updatePerformance : t.userProfile.addPerformance}
                   </h2>
                   <form
                     onSubmit={isEditing ? handleUpdateActivity : handleAddActivity}
@@ -411,7 +423,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
                   >
                     <div>
                       <label className="block text-sm font-medium mb-2 text-gray-300">
-                        {translations.activityType}
+                        {t.userProfile.activityType}
                       </label>
                       <select
                         value={activity}
@@ -419,7 +431,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
                         className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-slate-400 focus:border-transparent"
                         required
                       >
-                        <option value="">{translations.selectActivity}</option>
+                        <option value="">{t.userProfile.selectActivity}</option>
                         {sportsOptions.map((sport) => (
                           <option key={sport} value={sport}>
                             {sport}
@@ -432,7 +444,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
                     {(activity === "Extreme-kiipeily(100m/h)" || activity === "Retkivaellus(50m/h)") && (
                       <div>
                         <label className="block text-sm font-medium mb-2 text-gray-300">
-                          {translations.specifyName}
+                          {t.userProfile.specifyActivity}
                         </label>
                         <input
                           type="text"
@@ -440,7 +452,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
                           onChange={(e) => setCustomActivity(e.target.value)}
                           className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-slate-400 focus:border-transparent"
                           required
-                          placeholder={translations.enterActivityName}
+                          placeholder={t.userProfile.enterActivityName}
                         />
                       </div>
                     )}
@@ -448,7 +460,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label className="block text-sm font-medium mb-2 text-gray-300">
-                          {translations.duration}
+                          {t.userProfile.duration}
                         </label>
                         <input
                           type="number"
@@ -460,7 +472,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
                       </div>
                       <div>
                         <label className="block text-sm font-medium mb-2 text-gray-300">
-                          {translations.date}
+                          {t.userProfile.date}
                         </label>
                         <input
                           type="date"
@@ -474,19 +486,17 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
 
                     <div>
                       <label className="block text-sm font-medium mb-2 text-gray-300">
-                        {translations.bonus}
+                        {t.activityForm.bonus}
                       </label>
                       <select
                         value={bonus || ""}
                         onChange={(e) => setBonus(e.target.value || null)}
                         className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-slate-400 focus:border-transparent"
                       >
-                        <option value="">{translations.noBonus}</option>
-                        <option value="juhlapäivä">🌞 Täydelliset sääolosuhteet (2x korkeutta)</option>
-                        <option value="enemmän kuin kolme urheilee yhdessä">
-                          👥 Ryhmäkiipeily (1.5x korkeutta)
-                        </option>
-                        <option value="kaikki yhdessä">🏔️ Koko tiimi huipulla (3x korkeutta)</option>
+                        <option value="">{t.userProfile.noBonus}</option>
+                        <option value="juhlapäivä">{getBonusText("juhlapäivä")}</option>
+                        <option value="enemmän kuin kolme urheilee yhdessä">{getBonusText("enemmän kuin kolme urheilee yhdessä")}</option>
+                        <option value="kaikki yhdessä">{getBonusText("kaikki yhdessä")}</option>
                       </select>
                     </div>
 
@@ -497,35 +507,38 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
                           onClick={resetForm}
                           className="flex-1 bg-slate-600 hover:bg-slate-500 text-white py-3 rounded-lg transition-colors"
                         >
-                          {translations.cancel}
+                          {t.ui.cancel}
                         </button>
                       )}
                       <button
                         type="submit"
                         className="flex-1 bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-lg transition-colors font-medium"
                       >
-                        {isEditing ? translations.updateActivity : translations.addActivity}
+                        {isEditing ? t.userProfile.updatePerformance : t.userProfile.addPerformance}
                       </button>
                     </div>
                   </form>
                 </section>
               )
             ) : (
-              <div className="bg-800/80 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-                <PersonalInsights
-                  activities={user.activities}
-                  username={user.username}
-                />
-              </div>
+            <div
+              className="rounded-2xl p-8 border"
+              style={{ backgroundColor: colors.card, borderColor: colors.border }}
+            >
+              <PersonalInsights activities={user.activities} username={user.username} />
+            </div>
             )}
           </>
         ) : (
           // Show insights only for other users' profiles
-          <div className="bg-800/50 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+        <div
+          className="rounded-2xl p-8 border text-center"
+          style={{ backgroundColor: colors.card, borderColor: colors.border }}
+        >
             <div className="text-center mb-6">
               <Lock className="w-12 h-12 mx-auto mb-4 text-gray-400" />
               <p className="text-gray-300">
-                Voit tarkastella {user.username}:n kiipeilytilastoja, mutta vain omat suoritukset ovat muokattavissa.
+                {t.userProfile.canViewStats.replace('{username}', user.username)}
               </p>
             </div>
             <PersonalInsights
@@ -539,28 +552,27 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
         <div className="space-y-4">
           <h3 className="text-xl font-semibold flex items-center">
             <Mountain className="w-5 h-5 mr-2 text-slate-400" />
-            Kiipeilysuoritukset
+            {t.userProfile.climbingPerformances}
           </h3>
-          {user.activities.map((activity) => (
-            <div key={activity.id} className="bg-800/50 backdrop-blur-sm p-6 rounded-xl shadow border border-white/10">
+        {user.activities.map((activity) => (
+          <div
+            key={activity.id}
+            className="p-6 rounded-xl shadow border"
+            style={{ backgroundColor: colors.card, borderColor: colors.border }}
+          >
               <div className="flex justify-between">
                 <div className="flex-1">
                   <h4 className="font-semibold text-lg text-white mb-2">{activity.activity}</h4>
                   <div className="flex items-center space-x-4 text-sm text-gray-300 mb-2">
                     <span className="flex items-center">
                       <Mountain className="w-4 h-4 mr-1 text-slate-400" />
-                      {activity.kilometers.toFixed(0)} {translations.meters}
+                      {activity.kilometers.toFixed(0)} {t.userProfile.meters}
                     </span>
-                    <span>🕒 {activity.duration} {translations.mins}</span>
+                    <span>🕒 {activity.duration} {t.insights.mins}</span>
                   </div>
                   {activity.bonus && (
                     <p className="text-sm text-yellow-400 mb-2">
-                      🌟 Bonus: {activity.bonus}
-                      {activity.bonus === "juhlapäivä"
-                        ? " (2x korkeutta)"
-                        : activity.bonus === "enemmän kuin kolme urheilee yhdessä"
-                        ? " (1.5x korkeutta)"
-                        : " (3x korkeutta)"}
+                      {getBonusText(activity.bonus)}
                     </p>
                   )}
                   <p className="text-sm text-gray-400">
@@ -573,7 +585,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
                       className="text-slate-400 hover:text-slate-300 transition-colors px-3 py-1 rounded"
                       onClick={() => startEdit(activity)}
                     >
-                      {translations.edit}
+                      {t.ui.edit}
                     </button>
                     <button
                       className="text-red-400 hover:text-red-300 transition-colors px-3 py-1 rounded"
@@ -582,7 +594,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
                         setIsModalOpen(true);
                       }}
                     >
-                      {translations.delete}
+                      {t.ui.delete}
                     </button>
                   </div>
                 )}
@@ -594,46 +606,49 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
           ))}
         </div>
 
-        {/* Pagination */}
-        {user.pagination && user.pagination.totalPages > 1 && (
-          <div className="mt-8">
-            <Pagination
-              page={page}
-              setPage={setPage}
-              totalItems={user.pagination.total}
-              itemsPerPage={itemsPerPage}
-            />
-          </div>
-        )}
+      {/* Sivuvalinta */}
+      {user.pagination && user.pagination.totalPages > 1 && (
+        <div className="mt-8">
+          <Pagination
+            page={page}
+            setPage={setPage}
+            totalItems={user.pagination.total}
+            itemsPerPage={itemsPerPage}
+          />
+        </div>
+      )}
 
-        {/* Quote submission - only for current user */}
-        {canEditProfile && (
-          <div className="bg-800/50 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-            <SubmitQuote />
-          </div>
-        )}
+      {/* Quote submission */}
+      {canEditProfile && (
+        <div
+          className="rounded-2xl p-6 border"
+          style={{ backgroundColor: colors.card, borderColor: colors.border }}
+        >
+          <SubmitQuote />
+        </div>
+      )}
 
-        {/* Confirmation Modal */}
-        <ConfirmationModal
-          isOpen={isModalOpen}
-          onConfirm={handleDeleteActivity}
-          onCancel={() => {
-            setIsModalOpen(false);
-            setActivityToDelete(null);
-          }}
-          activityDetails={
-            activityToDelete
-              ? {
-                  activity: activityToDelete.activity,
-                  date: activityToDelete.date,
-                  duration: activityToDelete.duration,
-                }
-              : undefined
-          }
-        />
-      </div>
+      {/* Poistovahvistus */}
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onConfirm={handleDeleteActivity}
+        onCancel={() => {
+          setIsModalOpen(false);
+          setActivityToDelete(null);
+        }}
+        activityDetails={
+          activityToDelete
+            ? {
+                activity: activityToDelete.activity,
+                date: activityToDelete.date,
+                duration: activityToDelete.duration,
+              }
+            : undefined
+        }
+      />
     </div>
-  );
-};
+  </div>
+);
+}
 
 export default UserProfile;
