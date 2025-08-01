@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Bike, Users, LogIn } from 'lucide-react';
-import { themes } from '@/app/themes/themeManager';
+import { useTheme } from '@/app/hooks/useTheme';
 
 interface User {
   totalKm: number;
@@ -13,9 +13,7 @@ const LoginScreen: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState('');
   const [loading, setLoading] = useState(true);
-  const selectedTheme = localStorage.getItem('selectedTheme') || 'tour';
-  const theme = themes[selectedTheme as keyof typeof themes] || themes.tour;
-  const { translations: t } = theme;
+  const { t } = useTheme();
 
   useEffect(() => {
     const fetchUsers = async () => {

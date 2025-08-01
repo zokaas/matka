@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Comment } from "../types/types";
 import apiService from "../service/apiService";
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface CommentsProps {
   activityId: number;
@@ -18,6 +19,7 @@ const CommentsSection: React.FC<CommentsProps> = ({
   isExpanded,
   onCommentCountUpdate,
 }) => {
+  const { t } = useTheme();
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(false);
@@ -81,7 +83,7 @@ const CommentsSection: React.FC<CommentsProps> = ({
           <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Kirjoita kommentti..."
+            placeholder={t.comments.placeholder}
             className="w-full bg-transparent focus:outline-none text-sm resize-none overflow-y-auto p-2 border rounded-md min-h-[60px] max-h-[180px]"
             maxLength={COMMENT_MAX_LENGTH}
             required
@@ -93,7 +95,7 @@ const CommentsSection: React.FC<CommentsProps> = ({
                 charactersLeft < 20 ? "text-red-500" : "text-gray-500"
               }`}
             >
-              {charactersLeft} merkkiä jäljellä
+              {charactersLeft} {t.comments.charactersLeft}
             </span>
             <button
               type="submit"
@@ -102,7 +104,7 @@ const CommentsSection: React.FC<CommentsProps> = ({
               }`}
               disabled={newComment.length === 0 || submitting}
             >
-              {submitting ? "Lähetetään..." : "Lähetä"}
+              {submitting ? t.comments.sending : t.comments.send}
             </button>
           </div>
         </form>
@@ -128,11 +130,11 @@ const CommentsSection: React.FC<CommentsProps> = ({
               transition={{ duration: 1, repeat: Infinity }}
               className="h-4 w-4 border-t-2 border-gray-400 border-solid rounded-full"
             ></motion.div>
-            <span className="ml-2">Ladataan...</span>
+            <span className="ml-2">{t.comments.loadingComments}...</span>
           </div>
         ) : comments.length === 0 ? (
           <p className="text-gray-500 text-center text-xs py-2">
-            Ei kommentteja vielä.
+            {t.comments.noComments}
           </p>
         ) : (
           comments.map((comment) => (

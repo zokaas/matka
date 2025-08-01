@@ -1,3 +1,6 @@
+import React from "react";
+import { useTheme } from "@/app/hooks/useTheme";
+
 interface Activity {
   id: number;
   activity: string;
@@ -14,10 +17,12 @@ interface Props {
 }
 
 const ActivityList: React.FC<Props> = ({ activities, onEdit, onDelete }) => {
+  const { t } = useTheme();
+
   return (
     <div>
       {activities.length === 0 ? (
-        <p className="text-center text-gray-500">No activities found.</p>
+        <p className="text-center text-gray-500">{t.activityForm.noActivitiesFound}</p>
       ) : (
         activities.map((activity) => (
           <div
@@ -28,7 +33,7 @@ const ActivityList: React.FC<Props> = ({ activities, onEdit, onDelete }) => {
               <div>
                 <h3 className="font-semibold">{activity.activity}</h3>
                 <p className="text-sm text-gray-600">
-                  {activity.kilometers.toFixed(1)} km | {activity.duration} mins
+                  {activity.kilometers.toFixed(1)} km | {activity.duration} {t.insights.mins}
                 </p>
                 {activity.bonus && (
                   <p className="text-sm text-slate-500">
@@ -49,13 +54,13 @@ const ActivityList: React.FC<Props> = ({ activities, onEdit, onDelete }) => {
                   className="text-slate-500"
                   onClick={() => onEdit(activity.id)}
                 >
-                  Edit
+                  {t.ui.edit}
                 </button>
                 <button
                   className="text-red-500"
                   onClick={() => onDelete(activity.id)}
                 >
-                  Delete
+                  {t.ui.delete}
                 </button>
               </div>
             </div>

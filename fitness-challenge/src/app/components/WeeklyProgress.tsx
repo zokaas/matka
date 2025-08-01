@@ -7,7 +7,7 @@ import "react-circular-progressbar/dist/styles.css";
 import { User } from "@/app/types/types";
 import { useState, useEffect } from "react";
 import { challengeParams } from "../constants/challengeParams";
-
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface WeeklyProgressProps {
   users: User[];
@@ -23,6 +23,7 @@ interface WeeklyInsight {
 }
 
 const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
+  const { t } = useTheme();
   const [weeklyInsights, setWeeklyInsights] = useState<WeeklyInsight[]>([]);
   const [weeklyGoalPerUser, setWeeklyGoalPerUser] = useState(0);
 
@@ -148,7 +149,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
   return (
     <section>
       <h2 className="text-xl font-bold text-gray-800 flex items-center mb-2">
-        <span>📊 </span> Tämän viikon ranking
+        <span>📊 </span> {t.weeklyProgress.weeklyRanking}
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -175,7 +176,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                       {activityStatus.emoji}
                     </div>
                     <div className="text-xs text-gray-600 font-medium mt-1">
-                      {activityStatus.days} pv
+                      {activityStatus.days} {t.weeklyProgress.daysAgo}
                     </div>
                   </div>
                 )}
@@ -202,7 +203,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                       {insight.username}
                     </h4>
                     <div className="flex items-center text-xs text-gray-500">
-                      <span className="font-medium">Sijoitus {index + 1}</span>
+                      <span className="font-medium">{t.weeklyProgress.position} {index + 1}</span>
                       {index + 1 <= 3 && (() => {
                         let medal;
                         if (index + 1 === 1) {
@@ -243,7 +244,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                       km
                     </div>
                     <div className="text-xs text-gray-500">
-                      km tällä viikolla
+                      km {t.weeklyProgress.thisWeek}
                     </div>
 
                     {insight.dailyTarget > 0 && insight.weeklyPercentage < 100 && (

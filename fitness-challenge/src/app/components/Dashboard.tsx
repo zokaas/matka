@@ -4,7 +4,7 @@ import {
   Bike, Trophy, Activity, MapPin,
 } from "lucide-react";
 
-import { themes } from "@/app/themes/themeManager";
+import { useTheme } from "@/app/hooks/useTheme";
 
 import Leaderboard from "./Leaderboard";
 import WeeklyProgress from "./WeeklyProgress";
@@ -18,9 +18,13 @@ import { User, Activity as UserActivity } from "@/app/types/types";
 
 export default function Dashboard() {
   const [currentStage, setCurrentStage] = useState(0);
-  const [selectedTheme, setSelectedTheme] = useState(
-    localStorage.getItem("selectedTheme") || "tour"
-  );
+  const { t, theme } = useTheme();
+  const {
+    stages,
+    totalPoints,
+    weatherIcons,
+    stageColors
+  } = theme;
 
   const [users, setUsers] = useState<User[]>([]);
   const [totalKm, setTotalKm] = useState(0);
@@ -30,15 +34,6 @@ export default function Dashboard() {
   const [showActivityFeed, setShowActivityFeed] = useState(false);
   const [recentActivities, setRecentActivities] = useState<UserActivity[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
-
-  const currentTheme = themes[selectedTheme as keyof typeof themes];
-  const {
-    stages,
-    totalPoints,
-    translations: t,
-    weatherIcons,
-    stageColors
-  } = currentTheme;
 
   useEffect(() => {
     fetchUsersAndTotalKm(setUsers, setTotalKm, setLoading, setError);

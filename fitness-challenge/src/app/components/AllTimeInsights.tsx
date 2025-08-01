@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import _ from "lodash";
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface Activity {
   id: number;
@@ -35,6 +36,7 @@ interface AllTimeStats {
 }
 
 const AllTimeInsights = ({ username }: { username: string }) => {
+  const { t } = useTheme();
   const [stats, setStats] = useState<AllTimeStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -116,18 +118,18 @@ const AllTimeInsights = ({ username }: { username: string }) => {
   }, [username]);
 
   if (loading)
-    return <div className="text-center p-4">Ladataan tilastoja...</div>;
+    return <div className="text-center p-4">{t.allTime.loadingStats}</div>;
   if (error) return <div className="text-center text-red-500 p-4">{error}</div>;
   if (!stats) return null;
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold mb-6">Kaikkien aikojen tilastot</h1>
+      <h1 className="text-2xl font-bold mb-6">{t.allTime.title}</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="font-semibold mb-2">Eniten kilometrejä</h3>
+          <h3 className="font-semibold mb-2">{t.allTime.bestKmDay}</h3>
           <div className="text-2xl font-bold text-slate-600">
-            {stats.bestKmDay.kilometers.toFixed(1)} km
+            {stats.bestKmDay.kilometers.toFixed(1)} {t.allTime.mostKm}
           </div>
           <div className="text-sm text-gray-600">
             {new Date(stats.bestKmDay.date).toLocaleDateString("fi-FI")}
@@ -135,11 +137,11 @@ const AllTimeInsights = ({ username }: { username: string }) => {
           <div className="mt-2 space-y-1">
             {stats.bestKmDay.activities.map((activity, index) => (
               <div key={activity.id} className="text-sm text-gray-500">
-                {activity.activity}: {activity.kilometers.toFixed(1)} km (
-                {activity.duration} min)
+                {activity.activity}: {activity.kilometers.toFixed(1)} {t.allTime.mostKm} (
+                {activity.duration} {t.insights.mins})
                 {activity.bonus && (
                   <span className="text-slate-500 ml-1">
-                    ★ bonukset laskettu mukaan
+                    ★ {t.allTime.bonusIncluded}
                   </span>
                 )}
               </div>
@@ -148,9 +150,9 @@ const AllTimeInsights = ({ username }: { username: string }) => {
         </div>
 
         <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="font-semibold mb-2">Pisimmät treenit</h3>
+          <h3 className="font-semibold mb-2">{t.allTime.longestWorkout}</h3>
           <div className="text-2xl font-bold text-slate-600">
-            {stats.longestWorkoutDay.duration} min
+            {stats.longestWorkoutDay.duration} {t.allTime.longestWorkouts}
           </div>
           <div className="text-sm text-gray-600">
             {new Date(stats.longestWorkoutDay.date).toLocaleDateString("fi-FI")}
@@ -158,26 +160,21 @@ const AllTimeInsights = ({ username }: { username: string }) => {
           <div className="mt-2 space-y-1">
             {stats.longestWorkoutDay.activities.map((activity, index) => (
               <div key={activity.id} className="text-sm text-gray-500">
-                {activity.activity}: {activity.duration} min (
-                {activity.kilometers.toFixed(1)} km)
-                {/* {activity.bonus && (
-                  <span className="text-slate-500 ml-1">
-                    ★ bonukset laskettu mukaan
-                  </span>
-                )} */}
+                {activity.activity}: {activity.duration} {t.insights.mins} (
+                {activity.kilometers.toFixed(1)} {t.allTime.mostKm})
               </div>
             ))}
           </div>
         </div>
 
         <div className="bg-white rounded-lg shadow p-4">
-          <h3 className="font-semibold mb-2">Nykyinen putki</h3>
+          <h3 className="font-semibold mb-2">{t.allTime.currentStreak}</h3>
           <div className="text-2xl font-bold text-slate-600">
-            {stats.currentStreak.days} päivää
+            {stats.currentStreak.days} {t.allTime.currentStreakDays}
           </div>
           {stats.currentStreak.start && (
             <div className="text-sm text-gray-600">
-              Alkaen{" "}
+              {t.allTime.since}{" "}
               {new Date(stats.currentStreak.start).toLocaleDateString("fi-FI")}
             </div>
           )}

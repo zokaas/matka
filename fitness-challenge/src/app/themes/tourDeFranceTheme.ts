@@ -52,7 +52,7 @@ export const tourDeFranceTheme: Theme = {
       name: "Caen → Caen (ITT)",
       pointsRequired: 745.5,
       emoji: "⏱️",
-      description: "33 km individual time trial",
+      description: "33 km individual time trial",
       stageType: "time_trial",
       weather: "Cloudy",
       location: "Caen, France",
@@ -162,7 +162,7 @@ export const tourDeFranceTheme: Theme = {
       name: "Montpellier → Mont Ventoux",
       pointsRequired: 2521.5,
       emoji: "🌋",
-      description: "Summit finish up Mont Ventoux",
+      description: "Summit finish up Mont Ventoux",
       stageType: "mountain",
       weather: "Windy",
       location: "Mont Ventoux, France",
@@ -236,47 +236,247 @@ export const tourDeFranceTheme: Theme = {
     ceremonial: "text-slate-600"
   },
 
-translations: {
-  title: "Tour de France -haaste",
-  teamTitle: "Tiimi",
-  dashboardTitle: "Tour de France -haaste",
-  subtitle: "Joukkue etenee yhdessä etappi etapilta!",
-  selectThemeLabel: "Valitse teema",
-  selectUserLabel: "Valitse käyttäjä",
-  selectUserPlaceholder: "Valitse oma profiilisi...",
-  loginTitle: "Tervetuloa takaisin!",
-  loginSubtitle: "Kirjaudu mukaan haasteeseen ja seuraa matkaa.",
-  loginButton: "Liity pelotoniin",
-  loginEmoji: "🚴‍♂️",
-  stageLabel: "Etappi",
-  stageSubtitle: "Stage {{number}} loop around {{location}}",
-  nextStage: "Seuraava etappi",
-  points: "Pisteet",
-  pointsToNext: "pistettä seuraavaan etappiin",
-  weather: "Sää",
-  type: "Etappityyppi",
-  stagesTitle: "Etapit",
-  completed: "Valmis",
-  current: "Nykyinen",
-  upcoming: "Tulossa",
-  leaderboardTitle: "🏆 Sijoitukset",
-  weeklyGoal: "Viikon tavoite",
-  kmRemaining: "{{km}} km jäljellä",
-  tabs: {
-    leaderboard: "Sijoitukset",
-    weekly: "Viikon tilanne",
-    quotes: "Kannustus"
-  },
-  submitQuoteTitle: "Kannusta joukkuettasi",
-  submitQuotePlaceholder: "Kirjoita kannustava viesti...",
-  submitButton: "Lähetä",
-  activeUsers: "Aktiivisia osallistujia",
-  totalPointsLabel: "Yhteispisteet",
-  goalLabel: "Tavoite: 100 000 km",
-  routeLabel: "Reitti: Ranska ympäri",
-  loginNote: "Pisteet perustuvat liikutun matkan kilometreihin.",
-  loading: "Ladataan...",
-  error: "Tapahtui virhe.",
+  translations: {
+    title: "Tour de France -haaste",
+    teamTitle: "Tiimi",
+    dashboardTitle: "Tour de France -haaste",
+    subtitle: "Joukkue etenee yhdessä etappi etapilta!",
+    selectThemeLabel: "Valitse teema",
+    selectUserLabel: "Valitse käyttäjä",
+    selectUserPlaceholder: "Valitse oma profiilisi...",
+    loginTitle: "Tervetuloa takaisin!",
+    loginSubtitle: "Kirjaudu mukaan haasteeseen ja seuraa matkaa.",
+    loginButton: "Liity pelotoniin",
+    loginEmoji: "🚴‍♂️",
+    stageLabel: "Etappi",
+    stageSubtitle: "Stage {{number}} loop around {{location}}",
+    nextStage: "Seuraava etappi",
+    points: "Pisteet",
+    pointsToNext: "pistettä seuraavaan etappiin",
+    weather: "Sää",
+    type: "Etappityyppi",
+    stagesTitle: "Etapit",
+    completed: "Valmis",
+    current: "Nykyinen",
+    upcoming: "Tulossa",
+    leaderboardTitle: "🏆 Sijoitukset",
+    weeklyGoal: "Viikon tavoite",
+    kmRemaining: "{{km}} km jäljellä",
+    tabs: {
+      leaderboard: "Sijoitukset",
+      weekly: "Viikon tilanne",
+      quotes: "Kannustus"
+    },
+    submitQuoteTitle: "Kannusta joukkuettasi",
+    submitQuotePlaceholder: "Kirjoita kannustava viesti...",
+    submitButton: "Lähetä",
+    activeUsers: "Aktiivisia osallistujia",
+    totalPointsLabel: "Yhteispisteet",
+    goalLabel: "Tavoite: 100 000 km",
+    routeLabel: "Reitti: Ranska ympäri",
+    loginNote: "Pisteet perustuvat liikutun matkan kilometreihin.",
+    loading: "Ladataan...",
+    error: "Tapahtui virhe.",
 
+    // New Leaderboard translations
+    leaderboard: {
+      title: "Sijoitukset",
+      rankings: "Tulokset",
+      position: "Sija",
+      totalDistance: "Yhteensä",
+      noActivities: "Ei suorituksia",
+      goldMedal: "Kultamitali",
+      silverMedal: "Hopeamitali",
+      bronzeMedal: "Pronssimitali"
+    },
+
+    // New WeeklyProgress translations  
+    weeklyProgress: {
+      title: "Viikon tilanne",
+      thisWeek: "Tämä viikko",
+      weeklyRanking: "Viikon ranking",
+      completed: "Suoritettu",
+      remaining: "Jäljellä",
+      dailyTarget: "Päivätavoite",
+      weeklyTarget: "Viikkotavoite",
+      daysAgo: "päivää sitten",
+      position: "Sija"
+    },
+
+    // New ActivityFeed translations
+    activityFeed: {
+      title: "Viimeisimmät suoritukset",
+      recentActivities: "Tuoreimmat aktiviteetit",
+      noActivities: "Ei aktiivisuuksia saatavilla",
+      addedActivity: "lisäsi suorituksen",
+      completedWorkout: "suoritti treenin",
+      timeAgo: "sitten",
+      showComments: "Näytä kommentit",
+      hideComments: "Piilota kommentit"
+    },
+
+    // General UI translations
+    ui: {
+      edit: "Muokkaa",
+      delete: "Poista",
+      cancel: "Peruuta",
+      save: "Tallenna",
+      confirm: "Vahvista",
+      close: "Sulje",
+      next: "Seuraava",
+      previous: "Edellinen",
+      viewProfile: "Näytä profiili",
+      backToHome: "Takaisin etusivulle"
+    },
+
+    // PersonalInsights translations
+    insights: {
+      title: "Omat tilastot",
+      overview: "Yleiskatsaus",
+      activity: "Suoritukset",
+      totalActivities: "Suoritukset",
+      totalHours: "Tunnit",
+      totalKm: "Kilometrit",
+      weeklyKm: "Viikko ka",
+      currentStreak: "Nykyinen putki",
+      longestStreak: "Pisin putki",
+      days: "päivää",
+      mostFrequentActivity: "Suosituin laji",
+      personalStatistics: "Henkilökohtaiset tilastot",
+      avgDuration: "Keskim. kesto",
+      avgDistance: "Keskim. matka",
+      mins: "min",
+      km: "km",
+      activityBreakdown: "Aktiviteettijakauma",
+      times: "kertaa",
+      addActivitiesToSee: "Lisää aktiviteetteja nähdäksesi tilastot."
+    },
+
+    // Comments translations
+    comments: {
+      addComment: "Lisää kommentti",
+      placeholder: "Kirjoita kommentti...",
+      charactersLeft: "merkkiä jäljellä",
+      send: "Lähetä",
+      sending: "Lähetetään...",
+      noComments: "Ei kommentteja vielä.",
+      showComments: "Näytä kommentit",
+      hideComments: "Piilota kommentit",
+      loadingComments: "Ladataan..."
+    },
+
+    // Pagination translations
+    pagination: {
+      previous: "Edellinen",
+      next: "Seuraava",
+      page: "Sivu",
+      of: "/"
+    },
+
+    // Modal translations
+    modal: {
+      confirmDelete: "Vahvista poisto",
+      confirmDeleteActivity: "Haluatko varmasti poistaa tämän suorituksen?",
+      activityLabel: "Laji",
+      dateLabel: "Päivämäärä",
+      durationLabel: "Kesto",
+      areYouSure: "Oletko varma?"
+    },
+
+    // AllTime insights translations
+    allTime: {
+      title: "Kaikkien aikojen tilastot",
+      bestKmDay: "Eniten kilometrejä",
+      longestWorkout: "Pisimmät treenit",
+      currentStreak: "Nykyinen putki",
+      loadingStats: "Ladataan tilastoja...",
+      mostKm: "km",
+      longestWorkouts: "min",
+      currentStreakDays: "päivää",
+      since: "Alkaen",
+      bonusIncluded: "bonukset laskettu mukaan"
+    },
+
+    // User insights translations
+    userInsights: {
+      title: "Loading insights...",
+      todayVsLastWeek: "Today vs Last Week",
+      weekComparison: "Week Comparison",
+      kmTodayLastWeek: "Km Today/Last Week",
+      activitiesTodayLastWeek: "Activities Today/Last Week",
+      totalKmThisLastWeek: "Total Km This/Last Week",
+      activitiesThisLastWeek: "Activities This/Last Week",
+      weekOverWeekComparison: "Week-over-Week Comparison",
+      dailyComparison: "Daily Comparison",
+      change: "change",
+      noDataAvailable: "No data available"
+    },
+
+    // PaceProjection translations
+    paceProjection: {
+      title: "Vauhtiennusteet",
+      fullHistoryLabel: "Koko historia",
+      fullHistoryDesc: "Perustuu koko haasteen aikana kertyneeseen keskimääräiseen vauhtiin.",
+      recentLabel: "Viimeaikaiset",
+      recentDesc: "Perustuu viimeisen 4 viikon aikana kertyneeseen vauhtiin.",
+      weeklyLabel: "Viikon",
+      weeklyDesc: "Perustuu viimeisimmän seitsemän päivän tahtiin.",
+      requiredLabel: "Vaadittu",
+      requiredDesc: "Vaadittu vauhti tavoitepäivään (22.6.) mennessä.",
+      pacePerPerson: "Vauhti / hlö",
+      estimatedCompletion: "Arvioitu valmistuminen",
+      differenceFromTarget: "Ero tavoitteesta",
+      exactly: "Täsmällisesti",
+      daysLate: "päivää myöhässä",
+      daysEarly: "päivää etuajassa",
+      kmPerWeek: "km/vko",
+      noData: "Ei tietoa"
+    },
+
+    // Records/Statistics translations
+    records: {
+      title: "Ennätykset",
+      currentRecords: "Nykyiset ennätykset",
+      mostKmInDay: "Eniten kilometrejä päivässä",
+      longestWorkout: "Pisin treeni",
+      longestStreak: "Pisin urheiluputki",
+      startingFrom: "Alkaen",
+      noDataAvailable: "Ei tietoja saatavilla",
+      loadingRecords: "Ladataan ennätyksiä...",
+      weeksBest: "Viikon parhaat",
+      mostPopularSports: "Viikon suosituimmat",
+      longestWorkoutOfWeek: "Viikon pisin treeni",
+      weeklyTopPerformers: "Viikon ahkerimmat",
+      performancesThisWeek: "suoritusta tällä viikolla",
+      kmThisWeek: "km tällä viikolla",
+      noPerformancesYet: "Ei vielä suorituksia"
+    },
+
+    // Weekly activity translations
+    weeklyActivity: {
+      title: "Viikkoaktiivisuus",
+      weeksCalculated: "Viikot laskettu maanantaista sunnuntaihin",
+      mondayToSunday: "Viikot laskettu maanantaista sunnuntaihin",
+      sport: "Laji",
+      thisWeek: "Tämä viikko",
+      lastWeek: "Viime viikko",
+      total: "Yhteensä",
+      times: "kertaa",
+      time: "kerta"
+    },
+
+    // Activity form translations
+    activityForm: {
+      noActivitiesFound: "No activities found.",
+      bonusCalculated: "bonukset laskettu mukaan"
+    },
+
+    // Challenge closed translations
+    challengeClosed: {
+      newChallengeStarts: "Uusi haaste starttaa sunnuntaina 4.8.",
+      detailsWillBeReleased: "Yksityiskohdat julkaistaan pian",
+      prepareToBe: "valmistaudu inspiroitumaan ja lähtemään mukaan unohtumattomalle seikkailulle!",
+      inspired: "inspiroituneeksi"
+    }
   } satisfies ThemeTranslations
 };

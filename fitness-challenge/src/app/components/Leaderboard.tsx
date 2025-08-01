@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { User } from "@/app/types/types";
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface LeaderboardProps {
   users: User[];
@@ -15,10 +16,12 @@ const getMedal = (index: number) => {
 };
 
 const Leaderboard = ({ users }: LeaderboardProps) => {
+  const { t } = useTheme();
+
   return (
     <section>
       <h2 className="text-xl font-bold text-gray-800 flex items-center mb-4">
-        <span>🏆 </span> Sijoitukset
+        <span>🏆 </span> {t.leaderboard.title}
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {users
@@ -61,7 +64,16 @@ const Leaderboard = ({ users }: LeaderboardProps) => {
                     </div>
                     {/* Medals for Top 3 */}
                     {getMedal(index) && (
-                      <div className="absolute -bottom-3 -right-3 text-3xl rounded-full p-1">
+                      <div 
+                        className="absolute -bottom-3 -right-3 text-3xl rounded-full p-1"
+                        title={
+                          index === 0 
+                            ? t.leaderboard.goldMedal 
+                            : index === 1 
+                            ? t.leaderboard.silverMedal 
+                            : t.leaderboard.bronzeMedal
+                        }
+                      >
                         {getMedal(index)}
                       </div>
                     )}

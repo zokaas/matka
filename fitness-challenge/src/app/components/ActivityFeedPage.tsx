@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Activity } from "@/app/types/types";
 import ActivityItem from "./ActivityItem";
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface ActivityWithUser extends Activity {
   username: string;
@@ -13,6 +14,7 @@ interface ActivityWithUser extends Activity {
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
 
 export default function ActivityFeedPage() {
+  const { t } = useTheme();
   const [activities, setActivities] = useState<ActivityWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -124,26 +126,13 @@ export default function ActivityFeedPage() {
     return <div className="text-center text-red-500 p-4">{error}</div>;
   }
 
-  // Feature flag for "coming soon" message
-  const FEATURE_ENABLED = true; // Change to false to display "coming soon" banner
-
-  if (!FEATURE_ENABLED) {
-    return (
-      <div className="text-center bg-yellow-100 text-yellow-700 p-4 rounded-lg">
-        <h2 className="text-xl font-semibold">TULOSSA PIAN 🚀</h2>
-        <p className="text-sm">
-          Tämä ominaisuus julkaistaan kun olette saaneet kasaan 30 000km.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-5xl mx-auto">
       {/* Header */}
       <header className="text-center mb-8">
         <h1 className="text-xl font-bold text-gray-800 flex items-center mb-2">
-          Viimeisimmät suoritukset
+          {t.activityFeed.recentActivities}
         </h1>
       </header>
 
@@ -151,7 +140,7 @@ export default function ActivityFeedPage() {
       <div className="space-y-6">
         {activities.length === 0 ? (
           <div className="text-center p-6 bg-white rounded-lg shadow">
-            <p className="text-gray-500">Ei aktiivisuuksia saatavilla.</p>
+            <p className="text-gray-500">{t.activityFeed.noActivities}</p>
           </div>
         ) : (
           <AnimatePresence>

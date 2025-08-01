@@ -1,4 +1,5 @@
 import React from "react";
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface Props {
   page: number;
@@ -13,6 +14,7 @@ const Pagination: React.FC<Props> = ({
   totalItems,
   itemsPerPage,
 }) => {
+  const { t } = useTheme();
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   // Don't render pagination if there's only one page
@@ -34,11 +36,11 @@ const Pagination: React.FC<Props> = ({
           className="px-4 py-2 rounded text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <span aria-hidden="true">&larr;</span>
-          <span className="ml-2">Edellinen</span>
+          <span className="ml-2">{t.pagination.previous}</span>
         </button>
 
         <div className="px-4 font-medium">
-          {page}/{totalPages}
+          {page}{t.pagination.of}{totalPages}
         </div>
 
         <button
@@ -47,7 +49,7 @@ const Pagination: React.FC<Props> = ({
           aria-label="Go to next page"
           className="px-4 py-2 rounded text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          <span>Seuraava</span>
+          <span>{t.pagination.next}</span>
           <span aria-hidden="true" className="ml-2">
             &rarr;
           </span>

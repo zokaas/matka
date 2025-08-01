@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import _ from "lodash";
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface Activity {
   id: number;
@@ -125,8 +126,8 @@ const mapUserRecord = async (username: string): Promise<{
   }
 };
 
-const renderHolders = (holders: RecordHolder[]) => {
-  if (!holders || holders.length === 0) return <span>Ei tietoja</span>;
+const renderHolders = (holders: RecordHolder[], t: any) => {
+  if (!holders || holders.length === 0) return <span>{t.records.noDataAvailable}</span>;
   
   return holders.map((holder, index) => (
     <React.Fragment key={holder.username}>
@@ -147,7 +148,7 @@ const renderActivityList = (activities: Activity[], type: "km" | "min") => {
         : `${activity.duration} min`}
       )
       {activity.bonus && type === "km" && (
-        <span className="text-slate-500 ml-1">★ bonukset laskettu mukaan</span>
+        <span className="text-slate-500 ml-1">★ {t.allTime.bonusIncluded}</span>
       )}
     </div>
   ));
@@ -159,13 +160,14 @@ const renderRecordCard = (
   holders: RecordHolder[],
   valueLabel: string,
   dateLabel: string,
-  activityType: "km" | "min"
+  activityType: "km" | "min",
+  t: any
 ) => {
   if (!holders || holders.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow p-4">
         <div className={`text-sm ${colorClass} font-medium mb-1`}>{title}</div>
-        <div>Ei tietoja saatavilla</div>
+        <div>{t.records.noDataAvailable}</div>
       </div>
     );
   }
@@ -173,7 +175,7 @@ const renderRecordCard = (
   return (
     <div className="bg-white rounded-lg shadow p-4">
       <div className={`text-sm ${colorClass} font-medium mb-1`}>{title}</div>
-      <div>{renderHolders(holders)}</div>
+      <div>{renderHolders(holders, t)}</div>
       <div className={`text-2xl font-bold ${colorClass} mt-1`}>{valueLabel}</div>
       <div className="text-sm text-gray-500">{dateLabel}</div>
       {holders[0]?.activities && holders[0].activities.length > 0 && (
@@ -186,6 +188,7 @@ const renderRecordCard = (
 };
 
 const RecordHolders = () => {
+  const { t } = useTheme();
   const [records, setRecords] = useState<Records | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -246,9 +249,9 @@ const RecordHolders = () => {
     fetchRecords();
   }, []);
 
-  if (loading) return <div className="text-center p-4">Ladataan ennätyksiä...</div>;
+  if (loading) return <div className="text-center p-4">{t.records.loadingRecords}</div>;
   if (error) return <div className="text-center text-red-500 p-4">{error}</div>;
-  if (!records) return <div className="text-center p-4">Ei tietoja saatavilla</div>;
+  if (!records) return <div className="text-center p-4">{t.records.noDataAvailable}</div>;
 
   // Ensure we have valid records before rendering cards
   const hasBestKm = records.bestKm && records.bestKm.length > 0 && records.bestKm[0];
@@ -257,59 +260,61 @@ const RecordHolders = () => {
 
   return (
     <div className="space-y-6">
-      <h3 className="text-xl font-semibold text-gray-800 mb-6">Nykyiset ennätykset</h3>
+      <h3 className="text-xl font-semibold text-gray-800 mb-6">{t.records.currentRecords}</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {hasBestKm ? (
           renderRecordCard(
-            "Eniten kilometrejä päivässä",
+            t.records.mostKmInDay,
             "text-slate-600",
             records.bestKm,
             `${records.bestKm[0].value.toFixed(1)} km`,
             new Date(records.bestKm[0].date).toLocaleDateString("fi-FI"),
-            "km"
+            "km",
+            t
           )
         ) : (
           <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-slate-600 font-medium mb-1">Eniten kilometrejä päivässä</div>
-            <div>Ei tietoja saatavilla</div>
+            <div className="text-sm text-slate-600 font-medium mb-1">{t.records.mostKmInDay}</div>
+            <div>{t.records.noDataAvailable}</div>
           </div>
         )}
         
         {hasLongestWorkout ? (
           renderRecordCard(
-            "Pisin treeni",
+            t.records.longestWorkout,
             "text-slate-600",
             records.longestWorkout,
             `${records.longestWorkout[0].value} min`,
             new Date(records.longestWorkout[0].date).toLocaleDateString("fi-FI"),
-            "min"
+            "min",
+            t
           )
         ) : (
           <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-slate-600 font-medium mb-1">Pisin treeni</div>
-            <div>Ei tietoja saatavilla</div>
+            <div className="text-sm text-slate-600 font-medium mb-1">{t.records.longestWorkout}</div>
+            <div>{t.records.noDataAvailable}</div>
           </div>
         )}
         
         {hasLongestStreak ? (
           <div className="bg-white rounded-lg shadow p-4">
             <div className="text-sm text-slate-600 font-medium mb-1">
-              Pisin urheiluputki
+              {t.records.longestStreak}
             </div>
-            <div>{renderHolders(records.longestStreak)}</div>
+            <div>{renderHolders(records.longestStreak, t)}</div>
             <div className="text-2xl font-bold bg-slate-600 mt-1">
-              {records.longestStreak[0].value} päivää
+              {records.longestStreak[0].value} {t.allTime.currentStreakDays}
             </div>
             {records.longestStreak[0].date && (
               <div className="text-sm text-gray-500">
-                Alkaen {new Date(records.longestStreak[0].date).toLocaleDateString("fi-FI")}
+                {t.records.startingFrom} {new Date(records.longestStreak[0].date).toLocaleDateString("fi-FI")}
               </div>
             )}
           </div>
         ) : (
           <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-slate-600 font-medium mb-1">Pisin urheiluputki</div>
-            <div>Ei tietoja saatavilla</div>
+            <div className="text-sm text-slate-600 font-medium mb-1">{t.records.longestStreak}</div>
+            <div>{t.records.noDataAvailable}</div>
           </div>
         )}
       </div>

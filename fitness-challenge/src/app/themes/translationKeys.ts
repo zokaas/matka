@@ -48,4 +48,205 @@ export interface ThemeTranslations {
 
   loading: string;
   error: string;
+
+  // Leaderboard translations
+  leaderboard: {
+    title: string;
+    rankings: string;
+    position: string;
+    totalDistance: string;
+    noActivities: string;
+    goldMedal: string;
+    silverMedal: string;
+    bronzeMedal: string;
+  };
+
+  // WeeklyProgress translations  
+  weeklyProgress: {
+    title: string;
+    thisWeek: string;
+    weeklyRanking: string;
+    completed: string;
+    remaining: string;
+    dailyTarget: string;
+    weeklyTarget: string;
+    daysAgo: string;
+    position: string;
+  };
+
+  // ActivityFeed translations
+  activityFeed: {
+    title: string;
+    recentActivities: string;
+    noActivities: string;
+    addedActivity: string;
+    completedWorkout: string;
+    timeAgo: string;
+    showComments: string;
+    hideComments: string;
+  };
+
+  // General UI translations
+  ui: {
+    edit: string;
+    delete: string;
+    cancel: string;
+    save: string;
+    confirm: string;
+    close: string;
+    next: string;
+    previous: string;
+    viewProfile: string;
+    backToHome: string;
+  };
+
+  // PersonalInsights translations
+  insights: {
+    title: string;
+    overview: string;
+    activity: string;
+    totalActivities: string;
+    totalHours: string;
+    totalKm: string;
+    weeklyKm: string;
+    currentStreak: string;
+    longestStreak: string;
+    days: string;
+    mostFrequentActivity: string;
+    personalStatistics: string;
+    avgDuration: string;
+    avgDistance: string;
+    mins: string;
+    km: string;
+    activityBreakdown: string;
+    times: string;
+    addActivitiesToSee: string;
+  };
+
+  // Comments translations
+  comments: {
+    addComment: string;
+    placeholder: string;
+    charactersLeft: string;
+    send: string;
+    sending: string;
+    noComments: string;
+    showComments: string;
+    hideComments: string;
+    loadingComments: string;
+  };
+
+  // Pagination translations
+  pagination: {
+    previous: string;
+    next: string;
+    page: string;
+    of: string;
+  };
+
+  // Modal translations
+  modal: {
+    confirmDelete: string;
+    confirmDeleteActivity: string;
+    activityLabel: string;
+    dateLabel: string;
+    durationLabel: string;
+    areYouSure: string;
+  };
+
+  // AllTime insights translations
+  allTime: {
+    title: string;
+    bestKmDay: string;
+    longestWorkout: string;
+    currentStreak: string;
+    loadingStats: string;
+    mostKm: string;
+    longestWorkouts: string;
+    currentStreakDays: string;
+    since: string;
+    bonusIncluded: string;
+  };
+
+  // User insights translations
+  userInsights: {
+    title: string;
+    todayVsLastWeek: string;
+    weekComparison: string;
+    kmTodayLastWeek: string;
+    activitiesTodayLastWeek: string;
+    totalKmThisLastWeek: string;
+    activitiesThisLastWeek: string;
+    weekOverWeekComparison: string;
+    dailyComparison: string;
+    change: string;
+    noDataAvailable: string;
+  };
+
+  // PaceProjection translations
+  paceProjection: {
+    title: string;
+    fullHistoryLabel: string;
+    fullHistoryDesc: string;
+    recentLabel: string;
+    recentDesc: string;
+    weeklyLabel: string;
+    weeklyDesc: string;
+    requiredLabel: string;
+    requiredDesc: string;
+    pacePerPerson: string;
+    estimatedCompletion: string;
+    differenceFromTarget: string;
+    exactly: string;
+    daysLate: string;
+    daysEarly: string;
+    kmPerWeek: string;
+    noData: string;
+  };
+
+  // Records/Statistics translations
+  records: {
+    title: string;
+    currentRecords: string;
+    mostKmInDay: string;
+    longestWorkout: string;
+    longestStreak: string;
+    startingFrom: string;
+    noDataAvailable: string;
+    loadingRecords: string;
+    weeksBest: string;
+    mostPopularSports: string;
+    longestWorkoutOfWeek: string;
+    weeklyTopPerformers: string;
+    performancesThisWeek: string;
+    kmThisWeek: string;
+    noPerformancesYet: string;
+  };
+
+  // Weekly activity translations
+  weeklyActivity: {
+    title: string;
+    weeksCalculated: string;
+    mondayToSunday: string;
+    sport: string;
+    thisWeek: string;
+    lastWeek: string;
+    total: string;
+    times: string;
+    time: string;
+  };
+
+  // Activity form translations
+  activityForm: {
+    noActivitiesFound: string;
+    bonusCalculated: string;
+  };
+
+  // Challenge closed translations
+  challengeClosed: {
+    newChallengeStarts: string;
+    detailsWillBeReleased: string;
+    prepareToBe: string;
+    inspired: string;
+  };
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { LogOut } from "lucide-react";
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface User {
   username: string;
@@ -11,6 +12,7 @@ interface User {
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
 
 export default function Navbar() {
+  const { t } = useTheme();
   const [users, setUsers] = useState<User[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -92,7 +94,7 @@ export default function Navbar() {
               href="/"
               className="hover:bg-slate-700 px-3 py-2 rounded text-sm font-medium transition-colors"
             >
-              Etusivu
+              {t.ui.backToHome}
             </Link>
             <Link
               href="/insights"
@@ -207,7 +209,7 @@ export default function Navbar() {
             className="block px-4 py-2 text-sm font-medium hover:bg-slate-700 transition-colors"
             onClick={() => setIsMenuOpen(false)}
           >
-            Etusivu
+            {t.ui.backToHome}
           </Link>
           <Link
             href="/insights"

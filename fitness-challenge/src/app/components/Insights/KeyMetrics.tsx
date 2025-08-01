@@ -1,6 +1,7 @@
 import React from "react";
 import { Award } from "lucide-react";
 import { Activity } from "@/app/types/types";
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface TopSports {
   count: number;
@@ -27,6 +28,7 @@ const KeyMetrics: React.FC<Props> = ({
   getLongestActivities,
   getWeeklyTopPerformers,
 }) => {
+  const { t } = useTheme();
   const topSports = getWeekTopSports();
   const longestActivities = getLongestActivities();
   const topPerformers = getWeeklyTopPerformers();
@@ -51,7 +53,7 @@ const KeyMetrics: React.FC<Props> = ({
   return (
     <div className="space-y-6">
       <h3 className="text-xl font-semibold text-gray-800 mb-6">
-        Viikon parhaat
+        {t.records.weeksBest}
       </h3>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         {/* Weekly Top Sport */}
@@ -60,7 +62,7 @@ const KeyMetrics: React.FC<Props> = ({
             <Award className="w-8 h-8" />
             <div>
               <h3 className="text-sm font-medium text-gray-500">
-                Viikon suosituimmat
+                {t.records.mostPopularSports}
               </h3>
               {topSports ? (
                 <>
@@ -68,11 +70,11 @@ const KeyMetrics: React.FC<Props> = ({
                     {topSports.sports.map((sport) => sport.name).join(" / ")}
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    {topSports.count} suoritusta tällä viikolla
+                    {topSports.count} {t.records.performancesThisWeek}
                   </p>
                 </>
               ) : (
-                <p className="text-gray-600">Ei vielä suorituksia</p>
+                <p className="text-gray-600">{t.records.noPerformancesYet}</p>
               )}
             </div>
           </div>
@@ -84,7 +86,7 @@ const KeyMetrics: React.FC<Props> = ({
             <Award className="w-8 h-8" />
             <div>
               <h3 className="text-sm font-medium text-gray-500">
-                Viikon pisin treeni
+                {t.records.longestWorkoutOfWeek}
               </h3>
               {longestMatchingActivities.length > 0 ? (
                 <>
@@ -102,7 +104,7 @@ const KeyMetrics: React.FC<Props> = ({
                   </ul>
                 </>
               ) : (
-                <p className="text-gray-600">Ei suorituksia</p>
+                <p className="text-gray-600">{t.activityFeed.noActivities}</p>
               )}
             </div>
           </div>
@@ -114,7 +116,7 @@ const KeyMetrics: React.FC<Props> = ({
             <Award className="w-8 h-8 text-bg-slate" />
             <div>
               <h3 className="text-sm font-medium text-gray-500">
-                Viikon ahkerimmat
+                {t.records.weeklyTopPerformers}
               </h3>
               {topPerformers && topPerformers.kilometers > 0 ? (
                 <>
@@ -124,11 +126,11 @@ const KeyMetrics: React.FC<Props> = ({
                       .join(" / ")}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {Math.round(topPerformers.kilometers)} km tällä viikolla
+                    {Math.round(topPerformers.kilometers)} {t.records.kmThisWeek}
                   </p>
                 </>
               ) : (
-                <p className="text-gray-600">Ei vielä suorituksia</p>
+                <p className="text-gray-600">{t.records.noPerformancesYet}</p>
               )}
             </div>
           </div>

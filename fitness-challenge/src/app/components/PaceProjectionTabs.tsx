@@ -10,6 +10,7 @@ import {
   ChevronRight,
   ChevronLeft,
 } from 'lucide-react';
+import { useTheme } from '@/app/hooks/useTheme';
 
 interface ProjectionEntry {
   estimatedEndDate: string | null;
@@ -41,6 +42,7 @@ const PaceProjectionTabs: React.FC<PaceProjectionTabsProps> = ({
   participantCount = 1,
   projections,
 }) => {
+  const { t } = useTheme();
   const [activeTab, setActiveTab] = useState('historical');
 
   const parseDate = (date: string | Date | null): Date | null => {
@@ -60,33 +62,32 @@ const PaceProjectionTabs: React.FC<PaceProjectionTabsProps> = ({
   
   const projectionEntries = {
     historical: {
-      label: 'Koko historia',
-      description: 'Perustuu koko haasteen aikana kertyneeseen keskimääräiseen vauhtiin.',
+      label: t.paceProjection.fullHistoryLabel,
+      description: t.paceProjection.fullHistoryDesc,
       pacePerUser: Math.round(historicalPace),
       estimatedEndDate: parseDate(projections.historical.estimatedEndDate),
       daysFromTarget: projections.historical.daysFromTarget ?? 0,
       icon: <History className="w-5 h-5" />,
     },
     recent: {
-      label: 'Viimeaikaiset',
-      description: 'Perustuu viimeisen 4 viikon aikana kertyneeseen vauhtiin.',
+      label: t.paceProjection.recentLabel,
+      description: t.paceProjection.recentDesc,
       pacePerUser: Math.round(recentPace),
       estimatedEndDate: parseDate(projections.recent.estimatedEndDate),
       daysFromTarget: projections.recent.daysFromTarget ?? 0,
       icon: <Clock className="w-5 h-5" />,
     },
     weekly: {
-      label: 'Viikon',
-      description:
-        'Perustuu viimeisimmän seitsemän päivän tahtiin.',
+      label: t.paceProjection.weeklyLabel,
+      description: t.paceProjection.weeklyDesc,
       pacePerUser: Math.round(weeklyPace),
       estimatedEndDate: parseDate(projections.weekly.estimatedEndDate),
       daysFromTarget: projections.weekly.daysFromTarget ?? 0,
       icon: <BarChart2 className="w-5 h-5" />,
     },
     required: {
-      label: 'Vaadittu',
-      description: 'Vaadittu vauhti tavoitepäivään (22.6.) mennessä.',
+      label: t.paceProjection.requiredLabel,
+      description: t.paceProjection.requiredDesc,
       pacePerUser: Math.ceil(remainingDistance / (Math.ceil((targetDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) / 7) / participantCount),
       estimatedEndDate: targetDate,
       daysFromTarget: 0,
@@ -110,16 +111,16 @@ const PaceProjectionTabs: React.FC<PaceProjectionTabsProps> = ({
 
   const daysFromTargetText =
     activeProjection.daysFromTarget === 0
-      ? 'Täsmällisesti'
+      ? t.paceProjection.exactly
       : activeProjection.daysFromTarget > 0
-      ? `+${activeProjection.daysFromTarget} päivää`
-      : `${activeProjection.daysFromTarget} päivää`;
+      ? `+${activeProjection.daysFromTarget} ${t.paceProjection.daysLate}`
+      : `${activeProjection.daysFromTarget} ${t.paceProjection.daysEarly}`;
 
   return (
     <div className="bg-white rounded-lg shadow-md p-4 mb-6">
       <h3 className="text-lg font-semibold mb-4 flex items-center">
         <TrendingUp className="w-5 h-5 mr-2 text-slate-600" />
-        Vauhtiennusteet
+        {t.paceProjection.title}
       </h3>
 
       {/* Tabs (desktop) */}
@@ -161,16 +162,16 @@ const PaceProjectionTabs: React.FC<PaceProjectionTabsProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-slate-50 p-3 rounded-lg">
-          <div className="text-sm text-slate-700 font-medium">Vauhti / hlö</div>
-          <div className="text-xl font-bold text-slate-800">{activeProjection.pacePerUser} km/vko</div>
+          <div className="text-sm text-slate-700 font-medium">{t.paceProjection.pacePerPerson}</div>
+          <div className="text-xl font-bold text-slate-800">{activeProjection.pacePerUser} {t.paceProjection.kmPerWeek}</div>
         </div>
 
         <div className="bg-slate-50 p-3 rounded-lg">
-          <div className="text-sm text-slate-700 font-medium">Arvioitu valmistuminen</div>
+          <div className="text-sm text-slate-700 font-medium">{t.paceProjection.estimatedCompletion}</div>
           <div className="text-xl font-bold text-slate-800">
             {activeProjection.estimatedEndDate 
               ? format(activeProjection.estimatedEndDate, 'd.M.yyyy')
-              : 'Ei tietoa'}
+              : t.paceProjection.noData}
           </div>
         </div>
 
@@ -192,7 +193,7 @@ const PaceProjectionTabs: React.FC<PaceProjectionTabsProps> = ({
                 : 'text-gray-700'
             }`}
           >
-            Ero tavoitteesta
+            {t.paceProjection.differenceFromTarget}
           </div>
           <div
             className={`text-xl font-bold ${
