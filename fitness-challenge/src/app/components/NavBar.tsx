@@ -84,7 +84,7 @@ export default function Navbar() {
           {/* Logo / Home */}
           <Link href="/" className="text-xl font-bold hover:text-cyan-300 transition-colors flex items-center">
             <Mountain className="w-6 h-6 mr-2" />
-            🏔️ HUIPPUJEN VALLOITUS 🏔️
+            🏔️ TOUR DE FRANCE 🏔️
           </Link>
 
           {/* Links for Desktop */}
