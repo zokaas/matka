@@ -31,7 +31,7 @@ const REACTION_EMOJI_MAP: Record<string, string> = {
   rocket: "🚀",
 };
 
-const backendUrl = "https://matka-zogy.onrender.com";
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
 
 const CommentAndReactionView: React.FC<CommentAndReactionViewProps> = ({
   activityId,

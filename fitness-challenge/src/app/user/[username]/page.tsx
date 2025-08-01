@@ -116,7 +116,7 @@ const UserProfile = () => {
   const isActivitySubmissionDisabled = true;
   const canEditProfile = isLoggedIn && currentUser === username;
 
-  const backendUrl = "https://matka-zogy.onrender.com";
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
   const formRef = useRef<HTMLDivElement>(null);
 
   const fetchUser = useCallback(async () => {

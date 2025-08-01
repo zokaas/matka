@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Trophy, Users, MapPin, Award, Activity } from 'lucide-react';
 import { useFetchUsers } from '../hooks/useFetchUsers';
 import { User } from '../types/types';
 

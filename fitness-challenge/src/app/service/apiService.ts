@@ -1,7 +1,7 @@
 // src/app/services/apiService.ts
 import { Activity, User, Comment, Reaction, Quote, ReactionResponse } from "../types/types";
 
-const BACKEND_URL = "https://matka-zogy.onrender.com";
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
 
 // Central error handling
 const handleResponse = async (response: Response) => {
@@ -44,7 +44,7 @@ const handleResponse = async (response: Response) => {
 export const userAPI = {
   // Get all users
   getAllUsers: async (): Promise<User[]> => {
-    const response = await fetch(`${BACKEND_URL}/users`);
+    const response = await fetch(`${backendUrl}/users`);
     return handleResponse(response);
   },
 
@@ -55,7 +55,7 @@ export const userAPI = {
     limit: number = 10
   ): Promise<User> => {
     const response = await fetch(
-      `${BACKEND_URL}/users/${username}?page=${page}&limit=${limit}`
+      `${backendUrl}/users/${username}?page=${page}&limit=${limit}`
     );
     return handleResponse(response);
   },
@@ -63,14 +63,14 @@ export const userAPI = {
   // Get all activities for a user
   getUserActivities: async (username: string): Promise<Activity[]> => {
     const response = await fetch(
-      `${BACKEND_URL}/users/${username}/activities/all`
+      `${backendUrl}/users/${username}/activities/all`
     );
     return handleResponse(response);
   },
 
   // Add a new user
   addUser: async (username: string, totalKm: number = 0): Promise<User> => {
-    const response = await fetch(`${BACKEND_URL}/users`, {
+    const response = await fetch(`${backendUrl}/users`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, totalKm }),
@@ -80,7 +80,7 @@ export const userAPI = {
 
   // Get total kilometers for all users
   getTotalKilometers: async (): Promise<number> => {
-    const response = await fetch(`${BACKEND_URL}/total-kilometers`);
+    const response = await fetch(`${backendUrl}/total-kilometers`);
     const data = await handleResponse(response);
     return data.totalKm;
   },
@@ -101,7 +101,7 @@ export const activityAPI = {
     }
   ): Promise<{ activity: Activity; user: User }> => {
     const response = await fetch(
-      `${BACKEND_URL}/users/${username}/activities`,
+      `${backendUrl}/users/${username}/activities`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -127,7 +127,7 @@ export const activityAPI = {
     updatedTotalKm: number;
   }> => {
     const response = await fetch(
-      `${BACKEND_URL}/users/${username}/activities/${activityId}`,
+      `${backendUrl}/users/${username}/activities/${activityId}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -143,7 +143,7 @@ export const activityAPI = {
     activityId: number
   ): Promise<User> => {
     const response = await fetch(
-      `${BACKEND_URL}/users/${username}/activities/${activityId}`,
+      `${backendUrl}/users/${username}/activities/${activityId}`,
       {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
@@ -160,7 +160,7 @@ export const commentAPI = {
   // Get comments for an activity
   getComments: async (activityId: number): Promise<Comment[]> => {
     const response = await fetch(
-      `${BACKEND_URL}/activity/${activityId}/comments`
+      `${backendUrl}/activity/${activityId}/comments`
     );
     return handleResponse(response);
   },
@@ -168,7 +168,7 @@ export const commentAPI = {
   // Add a comment to an activity
   addComment: async (activityId: number, text: string): Promise<Comment> => {
     const response = await fetch(
-      `${BACKEND_URL}/activity/${activityId}/comments`,
+      `${backendUrl}/activity/${activityId}/comments`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -189,7 +189,7 @@ export const reactionAPI = {
     try {
       console.log(`Fetching reactions for activity ${activityId}`);
       const response = await fetch(
-        `${BACKEND_URL}/activity/${activityId}/reactions`
+        `${backendUrl}/activity/${activityId}/reactions`
       );
       
       if (!response.ok) {
@@ -214,7 +214,7 @@ export const reactionAPI = {
     try {
       console.log(`Toggling reaction for activity ${activityId}: ${type}`);
       const response = await fetch(
-        `${BACKEND_URL}/activity/${activityId}/reactions`,
+        `${backendUrl}/activity/${activityId}/reactions`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -243,13 +243,13 @@ export const reactionAPI = {
 export const quoteAPI = {
   // Get all quotes
   getAllQuotes: async (): Promise<Quote[]> => {
-    const response = await fetch(`${BACKEND_URL}/quotes`);
+    const response = await fetch(`${backendUrl}/quotes`);
     return handleResponse(response);
   },
 
   // Add a new quote
   addQuote: async (text: string): Promise<Quote> => {
-    const response = await fetch(`${BACKEND_URL}/quotes`, {
+    const response = await fetch(`${backendUrl}/quotes`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text }),
@@ -262,7 +262,7 @@ export const quoteAPI = {
 export const healthAPI = {
   // Check backend health
   checkHealth: async (): Promise<{ status: string; uptime: number }> => {
-    const response = await fetch(`${BACKEND_URL}/health`);
+    const response = await fetch(`${backendUrl}/health`);
     return handleResponse(response);
   },
 };

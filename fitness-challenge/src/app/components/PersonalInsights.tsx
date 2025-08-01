@@ -94,7 +94,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
     const fetchAllActivities = async () => {
       try {
         setLoading(true);
-        const backendUrl = "https://matka-zogy.onrender.com";
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
         const response = await fetch(
           `${backendUrl}/users/${username}/activities/all`
         );

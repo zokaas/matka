@@ -10,7 +10,7 @@ export const useFetchUsers = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const backendUrl = "https://matka-zogy.onrender.com";
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
         const response = await fetch(`${backendUrl}/users`);
         if (!response.ok) throw new Error("Failed to fetch users");
 

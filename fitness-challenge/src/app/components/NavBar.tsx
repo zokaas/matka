@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { LogOut, Mountain } from "lucide-react";
+import { LogOut } from "lucide-react";
 
 interface User {
   username: string;
 }
-const backendUrl = "https://matka-zogy.onrender.com";
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
 
 export default function Navbar() {
   const [users, setUsers] = useState<User[]>([]);

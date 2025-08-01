@@ -1,9 +1,9 @@
 "use client";
 
 import { useAuth } from "./contexts/AuthContext";
-import TourDeFranceDashboard from "./components/TourDeFranceDashboard";
-import TourDeFranceLogin from "./components/TourDeFranceLogin";
+import TourDeFranceLogin from "./components/LoginScreen";
 import ChallengeClosedPage from "./components/ChallengeClosedPage";
+import Dashboard from "./components/Dashboard";
 
 const CHALLENGE_CLOSED = true; // Set to true if you want to close the challenge
 
@@ -20,7 +20,9 @@ export default function Home() {
 
   return (
     <>
-      <TourDeFranceDashboard />
+      {/* <ThemedStageDashboard />      
+      <QuickAccess /> */}
+      <Dashboard />
       <div className="p-4"></div>
     </>
   );

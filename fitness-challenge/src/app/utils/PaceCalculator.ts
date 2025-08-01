@@ -1,6 +1,7 @@
 // utils/PaceCalculator.ts
 import { differenceInDays, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { User } from '../types/types';
+import { challengeParams } from '../constants/challengeParams';
 
 interface PaceMetrics {
   totalProgress: number;
@@ -22,9 +23,10 @@ interface PaceMetrics {
 }
 
 export class PaceCalculator {
-  public static readonly CHALLENGE_START_DATE = new Date('2025-01-06');
-  public static readonly CHALLENGE_END_DATE = new Date('2025-06-22');
-  private static readonly TOTAL_CHALLENGE_DISTANCE = 100000;
+public static readonly CHALLENGE_START_DATE = new Date(challengeParams.startDate);
+public static readonly CHALLENGE_END_DATE = new Date(challengeParams.endDate);
+private static readonly TOTAL_CHALLENGE_DISTANCE = challengeParams.totalDistance;
+
 
   static calculatePaceMetrics(users: User[], referenceDate: Date = new Date()): PaceMetrics {
     if (!users || users.length === 0) throw new Error('No user data provided');

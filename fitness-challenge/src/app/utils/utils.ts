@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from "react";
 import { User, Activity } from "@/app/types/types";
 
-const backendUrl = "https://matka-zogy.onrender.com";
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
 
 export const fetchUsersAndTotalKm = async (
   setUsers: Dispatch<SetStateAction<User[]>>,

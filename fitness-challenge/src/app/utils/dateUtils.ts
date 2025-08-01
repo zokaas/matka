@@ -101,3 +101,32 @@ export const getLastFourWeeks = (users: User[]) => {
     comparisons,
   };
 };
+
+// 🔁 Get start of week (Monday)
+export const getWeekStart = (date: Date) => {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday
+  d.setDate(diff);
+  d.setHours(0, 0, 0, 0);
+  return d;
+};
+
+// 🔁 Get week key like "2025-W32"
+export const getWeekKey = (date: Date) => {
+  const weekStart = getWeekStart(new Date(date));
+  const year = weekStart.getFullYear();
+  const jan1 = new Date(year, 0, 1);
+  const weekNumber = Math.ceil(
+    (weekStart.getTime() - jan1.getTime()) / (7 * 24 * 60 * 60 * 1000)
+  );
+  return `${year}-W${weekNumber}`;
+};
+
+// 🔁 Get days remaining to a deadline
+export const getDaysRemaining = (end: Date, today = new Date()) =>
+  Math.max(0, Math.ceil((end.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
+
+// 🔁 Total days in challenge
+export const getChallengeDuration = (start: Date, end: Date) =>
+  Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)));

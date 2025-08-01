@@ -10,7 +10,7 @@ interface ActivityWithUser extends Activity {
   profilePicture?: string;
 }
 
-const backendUrl = "https://matka-zogy.onrender.com";
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
 
 export default function ActivityFeedPage() {
   const [activities, setActivities] = useState<ActivityWithUser[]>([]);

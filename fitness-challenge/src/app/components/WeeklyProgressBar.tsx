@@ -1,11 +1,17 @@
 // fitness-challenge/src/app/components/WeeklyProgressBar.tsx
 import React, { useState, useEffect } from "react";
 import { useFetchUsers } from "@/app/hooks/useFetchUsers";
+import {
+  getWeekStart,
+  getWeekKey,
+  getDaysRemaining,
+} from "@/app/utils/dateUtils";
+import { challengeParams } from "../constants/challengeParams";
 
-// Constants for the challenge
-const CHALLENGE_START_DATE = new Date("2025-01-06");
-const CHALLENGE_END_DATE = new Date("2025-06-22");
-const TOTAL_CHALLENGE_DISTANCE = 100000; // 100,000 km
+const CHALLENGE_START_DATE = new Date(challengeParams.startDate);
+const CHALLENGE_END_DATE = new Date(challengeParams.endDate);
+const TOTAL_CHALLENGE_DISTANCE = challengeParams.totalDistance;
+
 
 const WeeklyProgressBar = () => {
   const { users, loading, error } = useFetchUsers();
@@ -18,61 +24,34 @@ const WeeklyProgressBar = () => {
   useEffect(() => {
     if (!users || users.length === 0) return;
 
-    // Calculate the current week's key (to identify the week)
     const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() + mondayOffset);
-    weekStart.setHours(0, 0, 0, 0); // Start of Monday
-
-    // Determine the end of the week
+    const weekStart = getWeekStart(today);
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
-    weekEnd.setHours(23, 59, 59, 999); // End of Sunday
+    weekEnd.setHours(23, 59, 59, 999);
 
-    // Create a key for this week (e.g., "2025-W12")
-    const weekYear = weekStart.getFullYear();
-    const weekNum = Math.ceil((weekStart.getTime() - new Date(weekYear, 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000));
-    const currentWeekKey = `${weekYear}-W${weekNum}`;
-    
+    const currentWeekKey = getWeekKey(today);
     setWeekStartKey(currentWeekKey);
 
-    // Check if we already have a stored weekly goal
     const storedWeeklyGoal = localStorage.getItem(`weekly-goal-${currentWeekKey}`);
-    
+
     if (storedWeeklyGoal) {
-      // Use the stored goal
       const parsedGoal = parseInt(storedWeeklyGoal, 10);
       setWeeklyGoal(parsedGoal);
       setWeeklyKmPerPerson(Math.round(parsedGoal / users.length));
     } else {
-      // Calculate a new weekly goal based on remaining challenge distance and time
-      
-      // Get total progress so far
       const totalProgress = users.reduce((sum, user) => sum + user.totalKm, 0);
-      
-      // Calculate remaining distance to the challenge goal
       const remainingChallengeDistance = Math.max(0, TOTAL_CHALLENGE_DISTANCE - totalProgress);
-      
-      // Calculate days left until challenge end
-      const daysRemaining = Math.max(1, Math.ceil((CHALLENGE_END_DATE.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
-      
-      // Calculate weeks remaining (round up to ensure we have a safety margin)
+      const daysRemaining = getDaysRemaining(CHALLENGE_END_DATE, today);
       const weeksRemaining = Math.ceil(daysRemaining / 7);
-      
-      // Calculate required weekly distance for the team
       const requiredWeeklyDistance = Math.ceil(remainingChallengeDistance / weeksRemaining);
-      
-      // Set the weekly goal and per-person breakdown
+
       setWeeklyGoal(requiredWeeklyDistance);
       setWeeklyKmPerPerson(Math.round(requiredWeeklyDistance / users.length));
-      
-      // Store this week's goal
+
       localStorage.setItem(`weekly-goal-${currentWeekKey}`, requiredWeeklyDistance.toString());
     }
-    
-    // Calculate the total distance covered this week
+
     let currentWeekDistance = 0;
     users.forEach((user) => {
       const weekActivities = user.activities.filter((activity) => {
@@ -89,9 +68,7 @@ const WeeklyProgressBar = () => {
     });
 
     setWeeklyProgress(Math.round(currentWeekDistance));
-    
-    // Calculate remaining distance (never negative)
-    const weekGoal = storedWeeklyGoal ? parseInt(storedWeeklyGoal, 10) : (weeklyGoal || 0);
+    const weekGoal = storedWeeklyGoal ? parseInt(storedWeeklyGoal, 10) : weeklyGoal;
     const remaining = Math.max(0, weekGoal - currentWeekDistance);
     setRemainingDistance(remaining);
   }, [users]);
@@ -112,9 +89,8 @@ const WeeklyProgressBar = () => {
     );
   }
 
-  // Calculate progress percentage (cap at 100% for display purposes)
-  const progressPercentage = weeklyGoal > 0 
-    ? Math.min(100, (weeklyProgress / weeklyGoal) * 100) 
+  const progressPercentage = weeklyGoal > 0
+    ? Math.min(100, (weeklyProgress / weeklyGoal) * 100)
     : 0;
 
   return (
@@ -137,8 +113,8 @@ const WeeklyProgressBar = () => {
             width: `${progressPercentage}%`,
             backgroundColor:
               progressPercentage >= 100
-                ? "#22c55e" // green-500
-                : "#a855f7", // purple-500
+                ? "#22c55e"
+                : "#a855f7",
           }}
         />
       </div>
@@ -148,7 +124,7 @@ const WeeklyProgressBar = () => {
           {remainingDistance > 0 ? (
             <div className="text-gray-600">
               <span className="font-medium text-slate-600">
-              {Math.round(remainingDistance)} km
+                {Math.round(remainingDistance)} km
               </span>{" "}
               jäljellä
             </div>
@@ -158,9 +134,7 @@ const WeeklyProgressBar = () => {
             </div>
           )}
         </div>
-        <div className="text-gray-500">
-          {weeklyKmPerPerson} km/hlö
-        </div>
+        <div className="text-gray-500">{weeklyKmPerPerson} km/hlö</div>
       </div>
     </div>
   );

@@ -308,36 +308,3 @@ export const tourDeFranceRoute = [
     pointsRequired: 3360,
   }
 ];
-
-// Stage types for filtering and display
-export const stageTypes = {
-  flat: "Étape plate",
-  hilly: "Étape vallonnée", 
-  mountain: "Étape de montagne",
-  time_trial: "Contre-la-montre",
-  ceremonial: "Étape d'honneur"
-};
-
-// Points calculation by activity intensity
-export const activityPoints = {
-  high: 4,      // Juoksu, CrossFit, Spinning, etc.
-  medium: 3,    // Pyöräily, Sali, Tennis, etc.  
-  low: 2        // Uinti, Jooga, Golf, etc.
-};
-
-// Bonus multipliers for special conditions
-export const bonusMultipliers = {
-  "vent_arriere": 2.0,        // Tailwind (perfect weather)
-  "peloton": 1.5,             // Group training (3+ people) 
-  "echappee": 3.0             // Solo breakaway (individual achievement)
-};
-
-// Total challenge parameters
-export const challengeParams = {
-  totalStages: 21,
-  totalPoints: 3360,
-  startDate: "2025-08-01",
-  endDate: "2025-12-19", 
-  totalDays: 140,
-  totalDistance: 3338.8  // Real Tour de France distance in km
-};
