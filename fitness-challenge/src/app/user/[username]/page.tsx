@@ -13,6 +13,7 @@ import SubmitQuote from "@/app/components/SubmitQuote";
 import PersonalInsights from "@/app/components/PersonalInsights";
 import CommentAndReactionView from "@/app/components/CommentAndReactionView";
 import { useTheme } from "@/app/hooks/useTheme";
+import { challengeParams } from "@/app/constants/challengeParams";
 
 interface Activity {
   id: number;
@@ -469,13 +470,16 @@ const UserProfile = () => {
                     <label className="block text-sm font-medium mb-2 text-gray-700">
                       {t.userProfile.date}
                     </label>
-                    <input
-                      type="date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
-                      required
-                    />
+<input
+  type="date"
+  value={date}
+  onChange={(e) => setDate(e.target.value)}
+  min={challengeParams.startDate}
+  max={challengeParams.endDate}
+  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
+  required
+/>
+
                   </div>
                 </div>
 
