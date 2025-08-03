@@ -107,9 +107,9 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Logo / Home */}
-          <Link 
-            href="/" 
-            className="text-xl font-bold flex items-center hover:opacity-80 transition-opacity" 
+          <Link
+            href="/"
+            className="text-xl font-bold flex items-center hover:opacity-80 transition-opacity"
             style={{ color: colors.text, textDecoration: "none" }}
           >
             🏔️ {t.navbar.title} 🏔️
@@ -121,8 +121,12 @@ export default function Navbar() {
               href="/"
               className="hover:opacity-80 transition-all duration-200 rounded-lg px-3 py-2"
               style={navLinkStyle}
-              onMouseEnter={(e) => Object.assign(e.currentTarget.style, navLinkHoverStyle)}
-              onMouseLeave={(e) => Object.assign(e.currentTarget.style, navLinkStyle)}
+              onMouseEnter={(e) =>
+                Object.assign(e.currentTarget.style, navLinkHoverStyle)
+              }
+              onMouseLeave={(e) =>
+                Object.assign(e.currentTarget.style, navLinkStyle)
+              }
             >
               {t.ui.backToHome}
             </Link>
@@ -130,8 +134,12 @@ export default function Navbar() {
               href="/insights"
               className="hover:opacity-80 transition-all duration-200 rounded-lg px-3 py-2"
               style={navLinkStyle}
-              onMouseEnter={(e) => Object.assign(e.currentTarget.style, navLinkHoverStyle)}
-              onMouseLeave={(e) => Object.assign(e.currentTarget.style, navLinkStyle)}
+              onMouseEnter={(e) =>
+                Object.assign(e.currentTarget.style, navLinkHoverStyle)
+              }
+              onMouseLeave={(e) =>
+                Object.assign(e.currentTarget.style, navLinkStyle)
+              }
             >
               {t.navbar.statistics}
             </Link>
@@ -139,10 +147,14 @@ export default function Navbar() {
               href="/info"
               className="hover:opacity-80 transition-all duration-200 rounded-lg px-3 py-2"
               style={navLinkStyle}
-              onMouseEnter={(e) => Object.assign(e.currentTarget.style, navLinkHoverStyle)}
-              onMouseLeave={(e) => Object.assign(e.currentTarget.style, navLinkStyle)}
+              onMouseEnter={(e) =>
+                Object.assign(e.currentTarget.style, navLinkHoverStyle)
+              }
+              onMouseLeave={(e) =>
+                Object.assign(e.currentTarget.style, navLinkStyle)
+              }
             >
-Info
+              Info
             </Link>
 
             {isLoggedIn && (
@@ -154,8 +166,12 @@ Info
                     onClick={() => setIsDropdownOpen((prev) => !prev)}
                     className="hover:opacity-80 transition-all duration-200 rounded-lg px-3 py-2 flex items-center"
                     style={navLinkStyle}
-                    onMouseEnter={(e) => Object.assign(e.currentTarget.style, navLinkHoverStyle)}
-                    onMouseLeave={(e) => Object.assign(e.currentTarget.style, navLinkStyle)}
+                    onMouseEnter={(e) =>
+                      Object.assign(e.currentTarget.style, navLinkHoverStyle)
+                    }
+                    onMouseLeave={(e) =>
+                      Object.assign(e.currentTarget.style, navLinkStyle)
+                    }
                   >
                     {t.navbar.climbers}
                     <svg
@@ -182,11 +198,17 @@ Info
                       }}
                     >
                       {loading ? (
-                        <p className="px-4 py-2" style={{ color: colors.textSecondary }}>
+                        <p
+                          className="px-4 py-2"
+                          style={{ color: colors.textSecondary }}
+                        >
                           {t.navbar.loadingClimbers}...
                         </p>
                       ) : error ? (
-                        <p className="px-4 py-2" style={{ color: colors.error }}>
+                        <p
+                          className="px-4 py-2"
+                          style={{ color: colors.error }}
+                        >
                           {t.navbar.errorLoadingClimbers}
                         </p>
                       ) : (
@@ -195,12 +217,21 @@ Info
                             key={user.username}
                             href={`/user/${user.username}`}
                             className="block px-4 py-2 hover:opacity-80 transition-opacity"
-                            style={{ color: colors.text, textDecoration: "none" }}
+                            style={{
+                              color: colors.text,
+                              textDecoration: "none",
+                            }}
                             onClick={() => setIsDropdownOpen(false)}
-                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.secondary)}
-                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                            onMouseEnter={(e) =>
+                              (e.currentTarget.style.backgroundColor =
+                                colors.secondary)
+                            }
+                            onMouseLeave={(e) =>
+                              (e.currentTarget.style.backgroundColor =
+                                "transparent")
+                            }
                           >
-                            🧗‍♂️ {user.username}
+                            🚴 {user.username}
                           </Link>
                         ))
                       )}
@@ -209,8 +240,8 @@ Info
                 </div>
 
                 {/* Current User Display */}
-                <div 
-                  className="flex items-center space-x-3 ml-4 pl-4" 
+                <div
+                  className="flex items-center space-x-3 ml-4 pl-4"
                   style={{ borderLeft: `1px solid ${colors.border}` }}
                 >
                   <Link
@@ -218,7 +249,7 @@ Info
                     className="hover:opacity-80 transition-opacity flex items-center"
                     style={{ color: colors.text, textDecoration: "none" }}
                   >
-                    <span className="text-2xl mr-1">🧗‍♂️</span>
+                    <span className="text-2xl mr-1">🚴</span>
                     {currentUser}
                   </Link>
                   <button
@@ -231,8 +262,12 @@ Info
                       cursor: "pointer",
                     }}
                     title={t.navbar.logout}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.error)}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor = colors.error)
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = "transparent")
+                    }
                   >
                     <LogOut className="w-4 h-4" />
                   </button>
@@ -250,16 +285,20 @@ Info
                 className="bg-yellow-400 hover:bg-yellow-500 text-black px-3 py-2 rounded-lg transition-colors flex items-center space-x-1 text-sm font-medium"
                 style={{ textDecoration: "none" }}
               >
-                <span className="text-lg">🧗‍♂️</span>
+                <span className="text-lg">🚴</span>
                 <span className="text-sm">{currentUser}</span>
               </Link>
             )}
-            
+
             {/* Hamburger Menu */}
             <button
               onClick={() => setIsMenuOpen((prev) => !prev)}
               className="hover:opacity-80 transition-opacity p-2"
-              style={{ color: colors.text, backgroundColor: "transparent", border: "none" }}
+              style={{
+                color: colors.text,
+                backgroundColor: "transparent",
+                border: "none",
+              }}
             >
               <svg
                 className="h-6 w-6"
@@ -282,12 +321,12 @@ Info
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div 
+          <div
             className="md:hidden"
-            style={{ 
-              backgroundColor: colors.card, 
-              color: colors.text, 
-              borderTop: `1px solid ${colors.border}` 
+            style={{
+              backgroundColor: colors.card,
+              color: colors.text,
+              borderTop: `1px solid ${colors.border}`,
             }}
           >
             <Link
@@ -295,8 +334,12 @@ Info
               className="block px-4 py-2 hover:opacity-80 transition-opacity"
               style={{ color: colors.text, textDecoration: "none" }}
               onClick={() => setIsMenuOpen(false)}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.secondary)}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = colors.secondary)
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "transparent")
+              }
             >
               {t.ui.backToHome}
             </Link>
@@ -305,22 +348,30 @@ Info
               className="block px-4 py-2 hover:opacity-80 transition-opacity"
               style={{ color: colors.text, textDecoration: "none" }}
               onClick={() => setIsMenuOpen(false)}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.secondary)}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = colors.secondary)
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "transparent")
+              }
             >
               {t.navbar.statistics}
             </Link>
-                        <Link
+            <Link
               href="/info"
               className="block px-4 py-2 hover:opacity-80 transition-opacity"
               style={{ color: colors.text, textDecoration: "none" }}
               onClick={() => setIsMenuOpen(false)}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.secondary)}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = colors.secondary)
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.backgroundColor = "transparent")
+              }
             >
               Info
             </Link>
-            
+
             {isLoggedIn && (
               <>
                 <div>
@@ -328,13 +379,17 @@ Info
                     ref={mobileDropdownButtonRef}
                     onClick={() => setIsDropdownOpen((prev) => !prev)}
                     className="block w-full text-left px-4 py-2 hover:opacity-80 transition-opacity"
-                    style={{ 
-                      color: colors.text, 
-                      backgroundColor: "transparent", 
-                      border: "none" 
+                    style={{
+                      color: colors.text,
+                      backgroundColor: "transparent",
+                      border: "none",
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.secondary)}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor = colors.secondary)
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = "transparent")
+                    }
                   >
                     {t.navbar.climbers}
                     <svg
@@ -362,26 +417,41 @@ Info
                             setIsMenuOpen(false);
                             setIsDropdownOpen(false);
                           }}
-                          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.secondary)}
-                          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                          onMouseEnter={(e) =>
+                            (e.currentTarget.style.backgroundColor =
+                              colors.secondary)
+                          }
+                          onMouseLeave={(e) =>
+                            (e.currentTarget.style.backgroundColor =
+                              "transparent")
+                          }
                         >
-                          🧗‍♂️ {user.username}
+                          🚴 {user.username}
                         </Link>
                       ))}
                     </div>
                   )}
                 </div>
-                
-                <div style={{ borderTop: `1px solid ${colors.border}`, paddingTop: "0.5rem" }}>
+
+                <div
+                  style={{
+                    borderTop: `1px solid ${colors.border}`,
+                    paddingTop: "0.5rem",
+                  }}
+                >
                   <Link
                     href={`/user/${currentUser}`}
                     className="block px-4 py-2 hover:opacity-80 transition-opacity"
                     style={{ color: colors.text, textDecoration: "none" }}
                     onClick={() => setIsMenuOpen(false)}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.secondary)}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor = colors.secondary)
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = "transparent")
+                    }
                   >
-                    🧗‍♂️ {t.navbar.ownProfile} ({currentUser})
+                    🚴 {t.navbar.ownProfile} ({currentUser})
                   </Link>
                   <button
                     onClick={() => {
@@ -389,16 +459,22 @@ Info
                       setIsMenuOpen(false);
                     }}
                     className="block w-full text-left px-4 py-2 hover:opacity-80 transition-opacity"
-                    style={{ 
-                      backgroundColor: "transparent", 
+                    style={{
+                      backgroundColor: "transparent",
                       border: "none",
-                      cursor: "pointer" 
+                      cursor: "pointer",
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.error)}
-                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.backgroundColor = colors.error)
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.backgroundColor = "transparent")
+                    }
                   >
                     <LogOut className="w-4 h-4 inline mr-2" />
-                    <span style={{ color: colors.error }}>{t.navbar.logout}</span>
+                    <span style={{ color: colors.error }}>
+                      {t.navbar.logout}
+                    </span>
                   </button>
                 </div>
               </>
