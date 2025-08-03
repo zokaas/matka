@@ -70,7 +70,7 @@ const UserProfile = () => {
   const params = useParams();
   const username = params?.username as string;
   const { currentUser, isLoggedIn } = useAuth();
-  const { t, colors } = useTheme();
+  const { t } = useTheme();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -261,7 +261,7 @@ const UserProfile = () => {
   // Show login required message if not logged in
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-bg-slate-800 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <div className="bg-800/90 backdrop-blur-sm rounded-2xl p-8 text-center text-white max-w-md">
           <Lock className="w-16 h-16 mx-auto mb-4 text-slate-400" />
           <h2 className="text-2xl font-bold mb-4">🏔️ {t.userProfile.loginRequired}</h2>
@@ -276,7 +276,7 @@ const UserProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-bg-slate-800 flex items-center justify-center">
+      <div className="min-h-screen  flex items-center justify-center">
         <div className="animate-spin h-12 w-12 border-4 border-slate-400 rounded-full border-t-transparent"></div>
       </div>
     );
@@ -284,7 +284,7 @@ const UserProfile = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-bg-slate-800 flex items-center justify-center">
+      <div className="min-h-screen  flex items-center justify-center">
         <div className="text-center text-red-400 p-4 bg-800/50 rounded-lg">
           <Mountain className="w-16 h-16 mx-auto mb-4" />
           {error}
@@ -295,7 +295,7 @@ const UserProfile = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-bg-slate-800 flex items-center justify-center">
+      <div className="min-h-screen  flex items-center justify-center">
         <div className="text-center text-gray-300 p-4 bg-800/50 rounded-lg">
           <UserIcon className="w-16 h-16 mx-auto mb-4" />
           {t.userProfile.userNotFound}
@@ -305,19 +305,10 @@ const UserProfile = () => {
   }
 
   return (
-  <div
-    className="min-h-screen"
-    style={{ background: `linear-gradient(to bottom right, ${colors.background}, ${colors.background})`, color: colors.text }}
-  >
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
-      <header
-        className="flex justify-between items-center rounded-2xl p-6 border"
-        style={{
-          backgroundColor: colors.card,
-          backdropFilter: "blur(8px)",
-          borderColor: colors.border,
-        }}
-      >
+    <div className="min-h-screen text-white">
+      <div className="max-w-4xl mx-auto p-6 space-y-8">
+        {/* Header */}
+        <header className="flex justify-between items-center bg-800/50 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
           <div className="flex items-center space-x-6">
             <div className="relative">
               {/* Climbing equipment badge overlay for profile pic */}
@@ -338,6 +329,7 @@ const UserProfile = () => {
             <div>
               <h1 className="text-3xl font-bold flex items-center">
                 🏔️ {user.username}
+                {currentUser === username && <span className="ml-2 text-sm bg-slate-600 px-2 py-1 rounded">{t.userProfile.you}</span>}
               </h1>
               <p className="text-xl text-slate-300 flex items-center">
                 <Mountain className="w-5 h-5 mr-2" />
@@ -358,16 +350,11 @@ const UserProfile = () => {
         </header>
 
         {/* Only show edit controls for own profile */}
-      {canEditProfile ? (
-        <>
-          <div
-            className="flex justify-center"
-            style={{
-              backgroundColor: colors.card,
-              borderColor: colors.border,
-            }}
-          >
-
+        {canEditProfile ? (
+          <>
+            {/* Toggle button */}
+            <div className="flex justify-center">
+              <div className="bg-800/80 backdrop-blur-sm rounded-full p-1 shadow inline-flex border border-white/10">
                 <button
                   onClick={() => setShowInsights(false)}
                   className={`px-6 py-3 rounded-full text-sm font-medium transition-colors flex items-center ${
@@ -391,28 +378,19 @@ const UserProfile = () => {
                   {t.userProfile.climbingStatistics}
                 </button>
               </div>
+            </div>
 
-          {!showInsights ? (
-            isActivitySubmissionDisabled ? (
-              <div
-                className="text-center rounded-2xl p-8 border"
-                style={{ backgroundColor: colors.card, borderColor: colors.border }}
-              >
+            {/* Activity Form or Insights */}
+            {!showInsights ? (
+              isActivitySubmissionDisabled ? (
+                <div className="text-center bg-800/50 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
                   <Mountain className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                   <p className="text-gray-300">
                     {t.userProfile.submissionClosed}
                   </p>
                 </div>
               ) : (
-              <section
-                ref={formRef}
-                className="p-8 rounded-2xl shadow-xl border"
-                style={{
-                  backgroundColor: colors.card,
-                  borderColor: colors.border,
-                  backdropFilter: "blur(8px)",
-                }}
-              >
+                <section ref={formRef} className="bg-800/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/10">
                   <h2 className="text-2xl font-semibold mb-6 flex items-center">
                     <Mountain className="w-6 h-6 mr-2 text-slate-400" />
                     {isEditing ? t.userProfile.updatePerformance : t.userProfile.addPerformance}
@@ -521,20 +499,17 @@ const UserProfile = () => {
                 </section>
               )
             ) : (
-            <div
-              className="rounded-2xl p-8 border"
-              style={{ backgroundColor: colors.card, borderColor: colors.border }}
-            >
-              <PersonalInsights activities={user.activities} username={user.username} />
-            </div>
+              <div className="bg-800/80 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+                <PersonalInsights
+                  activities={user.activities}
+                  username={user.username}
+                />
+              </div>
             )}
           </>
         ) : (
           // Show insights only for other users' profiles
-        <div
-          className="rounded-2xl p-8 border text-center"
-          style={{ backgroundColor: colors.card, borderColor: colors.border }}
-        >
+          <div className="bg-800/50 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
             <div className="text-center mb-6">
               <Lock className="w-12 h-12 mx-auto mb-4 text-gray-400" />
               <p className="text-gray-300">
@@ -554,12 +529,8 @@ const UserProfile = () => {
             <Mountain className="w-5 h-5 mr-2 text-slate-400" />
             {t.userProfile.climbingPerformances}
           </h3>
-        {user.activities.map((activity) => (
-          <div
-            key={activity.id}
-            className="p-6 rounded-xl shadow border"
-            style={{ backgroundColor: colors.card, borderColor: colors.border }}
-          >
+          {user.activities.map((activity) => (
+            <div key={activity.id} className="bg-800/50 backdrop-blur-sm p-6 rounded-xl shadow border border-white/10">
               <div className="flex justify-between">
                 <div className="flex-1">
                   <h4 className="font-semibold text-lg text-white mb-2">{activity.activity}</h4>
@@ -606,49 +577,46 @@ const UserProfile = () => {
           ))}
         </div>
 
-      {/* Sivuvalinta */}
-      {user.pagination && user.pagination.totalPages > 1 && (
-        <div className="mt-8">
-          <Pagination
-            page={page}
-            setPage={setPage}
-            totalItems={user.pagination.total}
-            itemsPerPage={itemsPerPage}
-          />
-        </div>
-      )}
+        {/* Pagination */}
+        {user.pagination && user.pagination.totalPages > 1 && (
+          <div className="mt-8">
+            <Pagination
+              page={page}
+              setPage={setPage}
+              totalItems={user.pagination.total}
+              itemsPerPage={itemsPerPage}
+            />
+          </div>
+        )}
 
-      {/* Quote submission */}
-      {canEditProfile && (
-        <div
-          className="rounded-2xl p-6 border"
-          style={{ backgroundColor: colors.card, borderColor: colors.border }}
-        >
-          <SubmitQuote />
-        </div>
-      )}
+        {/* Quote submission - only for current user */}
+        {canEditProfile && (
+          <div className="bg-800/50 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+            <SubmitQuote />
+          </div>
+        )}
 
-      {/* Poistovahvistus */}
-      <ConfirmationModal
-        isOpen={isModalOpen}
-        onConfirm={handleDeleteActivity}
-        onCancel={() => {
-          setIsModalOpen(false);
-          setActivityToDelete(null);
-        }}
-        activityDetails={
-          activityToDelete
-            ? {
-                activity: activityToDelete.activity,
-                date: activityToDelete.date,
-                duration: activityToDelete.duration,
-              }
-            : undefined
-        }
-      />
+        {/* Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={isModalOpen}
+          onConfirm={handleDeleteActivity}
+          onCancel={() => {
+            setIsModalOpen(false);
+            setActivityToDelete(null);
+          }}
+          activityDetails={
+            activityToDelete
+              ? {
+                  activity: activityToDelete.activity,
+                  date: activityToDelete.date,
+                  duration: activityToDelete.duration,
+                }
+              : undefined
+          }
+        />
+      </div>
     </div>
-  </div>
-);
-}
+  );
+};
 
 export default UserProfile;

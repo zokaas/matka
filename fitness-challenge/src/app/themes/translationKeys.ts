@@ -361,4 +361,6 @@ export interface ThemeTranslations {
     weeklyProgress: string;
     remainingWeeklyDailyTarget: string;
   };
+
+  
 }

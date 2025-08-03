@@ -5,7 +5,6 @@ import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { LogOut } from "lucide-react";
 import { useTheme } from "@/app/hooks/useTheme";
-import { ThemeColors } from "../themes/themeTypes";
 
 interface User {
   username: string;
@@ -79,6 +78,23 @@ export default function Navbar() {
     };
   }, [isDropdownOpen, isMenuOpen]);
 
+  const navLinkStyle: React.CSSProperties = {
+    padding: "0.5rem 0.75rem",
+    borderRadius: "0.375rem",
+    fontSize: "0.875rem",
+    fontWeight: 500,
+    transition: "all 0.2s",
+    color: colors.text,
+    backgroundColor: "transparent",
+    cursor: "pointer",
+    textDecoration: "none",
+  };
+
+  const navLinkHoverStyle: React.CSSProperties = {
+    ...navLinkStyle,
+    backgroundColor: colors.secondary,
+  };
+
   return (
     <nav
       className="shadow-xl border-b"
@@ -90,26 +106,60 @@ export default function Navbar() {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          <Link href="/" className="text-xl font-bold flex items-center" style={{ color: colors.text }}>
+          {/* Logo / Home */}
+          <Link 
+            href="/" 
+            className="text-xl font-bold flex items-center hover:opacity-80 transition-opacity" 
+            style={{ color: colors.text, textDecoration: "none" }}
+          >
             🏔️ {t.navbar.title} 🏔️
           </Link>
 
           {/* Desktop links */}
           <div className="hidden md:flex space-x-4 items-center">
-            <Link href="/" style={navLinkStyle(colors)}>{t.ui.backToHome}</Link>
-            <Link href="/insights" style={navLinkStyle(colors)}>{t.navbar.statistics}</Link>
+            <Link
+              href="/"
+              className="hover:opacity-80 transition-all duration-200 rounded-lg px-3 py-2"
+              style={navLinkStyle}
+              onMouseEnter={(e) => Object.assign(e.currentTarget.style, navLinkHoverStyle)}
+              onMouseLeave={(e) => Object.assign(e.currentTarget.style, navLinkStyle)}
+            >
+              {t.ui.backToHome}
+            </Link>
+            <Link
+              href="/insights"
+              className="hover:opacity-80 transition-all duration-200 rounded-lg px-3 py-2"
+              style={navLinkStyle}
+              onMouseEnter={(e) => Object.assign(e.currentTarget.style, navLinkHoverStyle)}
+              onMouseLeave={(e) => Object.assign(e.currentTarget.style, navLinkStyle)}
+            >
+              {t.navbar.statistics}
+            </Link>
 
             {isLoggedIn && (
               <>
+                {/* Dropdown for Users */}
                 <div className="relative">
                   <button
                     ref={dropdownButtonRef}
                     onClick={() => setIsDropdownOpen((prev) => !prev)}
-                    style={navLinkStyle(colors)}
+                    className="hover:opacity-80 transition-all duration-200 rounded-lg px-3 py-2 flex items-center"
+                    style={navLinkStyle}
+                    onMouseEnter={(e) => Object.assign(e.currentTarget.style, navLinkHoverStyle)}
+                    onMouseLeave={(e) => Object.assign(e.currentTarget.style, navLinkStyle)}
                   >
                     {t.navbar.climbers}
-                    <svg className="ml-1 h-4 w-4 inline" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.72-3.72a.75.75 0 011.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z" />
+                    <svg
+                      className="ml-1 h-4 w-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.72-3.72a.75.75 0 011.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </button>
                   {isDropdownOpen && (
@@ -123,17 +173,23 @@ export default function Navbar() {
                       }}
                     >
                       {loading ? (
-                        <p className="px-4 py-2">{t.navbar.loadingClimbers}...</p>
+                        <p className="px-4 py-2" style={{ color: colors.textSecondary }}>
+                          {t.navbar.loadingClimbers}...
+                        </p>
                       ) : error ? (
-                        <p className="px-4 py-2 text-red-500">{t.navbar.errorLoadingClimbers}</p>
+                        <p className="px-4 py-2" style={{ color: colors.error }}>
+                          {t.navbar.errorLoadingClimbers}
+                        </p>
                       ) : (
                         users.map((user) => (
                           <Link
                             key={user.username}
                             href={`/user/${user.username}`}
-                            className="block px-4 py-2"
-                            style={{ color: colors.text }}
+                            className="block px-4 py-2 hover:opacity-80 transition-opacity"
+                            style={{ color: colors.text, textDecoration: "none" }}
                             onClick={() => setIsDropdownOpen(false)}
+                            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.secondary)}
+                            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                           >
                             🧗‍♂️ {user.username}
                           </Link>
@@ -143,25 +199,31 @@ export default function Navbar() {
                   )}
                 </div>
 
-                <div className="flex items-center space-x-3 ml-4 pl-4" style={{ borderLeft: `1px solid ${colors.border}` }}>
+                {/* Current User Display */}
+                <div 
+                  className="flex items-center space-x-3 ml-4 pl-4" 
+                  style={{ borderLeft: `1px solid ${colors.border}` }}
+                >
                   <Link
                     href={`/user/${currentUser}`}
-                    style={{ color: colors.text }}
-                    className="flex items-center hover:underline"
+                    className="hover:opacity-80 transition-opacity flex items-center"
+                    style={{ color: colors.text, textDecoration: "none" }}
                   >
                     <span className="text-2xl mr-1">🧗‍♂️</span>
                     {currentUser}
                   </Link>
                   <button
                     onClick={logout}
-                    title={t.navbar.logout}
+                    className="hover:opacity-80 transition-all duration-200 rounded p-2"
                     style={{
                       backgroundColor: "transparent",
                       color: colors.text,
-                      padding: "0.5rem",
-                      borderRadius: "0.375rem",
+                      border: "none",
+                      cursor: "pointer",
                     }}
-                    className="hover:opacity-80 transition-colors"
+                    title={t.navbar.logout}
+                    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.error)}
+                    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                   >
                     <LogOut className="w-4 h-4" />
                   </button>
@@ -170,14 +232,26 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Hamburger for mobile */}
+          {/* Hamburger Menu for Mobile */}
           <button
             onClick={() => setIsMenuOpen((prev) => !prev)}
-            className="md:hidden"
-            style={{ color: colors.text }}
+            className="md:hidden hover:opacity-80 transition-opacity p-2"
+            style={{ color: colors.text, backgroundColor: "transparent", border: "none" }}
           >
-            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+            <svg
+              className="h-6 w-6"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             </svg>
           </button>
         </div>
@@ -185,41 +259,94 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div style={{ backgroundColor: colors.card, color: colors.text, borderTop: `1px solid ${colors.border}` }}>
-          <Link href="/" className="block px-4 py-2" onClick={() => setIsMenuOpen(false)}>{t.ui.backToHome}</Link>
-          <Link href="/insights" className="block px-4 py-2" onClick={() => setIsMenuOpen(false)}>{t.navbar.statistics}</Link>
-
+        <div 
+          className="md:hidden"
+          style={{ 
+            backgroundColor: colors.card, 
+            color: colors.text, 
+            borderTop: `1px solid ${colors.border}` 
+          }}
+        >
+          <Link
+            href="/"
+            className="block px-4 py-2 hover:opacity-80 transition-opacity"
+            style={{ color: colors.text, textDecoration: "none" }}
+            onClick={() => setIsMenuOpen(false)}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.secondary)}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+          >
+            {t.ui.backToHome}
+          </Link>
+          <Link
+            href="/insights"
+            className="block px-4 py-2 hover:opacity-80 transition-opacity"
+            style={{ color: colors.text, textDecoration: "none" }}
+            onClick={() => setIsMenuOpen(false)}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.secondary)}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+          >
+            {t.navbar.statistics}
+          </Link>
+          
           {isLoggedIn && (
             <>
-              <button
-                ref={mobileDropdownButtonRef}
-                onClick={() => setIsDropdownOpen((prev) => !prev)}
-                className="block w-full text-left px-4 py-2"
-              >
-                {t.navbar.climbers}
-              </button>
-              {isDropdownOpen && (
-                <div ref={mobileDropdownContentRef}>
-                  {users.map((user) => (
-                    <Link
-                      key={user.username}
-                      href={`/user/${user.username}`}
-                      className="block px-6 py-2"
-                      onClick={() => {
-                        setIsMenuOpen(false);
-                        setIsDropdownOpen(false);
-                      }}
-                    >
-                      🧗‍♂️ {user.username}
-                    </Link>
-                  ))}
-                </div>
-              )}
-              <div style={{ borderTop: `1px solid ${colors.border}` }}>
+              <div>
+                <button
+                  ref={mobileDropdownButtonRef}
+                  onClick={() => setIsDropdownOpen((prev) => !prev)}
+                  className="block w-full text-left px-4 py-2 hover:opacity-80 transition-opacity"
+                  style={{ 
+                    color: colors.text, 
+                    backgroundColor: "transparent", 
+                    border: "none" 
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.secondary)}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                >
+                  {t.navbar.climbers}
+                  <svg
+                    className="ml-1 h-4 w-4 inline-block"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.72-3.72a.75.75 0 011.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.29a.75.75 0 01.02-1.06z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+                {isDropdownOpen && (
+                  <div style={{ backgroundColor: colors.background }}>
+                    {users.map((user) => (
+                      <Link
+                        key={user.username}
+                        href={`/user/${user.username}`}
+                        className="block px-6 py-2 hover:opacity-80 transition-opacity"
+                        style={{ color: colors.text, textDecoration: "none" }}
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          setIsDropdownOpen(false);
+                        }}
+                        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.secondary)}
+                        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+                      >
+                        🧗‍♂️ {user.username}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              <div style={{ borderTop: `1px solid ${colors.border}`, paddingTop: "0.5rem" }}>
                 <Link
                   href={`/user/${currentUser}`}
-                  className="block px-4 py-2"
+                  className="block px-4 py-2 hover:opacity-80 transition-opacity"
+                  style={{ color: colors.text, textDecoration: "none" }}
                   onClick={() => setIsMenuOpen(false)}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.secondary)}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                 >
                   🧗‍♂️ {t.navbar.ownProfile} ({currentUser})
                 </Link>
@@ -228,11 +355,17 @@ export default function Navbar() {
                     logout();
                     setIsMenuOpen(false);
                   }}
-                  className="block w-full text-left px-4 py-2"
-                  style={{ color: "red" }}
+                  className="block w-full text-left px-4 py-2 hover:opacity-80 transition-opacity"
+                  style={{ 
+                    backgroundColor: "transparent", 
+                    border: "none",
+                    cursor: "pointer" 
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.error)}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                 >
                   <LogOut className="w-4 h-4 inline mr-2" />
-                  {t.navbar.logout}
+                  <span style={{ color: colors.error }}>{t.navbar.logout}</span>
                 </button>
               </div>
             </>
@@ -241,17 +374,4 @@ export default function Navbar() {
       )}
     </nav>
   );
-}
-
-function navLinkStyle(colors: ThemeColors): React.CSSProperties {
-  return {
-    padding: "0.5rem 0.75rem",
-    borderRadius: "0.375rem",
-    fontSize: "0.875rem",
-    fontWeight: 500,
-    transition: "all 0.2s",
-    color: colors.text,
-    backgroundColor: "transparent",
-    cursor: "pointer",
-  };
 }

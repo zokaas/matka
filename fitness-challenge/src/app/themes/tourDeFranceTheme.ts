@@ -15,6 +15,11 @@ export const tourDeFranceTheme: Theme = {
     border: "#e2e8f0",
     accent: "#facc15",
     button: "#facc15",
+    secondary: "#facc15",
+    textSecondary: "#facc15",
+    success: "#facc15",
+    warning: "#facc15",
+    error: "#facc15"
   },
 
   stages: [
@@ -371,7 +376,7 @@ export const tourDeFranceTheme: Theme = {
       next: "Seuraava",
       previous: "Edellinen",
       viewProfile: "Näytä profiili",
-      backToHome: "Takaisin etusivulle",
+      backToHome: "Etusivu",
     },
 
     // PersonalInsights translations

@@ -5,7 +5,7 @@ import TourDeFranceLogin from "./components/LoginScreen";
 import ChallengeClosedPage from "./components/ChallengeClosedPage";
 import Dashboard from "./components/Dashboard";
 
-const CHALLENGE_CLOSED = true; // Set to true if you want to close the challenge
+const CHALLENGE_CLOSED = false; // Set to true if you want to close the challenge
 
 export default function Home() {
   const { isLoggedIn } = useAuth();
