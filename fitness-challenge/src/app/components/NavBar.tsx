@@ -135,15 +135,14 @@ export default function Navbar() {
             >
               {t.navbar.statistics}
             </Link>
-                        <Link
+            <Link
               href="/info"
-              className="block px-4 py-2 hover:opacity-80 transition-opacity"
-              style={{ color: colors.text, textDecoration: "none" }}
-              onClick={() => setIsMenuOpen(false)}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = colors.secondary)}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+              className="hover:opacity-80 transition-all duration-200 rounded-lg px-3 py-2"
+              style={navLinkStyle}
+              onMouseEnter={(e) => Object.assign(e.currentTarget.style, navLinkHoverStyle)}
+              onMouseLeave={(e) => Object.assign(e.currentTarget.style, navLinkStyle)}
             >
-              Info
+Info
             </Link>
 
             {isLoggedIn && (
