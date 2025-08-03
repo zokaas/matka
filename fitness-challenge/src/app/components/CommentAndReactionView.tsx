@@ -101,7 +101,7 @@ const CommentAndReactionView: React.FC<CommentAndReactionViewProps> = ({
   };
 
   return (
-    <div className="pt-3">
+    <div className="">
       {/* Reactions Display */}
       {reactions.length > 0 && (
         <div className="flex flex-wrap gap-2">

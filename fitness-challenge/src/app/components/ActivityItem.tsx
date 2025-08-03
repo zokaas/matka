@@ -79,7 +79,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
 
       <ActivityReactions activityId={activity.id} />
 
-      <div className="flex justify-between border-t pt-3 mt-3">
+      <div className="flex justify-between border-t mt-3">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="text-gray-600 hover:text-slate-600 text-sm flex items-center"
