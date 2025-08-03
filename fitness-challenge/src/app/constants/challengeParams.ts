@@ -19,3 +19,42 @@ export const challengeParams = {
     return Number((this.totalDistance / (this.totalDays / 7)).toFixed(2));
   }
 };
+
+export const USER_WEEKLY_HOURS: Record<string, number> = {
+  Tyyni: 3,
+  Tuure: 3.5,
+  Tuulia: 3.5,
+  Kasper: 3.5,
+  Tiia: 4,
+  Zoka: 4,
+  Linda: 4,
+  Oskari: 4,
+  Leksa: 6,
+  Santeri: 6,
+};
+
+export const ACTIVITY_WEIGHTS: Record<string, number> = {
+  Juoksu: 1.0,
+  Sali: 1.0,
+  Tennis: 1.0,
+  Uinti: 2.0,
+  Crossfit: 1.0,
+  Tribe: 1.0,
+  'Ryhmä, pump': 1.0,
+  'Ryhmä, dance': 1.0,
+  'Ryhmä, combat': 1.0,
+  Spinning: 1.0,
+  Squash: 1.0,
+  Sulkapallo: 1.0,
+  Padel: 1.0,
+  Jooga: 0.5,
+  Liikkuvuus: 0.5,
+  Golf: 0.25,
+  'Ryhmä, HIIT': 1.0,
+  Kehonpainotreeni: 1.0,
+  Jalkapallo: 1.0,
+  Jääkiekko: 1.0,
+  Kamppailulaji: 1.0,
+  'Muu(100km/h)': 1.0,
+  'Muu(50km/h)': 0.5,
+};
