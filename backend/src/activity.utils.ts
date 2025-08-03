@@ -2,6 +2,7 @@ export const calculateKilometersWithBonus = (
   activity: string,
   hours: number,
   bonus?: string | null,
+  username?: string,
 ): number => {
   console.log('Calculating Kilometers for:', { activity, hours, bonus });
 
@@ -32,10 +33,8 @@ export const calculateKilometersWithBonus = (
   };
 
   let baseKilometers = 0;
-
-  // Extract the base activity type if it's a custom "Muu"
   const match = activity.match(/Muu\(.*?\)/);
-  const activityType = match ? match[0] : activity.trim(); // Extracts "Muu(100km/h)" or "Muu(50km/h)"
+  const activityType = match ? match[0] : activity.trim();
 
   if (activityType === 'Muu(100km/h)') {
     baseKilometers = hours * 100;
@@ -47,8 +46,14 @@ export const calculateKilometersWithBonus = (
     baseKilometers = (basePoints[activityType] ?? 0) * hours;
   }
 
-  // Apply Bonus Multiplier
-  let finalKilometers = baseKilometers;
+  const userCoefficient =
+    username && USER_COEFFICIENTS[username] !== undefined
+      ? USER_COEFFICIENTS[username]
+      : 100;
+
+  const normalizedKilometers = baseKilometers * (userCoefficient / 100);
+
+  let finalKilometers = normalizedKilometers;
   switch (bonus) {
     case 'juhlapäivä':
       finalKilometers *= 2;
@@ -61,6 +66,18 @@ export const calculateKilometersWithBonus = (
       break;
   }
 
-  console.log('Final Kilometers with Bonus:', finalKilometers);
   return finalKilometers;
+};
+
+const USER_COEFFICIENTS: { [key: string]: number } = {
+  Tyyni: 6.667,
+  Tuure: 5.714,
+  Tuulia: 5.714,
+  Kasper: 5.714,
+  Tiia: 5.0,
+  Zoka: 5.0,
+  Linda: 5.0,
+  Oskari: 5.0,
+  Leksa: 3.333,
+  Santeri: 3.333,
 };

@@ -119,11 +119,12 @@ export class ProgressController {
     console.log('Activity received:', newActivity);
 
     const hours = (newActivity.duration ?? 0) / 60;
-    const adjustedKm = calculateKilometersWithBonus(
-      newActivity.activity ?? '',
-      hours,
-      newActivity.bonus ?? null,
-    );
+const adjustedKm = calculateKilometersWithBonus(
+  newActivity.activity ?? '',
+  hours,
+  newActivity.bonus ?? null,
+  username  // ✅ Lisää käyttäjätunnus
+);
 
     console.log('Adjusted Kilometers:', adjustedKm);
 

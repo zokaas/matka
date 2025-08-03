@@ -25,8 +25,8 @@ export default function AchievementStats({ targetPaces }: Readonly<Props>) {
       </div>
 
       <div className="bg-green-50 p-4 rounded-lg">
-        <h3 className="font-medium bg-slate-800">Aikaa jäljellä</h3>
-        <p className="text-2xl font-bold bg-slate-600">
+        <h3 className="font-medium ">Aikaa jäljellä</h3>
+        <p className="text-2xl font-bold ">
           {targetPaces.daysRemaining} päivää
         </p>
       </div>

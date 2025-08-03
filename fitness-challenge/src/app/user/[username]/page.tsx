@@ -91,8 +91,9 @@ const UserProfile = () => {
   const [showInsights, setShowInsights] = useState(false);
 
   const isActivitySubmissionDisabled = false;
-  const canEditProfile = isLoggedIn && currentUser === username;
-  const canAddActivity = isLoggedIn;
+  const canEditProfile = isLoggedIn && currentUser === username; // Only owner can edit/delete
+  const canAddActivity = isLoggedIn; // 🔥 ANYONE CAN ADD ACTIVITIES TO ANYONE
+  const canViewInsights = true; // 🔥 EVERYONE CAN VIEW INSIGHTS
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
   const formRef = useRef<HTMLDivElement>(null);
@@ -346,187 +347,184 @@ const UserProfile = () => {
           </div>
         </header>
 
-        {/* Show form for any logged-in user, insights only for profile owner */}
-        {canAddActivity ? (
-          <>
-            {/* Toggle button - Mobile Optimized */}
-            {canEditProfile && (
-              <div className="flex justify-center px-4">
-                <div className="bg-white rounded-full p-1 shadow-lg inline-flex border border-yellow-200 w-full max-w-md">
-                  <button
-                    onClick={() => setShowInsights(false)}
-                    className={`flex-1 px-3 sm:px-6 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-medium transition-colors flex items-center justify-center ${
-                      !showInsights
-                        ? "bg-yellow-400 text-black"
-                        : "text-gray-600 hover:bg-yellow-50"
-                    }`}
-                  >
-                    <Bike className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">
-                      {canEditProfile ? t.userProfile.addPerformance : t.userProfile.addActivityForUser.replace('{username}', user.username)}
-                    </span>
-                    <span className="sm:hidden">Lisää</span>
-                  </button>
-                  {canEditProfile && (
-                    <button
-                      onClick={() => setShowInsights(true)}
-                      className={`flex-1 px-3 sm:px-6 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-medium transition-colors flex items-center justify-center ${
-                        showInsights
-                          ? "bg-yellow-400 text-black"
-                          : "text-gray-600 hover:bg-yellow-50"
-                      }`}
-                    >
-                      <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">{t.userProfile.statistics}</span>
-                      <span className="sm:hidden">Tilastot</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
+        {/* Toggle button - Always show if insights are available OR user can add activities */}
+        {(canViewInsights || canAddActivity) && (
+          <div className="flex justify-center px-4">
+            <div className="bg-white rounded-full p-1 shadow-lg inline-flex border border-yellow-200 w-full max-w-md">
+              {/* Add Activity Tab - Only show if user can add activities */}
+              {canAddActivity && (
+                <button
+                  onClick={() => setShowInsights(false)}
+                  className={`flex-1 px-3 sm:px-6 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-medium transition-colors flex items-center justify-center ${
+                    !showInsights
+                      ? "bg-yellow-400 text-black"
+                      : "text-gray-600 hover:bg-yellow-50"
+                  }`}
+                >
+                  <Bike className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">
+                    {canEditProfile ? t.userProfile.addPerformance : `Lisää ${user.username}:lle`}
+                  </span>
+                  <span className="sm:hidden">Lisää</span>
+                </button>
+              )}
+              
+              {/* Insights Tab - Always show if insights are available */}
+              {canViewInsights && (
+                <button
+                  onClick={() => setShowInsights(true)}
+                  className={`flex-1 px-3 sm:px-6 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-medium transition-colors flex items-center justify-center ${
+                    showInsights
+                      ? "bg-yellow-400 text-black"
+                      : "text-gray-600 hover:bg-yellow-50"
+                  }`}
+                >
+                  <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">{t.userProfile.statistics}</span>
+                  <span className="sm:hidden">Tilastot</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
-            {/* Activity Form or Insights - Mobile Optimized */}
-            {(!canEditProfile || !showInsights) ? (
-              isActivitySubmissionDisabled ? (
-                <div className="text-center bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-lg border border-yellow-200 mx-4 sm:mx-0">
-                  <Bike className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-gray-400" />
-                  <p className="text-gray-600 text-sm sm:text-base">
-                    {t.userProfile.submissionClosed}
-                  </p>
-                </div>
-              ) : (
-                <section ref={formRef} className="bg-white p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-xl border border-yellow-200 mx-1 sm:mx-0">
-                  <h2 className="text-lg sm:text-2xl font-semibold mb-4 sm:mb-6 flex items-center text-gray-800">
-                    <Bike className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-yellow-500 flex-shrink-0" />
-                    <span className="text-sm sm:text-2xl">
-                      {isEditing 
-                        ? t.userProfile.updatePerformance 
-                        : canEditProfile 
-                          ? t.userProfile.addPerformance 
-                          : t.userProfile.addActivityForUser.replace('{username}', user.username)
-                      }
-                    </span>
-                  </h2>
-                  <form
-                    onSubmit={isEditing ? handleUpdateActivity : handleAddActivity}
-                    className="space-y-4 sm:space-y-6"
-                  >
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-700">
-                        {t.userProfile.activityType}
-                      </label>
-                      <select
-                        value={activity}
-                        onChange={(e) => setActivity(e.target.value)}
-                        className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
-                        required
-                      >
-                        <option value="">{t.userProfile.selectActivity}</option>
-                        {sportsOptions.map((sport) => (
-                          <option key={sport} value={sport}>
-                            {sport}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Custom activity input */}
-                    {activity.startsWith("Muu(") && (
-                      <div>
-                        <label className="block text-sm font-medium mb-2 text-gray-700">
-                          {t.userProfile.specifyActivity}
-                        </label>
-                        <input
-                          type="text"
-                          value={customActivity}
-                          onChange={(e) => setCustomActivity(e.target.value)}
-                          className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
-                          required
-                          placeholder={t.userProfile.enterActivityName}
-                        />
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                      <div>
-                        <label className="block text-sm font-medium mb-2 text-gray-700">
-                          {t.userProfile.duration}
-                        </label>
-                        <input
-                          type="number"
-                          value={duration}
-                          onChange={(e) => setDuration(e.target.value)}
-                          className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2 text-gray-700">
-                          {t.userProfile.date}
-                        </label>
-                        <input
-                          type="date"
-                          value={date}
-                          onChange={(e) => setDate(e.target.value)}
-                          className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
-                          required
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-700">
-                        {t.activityForm.bonus}
-                      </label>
-                      <select
-                        value={bonus || ""}
-                        onChange={(e) => setBonus(e.target.value || null)}
-                        className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
-                      >
-                        <option value="">{t.userProfile.noBonus}</option>
-                        <option value="juhlapäivä">{getBonusText("juhlapäivä")}</option>
-                        <option value="enemmän kuin kolme urheilee yhdessä">{getBonusText("enemmän kuin kolme urheilee yhdessä")}</option>
-                        <option value="kaikki yhdessä">{getBonusText("kaikki yhdessä")}</option>
-                      </select>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
-                      {isEditing && (
-                        <button
-                          type="button"
-                          onClick={resetForm}
-                          className="w-full sm:flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg transition-colors text-sm sm:text-base"
-                        >
-                          {t.ui.cancel}
-                        </button>
-                      )}
-                      <button
-                        type="submit"
-                        className="w-full sm:flex-1 bg-yellow-400 hover:bg-yellow-500 text-black py-3 rounded-lg transition-colors font-medium text-sm sm:text-base"
-                      >
-                        {isEditing ? t.userProfile.updatePerformance : t.userProfile.addPerformance}
-                      </button>
-                    </div>
-                  </form>
-                </section>
-              )
-            ) : (
-              <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-lg border border-yellow-200 mx-1 sm:mx-0">
-                <PersonalInsights
-                  activities={user.activities}
-                  username={user.username}
-                />
-              </div>
-            )}
-          </>
-        ) : (
+        {/* Activity Form or Insights - Mobile Optimized */}
+        {showInsights && canViewInsights ? (
           <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-lg border border-yellow-200 mx-1 sm:mx-0">
-            <div className="text-center mb-6">
-              <Lock className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 text-gray-400" />
+            <PersonalInsights
+              activities={user.activities}
+              username={user.username}
+            />
+          </div>
+        ) : canAddActivity ? (
+          isActivitySubmissionDisabled ? (
+            <div className="text-center bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-lg border border-yellow-200 mx-4 sm:mx-0">
+              <Bike className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-gray-400" />
               <p className="text-gray-600 text-sm sm:text-base">
-                {t.userProfile.canViewStats.replace('{username}', user.username)}
+                {t.userProfile.submissionClosed}
               </p>
             </div>
+          ) : (
+            <section ref={formRef} className="bg-white p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-xl border border-yellow-200 mx-1 sm:mx-0">
+              <h2 className="text-lg sm:text-2xl font-semibold mb-4 sm:mb-6 flex items-center text-gray-800">
+                <Bike className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-yellow-500 flex-shrink-0" />
+                <span className="text-sm sm:text-2xl">
+                  {isEditing 
+                    ? t.userProfile.updatePerformance 
+                    : canEditProfile 
+                      ? t.userProfile.addPerformance 
+                      : `Lisää suoritus käyttäjälle ${user.username}`
+                  }
+                </span>
+              </h2>
+              <form
+                onSubmit={isEditing ? handleUpdateActivity : handleAddActivity}
+                className="space-y-4 sm:space-y-6"
+              >
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    {t.userProfile.activityType}
+                  </label>
+                  <select
+                    value={activity}
+                    onChange={(e) => setActivity(e.target.value)}
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
+                    required
+                  >
+                    <option value="">{t.userProfile.selectActivity}</option>
+                    {sportsOptions.map((sport) => (
+                      <option key={sport} value={sport}>
+                        {sport}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Custom activity input */}
+                {activity.startsWith("Muu(") && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700">
+                      {t.userProfile.specifyActivity}
+                    </label>
+                    <input
+                      type="text"
+                      value={customActivity}
+                      onChange={(e) => setCustomActivity(e.target.value)}
+                      className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
+                      required
+                      placeholder={t.userProfile.enterActivityName}
+                    />
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700">
+                      {t.userProfile.duration}
+                    </label>
+                    <input
+                      type="number"
+                      value={duration}
+                      onChange={(e) => setDuration(e.target.value)}
+                      className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700">
+                      {t.userProfile.date}
+                    </label>
+                    <input
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2 text-gray-700">
+                    {t.activityForm.bonus}
+                  </label>
+                  <select
+                    value={bonus || ""}
+                    onChange={(e) => setBonus(e.target.value || null)}
+                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
+                  >
+                    <option value="">{t.userProfile.noBonus}</option>
+                    <option value="juhlapäivä">{getBonusText("juhlapäivä")}</option>
+                    <option value="enemmän kuin kolme urheilee yhdessä">{getBonusText("enemmän kuin kolme urheilee yhdessä")}</option>
+                    <option value="kaikki yhdessä">{getBonusText("kaikki yhdessä")}</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+                  {isEditing && (
+                    <button
+                      type="button"
+                      onClick={resetForm}
+                      className="w-full sm:flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg transition-colors text-sm sm:text-base"
+                    >
+                      {t.ui.cancel}
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    className="w-full sm:flex-1 bg-yellow-400 hover:bg-yellow-500 text-black py-3 rounded-lg transition-colors font-medium text-sm sm:text-base"
+                  >
+                    {isEditing ? t.userProfile.updatePerformance : t.userProfile.addPerformance}
+                  </button>
+                </div>
+              </form>
+            </section>
+          )
+        ) : null}
+
+        {/* Show insights for visitors (non-editors) if no add activity form is shown */}
+        {!canAddActivity && canViewInsights && (
+          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-lg border border-yellow-200 mx-1 sm:mx-0">
             <PersonalInsights
               activities={user.activities}
               username={user.username}

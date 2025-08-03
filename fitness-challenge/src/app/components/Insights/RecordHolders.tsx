@@ -302,7 +302,7 @@ const RecordHolders = () => {
               {t.records.longestStreak}
             </div>
             <div>{renderHolders(records.longestStreak, t)}</div>
-            <div className="text-2xl font-bold bg-slate-600 mt-1">
+            <div className="text-2xl font-bold  mt-1">
               {records.longestStreak[0].value} {t.allTime.currentStreakDays}
             </div>
             {records.longestStreak[0].date && (

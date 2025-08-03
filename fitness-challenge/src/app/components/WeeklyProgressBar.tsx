@@ -130,7 +130,7 @@ const WeeklyProgressBar = () => {
               {t.weeklyProgressBar.remaining}
             </div>
           ) : (
-            <div className="bg-slate-600 font-medium">
+            <div className="font-medium">
               {t.weeklyProgressBar.goalAchieved} 🎉
             </div>
           )}

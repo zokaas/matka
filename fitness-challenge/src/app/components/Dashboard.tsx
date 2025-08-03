@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Bike, Trophy, Activity, MapPin,
+  Trophy, Activity, MapPin, TrendingUp, Users, Target
 } from "lucide-react";
 
 import { useTheme } from "@/app/hooks/useTheme";
@@ -12,9 +12,8 @@ import ActivityFeedPage from "./ActivityFeedPage";
 import SubmitQuote from "./SubmitQuote";
 import Quotes from "./Quotes";
 import WeeklyProgressBar from "./WeeklyProgressBar";
-import ToggleButtons from "./ToggleButtons";
-import { fetchUsersAndTotalKm, fetchRecentActivities } from "../utils/utils";
-import { User, Activity as UserActivity } from "@/app/types/types";
+import { fetchUsersAndTotalKm } from "../utils/utils";
+import { User } from "@/app/types/types";
 
 export default function Dashboard() {
   const [currentStage, setCurrentStage] = useState(0);
@@ -23,27 +22,17 @@ export default function Dashboard() {
     stages,
     totalPoints,
     weatherIcons,
-    stageColors
   } = theme;
 
   const [users, setUsers] = useState<User[]>([]);
   const [totalKm, setTotalKm] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showWeeklyProgress, setShowWeeklyProgress] = useState(false);
-  const [showActivityFeed, setShowActivityFeed] = useState(false);
-  const [recentActivities, setRecentActivities] = useState<UserActivity[]>([]);
-  const [loadingActivities, setLoadingActivities] = useState(false);
+  const [activeView, setActiveView] = useState<'leaderboard' | 'weekly' | 'feed'>('leaderboard');
 
   useEffect(() => {
     fetchUsersAndTotalKm(setUsers, setTotalKm, setLoading, setError);
   }, []);
-
-  useEffect(() => {
-    if (showActivityFeed) {
-      fetchRecentActivities(users, setRecentActivities, setLoadingActivities, setError);
-    }
-  }, [showActivityFeed, users]);
 
   useEffect(() => {
     for (let i = stages.length - 1; i >= 0; i--) {
@@ -60,160 +49,214 @@ export default function Dashboard() {
     ? ((totalKm - currentProgress.pointsRequired) / (nextStage.pointsRequired - currentProgress.pointsRequired)) * 100
     : 100;
 
-return (
-  <div
-    className="min-h-screen px-4 pb-12"
-    style={{
-      background: `linear-gradient(to br, ${colors.background}, #fffbeb)`,
-      color: colors.text,
-    }}
-  >
-    <div className="max-w-6xl mx-auto space-y-8">
+  // Calculate key stats
+  const totalActivities = users.reduce((sum, user) => sum + user.activities.length, 0);
+  const avgKmPerUser = users.length > 0 ? totalKm / users.length : 0;
 
-      {/* HEADER */}
-      <motion.header
-        className="text-center pt-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <div className="text-6xl">{currentProgress.emoji}</div>
-        <h1 className="text-3xl md:text-4xl font-bold my-2 text-gray-800">
-          {t.dashboardTitle}
-        </h1>
-        <p style={{ color: colors.mutedText }}>{t.subtitle}</p>
+  const viewOptions = [
+    { key: 'leaderboard', label: t.tabs.leaderboard, icon: Trophy },
+    { key: 'weekly', label: 'Viikko', icon: TrendingUp },
+    { key: 'feed', label: 'Feed', icon: Activity },
+  ] as const;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
         <motion.div
-          className="mt-2 font-semibold"
-          style={{ color: colors.mutedText }}
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ repeat: Infinity, duration: 4 }}
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity }}
+          className="h-12 w-12 border-4 border-yellow-500 rounded-full border-t-transparent"
+        />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center text-red-500 p-4 bg-white rounded-lg shadow">
+          {t.error}: {error}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="min-h-screen px-4 py-6"
+      style={{
+        background: `linear-gradient(to br, ${colors.background}, #fffbeb)`,
+        color: colors.text,
+      }}
+    >
+      <div className="max-w-6xl mx-auto space-y-6">
+
+        {/* HERO SECTION */}
+        <motion.header
+          className="text-center"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
         >
-          <Quotes />
-        </motion.div>
-      </motion.header>
+          <div className="text-4xl mb-3">{currentProgress.emoji}</div>
+          <h1 className="text-2xl md:text-3xl font-bold mb-2 text-gray-800">
+            {t.dashboardTitle}
+          </h1>
+          <p className="text-gray-600 mb-4">{t.subtitle}</p>
+          
+          {/* INSPIRATIONAL QUOTE */}
+          <motion.div
+            className="bg-white/60 backdrop-blur-sm rounded-xl p-4 max-w-2xl mx-auto"
+            animate={{ scale: [1, 1.02, 1] }}
+            transition={{ repeat: Infinity, duration: 4 }}
+          >
+            <Quotes />
+          </motion.div>
+        </motion.header>
 
-      {/* CURRENT STAGE */}
-      <motion.section
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="rounded-xl p-6 shadow-lg border-2 border-yellow-200"
-        style={{
-          backgroundColor: colors.card,
-          borderColor: colors.border,
-        }}
-      >
-        <div className="text-center">
-          <h2 className="text-xl font-bold text-gray-800">
-            {t.stageLabel} {currentStage + 1}: {currentProgress.name}
-          </h2>
-          <p style={{ color: colors.mutedText }} className="text-sm">
-            {currentProgress.description}
-          </p>
-        </div>
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatCard icon={<Trophy />} value={`${totalKm.toLocaleString()} km`} label={t.points} />
-          <StatCard icon={<Activity />} value={`${weatherIcons[currentProgress.weather] || "🌤️"} ${currentProgress.weather}`} label={t.weather} />
-          <StatCard icon={<Bike />} value={currentProgress.stageType} label={t.type} />
-        </div>
-      </motion.section>
-
-      {/* NEXT STAGE */}
-      {nextStage && (
+        {/* CURRENT STAGE CARD */}
         <motion.section
-          className="rounded-xl p-6 border-2 border-yellow-100 backdrop-blur"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          style={{
-            backgroundColor: colors.card,
-          }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white rounded-2xl p-6 shadow-lg border border-yellow-200"
         >
-          <h3 className="text-lg font-semibold mb-2 flex items-center text-gray-800">
-            <MapPin className="inline w-5 h-5 mr-2 text-yellow-500" />
-            {t.nextStage}: {nextStage.name} {nextStage.emoji}
-          </h3>
-          <div className="relative mb-3">
-            <div className="h-4 rounded-full overflow-hidden bg-yellow-100">
-              <motion.div
-                className="h-full rounded-full bg-yellow-400"
-                style={{ width: `${Math.min(progressToNext, 100)}%` }}
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(progressToNext, 100)}%` }}
-                transition={{ duration: 1.5, ease: "easeOut" }}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Stage Info */}
+            <div className="lg:col-span-2">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="text-3xl">{currentProgress.emoji}</div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-800">
+                    {t.stageLabel} {currentStage + 1}: {currentProgress.name}
+                  </h2>
+                  <p className="text-gray-600 text-sm">{currentProgress.description}</p>
+                </div>
+              </div>
+              
+              {/* Progress to Next Stage */}
+              {nextStage && (
+                <div className="mb-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm font-medium text-gray-700">
+                      {t.nextStage}: {nextStage.name}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      {Math.round(progressToNext)}%
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <motion.div
+                      className="bg-yellow-400 h-2 rounded-full"
+                      initial={{ width: 0 }}
+                      animate={{ width: `${Math.min(progressToNext, 100)}%` }}
+                      transition={{ duration: 1.5, ease: "easeOut" }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {(nextStage.pointsRequired - totalKm).toLocaleString()} {t.pointsToNext}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Key Stats */}
+            <div className="space-y-3">
+              <StatCard
+                icon={<Trophy className="w-5 h-5" />}
+                value={`${totalKm.toLocaleString('fi-FI')} km`}
+                label={t.points}
+                color="text-yellow-600"
+              />
+              <StatCard
+                icon={<Users className="w-5 h-5" />}
+                value={users.length.toString()}
+                label="Pyöräilijöitä"
+                color="text-blue-600"
+              />
+              <StatCard
+                icon={<Activity className="w-5 h-5" />}
+                value={totalActivities.toString()}
+                label="Suorituksia"
+                color="text-green-600"
+              />
+              <StatCard
+                icon={<Target className="w-5 h-5" />}
+                value={`${Math.round(avgKmPerUser)} km`}
+                label="Keskiarvo/hlö"
+                color="text-purple-600"
               />
             </div>
-            <div className="flex justify-between text-xs mt-1" style={{ color: colors.mutedText }}>
-              <span>{t.stageLabel} {currentStage + 1}</span>
-              <span>{t.stageLabel} {currentStage + 2}</span>
-            </div>
-          </div>
-          <div className="text-center font-semibold" style={{ color: colors.text }}>
-            {(nextStage.pointsRequired - totalKm).toLocaleString()} {t.pointsToNext}
           </div>
         </motion.section>
-      )}
 
-      {/* TOGGLES */}
-      <ToggleButtons
-        showWeeklyProgress={showWeeklyProgress}
-        showActivityFeed={showActivityFeed}
-        setShowWeeklyProgress={setShowWeeklyProgress}
-        setShowActivityFeed={setShowActivityFeed}
-      />
+        {/* WEEKLY PROGRESS BAR */}
+        <WeeklyProgressBar />
 
-      <WeeklyProgressBar />
-
-      {/* LOADING / ERROR */}
-      {loading && (
-        <div className="text-center">
-          <div className="animate-spin h-10 w-10 border-4 border-yellow-400 rounded-full border-t-transparent mx-auto mb-2"></div>
-          <p style={{ color: colors.mutedText }}>
-            {t.loading}
-          </p>
+        {/* VIEW SELECTOR */}
+        <div className="flex justify-center">
+          <div className="bg-white rounded-xl p-1 shadow-lg border border-yellow-200 inline-flex">
+            {viewOptions.map(({ key, label, icon: Icon }) => (
+              <button
+                key={key}
+                onClick={() => setActiveView(key)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-sm font-medium ${
+                  activeView === key
+                    ? 'bg-yellow-400 text-black shadow-sm'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span className="hidden sm:inline">{label}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      )}
-      {error && (
-        <p className="text-center text-red-500 bg-red-50 p-4 rounded-lg border border-red-200">
-          {t.error}: {error}
-        </p>
-      )}
 
-      {/* DYNAMIC SECTIONS */}
-      {!loading && !error && showActivityFeed && <ActivityFeedPage />}
-      {!loading && !error && showWeeklyProgress && <WeeklyProgress users={users} />}
-      {!loading && !error && !showWeeklyProgress && !showActivityFeed && <Leaderboard users={users} />}
+        {/* MAIN CONTENT */}
+        <motion.section
+          key={activeView}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          {activeView === 'leaderboard' && <Leaderboard users={users} />}
+          {activeView === 'weekly' && <WeeklyProgress users={users} />}
+          {activeView === 'feed' && <ActivityFeedPage />}
+        </motion.section>
 
-      {/* QUOTE SUBMIT */}
-      <div className="pt-6">
-        <SubmitQuote />
+        {/* QUOTE SUBMISSION */}
+        <motion.section
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="bg-white rounded-2xl p-6 shadow-lg border border-yellow-200"
+        >
+          <SubmitQuote />
+        </motion.section>
       </div>
     </div>
-  </div>
-);
+  );
 }
 
 function StatCard({
   icon,
   value,
   label,
+  color = "text-gray-600"
 }: {
   icon: React.ReactNode;
   value: string;
   label: string;
+  color?: string;
 }) {
-  const { colors } = useTheme();
-
   return (
-    <div
-      className="backdrop-blur-sm rounded-xl p-4 text-center shadow border border-yellow-100"
-      style={{ backgroundColor: colors.card }}
-    >
-      <div className="mb-2 text-yellow-500">
+    <div className="bg-gray-50 rounded-lg p-3 flex items-center gap-3">
+      <div className={`${color}`}>
         {icon}
       </div>
-      <div className="text-xl font-bold" style={{ color: colors.text }}>
-        {value}
-      </div>
-      <div className="text-sm" style={{ color: colors.mutedText }}>
-        {label}
+      <div>
+        <div className="text-lg font-bold text-gray-800">{value}</div>
+        <div className="text-xs text-gray-600">{label}</div>
       </div>
     </div>
   );
