@@ -328,11 +328,6 @@ const UserProfile = () => {
                   <span className="flex items-center">
                     🚴‍♂️ {user.username}
                   </span>
-                  {currentUser === username && (
-                    <span className="text-xs sm:text-sm bg-yellow-400 text-black px-2 py-1 rounded whitespace-nowrap">
-                      {t.userProfile.you}
-                    </span>
-                  )}
                 </h1>
                 <p className="text-sm sm:text-lg text-gray-600 flex items-center mt-1">
                   <span className="truncate">

@@ -19,16 +19,3 @@ export const challengeParams = {
     return Number((this.totalDistance / (this.totalDays / 7)).toFixed(2));
   }
 };
-
-export const USER_COEFFICIENTS = {
-  'Tyyni': 6.667,
-  'Tuure': 5.714,
-  'Tuulia': 5.714,
-  'Kasper': 5.714,
-  'Tiia': 5.000,
-  'Zoka': 5.000,
-  'Linda': 5.000,
-  'Oskari': 5.000,
-  'Leksa': 3.333,
-  'Santeri': 3.333
-};
