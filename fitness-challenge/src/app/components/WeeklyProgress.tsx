@@ -147,12 +147,12 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
   };
 
   return (
-    <section>
-      <h2 className="text-xl font-bold text-gray-800 flex items-center mb-2">
+    <section className="px-2 sm:px-0">
+      <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center mb-3 sm:mb-4 px-2 sm:px-0">
         <span>📊 </span> {t.weeklyProgress.weeklyRanking}
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
         {weeklyInsights.map((insight, index) => {
           const user = users.find((u) => u.username === insight.username);
           const activityStatus = getUserActivityStatus(insight.username);
@@ -167,22 +167,22 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="bg-white p-4 rounded-xl shadow-md relative"
+                className="bg-white p-3 sm:p-4 rounded-lg sm:rounded-xl shadow-md relative"
               >
                 {/* Activity status badge */}
                 {activityStatus && (
-                  <div className="absolute top-3 right-3 flex flex-col items-center">
-                    <div className="text-2xl mb-[-6px]">
+                  <div className="absolute top-2 sm:top-3 right-2 sm:right-3 flex flex-col items-center">
+                    <div className="text-lg sm:text-2xl">
                       {activityStatus.emoji}
                     </div>
-                    <div className="text-xs text-gray-600 font-medium mt-1">
+                    <div className="text-xs text-gray-600 font-medium mt-0.5 sm:mt-1">
                       {activityStatus.days} {t.weeklyProgress.daysAgo}
                     </div>
                   </div>
                 )}
 
-                <div className="flex items-center mb-3">
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 mr-3 flex-shrink-0">
+                <div className="flex items-center mb-3 pr-12 sm:pr-16">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-gray-100 mr-2 sm:mr-3 flex-shrink-0">
                     {user && (
                       <Image
                         src={
@@ -198,8 +198,8 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                       />
                     )}
                   </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-800">
+                  <div className="min-w-0 flex-1">
+                    <h4 className="text-sm sm:text-base font-semibold text-gray-800 truncate">
                       {insight.username}
                     </h4>
                     <div className="flex items-center text-xs text-gray-500">
@@ -224,7 +224,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <div className="w-16 h-16">
+                  <div className="w-12 h-12 sm:w-16 sm:h-16">
                     <CircularProgressbar
                       value={insight.weeklyPercentage}
                       text={`${insight.weeklyPercentage}%`}
@@ -232,23 +232,22 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                         pathColor: getProgressColor(insight.weeklyPercentage),
                         textColor: "#374151",
                         trailColor: "#e5e7eb",
-                        textSize: "18px",
+                        textSize: "14px",
                         pathTransition: "stroke-dashoffset 0.5s ease 0s",
                       })}
                     />
                   </div>
 
-                  <div className="text-right">
-                    <div className="text-xl font-bold text-slate-600">
-                      {insight.weeklyProgress.toLocaleString("fi-FI")}{" "}
-                      km
+                  <div className="text-right flex-1 ml-3">
+                    <div className="text-base sm:text-xl font-bold text-slate-600">
+                      {insight.weeklyProgress.toLocaleString("fi-FI")} km
                     </div>
                     <div className="text-xs text-gray-500">
-                      km {t.weeklyProgress.thisWeek}
+                      {t.weeklyProgress.thisWeek}
                     </div>
 
                     {insight.dailyTarget > 0 && insight.weeklyPercentage < 100 && (
-                      <div className="mt-1 text-xs bg-slate-50 text-slate-700 rounded-full px-2 py-0.5">
+                      <div className="mt-1 text-xs bg-slate-50 text-slate-700 rounded-full px-2 py-0.5 inline-block">
                         {insight.dailyTarget} km/pvä tarvitaan
                       </div>
                     )}

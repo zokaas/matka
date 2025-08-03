@@ -292,16 +292,16 @@ export interface ThemeTranslations {
     failedToAddActivity: string;
     failedToUpdateActivity: string;
     loginRequired: string;
-    onlyLoggedInClimbersCanView: string;
-    backToBasecamp: string;
+    onlyLoggedInUsersCanView: string;
+    backToHome: string;
     userNotFound: string;
-    climberAvatar: string;
+    userAvatar: string;
     you: string;
     meters: string;
-    altitude: string;
-    height: string;
-    climbingPerformances: string;
-    climbingStatistics: string;
+    km: string;
+    distance: string;
+    performances: string;
+    statistics: string;
     addPerformance: string;
     updatePerformance: string;
     submissionClosed: string;
@@ -313,9 +313,10 @@ export interface ThemeTranslations {
     date: string;
     noBonus: string;
     perfectWeatherConditions: string;
-    groupClimbing: string;
-    wholeTeamAtSummit: string;
+    groupActivity: string;
+    wholeTeamTogether: string;
     canViewStats: string;
+    addActivityForUser: string;
   };
 
   // SubmitQuote translations

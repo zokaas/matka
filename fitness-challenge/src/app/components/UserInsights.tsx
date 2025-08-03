@@ -190,7 +190,7 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
                 )}
               </div>
               <div className="text-center p-4 bg-slate-50 rounded-lg">
-                <div className="text-2xl font-bold bg-slate-600">
+                <div className="text-2xl font-bold ">
                   {todayData.totalActivities} /{" "}
                   {lastWeekSameDay.totalActivities}
                 </div>
@@ -207,7 +207,7 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
             <h3 className="font-semibold mb-2">{t.userInsights.weekComparison}</h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold bg-slate-600">
+                <div className="text-2xl font-bold">
                   {thisWeek.totalKm.toFixed(1)} / {lastWeek.totalKm.toFixed(1)}
                 </div>
                 <div className="text-sm text-gray-600">

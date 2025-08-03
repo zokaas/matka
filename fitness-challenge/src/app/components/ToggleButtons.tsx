@@ -18,6 +18,7 @@ const ToggleButtons = ({
   const buttons = [
     {
       label: t.tabs.leaderboard,
+      shortLabel: "Ranking", // Short label for mobile
       isActive: !showWeeklyProgress && !showActivityFeed,
       onClick: () => {
         setShowWeeklyProgress(false);
@@ -26,6 +27,7 @@ const ToggleButtons = ({
     },
     {
       label: t.tabs.weekly,
+      shortLabel: "Viikkoranking", // Short label for mobile
       isActive: showWeeklyProgress,
       onClick: () => {
         setShowWeeklyProgress(true);
@@ -34,6 +36,7 @@ const ToggleButtons = ({
     },
     {
       label: t.tabs.quotes,
+      shortLabel: "Feed", // Short label for mobile
       isActive: showActivityFeed,
       onClick: () => {
         setShowWeeklyProgress(false);
@@ -43,22 +46,24 @@ const ToggleButtons = ({
   ];
 
   return (
-    <div className="flex justify-center">
-      <div className="inline-flex rounded-md shadow" role="group">
+    <div className="flex justify-center px-2">
+      <div className="inline-flex rounded-lg shadow-lg bg-white border border-yellow-200 w-full max-w-md" role="group">
         {buttons.map((button, index) => (
           <button
             key={button.label}
             type="button"
-            className={`px-5 py-2 text-sm font-medium border border-purple-300 ${
+            className={`flex-1 px-2 sm:px-5 py-2 sm:py-2 text-xs sm:text-sm font-medium border border-yellow-300 transition-all duration-200 ${
               button.isActive
-                ? "bg-slate-800 text-white"
-                : "bg-white text-gray-700 hover:bg-gray-50"
+                ? "bg-yellow-400 text-black shadow-inner"
+                : "bg-white text-gray-700 hover:bg-yellow-50"
             } ${
               index === 0 ? "rounded-l-lg" : index === buttons.length - 1 ? "rounded-r-lg" : ""
             }`}
             onClick={button.onClick}
           >
-            {button.label}
+            {/* Show short label on mobile, full label on larger screens */}
+            <span className="sm:hidden">{button.shortLabel}</span>
+            <span className="hidden sm:inline">{button.label}</span>
           </button>
         ))}
       </div>

@@ -59,11 +59,12 @@ export default function Dashboard() {
   const progressToNext = nextStage
     ? ((totalKm - currentProgress.pointsRequired) / (nextStage.pointsRequired - currentProgress.pointsRequired)) * 100
     : 100;
+
 return (
   <div
     className="min-h-screen px-4 pb-12"
     style={{
-      background: colors.background,
+      background: `linear-gradient(to br, ${colors.background}, #fffbeb)`,
       color: colors.text,
     }}
   >
@@ -76,7 +77,7 @@ return (
         animate={{ opacity: 1, y: 0 }}
       >
         <div className="text-6xl">{currentProgress.emoji}</div>
-        <h1 className="text-3xl md:text-4xl font-bold my-2">
+        <h1 className="text-3xl md:text-4xl font-bold my-2 text-gray-800">
           {t.dashboardTitle}
         </h1>
         <p style={{ color: colors.mutedText }}>{t.subtitle}</p>
@@ -94,14 +95,14 @@ return (
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="rounded-xl p-6 shadow-lg border"
+        className="rounded-xl p-6 shadow-lg border-2 border-yellow-200"
         style={{
           backgroundColor: colors.card,
           borderColor: colors.border,
         }}
       >
         <div className="text-center">
-          <h2 className="text-xl font-bold">
+          <h2 className="text-xl font-bold text-gray-800">
             {t.stageLabel} {currentStage + 1}: {currentProgress.name}
           </h2>
           <p style={{ color: colors.mutedText }} className="text-sm">
@@ -118,23 +119,25 @@ return (
       {/* NEXT STAGE */}
       {nextStage && (
         <motion.section
-          className="rounded-xl p-6 border backdrop-blur"
+          className="rounded-xl p-6 border-2 border-yellow-100 backdrop-blur"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           style={{
             backgroundColor: colors.card,
-            borderColor: colors.border,
           }}
         >
-          <h3 className="text-lg font-semibold mb-2 flex items-center">
-            <MapPin className="inline w-5 h-5 mr-2" />
+          <h3 className="text-lg font-semibold mb-2 flex items-center text-gray-800">
+            <MapPin className="inline w-5 h-5 mr-2 text-yellow-500" />
             {t.nextStage}: {nextStage.name} {nextStage.emoji}
           </h3>
           <div className="relative mb-3">
-            <div className="h-4 rounded-full overflow-hidden" style={{ backgroundColor: colors.border }}>
+            <div className="h-4 rounded-full overflow-hidden bg-yellow-100">
               <motion.div
-                className="h-full rounded-full"
-                style={{ width: `${Math.min(progressToNext, 100)}%`, backgroundColor: colors.accent }}
+                className="h-full rounded-full bg-yellow-400"
+                style={{ width: `${Math.min(progressToNext, 100)}%` }}
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min(progressToNext, 100)}%` }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
               />
             </div>
             <div className="flex justify-between text-xs mt-1" style={{ color: colors.mutedText }}>
@@ -160,13 +163,16 @@ return (
 
       {/* LOADING / ERROR */}
       {loading && (
-        <p className="text-center" style={{ color: colors.mutedText }}>
-          {t.loading}
-        </p>
+        <div className="text-center">
+          <div className="animate-spin h-10 w-10 border-4 border-yellow-400 rounded-full border-t-transparent mx-auto mb-2"></div>
+          <p style={{ color: colors.mutedText }}>
+            {t.loading}
+          </p>
+        </div>
       )}
       {error && (
-        <p className="text-center" style={{ color: 'red' }}>
-          {t.error}
+        <p className="text-center text-red-500 bg-red-50 p-4 rounded-lg border border-red-200">
+          {t.error}: {error}
         </p>
       )}
 
@@ -197,10 +203,10 @@ function StatCard({
 
   return (
     <div
-      className="backdrop-blur-sm rounded-xl p-4 text-center shadow"
+      className="backdrop-blur-sm rounded-xl p-4 text-center shadow border border-yellow-100"
       style={{ backgroundColor: colors.card }}
     >
-      <div className="mb-2" style={{ color: colors.accent }}>
+      <div className="mb-2 text-yellow-500">
         {icon}
       </div>
       <div className="text-xl font-bold" style={{ color: colors.text }}>

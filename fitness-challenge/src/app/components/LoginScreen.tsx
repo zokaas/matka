@@ -23,7 +23,7 @@ const LoginScreen: React.FC = () => {
           const userData = await response.json();
           const convertedUsers = userData.map((user: User) => ({
             ...user,
-            totalPoints: Math.round(user.totalKm * 0.1),
+            totalPoints: Math.round(user.totalKm), // TDF uses km directly
           }));
           setUsers(convertedUsers);
         }
@@ -47,7 +47,7 @@ const LoginScreen: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50 flex items-center justify-center">
         <div className="animate-spin h-12 w-12 border-4 border-yellow-500 rounded-full border-t-transparent" />
       </div>
     );
@@ -84,7 +84,7 @@ return (
       >
         <div>
           <label
-            className="block text-sm font-medium mb-2 flex items-center"
+            className="block text-sm font-medium mb-2 items-center"
             style={{ color: colors.text }}
           >
             <Users className="w-4 h-4 mr-2" />
@@ -94,11 +94,10 @@ return (
             value={selectedUser}
             onChange={(e) => setSelectedUser(e.target.value)}
             required
-            className="w-full p-3 md:p-4 rounded-xl shadow-sm focus:ring-2 focus:border-transparent"
+            className="w-full p-3 md:p-4 rounded-xl shadow-sm focus:ring-2 focus:border-transparent border-2 border-yellow-200 focus:ring-yellow-400"
             style={{
               backgroundColor: colors.card,
               color: colors.text,
-              border: `1px solid ${colors.border}`,
             }}
           >
             <option value="">{t.selectUserPlaceholder}</option>
@@ -115,11 +114,7 @@ return (
           whileTap={{ scale: 0.98 }}
           type="submit"
           disabled={!selectedUser}
-          className="w-full py-3 md:py-4 px-6 rounded-xl transition font-medium flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-          style={{
-            backgroundColor: colors.primary,
-            color: colors.background,
-          }}
+          className="w-full py-3 md:py-4 px-6 rounded-xl transition font-medium flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg bg-yellow-400 hover:bg-yellow-500 text-black"
         >
           <LogIn className="w-5 h-5" />
           <span>{t.loginButton}</span>
@@ -131,12 +126,8 @@ return (
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="rounded-xl p-4 border shadow-sm text-sm backdrop-blur-md"
-        style={{
-          backgroundColor: colors.card,
-          borderColor: colors.border,
-          color: colors.text,
-        }}
+        className="rounded-xl p-4 border shadow-sm text-sm backdrop-blur-md bg-white border-yellow-200"
+        style={{ color: colors.text }}
       >
         <h3 className="font-semibold flex items-center justify-center mb-2">
           <Bike className="w-4 h-4 mr-1" />

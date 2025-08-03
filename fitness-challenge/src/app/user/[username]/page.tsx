@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { useAuth } from "@/app/contexts/AuthContext";
-import { Mountain, User as UserIcon, Lock, TrendingUp } from "lucide-react";
+import { Bike, User as UserIcon, Lock, TrendingUp } from "lucide-react";
 import ConfirmationModal from "@/app/components/ConfirmationModal";
 import Pagination from "@/app/components/Pagination";
 import SubmitQuote from "@/app/components/SubmitQuote";
@@ -38,7 +38,7 @@ interface User {
 
 const sportsOptions = [
   "Juoksu",
-  "Sali",
+  "Sali", 
   "Tennis",
   "Pyöräily",
   "Hiihto",
@@ -90,8 +90,9 @@ const UserProfile = () => {
   const [bonus, setBonus] = useState<string | null>(null);
   const [showInsights, setShowInsights] = useState(false);
 
-  const isActivitySubmissionDisabled = true;
+  const isActivitySubmissionDisabled = false;
   const canEditProfile = isLoggedIn && currentUser === username;
+  const canAddActivity = isLoggedIn;
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
   const formRef = useRef<HTMLDivElement>(null);
@@ -137,15 +138,12 @@ const UserProfile = () => {
 
   const handleAddActivity = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canEditProfile) return;
+    if (!canAddActivity) return;
     
     try {
       let selectedActivity = activity;
 
-      // Handle custom activities
-      if (activity.startsWith("Extreme-kiipeily(") && customActivity) {
-        selectedActivity = `${customActivity} / ${activity}`;
-      } else if (activity.startsWith("Retkivaellus(") && customActivity) {
+      if (activity.startsWith("Muu(") && customActivity) {
         selectedActivity = `${customActivity} / ${activity}`;
       }
 
@@ -179,10 +177,7 @@ const UserProfile = () => {
     try {
       let selectedActivity = activity;
 
-      // Handle custom activities
-      if (activity.startsWith("Extreme-kiipeily(") && customActivity) {
-        selectedActivity = `${customActivity} / ${activity}`;
-      } else if (activity.startsWith("Retkivaellus(") && customActivity) {
+      if (activity.startsWith("Muu(") && customActivity) {
         selectedActivity = `${customActivity} / ${activity}`;
       }
 
@@ -226,8 +221,7 @@ const UserProfile = () => {
       setShowInsights(false);
     }
 
-    // Check for custom activities
-    const customMatch = activity.activity.match(/(.*?)\s*\/\s*(Extreme-kiipeily\(.*?\)|Retkivaellus\(.*?\))/);
+    const customMatch = activity.activity.match(/(.*?)\s*\/\s*(Muu\(.*?\))/);
 
     if (customMatch) {
       setCustomActivity(customMatch[1]);
@@ -248,11 +242,11 @@ const UserProfile = () => {
   const getBonusText = (bonus: string) => {
     switch (bonus) {
       case "juhlapäivä":
-        return `🌞 ${t.userProfile.perfectWeatherConditions} (2x ${t.userProfile.height})`;
+        return `🌞 ${t.userProfile.perfectWeatherConditions} (2x ${t.userProfile.km})`;
       case "enemmän kuin kolme urheilee yhdessä":
-        return `👥 ${t.userProfile.groupClimbing} (1.5x ${t.userProfile.height})`;
+        return `👥 ${t.userProfile.groupActivity} (1.5x ${t.userProfile.km})`;
       case "kaikki yhdessä":
-        return `🏔️ ${t.userProfile.wholeTeamAtSummit} (3x ${t.userProfile.height})`;
+        return `🏔️ ${t.userProfile.wholeTeamTogether} (3x ${t.userProfile.km})`;
       default:
         return `🌟 ${t.activityForm.bonus}: ${bonus}`;
     }
@@ -262,12 +256,12 @@ const UserProfile = () => {
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
-        <div className="bg-800/90 backdrop-blur-sm rounded-2xl p-8 text-center text-white max-w-md">
-          <Lock className="w-16 h-16 mx-auto mb-4 text-slate-400" />
-          <h2 className="text-2xl font-bold mb-4">🏔️ {t.userProfile.loginRequired}</h2>
-          <p className="text-gray-300 mb-6">{t.userProfile.onlyLoggedInClimbersCanView}</p>
-          <Link href="/" className="bg-slate-600 hover:bg-slate-700 px-6 py-3 rounded-lg font-medium transition-colors">
-            {t.userProfile.backToBasecamp}
+        <div className="bg-white rounded-2xl p-6 sm:p-8 text-center shadow-xl max-w-sm sm:max-w-md w-full mx-4 border-2 border-yellow-400">
+          <Lock className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-yellow-500" />
+          <h2 className="text-xl sm:text-2xl font-bold mb-4">🚴‍♂️ {t.userProfile.loginRequired}</h2>
+          <p className="text-gray-600 mb-6 text-sm sm:text-base">{t.userProfile.onlyLoggedInUsersCanView}</p>
+          <Link href="/" className="bg-yellow-400 hover:bg-yellow-500 px-6 py-3 rounded-lg font-medium transition-colors text-black inline-block w-full sm:w-auto">
+            {t.userProfile.backToHome}
           </Link>
         </div>
       </div>
@@ -276,18 +270,21 @@ const UserProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen  flex items-center justify-center">
-        <div className="animate-spin h-12 w-12 border-4 border-slate-400 rounded-full border-t-transparent"></div>
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin h-12 w-12 border-4 border-yellow-400 rounded-full border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600">Ladataan...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen  flex items-center justify-center">
-        <div className="text-center text-red-400 p-4 bg-800/50 rounded-lg">
-          <Mountain className="w-16 h-16 mx-auto mb-4" />
-          {error}
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center text-red-500 p-6 bg-white rounded-lg shadow-lg max-w-md mx-4">
+          <Bike className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4" />
+          <p className="text-sm sm:text-base">{error}</p>
         </div>
       </div>
     );
@@ -295,118 +292,133 @@ const UserProfile = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen  flex items-center justify-center">
-        <div className="text-center text-gray-300 p-4 bg-800/50 rounded-lg">
-          <UserIcon className="w-16 h-16 mx-auto mb-4" />
-          {t.userProfile.userNotFound}
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="text-center text-gray-600 p-6 bg-white rounded-lg shadow-lg max-w-md mx-4">
+          <UserIcon className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4" />
+          <p className="text-sm sm:text-base">{t.userProfile.userNotFound}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen text-white">
-      <div className="max-w-4xl mx-auto p-6 space-y-8">
-        {/* Header */}
-        <header className="flex justify-between items-center bg-800/50 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-          <div className="flex items-center space-x-6">
-            <div className="relative">
-              {/* Climbing equipment badge overlay for profile pic */}
-              <div className="absolute -top-2 -right-2 text-2xl">🧗‍♂️</div>
-              <Image
-                src={
-                  user.profilePicture
-                    ? `https://matka-xi.vercel.app/${user.username}.png`
-                    : `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.username}`
-                }
-                alt={t.userProfile.climberAvatar}
-                width={80}
-                height={80}
-                className="rounded-full border-4 border-slate-400/50"
-                unoptimized
-              />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold flex items-center">
-                🏔️ {user.username}
-                {currentUser === username && <span className="ml-2 text-sm bg-slate-600 px-2 py-1 rounded">{t.userProfile.you}</span>}
-              </h1>
-              <p className="text-xl text-slate-300 flex items-center">
-                <Mountain className="w-5 h-5 mr-2" />
-                {user.totalKm.toFixed(0)} {t.userProfile.meters} {t.userProfile.altitude}
-              </p>
-              <p className="text-sm text-gray-400">
-                {t.userProfile.climbingPerformances}: {user.activities.length}
-              </p>
-            </div>
-          </div>
-          <Link 
-            href="/" 
-            className="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition-colors flex items-center"
-          >
-            <Mountain className="w-4 h-4 mr-2" />
-            {t.ui.backToHome}
-          </Link>
-        </header>
-
-        {/* Only show edit controls for own profile */}
-        {canEditProfile ? (
-          <>
-            {/* Toggle button */}
-            <div className="flex justify-center">
-              <div className="bg-800/80 backdrop-blur-sm rounded-full p-1 shadow inline-flex border border-white/10">
-                <button
-                  onClick={() => setShowInsights(false)}
-                  className={`px-6 py-3 rounded-full text-sm font-medium transition-colors flex items-center ${
-                    !showInsights
-                      ? "bg-slate-600 text-white"
-                      : "text-gray-300 hover:bg-slate-700"
-                  }`}
-                >
-                  <Mountain className="w-4 h-4 mr-2" />
-                  {t.userProfile.addPerformance}
-                </button>
-                <button
-                  onClick={() => setShowInsights(true)}
-                  className={`px-6 py-3 rounded-full text-sm font-medium transition-colors flex items-center ${
-                    showInsights
-                      ? "bg-slate-600 text-white"
-                      : "text-gray-300 hover:bg-slate-700"
-                  }`}
-                >
-                  <TrendingUp className="w-4 h-4 mr-2" />
-                  {t.userProfile.climbingStatistics}
-                </button>
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-white to-yellow-50">
+      <div className="max-w-4xl mx-auto p-3 sm:p-6 space-y-4 sm:space-y-8">
+        {/* Header - Mobile Optimized */}
+        <header className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-yellow-200">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+            <div className="flex items-center space-x-4 sm:space-x-6">
+              <div className="relative flex-shrink-0">
+                <Image
+                  src={
+                    user.profilePicture
+                      ? `https://matka-xi.vercel.app/${user.username}.png`
+                      : `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.username}`
+                  }
+                  alt={t.userProfile.userAvatar}
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 border-yellow-400"
+                  unoptimized
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg sm:text-2xl md:text-3xl font-bold flex flex-wrap items-center text-gray-800 gap-2">
+                  <span className="flex items-center">
+                    🚴‍♂️ {user.username}
+                  </span>
+                  {currentUser === username && (
+                    <span className="text-xs sm:text-sm bg-yellow-400 text-black px-2 py-1 rounded whitespace-nowrap">
+                      {t.userProfile.you}
+                    </span>
+                  )}
+                </h1>
+                <p className="text-sm sm:text-lg text-gray-600 flex items-center mt-1">
+                  <span className="truncate">
+                    {user.totalKm.toFixed(1)} {t.userProfile.km} {t.userProfile.distance}
+                  </span>
+                </p>
+                <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                  {t.userProfile.performances}: {user.activities.length}
+                </p>
               </div>
             </div>
+          </div>
+        </header>
 
-            {/* Activity Form or Insights */}
-            {!showInsights ? (
+        {/* Show form for any logged-in user, insights only for profile owner */}
+        {canAddActivity ? (
+          <>
+            {/* Toggle button - Mobile Optimized */}
+            {canEditProfile && (
+              <div className="flex justify-center px-4">
+                <div className="bg-white rounded-full p-1 shadow-lg inline-flex border border-yellow-200 w-full max-w-md">
+                  <button
+                    onClick={() => setShowInsights(false)}
+                    className={`flex-1 px-3 sm:px-6 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-medium transition-colors flex items-center justify-center ${
+                      !showInsights
+                        ? "bg-yellow-400 text-black"
+                        : "text-gray-600 hover:bg-yellow-50"
+                    }`}
+                  >
+                    <Bike className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">
+                      {canEditProfile ? t.userProfile.addPerformance : t.userProfile.addActivityForUser.replace('{username}', user.username)}
+                    </span>
+                    <span className="sm:hidden">Lisää</span>
+                  </button>
+                  {canEditProfile && (
+                    <button
+                      onClick={() => setShowInsights(true)}
+                      className={`flex-1 px-3 sm:px-6 py-2 sm:py-3 rounded-full text-xs sm:text-sm font-medium transition-colors flex items-center justify-center ${
+                        showInsights
+                          ? "bg-yellow-400 text-black"
+                          : "text-gray-600 hover:bg-yellow-50"
+                      }`}
+                    >
+                      <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">{t.userProfile.statistics}</span>
+                      <span className="sm:hidden">Tilastot</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Activity Form or Insights - Mobile Optimized */}
+            {(!canEditProfile || !showInsights) ? (
               isActivitySubmissionDisabled ? (
-                <div className="text-center bg-800/50 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
-                  <Mountain className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-                  <p className="text-gray-300">
+                <div className="text-center bg-white rounded-xl sm:rounded-2xl p-6 sm:p-8 shadow-lg border border-yellow-200 mx-4 sm:mx-0">
+                  <Bike className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 text-gray-400" />
+                  <p className="text-gray-600 text-sm sm:text-base">
                     {t.userProfile.submissionClosed}
                   </p>
                 </div>
               ) : (
-                <section ref={formRef} className="bg-800/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/10">
-                  <h2 className="text-2xl font-semibold mb-6 flex items-center">
-                    <Mountain className="w-6 h-6 mr-2 text-slate-400" />
-                    {isEditing ? t.userProfile.updatePerformance : t.userProfile.addPerformance}
+                <section ref={formRef} className="bg-white p-4 sm:p-8 rounded-xl sm:rounded-2xl shadow-xl border border-yellow-200 mx-1 sm:mx-0">
+                  <h2 className="text-lg sm:text-2xl font-semibold mb-4 sm:mb-6 flex items-center text-gray-800">
+                    <Bike className="w-5 h-5 sm:w-6 sm:h-6 mr-2 text-yellow-500 flex-shrink-0" />
+                    <span className="text-sm sm:text-2xl">
+                      {isEditing 
+                        ? t.userProfile.updatePerformance 
+                        : canEditProfile 
+                          ? t.userProfile.addPerformance 
+                          : t.userProfile.addActivityForUser.replace('{username}', user.username)
+                      }
+                    </span>
                   </h2>
                   <form
                     onSubmit={isEditing ? handleUpdateActivity : handleAddActivity}
-                    className="space-y-6"
+                    className="space-y-4 sm:space-y-6"
                   >
                     <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-300">
+                      <label className="block text-sm font-medium mb-2 text-gray-700">
                         {t.userProfile.activityType}
                       </label>
                       <select
                         value={activity}
                         onChange={(e) => setActivity(e.target.value)}
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-slate-400 focus:border-transparent"
+                        className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
                         required
                       >
                         <option value="">{t.userProfile.selectActivity}</option>
@@ -418,58 +430,58 @@ const UserProfile = () => {
                       </select>
                     </div>
 
-                    {/* Custom activity input for extreme climbing and trekking */}
-                    {(activity === "Extreme-kiipeily(100m/h)" || activity === "Retkivaellus(50m/h)") && (
+                    {/* Custom activity input */}
+                    {activity.startsWith("Muu(") && (
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-gray-300">
+                        <label className="block text-sm font-medium mb-2 text-gray-700">
                           {t.userProfile.specifyActivity}
                         </label>
                         <input
                           type="text"
                           value={customActivity}
                           onChange={(e) => setCustomActivity(e.target.value)}
-                          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-slate-400 focus:border-transparent"
+                          className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
                           required
                           placeholder={t.userProfile.enterActivityName}
                         />
                       </div>
                     )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-gray-300">
+                        <label className="block text-sm font-medium mb-2 text-gray-700">
                           {t.userProfile.duration}
                         </label>
                         <input
                           type="number"
                           value={duration}
                           onChange={(e) => setDuration(e.target.value)}
-                          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-slate-400 focus:border-transparent"
+                          className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
                           required
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2 text-gray-300">
+                        <label className="block text-sm font-medium mb-2 text-gray-700">
                           {t.userProfile.date}
                         </label>
                         <input
                           type="date"
                           value={date}
                           onChange={(e) => setDate(e.target.value)}
-                          className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-slate-400 focus:border-transparent"
+                          className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
                           required
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-300">
+                      <label className="block text-sm font-medium mb-2 text-gray-700">
                         {t.activityForm.bonus}
                       </label>
                       <select
                         value={bonus || ""}
                         onChange={(e) => setBonus(e.target.value || null)}
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-slate-400 focus:border-transparent"
+                        className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
                       >
                         <option value="">{t.userProfile.noBonus}</option>
                         <option value="juhlapäivä">{getBonusText("juhlapäivä")}</option>
@@ -478,19 +490,19 @@ const UserProfile = () => {
                       </select>
                     </div>
 
-                    <div className="flex space-x-4">
+                    <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
                       {isEditing && (
                         <button
                           type="button"
                           onClick={resetForm}
-                          className="flex-1 bg-slate-600 hover:bg-slate-500 text-white py-3 rounded-lg transition-colors"
+                          className="w-full sm:flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg transition-colors text-sm sm:text-base"
                         >
                           {t.ui.cancel}
                         </button>
                       )}
                       <button
                         type="submit"
-                        className="flex-1 bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-lg transition-colors font-medium"
+                        className="w-full sm:flex-1 bg-yellow-400 hover:bg-yellow-500 text-black py-3 rounded-lg transition-colors font-medium text-sm sm:text-base"
                       >
                         {isEditing ? t.userProfile.updatePerformance : t.userProfile.addPerformance}
                       </button>
@@ -499,7 +511,7 @@ const UserProfile = () => {
                 </section>
               )
             ) : (
-              <div className="bg-800/80 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+              <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-lg border border-yellow-200 mx-1 sm:mx-0">
                 <PersonalInsights
                   activities={user.activities}
                   username={user.username}
@@ -508,11 +520,10 @@ const UserProfile = () => {
             )}
           </>
         ) : (
-          // Show insights only for other users' profiles
-          <div className="bg-800/50 backdrop-blur-sm rounded-2xl p-8 border border-white/10">
+          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-lg border border-yellow-200 mx-1 sm:mx-0">
             <div className="text-center mb-6">
-              <Lock className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-              <p className="text-gray-300">
+              <Lock className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-4 text-gray-400" />
+              <p className="text-gray-600 text-sm sm:text-base">
                 {t.userProfile.canViewStats.replace('{username}', user.username)}
               </p>
             </div>
@@ -523,43 +534,45 @@ const UserProfile = () => {
           </div>
         )}
 
-        {/* Activities List */}
-        <div className="space-y-4">
-          <h3 className="text-xl font-semibold flex items-center">
-            <Mountain className="w-5 h-5 mr-2 text-slate-400" />
-            {t.userProfile.climbingPerformances}
+        {/* Activities List - Mobile Optimized */}
+        <div className="space-y-3 sm:space-y-4">
+          <h3 className="text-lg sm:text-xl font-semibold flex items-center text-gray-800 px-2 sm:px-0">
+            <Bike className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-yellow-500" />
+            {t.userProfile.performances}
           </h3>
           {user.activities.map((activity) => (
-            <div key={activity.id} className="bg-800/50 backdrop-blur-sm p-6 rounded-xl shadow border border-white/10">
-              <div className="flex justify-between">
-                <div className="flex-1">
-                  <h4 className="font-semibold text-lg text-white mb-2">{activity.activity}</h4>
-                  <div className="flex items-center space-x-4 text-sm text-gray-300 mb-2">
+            <div key={activity.id} className="bg-white p-4 sm:p-6 rounded-lg sm:rounded-xl shadow-lg border border-yellow-100 mx-1 sm:mx-0">
+              <div className="flex flex-col sm:flex-row sm:justify-between">
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-base sm:text-lg text-gray-800 mb-2 break-words">{activity.activity}</h4>
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-600 mb-2">
                     <span className="flex items-center">
-                      <Mountain className="w-4 h-4 mr-1 text-slate-400" />
-                      {activity.kilometers.toFixed(0)} {t.userProfile.meters}
+                      <Bike className="w-4 h-4 mr-1 text-yellow-500 flex-shrink-0" />
+                      {activity.kilometers.toFixed(1)} {t.userProfile.km}
                     </span>
-                    <span>🕒 {activity.duration} {t.insights.mins}</span>
+                    <span className="flex items-center">
+                      🕒 {activity.duration} {t.insights.mins}
+                    </span>
                   </div>
                   {activity.bonus && (
-                    <p className="text-sm text-yellow-400 mb-2">
+                    <p className="text-xs sm:text-sm text-yellow-600 mb-2 break-words">
                       {getBonusText(activity.bonus)}
                     </p>
                   )}
-                  <p className="text-sm text-gray-400">
+                  <p className="text-xs sm:text-sm text-gray-500">
                     📅 {new Date(activity.date).toLocaleDateString("fi-FI")}
                   </p>
                 </div>
                 {canEditProfile && (
-                  <div className="flex space-x-2 ml-4">
+                  <div className="flex space-x-2 mt-3 sm:mt-0 sm:ml-4 self-start">
                     <button
-                      className="text-slate-400 hover:text-slate-300 transition-colors px-3 py-1 rounded"
+                      className="text-gray-600 hover:text-gray-800 transition-colors px-3 py-2 rounded text-xs sm:text-sm bg-gray-50 hover:bg-gray-100"
                       onClick={() => startEdit(activity)}
                     >
                       {t.ui.edit}
                     </button>
                     <button
-                      className="text-red-400 hover:text-red-300 transition-colors px-3 py-1 rounded"
+                      className="text-red-500 hover:text-red-700 transition-colors px-3 py-2 rounded text-xs sm:text-sm bg-red-50 hover:bg-red-100"
                       onClick={() => {
                         setActivityToDelete(activity);
                         setIsModalOpen(true);
@@ -572,14 +585,16 @@ const UserProfile = () => {
               </div>
 
               {/* Comments and Reactions */}
-              <CommentAndReactionView activityId={activity.id} />
+              <div className="mt-4">
+                <CommentAndReactionView activityId={activity.id} />
+              </div>
             </div>
           ))}
         </div>
 
         {/* Pagination */}
         {user.pagination && user.pagination.totalPages > 1 && (
-          <div className="mt-8">
+          <div className="mt-6 sm:mt-8 px-2 sm:px-0">
             <Pagination
               page={page}
               setPage={setPage}
@@ -591,7 +606,7 @@ const UserProfile = () => {
 
         {/* Quote submission - only for current user */}
         {canEditProfile && (
-          <div className="bg-800/50 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
+          <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-yellow-200 mx-1 sm:mx-0">
             <SubmitQuote />
           </div>
         )}

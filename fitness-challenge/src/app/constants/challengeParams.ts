@@ -1,8 +1,8 @@
 export const challengeParams = {
   totalStages: 21,
-  totalDistance: 3360,
-  startDate: "2025-08-04",
-  endDate: "2025-12-19",
+  totalDistance: 3338.8, // Updated to match actual 2025 TDF distance
+  startDate: "2025-08-04", // TDF 2025 start date
+  endDate: "2025-12-19", // TDF 2025 end date
 
   get totalDays() {
     const start = new Date(this.startDate);

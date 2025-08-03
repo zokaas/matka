@@ -1,4 +1,5 @@
-import { useMemo } from 'react';
+"use client";
+import { useEffect, useMemo, useState } from 'react';
 import { tourDeFranceTheme } from '@/app/themes/tourDeFranceTheme';
 
 const themes = {
@@ -6,11 +7,20 @@ const themes = {
 };
 
 export function useTheme() {
-  const selectedThemeKey = localStorage.getItem('theme') || 'tour';
-  const theme = themes[selectedThemeKey as keyof typeof themes] || tourDeFranceTheme;
+  const [themeKey, setThemeKey] = useState<keyof typeof themes>('tour');
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('theme');
+      if (stored && stored in themes) {
+        setThemeKey(stored as keyof typeof themes);
+      }
+    }
+  }, []);
+
+  const theme = themes[themeKey];
   const t = theme.translations;
   const colors = theme.colors;
 
-  return { t, colors, theme }; 
+  return { t, colors, theme };
 }
