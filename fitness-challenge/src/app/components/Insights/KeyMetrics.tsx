@@ -28,7 +28,7 @@ const KeyMetrics: React.FC<Props> = ({
   getLongestActivities,
   getWeeklyTopPerformers,
 }) => {
-  const { t } = useTheme();
+  const { t, colors } = useTheme();
   const topSports = getWeekTopSports();
   const longestActivities = getLongestActivities();
   const topPerformers = getWeeklyTopPerformers();
@@ -52,85 +52,127 @@ const KeyMetrics: React.FC<Props> = ({
 
   return (
     <div className="space-y-6">
-      <h3 className="text-xl font-semibold text-gray-800 mb-6">
+      <h3 
+        className="text-xl font-semibold mb-6"
+        style={{ color: colors.text }}
+      >
         {t.records.weeksBest}
       </h3>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         {/* Weekly Top Sport */}
-        <div className="bg-gray-50 p-6 rounded-xl">
+        <div 
+          className="p-6 rounded-xl"
+          style={{ backgroundColor: colors.secondary }}
+        >
           <div className="flex items-center gap-4">
-            <Award className="w-8 h-8" />
+            <Award className="w-8 h-8" style={{ color: colors.accent }} />
             <div>
-              <h3 className="text-sm font-medium text-gray-500">
+              <h3 
+                className="text-sm font-medium"
+                style={{ color: colors.mutedText }}
+              >
                 {t.records.mostPopularSports}
               </h3>
               {topSports ? (
                 <>
-                  <div className="text-2xl font-bold text-gray-800">
+                  <div 
+                    className="text-2xl font-bold"
+                    style={{ color: colors.text }}
+                  >
                     {topSports.sports.map((sport) => sport.name).join(" / ")}
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p 
+                    className="text-xs mt-1"
+                    style={{ color: colors.mutedText }}
+                  >
                     {topSports.count} {t.records.performancesThisWeek}
                   </p>
                 </>
               ) : (
-                <p className="text-gray-600">{t.records.noPerformancesYet}</p>
+                <p style={{ color: colors.mutedText }}>
+                  {t.records.noPerformancesYet}
+                </p>
               )}
             </div>
           </div>
         </div>
 
         {/* Longest Workout */}
-        <div className="bg-gray-50 p-6 rounded-xl">
+        <div 
+          className="p-6 rounded-xl"
+          style={{ backgroundColor: colors.secondary }}
+        >
           <div className="flex items-center gap-4">
-            <Award className="w-8 h-8" />
+            <Award className="w-8 h-8" style={{ color: colors.accent }} />
             <div>
-              <h3 className="text-sm font-medium text-gray-500">
+              <h3 
+                className="text-sm font-medium"
+                style={{ color: colors.mutedText }}
+              >
                 {t.records.longestWorkoutOfWeek}
               </h3>
               {longestMatchingActivities.length > 0 ? (
                 <>
-                  <p className="text-2xl font-bold text-gray-800">
+                  <p 
+                    className="text-2xl font-bold"
+                    style={{ color: colors.text }}
+                  >
                     {Math.round(longestMatchingActivities[0].kilometers)} km
                   </p>
-                  <ul className="text-xs text-gray-500 mt-1">
+                  <ul className="text-xs mt-1" style={{ color: colors.mutedText }}>
                     {longestMatchingActivities.map((activity) => (
                       <li
-                          key={`${activity.username}-${activity.activity}`}
+                        key={`${activity.username}-${activity.activity}`}
                       >
-                          {activity.username} - {activity.activity}
+                        {activity.username} - {activity.activity}
                       </li>
                     ))}
                   </ul>
                 </>
               ) : (
-                <p className="text-gray-600">{t.activityFeed.noActivities}</p>
+                <p style={{ color: colors.mutedText }}>
+                  {t.activityFeed.noActivities}
+                </p>
               )}
             </div>
           </div>
         </div>
 
         {/* Weekly Top Performer */}
-        <div className="bg-gray-50 p-6 rounded-xl">
+        <div 
+          className="p-6 rounded-xl"
+          style={{ backgroundColor: colors.secondary }}
+        >
           <div className="flex items-center gap-4">
-            <Award className="w-8 h-8 text-bg-slate" />
+            <Award className="w-8 h-8" style={{ color: colors.accent }} />
             <div>
-              <h3 className="text-sm font-medium text-gray-500">
+              <h3 
+                className="text-sm font-medium"
+                style={{ color: colors.mutedText }}
+              >
                 {t.records.weeklyTopPerformers}
               </h3>
               {topPerformers && topPerformers.kilometers > 0 ? (
                 <>
-                  <p className="text-2xl font-bold text-gray-800">
+                  <p 
+                    className="text-2xl font-bold"
+                    style={{ color: colors.text }}
+                  >
                     {topPerformers.users
                       .map((user) => user.username)
                       .join(" / ")}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p 
+                    className="text-xs mt-1"
+                    style={{ color: colors.mutedText }}
+                  >
                     {Math.round(topPerformers.kilometers)} {t.records.kmThisWeek}
                   </p>
                 </>
               ) : (
-                <p className="text-gray-600">{t.records.noPerformancesYet}</p>
+                <p style={{ color: colors.mutedText }}>
+                  {t.records.noPerformancesYet}
+                </p>
               )}
             </div>
           </div>

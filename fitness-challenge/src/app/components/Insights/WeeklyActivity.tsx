@@ -1,6 +1,7 @@
 import React from "react";
 import { WeeklyData, User } from "@/app/types/types";
 import { InfoIcon } from "lucide-react";
+import { useTheme } from "@/app/hooks/useTheme";
 
 interface Props {
   users: User[];
@@ -11,20 +12,27 @@ interface Props {
 }
 
 const WeeklyActivity: React.FC<Props> = ({ users, getLastFourWeeks }) => {
-  const lastFourWeeks = getLastFourWeeks(users); // ✅ Pass users correctly
+  const { colors, t } = useTheme();
+  const lastFourWeeks = getLastFourWeeks(users);
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm">
-      <h3 className="text-xl font-semibold text-gray-800 mb-6">
-        Viikkoaktiivisuus
+    <div 
+      className="p-6 rounded-xl shadow-sm"
+      style={{ backgroundColor: colors.card }}
+    >
+      <h3 className="text-xl font-semibold mb-6" style={{ color: colors.text }}>
+        {t.weeklyActivity.title}
       </h3>
-      <div className="bg-slate-50 p-4 rounded-lg border border-blue-100">
+      <div 
+        className="p-4 rounded-lg border mb-6"
+        style={{ backgroundColor: colors.secondary, borderColor: colors.border }}
+      >
         <div className="flex items-start gap-3">
-          <div className="text-slate-500 mt-1">
+          <div style={{ color: colors.mutedText }} className="mt-1">
             <InfoIcon className="w-5 h-5" />
           </div>
-          <div className="space-y-2 text-sm text-slate-800">
-            <p>Viikot laskettu maanantaista sunnuntaihin</p>
+          <div className="space-y-2 text-sm" style={{ color: colors.text }}>
+            <p>{t.weeklyActivity.mondayToSunday}</p>
           </div>
         </div>
       </div>
@@ -32,14 +40,23 @@ const WeeklyActivity: React.FC<Props> = ({ users, getLastFourWeeks }) => {
         <table className="w-full">
           <thead>
             <tr>
-              <th className="text-left p-3 border-b">Laji</th>
+              <th 
+                className="text-left p-3 border-b font-semibold"
+                style={{ color: colors.text, borderColor: colors.border }}
+              >
+                {t.weeklyActivity.sport}
+              </th>
               {lastFourWeeks.weeks.map((week: WeeklyData, i: number) => (
-                <th key={i} className="p-3 text-right border-b min-w-[140px]">
-                  <div className="font-semibold">
+                <th 
+                  key={i} 
+                  className="p-3 text-right border-b min-w-[140px] font-semibold"
+                  style={{ color: colors.text, borderColor: colors.border }}
+                >
+                  <div>
                     {i === 0
-                      ? "Tämä viikko"
+                      ? t.weeklyActivity.thisWeek
                       : i === 1
-                      ? "Viime viikko"
+                      ? t.weeklyActivity.lastWeek
                       : `${new Date(week.startDate).toLocaleDateString(
                         "fi-FI"
                       )} – ${new Date(week.endDate).toLocaleDateString("fi-FI")}`}
@@ -50,38 +67,69 @@ const WeeklyActivity: React.FC<Props> = ({ users, getLastFourWeeks }) => {
           </thead>
 
           <tbody>
-            {/* Yhteenveto */}
-            <tr className="font-medium bg-gray-50">
-              <td className="p-3 border-b">Yhteensä</td>
+            {/* Summary Row */}
+            <tr 
+              className="font-medium"
+              style={{ backgroundColor: colors.secondary }}
+            >
+              <td 
+                className="p-3 border-b font-semibold"
+                style={{ color: colors.text, borderColor: colors.border }}
+              >
+                {t.weeklyActivity.total}
+              </td>
               {lastFourWeeks.weeks.map((week: WeeklyData, i: number) => (
-                <td key={i} className="p-3 text-right border-b">
-                  <div className="text-lg font-bold">
+                <td 
+                  key={i} 
+                  className="p-3 text-right border-b"
+                  style={{ borderColor: colors.border }}
+                >
+                  <div className="text-lg font-bold" style={{ color: colors.text }}>
                     {week.kilometers.toLocaleString("fi-FI")} km
                   </div>
                 </td>
               ))}
             </tr>
 
-            {/* Lajikohtaiset rivit */}
+            {/* Sport-specific rows */}
             {lastFourWeeks.allSports.map((sport: string) => (
-              <tr key={sport} className="hover:bg-gray-50">
-                <td className="p-3 border-b">{sport}</td>
+              <tr 
+                key={sport} 
+                className="hover:opacity-80 transition-opacity"
+                style={{ backgroundColor: colors.card }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.secondary;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.card;
+                }}
+              >
+                <td 
+                  className="p-3 border-b"
+                  style={{ color: colors.text, borderColor: colors.border }}
+                >
+                  {sport}
+                </td>
                 {lastFourWeeks.weeks.map((week: WeeklyData, i: number) => {
                   const sportData = week.sports.find((s) => s.name === sport);
                   return (
-                    <td key={i} className="p-3 text-right border-b">
+                    <td 
+                      key={i} 
+                      className="p-3 text-right border-b"
+                      style={{ borderColor: colors.border }}
+                    >
                       {sportData ? (
                         <div>
-                          <div className="font-medium">
+                          <div className="font-medium" style={{ color: colors.text }}>
                             {sportData.kilometers.toLocaleString("fi-FI")} km
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm" style={{ color: colors.mutedText }}>
                             {sportData.count}{" "}
-                            {sportData.count === 1 ? "kerta" : "kertaa"}
+                            {sportData.count === 1 ? t.weeklyActivity.time : t.weeklyActivity.times}
                           </div>
                         </div>
                       ) : (
-                        <span className="text-gray-300">—</span>
+                        <span style={{ color: colors.border }}>—</span>
                       )}
                     </td>
                   );

@@ -156,30 +156,63 @@ const renderActivityList = (activities: Activity[], type: "km" | "min", t: Retur
 
 const renderRecordCard = (
   title: string,
-  colorClass: string,
   holders: RecordHolder[],
   valueLabel: string,
   dateLabel: string,
   activityType: "km" | "min",
-  t: ReturnType<typeof useTheme>['t']
+  t: ReturnType<typeof useTheme>['t'],
+  colors: ReturnType<typeof useTheme>['colors']
 ) => {
   if (!holders || holders.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow p-4">
-        <div className={`text-sm ${colorClass} font-medium mb-1`}>{title}</div>
-        <div>{t.records.noDataAvailable}</div>
+      <div 
+        className="rounded-lg shadow p-4"
+        style={{ backgroundColor: colors.card }}
+      >
+        <div 
+          className="text-sm font-medium mb-1"
+          style={{ color: colors.accent }}
+        >
+          {title}
+        </div>
+        <div style={{ color: colors.mutedText }}>
+          {t.records.noDataAvailable}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <div className={`text-sm ${colorClass} font-medium mb-1`}>{title}</div>
-      <div>{renderHolders(holders, t)}</div>
-      <div className={`text-2xl font-bold ${colorClass} mt-1`}>{valueLabel}</div>
-      <div className="text-sm text-gray-500">{dateLabel}</div>
+    <div 
+      className="rounded-lg shadow p-4"
+      style={{ backgroundColor: colors.card }}
+    >
+      <div 
+        className="text-sm font-medium mb-1"
+        style={{ color: colors.accent }}
+      >
+        {title}
+      </div>
+      <div style={{ color: colors.text }}>
+        {renderHolders(holders, t)}
+      </div>
+      <div 
+        className="text-2xl font-bold mt-1"
+        style={{ color: colors.accent }}
+      >
+        {valueLabel}
+      </div>
+      <div 
+        className="text-sm"
+        style={{ color: colors.mutedText }}
+      >
+        {dateLabel}
+      </div>
       {holders[0]?.activities && holders[0].activities.length > 0 && (
-        <div className="mt-2 text-xs text-gray-500">
+        <div 
+          className="mt-2 text-xs"
+          style={{ color: colors.mutedText }}
+        >
           {renderActivityList(holders[0].activities, activityType, t)}
         </div>
       )}
@@ -188,7 +221,7 @@ const renderRecordCard = (
 };
 
 const RecordHolders = () => {
-  const { t } = useTheme();
+  const { t, colors } = useTheme();
   const [records, setRecords] = useState<Records | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -249,9 +282,32 @@ const RecordHolders = () => {
     fetchRecords();
   }, []);
 
-  if (loading) return <div className="text-center p-4">{t.records.loadingRecords}</div>;
-  if (error) return <div className="text-center text-red-500 p-4">{error}</div>;
-  if (!records) return <div className="text-center p-4">{t.records.noDataAvailable}</div>;
+  if (loading) return (
+    <div 
+      className="text-center p-4"
+      style={{ color: colors.mutedText }}
+    >
+      {t.records.loadingRecords}
+    </div>
+  );
+  
+  if (error) return (
+    <div 
+      className="text-center p-4"
+      style={{ color: colors.error }}
+    >
+      {error}
+    </div>
+  );
+  
+  if (!records) return (
+    <div 
+      className="text-center p-4"
+      style={{ color: colors.mutedText }}
+    >
+      {t.records.noDataAvailable}
+    </div>
+  );
 
   // Ensure we have valid records before rendering cards
   const hasBestKm = records.bestKm && records.bestKm.length > 0 && records.bestKm[0];
@@ -260,61 +316,110 @@ const RecordHolders = () => {
 
   return (
     <div className="space-y-6">
-      <h3 className="text-xl font-semibold text-gray-800 mb-6">{t.records.currentRecords}</h3>
+      <h3 
+        className="text-xl font-semibold mb-6"
+        style={{ color: colors.text }}
+      >
+        {t.records.currentRecords}
+      </h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {hasBestKm ? (
           renderRecordCard(
             t.records.mostKmInDay,
-            "text-slate-600",
             records.bestKm,
             `${records.bestKm[0].value.toFixed(1)} km`,
             new Date(records.bestKm[0].date).toLocaleDateString("fi-FI"),
             "km",
-            t
+            t,
+            colors
           )
         ) : (
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-slate-600 font-medium mb-1">{t.records.mostKmInDay}</div>
-            <div>{t.records.noDataAvailable}</div>
+          <div 
+            className="rounded-lg shadow p-4"
+            style={{ backgroundColor: colors.card }}
+          >
+            <div 
+              className="text-sm font-medium mb-1"
+              style={{ color: colors.accent }}
+            >
+              {t.records.mostKmInDay}
+            </div>
+            <div style={{ color: colors.mutedText }}>
+              {t.records.noDataAvailable}
+            </div>
           </div>
         )}
         
         {hasLongestWorkout ? (
           renderRecordCard(
             t.records.longestWorkout,
-            "text-slate-600",
             records.longestWorkout,
             `${records.longestWorkout[0].value} min`,
             new Date(records.longestWorkout[0].date).toLocaleDateString("fi-FI"),
             "min",
-            t
+            t,
+            colors
           )
         ) : (
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-slate-600 font-medium mb-1">{t.records.longestWorkout}</div>
-            <div>{t.records.noDataAvailable}</div>
+          <div 
+            className="rounded-lg shadow p-4"
+            style={{ backgroundColor: colors.card }}
+          >
+            <div 
+              className="text-sm font-medium mb-1"
+              style={{ color: colors.accent }}
+            >
+              {t.records.longestWorkout}
+            </div>
+            <div style={{ color: colors.mutedText }}>
+              {t.records.noDataAvailable}
+            </div>
           </div>
         )}
         
         {hasLongestStreak ? (
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-slate-600 font-medium mb-1">
+          <div 
+            className="rounded-lg shadow p-4"
+            style={{ backgroundColor: colors.card }}
+          >
+            <div 
+              className="text-sm font-medium mb-1"
+              style={{ color: colors.accent }}
+            >
               {t.records.longestStreak}
             </div>
-            <div>{renderHolders(records.longestStreak, t)}</div>
-            <div className="text-2xl font-bold  mt-1">
+            <div style={{ color: colors.text }}>
+              {renderHolders(records.longestStreak, t)}
+            </div>
+            <div 
+              className="text-2xl font-bold mt-1"
+              style={{ color: colors.accent }}
+            >
               {records.longestStreak[0].value} {t.allTime.currentStreakDays}
             </div>
             {records.longestStreak[0].date && (
-              <div className="text-sm text-gray-500">
+              <div 
+                className="text-sm"
+                style={{ color: colors.mutedText }}
+              >
                 {t.records.startingFrom} {new Date(records.longestStreak[0].date).toLocaleDateString("fi-FI")}
               </div>
             )}
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-sm text-slate-600 font-medium mb-1">{t.records.longestStreak}</div>
-            <div>{t.records.noDataAvailable}</div>
+          <div 
+            className="rounded-lg shadow p-4"
+            style={{ backgroundColor: colors.card }}
+          >
+            <div 
+              className="text-sm font-medium mb-1"
+              style={{ color: colors.accent }}
+            >
+              {t.records.longestStreak}
+            </div>
+            <div style={{ color: colors.mutedText }}>
+              {t.records.noDataAvailable}
+            </div>
           </div>
         )}
       </div>

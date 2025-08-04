@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function PopularSports({ users }: Readonly<Props>) {
-  const { t } = useTheme();
+  const { t, colors } = useTheme();
   
   const sportCounts = users
     .flatMap((user) => user.activities)
@@ -21,18 +21,39 @@ export default function PopularSports({ users }: Readonly<Props>) {
     .slice(0, 5);
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm">
-      <h3 className="text-xl font-semibold text-gray-800 mb-6">
+    <div 
+      className="p-6 rounded-xl shadow-sm"
+      style={{ backgroundColor: colors.card }}
+    >
+      <h3 
+        className="text-xl font-semibold mb-6"
+        style={{ color: colors.text }}
+      >
         {t.popularSports.title}
       </h3>
       <ul className="space-y-2">
         {topSports.map(([sport, count], index) => (
-          <li key={sport} className="flex items-center p-2 bg-gray-50 rounded">
-            <span className="w-8 text-center font-bold text-slate-600">
+          <li 
+            key={sport} 
+            className="flex items-center p-2 rounded transition-colors hover:opacity-80"
+            style={{ backgroundColor: colors.secondary }}
+          >
+            <span 
+              className="w-8 text-center font-bold"
+              style={{ color: colors.accent }}
+            >
               {index + 1}.
             </span>
-            <span className="text-gray-800 font-medium">{sport}</span>
-            <span className="ml-auto text-gray-500">
+            <span 
+              className="font-medium"
+              style={{ color: colors.text }}
+            >
+              {sport}
+            </span>
+            <span 
+              className="ml-auto"
+              style={{ color: colors.mutedText }}
+            >
               {count} {count === 1 ? t.popularSports.time : t.popularSports.times}
             </span>
           </li>
