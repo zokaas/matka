@@ -87,11 +87,10 @@ const MapController: React.FC<{ stages: Stage[]; currentStage: number }> = ({
 const TourMapView: React.FC<TourMapViewProps> = ({
   stages,
   currentStage,
-  totalKm,
   kmToNextStage,
   eta,
 }) => {
-  const mapRef = useRef<L.Map>(null);
+const mapRef = useRef<L.Map>(null);
 
   const completedSegments = [];
   const upcomingSegments = [];
