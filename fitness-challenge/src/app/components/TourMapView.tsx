@@ -236,5 +236,6 @@ const TourMapView: React.FC<TourMapViewProps> = ({
     </div>
   );
 };
+console.log("TourMapView loaded")
 
 export default TourMapView;
