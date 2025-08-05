@@ -112,7 +112,7 @@ export default function Navbar() {
             className="text-xl font-bold flex items-center hover:opacity-80 transition-opacity"
             style={{ color: colors.text, textDecoration: "none" }}
           >
-            🏔️ {t.navbar.title} 🏔️
+            {t.navbar.title}
           </Link>
 
           {/* Desktop links */}

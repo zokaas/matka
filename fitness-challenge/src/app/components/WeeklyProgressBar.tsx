@@ -1,83 +1,26 @@
-// fitness-challenge/src/app/components/WeeklyProgressBar.tsx
-import React, { useState, useEffect } from "react";
+// WeeklyProgressBar.tsx - MASSIVELY SIMPLIFIED
+import React from "react";
 import { useFetchUsers } from "@/app/hooks/useFetchUsers";
-import {
-  getWeekStart,
-  getWeekKey,
-  getDaysRemaining,
-} from "@/app/utils/dateUtils";
-import { challengeParams } from "../constants/challengeParams";
+import { useWeeklyGoal } from "@/app/hooks/useWeeklyGoal"; // 🆕 NEW IMPORT
 import { useTheme } from "@/app/hooks/useTheme";
-
-const CHALLENGE_START_DATE = new Date(challengeParams.startDate);
-const CHALLENGE_END_DATE = new Date(challengeParams.endDate);
-const TOTAL_CHALLENGE_DISTANCE = challengeParams.totalDistance;
 
 const WeeklyProgressBar = () => {
   const { t } = useTheme();
   const { users, loading, error } = useFetchUsers();
-  const [weeklyProgress, setWeeklyProgress] = useState(0);
-  const [weeklyGoal, setWeeklyGoal] = useState(0);
-  const [remainingDistance, setRemainingDistance] = useState(0);
-  const [weekStartKey, setWeekStartKey] = useState("");
-  const [weeklyKmPerPerson, setWeeklyKmPerPerson] = useState(0);
-
-  useEffect(() => {
-    if (!users || users.length === 0) return;
-
-    const today = new Date();
-    const weekStart = getWeekStart(today);
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
-    weekEnd.setHours(23, 59, 59, 999);
-
-    const currentWeekKey = getWeekKey(today);
-    setWeekStartKey(currentWeekKey);
-
-    const storedWeeklyGoal = localStorage.getItem(`weekly-goal-${currentWeekKey}`);
-
-    if (storedWeeklyGoal) {
-      const parsedGoal = parseInt(storedWeeklyGoal, 10);
-      setWeeklyGoal(parsedGoal);
-      setWeeklyKmPerPerson(Math.round(parsedGoal / users.length));
-    } else {
-      const totalProgress = users.reduce((sum, user) => sum + user.totalKm, 0);
-      const remainingChallengeDistance = Math.max(0, TOTAL_CHALLENGE_DISTANCE - totalProgress);
-      const daysRemaining = getDaysRemaining(CHALLENGE_END_DATE, today);
-      const weeksRemaining = Math.ceil(daysRemaining / 7);
-      const requiredWeeklyDistance = Math.ceil(remainingChallengeDistance / weeksRemaining);
-
-      setWeeklyGoal(requiredWeeklyDistance);
-      setWeeklyKmPerPerson(Math.round(requiredWeeklyDistance / users.length));
-
-      localStorage.setItem(`weekly-goal-${currentWeekKey}`, requiredWeeklyDistance.toString());
-    }
-
-    let currentWeekDistance = 0;
-    users.forEach((user) => {
-      const weekActivities = user.activities.filter((activity) => {
-        const activityDate = new Date(activity.date);
-        return activityDate >= weekStart && activityDate <= weekEnd;
-      });
-
-      const userWeeklyDistance = weekActivities.reduce(
-        (sum, activity) => sum + activity.kilometers,
-        0
-      );
-
-      currentWeekDistance += userWeeklyDistance;
-    });
-
-    setWeeklyProgress(Math.round(currentWeekDistance));
-    const weekGoal = storedWeeklyGoal ? parseInt(storedWeeklyGoal, 10) : weeklyGoal;
-    const remaining = Math.max(0, weekGoal - currentWeekDistance);
-    setRemainingDistance(remaining);
-  }, [users]);
+  
+  // 🆕 REPLACE ALL COMPLEX STATE AND LOGIC WITH SINGLE HOOK
+  const {
+    weeklyGoal,
+    weeklyProgress,
+    weeklyGoalPerUser,
+    remainingDistance,
+    progressPercentage
+  } = useWeeklyGoal(users);
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-16">
-        <div className="w-5 h-5 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-5 h-5 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -89,10 +32,6 @@ const WeeklyProgressBar = () => {
       </div>
     );
   }
-
-  const progressPercentage = weeklyGoal > 0
-    ? Math.min(100, (weeklyProgress / weeklyGoal) * 100)
-    : 0;
 
   return (
     <div className="bg-white p-4 rounded-lg shadow">
@@ -115,7 +54,7 @@ const WeeklyProgressBar = () => {
             backgroundColor:
               progressPercentage >= 100
                 ? "#22c55e"
-                : "#a855f7",
+                : "#facc15",
           }}
         />
       </div>
@@ -135,7 +74,7 @@ const WeeklyProgressBar = () => {
             </div>
           )}
         </div>
-        <div className="text-gray-500">{weeklyKmPerPerson} {t.weeklyProgressBar.kmPerPerson}</div>
+        <div className="text-gray-500">{weeklyGoalPerUser} {t.weeklyProgressBar.kmPerPerson}</div>
       </div>
     </div>
   );

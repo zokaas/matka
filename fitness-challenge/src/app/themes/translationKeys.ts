@@ -32,6 +32,8 @@ export interface ThemeTranslations {
   totalPointsLabel: string;
   goalLabel: string;
   routeLabel: string;
+  mapView: string;
+  timelineView: string;
 
   tabs: {
     leaderboard: string;
@@ -107,6 +109,9 @@ export interface ThemeTranslations {
     weeklyTarget: string;
     daysAgo: string;
     position: string;
+    challengeStarted: string;
+    challengeEnds: string;
+    challengeTimeline: string;
   };
 
   // ActivityFeed translations

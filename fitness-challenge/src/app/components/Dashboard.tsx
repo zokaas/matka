@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Trophy, Activity, MapPin, TrendingUp, Users, Target
+  Trophy, Activity, TrendingUp, Users, Target,
 } from "lucide-react";
 
 import { useTheme } from "@/app/hooks/useTheme";
+import { useWeeklyGoal } from "@/app/hooks/useWeeklyGoal";
+import { useCurrentStage } from "@/app/hooks/useCurrentStage";
 
 import Leaderboard from "./Leaderboard";
 import WeeklyProgress from "./WeeklyProgress";
@@ -12,17 +14,14 @@ import ActivityFeedPage from "./ActivityFeedPage";
 import SubmitQuote from "./SubmitQuote";
 import Quotes from "./Quotes";
 import WeeklyProgressBar from "./WeeklyProgressBar";
+
 import { fetchUsersAndTotalKm } from "../utils/utils";
 import { User } from "@/app/types/types";
+import StageCard from "./StageCard";
 
 export default function Dashboard() {
-  const [currentStage, setCurrentStage] = useState(0);
   const { t, colors, theme } = useTheme();
-  const {
-    stages,
-    totalPoints,
-    weatherIcons,
-  } = theme;
+  const { stages } = theme;
 
   const [users, setUsers] = useState<User[]>([]);
   const [totalKm, setTotalKm] = useState(0);
@@ -30,26 +29,13 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<'leaderboard' | 'weekly' | 'feed'>('leaderboard');
 
+  const { currentStage, current, next, progressToNext } = useCurrentStage(stages, totalKm);
+  const weeklyGoalData = useWeeklyGoal(users);
+
   useEffect(() => {
     fetchUsersAndTotalKm(setUsers, setTotalKm, setLoading, setError);
   }, []);
 
-  useEffect(() => {
-    for (let i = stages.length - 1; i >= 0; i--) {
-      if (totalKm >= stages[i].pointsRequired) {
-        setCurrentStage(i);
-        break;
-      }
-    }
-  }, [totalKm, stages]);
-
-  const currentProgress = stages[currentStage];
-  const nextStage = stages[currentStage + 1];
-  const progressToNext = nextStage
-    ? ((totalKm - currentProgress.pointsRequired) / (nextStage.pointsRequired - currentProgress.pointsRequired)) * 100
-    : 100;
-
-  // Calculate key stats
   const totalActivities = users.reduce((sum, user) => sum + user.activities.length, 0);
   const avgKmPerUser = users.length > 0 ? totalKm / users.length : 0;
 
@@ -91,19 +77,18 @@ export default function Dashboard() {
     >
       <div className="max-w-6xl mx-auto space-y-6">
 
-        {/* HERO SECTION */}
-        <motion.header
+        {/* HERO */}
+        {/* <motion.header
           className="text-center"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className="text-4xl mb-3">{currentProgress.emoji}</div>
+          <div className="text-4xl mb-3">{current.emoji}</div>
           <h1 className="text-2xl md:text-3xl font-bold mb-2 text-gray-800">
             {t.dashboardTitle}
           </h1>
           <p className="text-gray-600 mb-4">{t.subtitle}</p>
-          
-          {/* INSPIRATIONAL QUOTE */}
+
           <motion.div
             className="bg-white/60 backdrop-blur-sm rounded-xl p-4 max-w-2xl mx-auto"
             animate={{ scale: [1, 1.02, 1] }}
@@ -111,83 +96,11 @@ export default function Dashboard() {
           >
             <Quotes />
           </motion.div>
-        </motion.header>
+        </motion.header> */}
+<StageCard
+ totalKm={totalKm}
+/>
 
-        {/* CURRENT STAGE CARD */}
-        <motion.section
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-2xl p-6 shadow-lg border border-yellow-200"
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {/* Stage Info */}
-            <div className="lg:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="text-3xl">{currentProgress.emoji}</div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800">
-                    {t.stageLabel} {currentStage + 1}: {currentProgress.name}
-                  </h2>
-                  <p className="text-gray-600 text-sm">{currentProgress.description}</p>
-                </div>
-              </div>
-              
-              {/* Progress to Next Stage */}
-              {nextStage && (
-                <div className="mb-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-700">
-                      {t.nextStage}: {nextStage.name}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      {Math.round(progressToNext)}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <motion.div
-                      className="bg-yellow-400 h-2 rounded-full"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(progressToNext, 100)}%` }}
-                      transition={{ duration: 1.5, ease: "easeOut" }}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {(nextStage.pointsRequired - totalKm).toLocaleString()} {t.pointsToNext}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Key Stats */}
-            <div className="space-y-3">
-              <StatCard
-                icon={<Trophy className="w-5 h-5" />}
-                value={`${totalKm.toLocaleString('fi-FI')} km`}
-                label={t.points}
-                color="text-yellow-600"
-              />
-              <StatCard
-                icon={<Users className="w-5 h-5" />}
-                value={users.length.toString()}
-                label="Pyöräilijöitä"
-                color="text-blue-600"
-              />
-              <StatCard
-                icon={<Activity className="w-5 h-5" />}
-                value={totalActivities.toString()}
-                label="Suorituksia"
-                color="text-green-600"
-              />
-              <StatCard
-                icon={<Target className="w-5 h-5" />}
-                value={`${Math.round(avgKmPerUser)} km`}
-                label="Keskiarvo/hlö"
-                color="text-purple-600"
-              />
-            </div>
-          </div>
-        </motion.section>
 
         {/* WEEKLY PROGRESS BAR */}
         <WeeklyProgressBar />
@@ -201,8 +114,8 @@ export default function Dashboard() {
                 onClick={() => setActiveView(key)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-sm font-medium ${
                   activeView === key
-                    ? 'bg-yellow-400 text-black shadow-sm'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    ? "bg-yellow-400 text-black shadow-sm"
+                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -212,19 +125,19 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* MAIN CONTENT */}
+        {/* MAIN VIEW */}
         <motion.section
           key={activeView}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {activeView === 'leaderboard' && <Leaderboard users={users} />}
-          {activeView === 'weekly' && <WeeklyProgress users={users} />}
-          {activeView === 'feed' && <ActivityFeedPage />}
+          {activeView === "leaderboard" && <Leaderboard users={users} />}
+          {activeView === "weekly" && <WeeklyProgress users={users} />}
+          {activeView === "feed" && <ActivityFeedPage />}
         </motion.section>
 
-        {/* QUOTE SUBMISSION */}
+        {/* SUBMIT QUOTE */}
         <motion.section
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -242,7 +155,7 @@ function StatCard({
   icon,
   value,
   label,
-  color = "text-gray-600"
+  color = "text-gray-600",
 }: {
   icon: React.ReactNode;
   value: string;
@@ -251,9 +164,7 @@ function StatCard({
 }) {
   return (
     <div className="bg-gray-50 rounded-lg p-3 flex items-center gap-3">
-      <div className={`${color}`}>
-        {icon}
-      </div>
+      <div className={color}>{icon}</div>
       <div>
         <div className="text-lg font-bold text-gray-800">{value}</div>
         <div className="text-xs text-gray-600">{label}</div>

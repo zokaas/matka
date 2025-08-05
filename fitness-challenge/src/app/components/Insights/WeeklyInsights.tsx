@@ -1,108 +1,68 @@
-import React from "react";
-import { WeeklyInsight } from "@/app/types/types";
-import { useTheme } from "@/app/hooks/useTheme";
 
-interface Props {
-  weeklyInsights: WeeklyInsight[];
-}
+import { useState, useEffect } from "react";
+import { User, WeeklyInsight, TargetPaces } from "@/app/types/types";
+import { useWeeklyGoal } from "@/app/hooks/useWeeklyGoal"; // 🆕 NEW IMPORT
 
-const WeeklyInsights: React.FC<Props> = ({ weeklyInsights }) => {
-  const { t, colors } = useTheme();
+export const useWeeklyInsights = (users: User[], targetPaces: TargetPaces) => {
+  const [weeklyInsights, setWeeklyInsights] = useState<WeeklyInsight[]>([]);
   
-  return (
-    <div 
-      className="p-6 rounded-xl shadow-md border mt-6"
-      style={{ 
-        backgroundColor: colors.card,
-        borderColor: colors.border 
-      }}
-    >
-      <h3 
-        className="text-xl font-semibold mb-6"
-        style={{ color: colors.text }}
-      >
-        {t.weeklyInsights.title}
-      </h3>
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse rounded-xl overflow-hidden shadow-sm">
-          <thead 
-            className="sticky top-0"
-            style={{ backgroundColor: colors.secondary }}
-          >
-            <tr>
-              {[
-                t.weeklyInsights.participant,
-                t.weeklyInsights.weeklyProgress,
-                t.weeklyInsights.remainingWeeklyDailyTarget,
-              ].map((heading) => (
-                <th
-                  key={heading}
-                  className="p-3 text-left font-semibold uppercase text-xs tracking-wider"
-                  style={{ color: colors.text }}
-                >
-                  {heading}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {weeklyInsights.map((user) => (
-              <tr
-                key={user.username}
-                className="border-b hover:opacity-80 transition-colors duration-200"
-                style={{ 
-                  borderColor: colors.border,
-                  backgroundColor: colors.card 
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.secondary;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.card;
-                }}
-              >
-                <td 
-                  className="p-3 font-medium"
-                  style={{ color: colors.text }}
-                >
-                  {user.username}
-                </td>
-                <td className="p-3">
-                  <div className="flex items-center">
-                    <div 
-                      className="relative w-3/4 rounded-lg overflow-hidden"
-                      style={{ backgroundColor: colors.border }}
-                    >
-                      <div
-                        className="h-2 rounded-lg transition-all duration-500"
-                        style={{ 
-                          width: `${user.weeklyPercentage}%`,
-                          background: `linear-gradient(to right, ${colors.primary}, ${colors.accent})`
-                        }}
-                      />
-                    </div>
-                    <span 
-                      className="text-sm font-medium ml-2"
-                      style={{ color: colors.text }}
-                    >
-                      {user.weeklyProgress.toLocaleString("fi-FI")} km (
-                      {user.weeklyPercentage}%)
-                    </span>
-                  </div>
-                </td>
-                <td 
-                  className="p-3"
-                  style={{ color: colors.text }}
-                >
-                  {user.dailyTarget.toFixed(1)} km
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
+  // 🆕 USE WEEKLY GOAL HOOK FOR CONSISTENCY
+  const weeklyGoalData = useWeeklyGoal(users);
 
-export default WeeklyInsights;
+  useEffect(() => {
+    if (users.length === 0 || !targetPaces) return;
+
+    // 🆕 USE HOOK DATA INSTEAD OF RECALCULATING
+    const { weeklyGoalPerUser, weekStart, weekEnd, daysRemaining } = weeklyGoalData;
+
+    const insights: WeeklyInsight[] = users.map((user) => {
+      // Filter activities that occurred between this Monday and Sunday
+      const weekActivities = user.activities.filter((activity) => {
+        const activityDate = new Date(activity.date);
+        return activityDate >= weekStart && activityDate <= weekEnd;
+      });
+
+      const weeklyProgress = weekActivities.reduce(
+        (sum, activity) => sum + activity.kilometers,
+        0
+      );
+
+      const weeklyPercentage = weeklyGoalPerUser > 0 ? Math.round((weeklyProgress / weeklyGoalPerUser) * 100) : 0;
+
+      const remainingWeeklyDistance = Math.max(0, weeklyGoalPerUser - weeklyProgress);
+      const dailyTarget = remainingWeeklyDistance > 0
+        ? daysRemaining > 0
+          ? Math.round(remainingWeeklyDistance / daysRemaining)
+          : Math.round(remainingWeeklyDistance)
+        : 0;
+
+      const dailyProgress = daysRemaining > 0 ? weeklyProgress / (7 - daysRemaining) : 0;
+      const dailyPercentage = weeklyGoalPerUser > 0
+        ? Math.round((dailyProgress / (weeklyGoalPerUser / 7)) * 100)
+        : 0;
+
+      return {
+        username: user.username,
+        weeklyGoal: weeklyGoalPerUser,
+        weeklyProgress: Math.round(weeklyProgress),
+        weeklyPercentage,
+        dailyTarget,
+        dailyProgress: Math.round(dailyProgress),
+        dailyPercentage,
+        rank: 0,
+      };
+    });
+
+    // Rank users based on weekly progress
+    const sortedInsights = insights
+      .sort((a, b) => b.weeklyProgress - a.weeklyProgress)
+      .map((insight, index) => ({
+        ...insight,
+        rank: index + 1,
+      }));
+
+    setWeeklyInsights(sortedInsights);
+  }, [users, targetPaces, weeklyGoalData]);
+
+  return weeklyInsights;
+};

@@ -61,6 +61,7 @@ export interface Stage {
   weather: string;
   location: string; // ✅ required
   color: string;
+  coords: [number, number]; 
 }
 
 export interface Theme {

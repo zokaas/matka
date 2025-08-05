@@ -1,8 +1,10 @@
 "use client";
-import InsightsWithTabs from "../components/InsightsWithTabs";
+
+import React from "react";
 import { Lock } from "lucide-react";
 import Link from "next/link";
 import { useTheme } from "@/app/hooks/useTheme";
+import InsightsWithTabs from "../components/InsightsWithTabs";
 
 // 🔧 MANUAL TOGGLE FLAG - Change this to control insights page access
 const INSIGHTS_ENABLED = false; // Set to true to enable insights page
@@ -64,6 +66,6 @@ export default function InsightsPage() {
     );
   }
 
-  // If insights are enabled, show the normal page
+  // If insights are enabled, show the streamlined page
   return <InsightsWithTabs />;
 }

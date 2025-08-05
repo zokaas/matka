@@ -1,32 +1,19 @@
-// fitness-challenge/src/app/hooks/useWeeklyInsights.ts
+// hooks/useWeeklyInsights.ts
 import { useState, useEffect } from "react";
 import { User, WeeklyInsight, TargetPaces } from "@/app/types/types";
+import { useWeeklyGoal } from "@/app/hooks/useWeeklyGoal"; // 🆕 NEW IMPORT
 
 export const useWeeklyInsights = (users: User[], targetPaces: TargetPaces) => {
   const [weeklyInsights, setWeeklyInsights] = useState<WeeklyInsight[]>([]);
+  
+  // 🆕 USE WEEKLY GOAL HOOK FOR CONSISTENCY
+  const weeklyGoalData = useWeeklyGoal(users);
 
   useEffect(() => {
     if (users.length === 0 || !targetPaces) return;
 
-    const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-
-    // Determine the Monday of the current week
-    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() + mondayOffset);
-    weekStart.setHours(0, 0, 0, 0); // Start of Monday
-
-    // Determine the Sunday of the current week
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
-    weekEnd.setHours(23, 59, 59, 999); // End of Sunday
-
-    // Calculate days remaining until Sunday
-    const daysRemaining = 7 - (dayOfWeek === 0 ? 7 : dayOfWeek);
-
-    // Use the consistent weekly goal value from targetPaces
-    const weeklyGoal = targetPaces.weeklyPerUser || 0;
+    // 🆕 USE HOOK DATA INSTEAD OF RECALCULATING WEEK BOUNDARIES
+    const { weeklyGoalPerUser, weekStart, weekEnd, daysRemaining } = weeklyGoalData;
 
     const insights: WeeklyInsight[] = users.map((user) => {
       // Filter activities that occurred between this Monday and Sunday
@@ -40,28 +27,24 @@ export const useWeeklyInsights = (users: User[], targetPaces: TargetPaces) => {
         0
       );
 
-      const weeklyPercentage =
-        weeklyGoal > 0 ? Math.round((weeklyProgress / weeklyGoal) * 100) : 0;
+      const weeklyPercentage = weeklyGoalPerUser > 0 ? Math.round((weeklyProgress / weeklyGoalPerUser) * 100) : 0;
 
-      const remainingWeeklyDistance = Math.max(0, weeklyGoal - weeklyProgress);
-      const dailyTarget =
-          remainingWeeklyDistance > 0
-            ? daysRemaining > 0
-              ? Math.round(remainingWeeklyDistance / daysRemaining) // Round to whole number
-              : Math.round(remainingWeeklyDistance) // Show remaining distance for last day
-            : 0;
+      const remainingWeeklyDistance = Math.max(0, weeklyGoalPerUser - weeklyProgress);
+      const dailyTarget = remainingWeeklyDistance > 0
+        ? daysRemaining > 0
+          ? Math.round(remainingWeeklyDistance / daysRemaining)
+          : Math.round(remainingWeeklyDistance)
+        : 0;
 
-      // Calculate daily progress (optional, can adjust if needed)
-      const dailyProgress =
-        daysRemaining > 0 ? weeklyProgress / (7 - daysRemaining) : 0;
-      const dailyPercentage =
-        weeklyGoal > 0
-          ? Math.round((dailyProgress / (weeklyGoal / 7)) * 100)
-          : 0;
+      // Calculate daily progress
+      const dailyProgress = daysRemaining > 0 ? weeklyProgress / (7 - daysRemaining) : 0;
+      const dailyPercentage = weeklyGoalPerUser > 0
+        ? Math.round((dailyProgress / (weeklyGoalPerUser / 7)) * 100)
+        : 0;
 
       return {
         username: user.username,
-        weeklyGoal,
+        weeklyGoal: weeklyGoalPerUser,
         weeklyProgress: Math.round(weeklyProgress),
         weeklyPercentage,
         dailyTarget,
@@ -80,7 +63,7 @@ export const useWeeklyInsights = (users: User[], targetPaces: TargetPaces) => {
       }));
 
     setWeeklyInsights(sortedInsights);
-  }, [users, targetPaces]);
+  }, [users, targetPaces, weeklyGoalData]); // 🆕 UPDATE DEPENDENCIES
 
   return weeklyInsights;
 };

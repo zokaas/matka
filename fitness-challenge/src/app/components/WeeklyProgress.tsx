@@ -1,13 +1,11 @@
-// fitness-challenge/src/app/components/WeeklyProgress.tsx
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
-import "react-circular-progressbar/dist/styles.css";
-import { User } from "@/app/types/types";
 import { useState, useEffect } from "react";
-import { challengeParams } from "../constants/challengeParams";
+import { User } from "@/app/types/types";
 import { useTheme } from "@/app/hooks/useTheme";
+import { useWeeklyGoal } from "@/app/hooks/useWeeklyGoal"; // 🆕 NEW IMPORT
+import { challengeParams } from "../constants/challengeParams";
 
 interface WeeklyProgressProps {
   users: User[];
@@ -25,45 +23,15 @@ interface WeeklyInsight {
 const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
   const { t } = useTheme();
   const [weeklyInsights, setWeeklyInsights] = useState<WeeklyInsight[]>([]);
-  const [weeklyGoalPerUser, setWeeklyGoalPerUser] = useState(0);
+
+  // 🆕 GET WEEKLY DATA FROM HOOK
+  const weeklyGoalData = useWeeklyGoal(users);
 
   useEffect(() => {
     if (!users || users.length === 0) return;
 
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() + mondayOffset);
-    weekStart.setHours(0, 0, 0, 0);
-
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
-    weekEnd.setHours(23, 59, 59, 999);
-
-    const weekYear = weekStart.getFullYear();
-    const weekNum = Math.ceil((weekStart.getTime() - new Date(weekYear, 0, 1).getTime()) / (7 * 24 * 60 * 60 * 1000));
-    const currentWeekKey = `${weekYear}-W${weekNum}`;
-
-    const daysRemaining = 7 - (dayOfWeek === 0 ? 7 : dayOfWeek);
-
-    const storedWeeklyGoal = localStorage.getItem(`weekly-goal-${currentWeekKey}`);
-    let weeklyGoal;
-
-    if (storedWeeklyGoal) {
-      weeklyGoal = parseInt(storedWeeklyGoal, 10);
-    } else {
-      const totalProgress = users.reduce((sum, user) => sum + user.totalKm, 0);
-      const remainingChallengeDistance = Math.max(0, challengeParams.totalDistance - totalProgress);
-      const daysUntilEnd = Math.max(1, Math.ceil((new Date(challengeParams.endDate).getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
-      const weeksRemaining = Math.ceil(daysUntilEnd / 7);
-
-      weeklyGoal = Math.ceil(remainingChallengeDistance / weeksRemaining);
-      localStorage.setItem(`weekly-goal-${currentWeekKey}`, weeklyGoal.toString());
-    }
-
-    const individualGoal = Math.round(weeklyGoal / users.length);
-    setWeeklyGoalPerUser(individualGoal);
+    // 🔧 DESTRUCTURE STABLE PROPERTIES
+    const { weeklyGoalPerUser, weekStart, weekEnd, daysRemaining } = weeklyGoalData;
 
     const insights = users.map((user) => {
       const weekActivities = user.activities.filter((activity) => {
@@ -71,118 +39,140 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
         return activityDate >= weekStart && activityDate <= weekEnd;
       });
 
-      const weeklyProgress = weekActivities.reduce(
-        (sum, activity) => sum + activity.kilometers,
-        0
-      );
-
-      const weeklyPercentage = Math.min(
-        200,
-        individualGoal > 0 ? Math.round((weeklyProgress / individualGoal) * 100) : 0
-      );
-
-      const remainingKm = Math.max(0, individualGoal - weeklyProgress);
+      const weeklyProgress = weekActivities.reduce((sum, activity) => sum + activity.kilometers, 0);
+      const weeklyPercentage = weeklyGoalPerUser > 0 ? Math.round((weeklyProgress / weeklyGoalPerUser) * 100) : 0;
+      const remainingKm = Math.max(0, weeklyGoalPerUser - weeklyProgress);
       const dailyTarget = daysRemaining > 0 ? Math.round(remainingKm / daysRemaining) : 0;
 
       return {
         username: user.username,
-        weeklyGoal: individualGoal,
+        weeklyGoal: weeklyGoalPerUser,
         weeklyProgress: Math.round(weeklyProgress),
-        weeklyPercentage,
+        weeklyPercentage: Math.min(200, weeklyPercentage),
         dailyTarget,
         rank: 0
       };
-    });
+    }).sort((a, b) => b.weeklyProgress - a.weeklyProgress)
+      .map((insight, index) => ({ ...insight, rank: index + 1 }));
 
-    const sortedInsights = insights
-      .sort((a, b) => b.weeklyProgress - a.weeklyProgress)
-      .map((insight, index) => ({
-        ...insight,
-        rank: index + 1,
-      }));
+    setWeeklyInsights(insights);
+  }, [
+    users, 
+    weeklyGoalData.weeklyGoalPerUser, 
+    weeklyGoalData.currentWeekKey // 🔧 ONLY DEPEND ON STABLE VALUES
+  ]);
 
-    setWeeklyInsights(sortedInsights);
-  }, [users]);
-
-  // Function to check user activity status
   const getUserActivityStatus = (username: string) => {
     const user = users.find((u) => u.username === username);
-    if (!user?.activities?.length) {
-      return {
-        emoji: "💩",
-        days: 7,
-      };
-    }
+    if (!user?.activities?.length) return { emoji: "💩", days: "", level: "super-inactive" };
 
     const today = new Date();
-    const latestActivityDate = new Date(
-      Math.max(...user.activities.map((a) => new Date(a.date).getTime()))
-    );
+    const latestActivityDate = new Date(Math.max(...user.activities.map((a) => new Date(a.date).getTime())));
+    const daysDifference = Math.floor((today.getTime() - latestActivityDate.getTime()) / (1000 * 60 * 60 * 24));
 
-    const daysDifference = Math.floor(
-      (today.getTime() - latestActivityDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
-
-    if (daysDifference >= 7) {
-      return {
-        emoji: "💩",
-        days: daysDifference,
-      };
-    }
-
-    if (daysDifference >= 3) {
-      return {
-        emoji: "😴",
-        days: daysDifference,
-      };
-    }
-
+    if (daysDifference >= 7) return { emoji: "💩", days: daysDifference, level: "super-inactive" };
+    if (daysDifference >= 3) return { emoji: "😴", days: daysDifference, level: "inactive" };
     return null;
   };
 
-  const getProgressColor = (percentage: number) => {
-    if (percentage >= 100) return "#22c55e"; // Green for completed goal
-    if (percentage >= 50) return "#f97316";  // Orange for halfway
-    return "#ef4444";                        // Red for less than halfway
-  };
+  // Group by achievement level
+  const champions = weeklyInsights.filter(insight => insight.weeklyPercentage >= 100);
+  const inProgress = weeklyInsights.filter(insight => insight.weeklyPercentage > 0 && insight.weeklyPercentage < 100);
+  const needsMotivation = weeklyInsights.filter(insight => insight.weeklyPercentage === 0);
 
   return (
-    <section className="px-2 sm:px-0">
-      <h2 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center mb-3 sm:mb-4 px-2 sm:px-0">
-        <span>📊 </span> {t.weeklyProgress.weeklyRanking}
+    <section className="px-4">
+      <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+        📊 Viikon tilanne
       </h2>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-        {weeklyInsights.map((insight, index) => {
-          const user = users.find((u) => u.username === insight.username);
-          const activityStatus = getUserActivityStatus(insight.username);
+      {/* Champions */}
+      {champions.length > 0 && (
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-green-700 mb-3">
+            🏆 Tavoitteen saavuttaneet
+          </h3>
+          <div className="space-y-3">
+            {champions.map((insight) => {
+              const user = users.find((u) => u.username === insight.username);
+              const activityStatus = getUserActivityStatus(insight.username);
+              
+              return (
+                <Link key={insight.username} href={`/user/${insight.username}`} className="block">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border-2 border-green-200"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-12 h-12 rounded-full overflow-hidden bg-white mr-3 ring-2 ring-green-300">
+                          {user && (
+                            <Image
+                              src={user.profilePicture ? `https://matka-xi.vercel.app/${user.username}.png` : `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.username}`}
+                              alt={`${insight.username}'s avatar`}
+                              width={48}
+                              height={48}
+                              className="object-cover w-full h-full"
+                              unoptimized
+                            />
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="text-lg font-bold text-green-800">{insight.username}</h4>
+                          <div className="text-sm text-green-600">
+                            🥇 {insight.weeklyPercentage}% saavutettu!
+                            {activityStatus && (
+                              <span className="ml-2">{activityStatus.emoji}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-green-800">{insight.weeklyProgress} km</div>
+                        {activityStatus && (
+                          <div className="text-xs text-orange-600 mt-1">
+                            Ei aktiivista {activityStatus.days} päivään
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
-          return (
-            <Link
-              key={insight.username}
-              href={`/user/${insight.username}`}
-              className="block hover:shadow-lg transition-shadow duration-200"
+      {/* In Progress */}
+{/* In Progress */}
+{inProgress.length > 0 && (
+  <div className="mb-6">
+    <h3 className="text-lg font-semibold text-yellow-400 mb-3">
+      🚴‍♂️ Matkalla tavoitteeseen
+    </h3>
+    <div className="space-y-3">
+      {inProgress.map((insight) => {
+        const user = users.find((u) => u.username === insight.username);
+        const activityStatus = getUserActivityStatus(insight.username);
+        const globalRank = weeklyInsights.findIndex(w => w.username === insight.username) + 1;
+
+        return (
+          <Link key={insight.username} href={`/user/${insight.username}`} className="block">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className={`p-4 rounded-xl shadow-sm border ${
+                activityStatus
+                  ? 'border-orange-200 bg-orange-50'
+                  : 'border-yellow-200 bg-yellow-50'
+              }`}
             >
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-white p-3 sm:p-4 rounded-lg sm:rounded-xl shadow-md relative"
-              >
-                {/* Activity status badge */}
-                {activityStatus && (
-                  <div className="absolute top-2 sm:top-3 right-2 sm:right-3 flex flex-col items-center">
-                    <div className="text-lg sm:text-2xl">
-                      {activityStatus.emoji}
-                    </div>
-                    <div className="text-xs text-gray-600 font-medium mt-0.5 sm:mt-1">
-                      {activityStatus.days} {t.weeklyProgress.daysAgo}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-center mb-3 pr-12 sm:pr-16">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-gray-100 mr-2 sm:mr-3 flex-shrink-0">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center">
+                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gray-100 mr-3">
                     {user && (
                       <Image
                         src={
@@ -198,66 +188,123 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                       />
                     )}
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <h4 className="text-sm sm:text-base font-semibold text-gray-800 truncate">
-                      {insight.username}
-                    </h4>
-                    <div className="flex items-center text-xs text-gray-500">
-                      <span className="font-medium">{t.weeklyProgress.position} {index + 1}</span>
-                      {index + 1 <= 3 && (() => {
-                        let medal;
-                        if (index + 1 === 1) {
-                          medal = "🥇";
-                        } else if (index + 1 === 2) {
-                          medal = "🥈";
-                        } else {
-                          medal = "🥉";
-                        }
-                        return (
-                          <span className="ml-2 text-yellow-500">
-                            {medal}
-                          </span>
-                        );
-                      })()}
+                  <div>
+                    <h4 className="text-base font-semibold text-gray-900">{insight.username}</h4>
+                    <div className="text-sm text-gray-500">
+                      Sija {globalRank}
+                      {globalRank <= 3 && (
+                        <span className="ml-1">
+                          {globalRank === 1 ? "🥇" : globalRank === 2 ? "🥈" : "🥉"}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 sm:w-16 sm:h-16">
-                    <CircularProgressbar
-                      value={insight.weeklyPercentage}
-                      text={`${insight.weeklyPercentage}%`}
-                      styles={buildStyles({
-                        pathColor: getProgressColor(insight.weeklyPercentage),
-                        textColor: "#374151",
-                        trailColor: "#e5e7eb",
-                        textSize: "14px",
-                        pathTransition: "stroke-dashoffset 0.5s ease 0s",
-                      })}
-                    />
+                <div className="text-right">
+                  <div className="flex items-center gap-2">
+                    <div className="text-xl font-bold text-yellow-500">{insight.weeklyProgress} km</div>
+                    {activityStatus && <span className="text-base">{activityStatus.emoji}</span>}
                   </div>
+                  <div className="text-sm text-gray-500">{insight.weeklyPercentage}%</div>
+                </div>
+              </div>
 
-                  <div className="text-right flex-1 ml-3">
-                    <div className="text-base sm:text-xl font-bold text-slate-600">
-                      {insight.weeklyProgress.toLocaleString("fi-FI")} km
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {t.weeklyProgress.thisWeek}
-                    </div>
-
-                    {insight.dailyTarget > 0 && insight.weeklyPercentage < 100 && (
-                      <div className="mt-1 text-xs bg-slate-50 text-slate-700 rounded-full px-2 py-0.5 inline-block">
-                        {insight.dailyTarget} km/pvä tarvitaan
+              <div className="relative">
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className={`h-2 rounded-full relative ${
+                      activityStatus
+                        ? 'bg-gradient-to-r from-orange-400 to-red-500'
+                        : 'bg-gradient-to-r from-yellow-300 to-yellow-500'
+                    }`}
+                    style={{ width: `${insight.weeklyPercentage}%` }}
+                  >
+                    {insight.weeklyPercentage > 5 && (
+                      <div
+                        className="absolute top-0 -right-2 text-sm"
+                        style={{ transform: 'translateY(-4px) scaleX(-1)' }}
+                      >
+                        🚴‍♂️
                       </div>
                     )}
                   </div>
                 </div>
-              </motion.div>
-            </Link>
-          );
-        })}
-      </div>
+              </div>
+
+              <div className="text-center mt-2 text-xs">
+                {activityStatus ? (
+                  <span className="text-orange-700 font-medium">
+                    ⚠️ Ei aktiivista {activityStatus.days} päivään - tarvitaan kannustusta!
+                  </span>
+                ) : (
+                  <span className="text-yellow-800">
+                    Tarvitaan vielä {insight.weeklyGoal - insight.weeklyProgress} km
+                  </span>
+                )}
+              </div>
+            </motion.div>
+          </Link>
+        );
+      })}
+    </div>
+  </div>
+)}
+
+
+      {/* Needs Motivation */}
+      {needsMotivation.length > 0 && (
+        <div>
+          <h3 className="text-lg font-semibold text-red-600 mb-3">
+            🆘 Tarvitsee motivaatiota
+          </h3>
+          <div className="grid grid-cols-1 gap-2">
+            {needsMotivation.map((insight) => {
+              const user = users.find((u) => u.username === insight.username);
+              const activityStatus = getUserActivityStatus(insight.username);
+              
+              return (
+                <Link key={insight.username} href={`/user/${insight.username}`} className="block">
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="bg-red-50 p-3 rounded-lg border-2 border-red-200"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 mr-3">
+                          {user && (
+                            <Image
+                              src={user.profilePicture ? `https://matka-xi.vercel.app/${user.username}.png` : `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.username}`}
+                              alt={`${insight.username}'s avatar`}
+                              width={32}
+                              height={32}
+                              className="object-cover w-full h-full"
+                              unoptimized
+                            />
+                          )}
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-medium text-red-800">{insight.username}</h4>
+                          <div className="text-xs text-red-600">0 km tällä viikolla</div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        {activityStatus && (
+                          <div className="bg-red-100 px-2 py-1 rounded-full flex flex-col items-center">
+                            <div className="text-base">{activityStatus.emoji}</div>
+                            <div className="text-xs text-red-700">{activityStatus.days}</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </section>
   );
 };

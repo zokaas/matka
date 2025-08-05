@@ -31,6 +31,7 @@ stages: [
     weather: "Aurinkoinen",
     location: "Lille, Ranska",
     color: "from-yellow-200 to-yellow-400",
+    coords: [50.629250, 3.057256], // Lille city center
   },
   {
     name: "Lauwin‑Planque → Boulogne‑sur‑Mer",
@@ -41,6 +42,7 @@ stages: [
     weather: "Tuulinen",
     location: "Boulogne-sur-Mer, Ranska",
     color: "from-blue-200 to-blue-400",
+    coords: [50.726398, 1.614700], // Boulogne-sur-Mer
   },
   {
     name: "Valenciennes → Dunkerque",
@@ -51,6 +53,7 @@ stages: [
     weather: "Pilvinen",
     location: "Dunkerque, Ranska",
     color: "from-indigo-200 to-indigo-400",
+    coords: [51.0342, 2.3770], // Dunkerque
   },
   {
     name: "Amiens Métropole → Rouen",
@@ -61,6 +64,7 @@ stages: [
     weather: "Vaihteleva",
     location: "Rouen, Ranska",
     color: "from-gray-200 to-gray-400",
+    coords: [49.4431, 1.0993], // Rouen
   },
   {
     name: "Caen → Caen (ITT)",
@@ -71,6 +75,7 @@ stages: [
     weather: "Pilvinen",
     location: "Caen, Ranska",
     color: "from-cyan-300 to-cyan-500",
+    coords: [49.1829, -0.3707], // Caen
   },
   {
     name: "Bayeux → Vire Normandie",
@@ -81,6 +86,7 @@ stages: [
     weather: "Pilvinen",
     location: "Vire Normandie, Ranska",
     color: "from-green-300 to-green-500",
+    coords: [48.8378, -0.8892], // Vire
   },
   {
     name: "Saint‑Malo → Mûr‑de‑Bretagne Guerlédan",
@@ -91,6 +97,7 @@ stages: [
     weather: "Vaihteleva",
     location: "Mûr-de-Bretagne, Ranska",
     color: "from-lime-400 to-lime-600",
+    coords: [48.2019, -3.0708], // Mûr-de-Bretagne
   },
   {
     name: "Saint‑Méen‑le‑Grand → Laval Espace Mayenne",
@@ -101,6 +108,7 @@ stages: [
     weather: "Aurinkoinen",
     location: "Laval, Ranska",
     color: "from-amber-300 to-amber-500",
+    coords: [48.0698, -0.7700], // Laval
   },
   {
     name: "Chinon → Châteauroux",
@@ -111,6 +119,7 @@ stages: [
     weather: "Pilvinen",
     location: "Châteauroux, Ranska",
     color: "from-rose-300 to-rose-500",
+    coords: [46.8109, 1.6914], // Châteauroux
   },
   {
     name: "Ennezat → Le Mont‑Dore (Puy de Sancy)",
@@ -121,6 +130,7 @@ stages: [
     weather: "Tuulinen",
     location: "Le Mont-Dore, Ranska",
     color: "from-red-400 to-red-600",
+    coords: [45.5743, 2.8095], // Le Mont-Dore
   },
   {
     name: "Toulouse → Toulouse",
@@ -131,6 +141,7 @@ stages: [
     weather: "Aurinkoinen",
     location: "Toulouse, Ranska",
     color: "from-yellow-200 to-yellow-400",
+    coords: [43.6047, 1.4442], // Toulouse
   },
   {
     name: "Auch → Hautacam",
@@ -141,6 +152,7 @@ stages: [
     weather: "Pilvinen",
     location: "Hautacam, Ranska",
     color: "from-blue-500 to-blue-700",
+    coords: [43.0829, 0.0506], // Hautacam (mountain resort)
   },
   {
     name: "Loudenvielle → Peyragudes (TTT)",
@@ -151,6 +163,7 @@ stages: [
     weather: "Vaihteleva",
     location: "Peyragudes, Ranska",
     color: "from-cyan-400 to-cyan-600",
+    coords: [42.7994, 0.5661], // Peyragudes ski resort
   },
   {
     name: "Pau → Luchon‑Superbagnères",
@@ -161,6 +174,7 @@ stages: [
     weather: "Myrsky",
     location: "Luchon-Superbagnères, Ranska",
     color: "from-violet-500 to-violet-700",
+    coords: [42.7925, 0.5736], // Superbagnères
   },
   {
     name: "Muret → Carcassonne",
@@ -171,16 +185,18 @@ stages: [
     weather: "Pilvinen",
     location: "Carcassonne, Ranska",
     color: "from-green-400 to-green-600",
+    coords: [43.2130, 2.3491], // Carcassonne
   },
   {
     name: "Montpellier → Mont Ventoux",
     pointsRequired: 2521.5,
     emoji: "🌋",
-    description: "Huippumaali Mont Ventoux’lla",
+    description: "Huippumaali Mont Ventoux'lla",
     stageType: "vuoristo",
     weather: "Tuulinen",
     location: "Mont Ventoux, Ranska",
     color: "from-slate-400 to-slate-600",
+    coords: [44.1733, 5.2786], // Mont Ventoux summit
   },
   {
     name: "Bollène → Valence",
@@ -191,6 +207,7 @@ stages: [
     weather: "Aurinkoinen",
     location: "Valence, Ranska",
     color: "from-orange-300 to-orange-500",
+    coords: [44.933300, 4.891700], // Valence (from search results)
   },
   {
     name: "Vif → Courchevel (Col de la Loze)",
@@ -201,6 +218,7 @@ stages: [
     weather: "Pilvinen",
     location: "Courchevel, Ranska",
     color: "from-teal-400 to-teal-600",
+    coords: [45.4167, 6.6333], // Courchevel
   },
   {
     name: "Albertville → La Plagne",
@@ -211,6 +229,7 @@ stages: [
     weather: "Myrsky",
     location: "La Plagne, Ranska",
     color: "from-gray-500 to-gray-700",
+    coords: [45.5133, 6.6825], // La Plagne ski resort
   },
   {
     name: "Nantua → Pontarlier",
@@ -221,6 +240,7 @@ stages: [
     weather: "Vaihteleva",
     location: "Pontarlier, Ranska",
     color: "from-emerald-400 to-emerald-600",
+    coords: [46.9044, 6.3522], // Pontarlier
   },
   {
     name: "Mantes‑la‑Ville → Paris (Champs‑Élysées)",
@@ -231,8 +251,10 @@ stages: [
     weather: "Aurinkoinen",
     location: "Pariisi, Ranska",
     color: "from-yellow-400 to-yellow-600",
+    coords: [48.8566, 2.3522], // Paris (Champs-Élysées)
   },
 ],
+
 
   weatherIcons: {
     Aurinkoinen: "☀️",
@@ -264,7 +286,7 @@ stages: [
     stageLabel: "Etappi",
     stageSubtitle: "Stage {{number}} loop around {{location}}",
     nextStage: "Seuraava etappi",
-    points: "Kilometrit",
+    points: "Kilometriä",
     pointsToNext: "kilometriä seuraavaan etappiin",
     weather: "Sää",
     type: "Etappityyppi",
@@ -275,6 +297,8 @@ stages: [
     leaderboardTitle: "🏆 Sijoitukset",
     weeklyGoal: "Viikon tavoite",
     kmRemaining: "{{km}} km jäljellä",
+    mapView: "Karttanäkymä",
+    timelineView: "Aikajana",
     tabs: {
       leaderboard: "Sijoitukset",
       weekly: "Viikon tilanne",
@@ -349,8 +373,10 @@ stages: [
       weeklyTarget: "Viikkotavoite",
       daysAgo: "päivää sitten",
       position: "Sija",
+  challengeStarted: "Haaste alkoi",
+  challengeEnds: "Haaste päättyy",
+  challengeTimeline: "Haasteen aikajana"
     },
-
     // ActivityFeed translations
     activityFeed: {
       title: "Viimeisimmät suoritukset",
