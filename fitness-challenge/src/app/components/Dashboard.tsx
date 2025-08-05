@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Trophy, Activity, TrendingUp, Users, Target,
+  Trophy, Activity, TrendingUp,
 } from "lucide-react";
 
 import { useTheme } from "@/app/hooks/useTheme";
@@ -12,12 +12,12 @@ import Leaderboard from "./Leaderboard";
 import WeeklyProgress from "./WeeklyProgress";
 import ActivityFeedPage from "./ActivityFeedPage";
 import SubmitQuote from "./SubmitQuote";
-import Quotes from "./Quotes";
 import WeeklyProgressBar from "./WeeklyProgressBar";
 
 import { fetchUsersAndTotalKm } from "../utils/utils";
 import { User } from "@/app/types/types";
 import StageCard from "./StageCard";
+import Quotes from "./Quotes";
 
 export default function Dashboard() {
   const { t, colors, theme } = useTheme();
@@ -36,8 +36,7 @@ export default function Dashboard() {
     fetchUsersAndTotalKm(setUsers, setTotalKm, setLoading, setError);
   }, []);
 
-  const totalActivities = users.reduce((sum, user) => sum + user.activities.length, 0);
-  const avgKmPerUser = users.length > 0 ? totalKm / users.length : 0;
+
 
   const viewOptions = [
     { key: 'leaderboard', label: t.tabs.leaderboard, icon: Trophy },
@@ -78,17 +77,11 @@ export default function Dashboard() {
       <div className="max-w-6xl mx-auto space-y-6">
 
         {/* HERO */}
-        {/* <motion.header
+        <motion.header
           className="text-center"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
         >
-          <div className="text-4xl mb-3">{current.emoji}</div>
-          <h1 className="text-2xl md:text-3xl font-bold mb-2 text-gray-800">
-            {t.dashboardTitle}
-          </h1>
-          <p className="text-gray-600 mb-4">{t.subtitle}</p>
-
           <motion.div
             className="bg-white/60 backdrop-blur-sm rounded-xl p-4 max-w-2xl mx-auto"
             animate={{ scale: [1, 1.02, 1] }}
@@ -96,7 +89,7 @@ export default function Dashboard() {
           >
             <Quotes />
           </motion.div>
-        </motion.header> */}
+        </motion.header>
 <StageCard
  totalKm={totalKm}
 />
