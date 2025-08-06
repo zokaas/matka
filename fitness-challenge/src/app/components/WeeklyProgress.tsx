@@ -47,7 +47,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
       return {
         username: user.username,
         weeklyGoal: weeklyGoalPerUser,
-        weeklyProgress: weeklyProgress.toFixed(1),
+weeklyProgress: Number(weeklyProgress.toFixed(1))
         weeklyPercentage: Math.min(200, weeklyPercentage),
         dailyTarget,
         rank: 0
@@ -129,7 +129,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-green-800">{insight.weeklyProgress.toFixed(1)}km</div>
+                        <div className="text-2xl font-bold text-green-800">{Number(insight.weeklyProgress.toFixed(1))}km</div>
                         {activityStatus && (
                           <div className="text-xs text-orange-600 mt-1">
                             Ei aktiivista {activityStatus.days} päivään
@@ -205,7 +205,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                     <div className="text-xl font-bold text-yellow-500">{insight.weeklyProgress} km</div>
                     {activityStatus && <span className="text-base">{activityStatus.emoji}</span>}
                   </div>
-<div className="text-sm text-gray-500">{insight.weeklyPercentage.toFixed(1)}%</div>
+<div className="text-sm text-gray-500">{Number(insight.weeklyPercentage.toFixed(1))}%</div>
 
                 </div>
               </div>
@@ -239,7 +239,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                   </span>
                 ) : (
 <span className="text-yellow-800">
-  Tarvitaan vielä {(insight.weeklyGoal - insight.weeklyProgress).toFixed(1)} km
+  Tarvitaan vielä {Number((insight.weeklyGoal - insight.weeklyProgress).toFixed(1))} km
 </span>
 
                 )}
