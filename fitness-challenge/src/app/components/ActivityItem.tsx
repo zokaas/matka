@@ -82,7 +82,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
       <div className="flex justify-between border-t mt-3">
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="text-gray-600 hover:text-slate-600 text-sm flex items-center"
+          className="text-gray-600 hover:text-slate-600 text-sm flex items-center mt-2"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
