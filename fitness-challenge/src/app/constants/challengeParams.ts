@@ -37,6 +37,8 @@ export const ACTIVITY_WEIGHTS: Record<string, number> = {
   Juoksu: 1.0,
   Sali: 1.0,
   Tennis: 1.0,
+  Pyöräily: 1.0,
+  Hiihto: 1.0,
   Uinti: 2.0,
   Crossfit: 1.0,
   Tribe: 1.0,

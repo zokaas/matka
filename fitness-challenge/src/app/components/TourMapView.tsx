@@ -4,6 +4,7 @@ import {
   TileLayer,
   Marker,
   Polyline,
+  Popup,
   useMap,
 } from "react-leaflet";
 import L from "leaflet";
@@ -124,7 +125,11 @@ const TourMapView: React.FC<TourMapViewProps> = ({
       return {
         key: stage.name,
         position: stage.coords,
-        icon: createCustomIcon(stage.emoji, isCompleted, isCurrent)
+        icon: createCustomIcon(stage.emoji, isCompleted, isCurrent),
+        stage: stage,
+        index: index,
+        isCompleted,
+        isCurrent
       };
     });
   }, [stages, currentStage]);
@@ -163,9 +168,9 @@ const TourMapView: React.FC<TourMapViewProps> = ({
             <Polyline
               key={`upcoming-${index}`}
               positions={segment}
-              color="#9ca3af"
-              weight={3}
-              opacity={0.6}
+              color="#6b7280"
+              weight={4}
+              opacity={0.8}
               dashArray="8, 8"
             />
           ))}
@@ -175,7 +180,57 @@ const TourMapView: React.FC<TourMapViewProps> = ({
               key={marker.key}
               position={marker.position}
               icon={marker.icon}
-            />
+            >
+              <Popup
+                closeButton={false}
+                className="stage-popup"
+                maxWidth={250}
+                offset={[0, -10]}
+              >
+                <div className="p-2 min-w-0">
+                  <div className="flex items-start gap-2 mb-2">
+                    <div className="text-2xl flex-shrink-0">{marker.stage.emoji}</div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-bold text-sm leading-tight text-gray-800 mb-1">
+                        Etappi {marker.index + 1}
+                      </h3>
+                      <p className="text-xs font-medium text-gray-700 break-words">
+                        {marker.stage.name}
+                      </p>
+                    </div>
+                    <div className={`text-xs px-2 py-1 rounded-full flex-shrink-0 ${
+                      marker.isCompleted ? 'bg-green-100 text-green-700' :
+                      marker.isCurrent ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-gray-100 text-gray-600'
+                    }`}>
+                      {marker.isCompleted ? '✓ Valmis' : 
+                       marker.isCurrent ? '📍 Nykyinen' : 
+                       '⏳ Tulossa'}
+                    </div>
+                  </div>
+                  
+                  {marker.stage.description && (
+                    <p className="text-xs text-gray-600 mb-2 break-words">
+                      {marker.stage.description}
+                    </p>
+                  )}
+                  
+                  <div className="flex items-center justify-between text-xs">
+                    <span className={`px-2 py-1 rounded text-xs ${
+                      marker.stage.stageType === 'vuoristo' ? 'bg-red-50 text-red-600' :
+                      marker.stage.stageType === 'mäkinen' ? 'bg-orange-50 text-orange-600' :
+                      marker.stage.stageType === 'aika-ajo' ? 'bg-purple-50 text-purple-600' :
+                      'bg-green-50 text-green-600'
+                    }`}>
+                      {marker.stage.stageType}
+                    </span>
+                    <span className="text-gray-500 font-medium">
+                      {marker.stage.pointsRequired.toLocaleString('fi-FI')} km
+                    </span>
+                  </div>
+                </div>
+              </Popup>
+            </Marker>
           ))}
         </MapContainer>
 
@@ -244,8 +299,22 @@ const TourMapView: React.FC<TourMapViewProps> = ({
         .leaflet-control-zoom a {
           width: 26px !important;
           height: 26px !important;
-          line-line: 26px !important;
+          line-height: 26px !important;
           font-size: 14px !important;
+        }
+        .stage-popup .leaflet-popup-content-wrapper {
+          padding: 0 !important;
+          border-radius: 8px !important;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+        }
+        .stage-popup .leaflet-popup-content {
+          margin: 0 !important;
+          line-height: 1.4 !important;
+        }
+        .stage-popup .leaflet-popup-tip {
+          background: white !important;
+          border: none !important;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
         }
       `}</style>
     </div>

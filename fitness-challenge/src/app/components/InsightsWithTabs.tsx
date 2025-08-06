@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -14,16 +12,18 @@ import {
   BarChart3,
   MapPin,
   Users,
-  Zap
+  Zap,
+  AlertTriangle,
+  CheckCircle,
+  TrendingDown
 } from "lucide-react";
-import { useTheme } from "@/app/hooks/useTheme";
-import { challengeParams } from "@/app/constants/challengeParams";
+import { challengeParams } from "../constants/challengeParams";
 import { format, differenceInDays } from "date-fns";
 
 interface User {
   username: string;
   totalKm: number;
-  profilePicture?: string; // LISÄTTY: profiilikuva
+  profilePicture?: string;
   activities: Array<{
     id: number;
     activity: string;
@@ -34,7 +34,7 @@ interface User {
   }>;
 }
 
-interface InsightMetrics {
+interface TeamAnalytics {
   totalProgress: number;
   totalActivities: number;
   avgKmPerUser: number;
@@ -47,30 +47,39 @@ interface InsightMetrics {
   progressStatus: 'ahead' | 'onTrack' | 'behind';
   expectedProgress: number;
   progressDifference: number;
+  projectedFinishDate: Date | null;
+  daysFromTarget: number;
+  requiredDailyPace: number;
+  paceEfficiency: number;
+  momentum: 'accelerating' | 'steady' | 'slowing';
 }
 
 interface WeeklyStats {
   username: string;
-  profilePicture?: string; // LISÄTTY: profiilikuva
+  profilePicture?: string;
   weeklyKm: number;
   weeklyPercentage: number;
   dailyTarget: number;
+  streak: number;
+  lastActivity: string;
 }
 
 interface RecordData {
   bestKmDay: { username: string; kilometers: number; date: string } | null;
   longestWorkout: { username: string; duration: number; activity: string; date: string } | null;
-  currentStreak: { username: string; days: number } | null;
-  topSports: Array<{ name: string; count: number }>;
+  mostConsistent: { username: string; consistency: number; activeDays: number } | null;
+  topSports: Array<{ name: string; count: number; totalKm: number }>;
+  teamRecords: {
+    bestTeamDay: { date: string; totalKm: number };
+    mostActiveDay: { date: string; activities: number };
+  };
 }
 
-const InsightsWithTabs = () => {
-  const { theme } = useTheme();
+const EnhancedTeamInsights = () => {
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState<'overview' | 'weekly' | 'records' | 'stages'>('overview');
+  const [activeSection, setActiveSection] = useState<'analytics' | 'performance' | 'records' | 'goals' | 'predictions'>('analytics');
   
-  // Calculated metrics
-  const [metrics, setMetrics] = useState<InsightMetrics>({
+  const [analytics, setAnalytics] = useState<TeamAnalytics>({
     totalProgress: 0,
     totalActivities: 0,
     avgKmPerUser: 0,
@@ -82,15 +91,24 @@ const InsightsWithTabs = () => {
     weeklyAverage: 0,
     progressStatus: 'onTrack',
     expectedProgress: 0,
-    progressDifference: 0
+    progressDifference: 0,
+    projectedFinishDate: null,
+    daysFromTarget: 0,
+    requiredDailyPace: 0,
+    paceEfficiency: 0,
+    momentum: 'steady'
   });
   
   const [weeklyStats, setWeeklyStats] = useState<WeeklyStats[]>([]);
   const [records, setRecords] = useState<RecordData>({
     bestKmDay: null,
     longestWorkout: null,
-    currentStreak: null,
-    topSports: []
+    mostConsistent: null,
+    topSports: [],
+    teamRecords: {
+      bestTeamDay: { date: '', totalKm: 0 },
+      mostActiveDay: { date: '', activities: 0 }
+    }
   });
 
   useEffect(() => {
@@ -100,8 +118,7 @@ const InsightsWithTabs = () => {
         const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users`);
         const userData: User[] = await response.json();
         
-        // Calculate all metrics at once
-        calculateMetrics(userData);
+        calculateAnalytics(userData);
         calculateWeeklyStats(userData);
         calculateRecords(userData);
         
@@ -115,12 +132,12 @@ const InsightsWithTabs = () => {
     fetchData();
   }, []);
 
-  const calculateMetrics = (userData: User[]) => {
+  const calculateAnalytics = (userData: User[]) => {
     const today = new Date();
     const startDate = new Date(challengeParams.startDate);
     const endDate = new Date(challengeParams.endDate);
     
-    // KORJATTU: Laske vain haasteen aikana tehdyt aktiviteetit
+    // Filter activities within challenge period
     const challengeActivities = userData.flatMap(user => 
       user.activities.filter(activity => {
         const activityDate = new Date(activity.date);
@@ -136,24 +153,41 @@ const InsightsWithTabs = () => {
     const daysSinceStart = Math.max(1, differenceInDays(today, startDate));
     const daysRemaining = Math.max(0, differenceInDays(endDate, today));
     
-    // KORJATTU: Jos haaste on kestänyt alle viikon, älä näytä viikkovauhtia
     const dailyAverage = totalProgress / daysSinceStart;
-    let weeklyAverage = 0;
-    
-    if (daysSinceStart >= 7) {
-      // Vasta viikon jälkeen lasketaan viikkovauhti
-      weeklyAverage = dailyAverage * 7;
-    } else {
-      // Alle viikossa ei lasketa viikkovauhtia
-      weeklyAverage = 0;
-    }
+    const weeklyAverage = dailyAverage * 7;
     
     const expectedProgress = (challengeParams.totalDistance * daysSinceStart) / challengeParams.totalDays;
     const progressDifference = Math.abs(totalProgress - expectedProgress);
     const progressStatus = totalProgress >= expectedProgress * 1.05 ? 'ahead' : 
                           totalProgress >= expectedProgress * 0.95 ? 'onTrack' : 'behind';
     
-    setMetrics({
+    // Calculate projected finish date
+    let projectedFinishDate = null;
+    let daysFromTarget = 0;
+    if (dailyAverage > 0) {
+      const remainingKm = challengeParams.totalDistance - totalProgress;
+      const daysNeeded = remainingKm / dailyAverage;
+      projectedFinishDate = new Date(today.getTime() + daysNeeded * 24 * 60 * 60 * 1000);
+      daysFromTarget = Math.ceil((projectedFinishDate.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24));
+    }
+    
+    const requiredDailyPace = daysRemaining > 0 ? (challengeParams.totalDistance - totalProgress) / daysRemaining : 0;
+    const paceEfficiency = requiredDailyPace > 0 ? (dailyAverage / requiredDailyPace) * 100 : 0;
+    
+    // Calculate momentum (comparing last 7 days vs previous 7 days)
+    const last7Days = challengeActivities.filter(a => 
+      differenceInDays(today, new Date(a.date)) <= 7
+    ).reduce((sum, a) => sum + a.kilometers, 0);
+    
+    const previous7Days = challengeActivities.filter(a => {
+      const daysDiff = differenceInDays(today, new Date(a.date));
+      return daysDiff > 7 && daysDiff <= 14;
+    }).reduce((sum, a) => sum + a.kilometers, 0);
+    
+    const momentum = last7Days > previous7Days * 1.1 ? 'accelerating' : 
+                     last7Days < previous7Days * 0.9 ? 'slowing' : 'steady';
+    
+    setAnalytics({
       totalProgress,
       totalActivities,
       avgKmPerUser,
@@ -165,33 +199,29 @@ const InsightsWithTabs = () => {
       weeklyAverage,
       progressStatus,
       expectedProgress,
-      progressDifference
+      progressDifference,
+      projectedFinishDate,
+      daysFromTarget,
+      requiredDailyPace,
+      paceEfficiency,
+      momentum
     });
   };
 
   const calculateWeeklyStats = (userData: User[]) => {
     const today = new Date();
-    const startDate = new Date(challengeParams.startDate);
     const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - today.getDay() + 1); // Monday
+    weekStart.setDate(today.getDate() - today.getDay() + 1);
     weekStart.setHours(0, 0, 0, 0);
     
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekStart.getDate() + 6);
     weekEnd.setHours(23, 59, 59, 999);
     
-    const daysLeftInWeek = Math.max(1, 7 - today.getDay());
     const weeklyTarget = Math.round(challengeParams.weeklyTarget / userData.length);
     
     const stats = userData.map(user => {
-      // KORJATTU: Ota vain haasteen aikana tehdyt aktiviteetit
-      const challengeActivities = user.activities.filter(activity => {
-        const activityDate = new Date(activity.date);
-        return activityDate >= startDate && activityDate <= new Date(challengeParams.endDate);
-      });
-      
-      // Tämän viikon aktiviteetit
-      const weekActivities = challengeActivities.filter(activity => {
+      const weekActivities = user.activities.filter(activity => {
         const activityDate = new Date(activity.date);
         return activityDate >= weekStart && activityDate <= weekEnd;
       });
@@ -199,14 +229,37 @@ const InsightsWithTabs = () => {
       const weeklyKm = weekActivities.reduce((sum, activity) => sum + activity.kilometers, 0);
       const weeklyPercentage = Math.min(200, (weeklyKm / weeklyTarget) * 100);
       const remainingKm = Math.max(0, weeklyTarget - weeklyKm);
+      const daysLeftInWeek = Math.max(1, 7 - today.getDay());
       const dailyTarget = Math.round(remainingKm / daysLeftInWeek);
+      
+      // Calculate streak
+      let streak = 0;
+      const sortedDates = [...new Set(user.activities.map(a => a.date.split('T')[0]))].sort().reverse();
+      const todayStr = today.toISOString().split('T')[0];
+      
+      for (let i = 0; i < sortedDates.length; i++) {
+        const dateStr = sortedDates[i];
+        const date = new Date(dateStr);
+        const daysDiff = differenceInDays(today, date);
+        
+        if (daysDiff === i || (i === 0 && daysDiff <= 1)) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+      
+      const lastActivity = user.activities.length > 0 ? 
+        user.activities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].date : '';
       
       return {
         username: user.username,
-        profilePicture: user.profilePicture, // LISÄTTY: profiilikuva
+        profilePicture: user.profilePicture,
         weeklyKm,
         weeklyPercentage,
-        dailyTarget
+        dailyTarget,
+        streak,
+        lastActivity
       };
     }).sort((a, b) => b.weeklyKm - a.weeklyKm);
     
@@ -219,17 +272,28 @@ const InsightsWithTabs = () => {
     
     let bestKmDay: { username: string; kilometers: number; date: string } | null = null;
     let longestWorkout: { username: string; duration: number; activity: string; date: string } | null = null;
-    let bestStreak: { username: string; days: number } | null = null;
-    const sportCounts: Record<string, number> = {};
+    let mostConsistent: { username: string; consistency: number; activeDays: number } | null = null;
+    const sportCounts: Record<string, { count: number; totalKm: number }> = {};
+    
+    const teamDailyTotals: Record<string, { totalKm: number; activities: number }> = {};
     
     userData.forEach(user => {
-      // KORJATTU: Ota vain haasteen aikana tehdyt aktiviteetit
       const challengeActivities = user.activities.filter(activity => {
         const activityDate = new Date(activity.date);
         return activityDate >= startDate && activityDate <= endDate;
       });
       
-      // Calculate daily totals for best km day
+      // Track team daily totals
+      challengeActivities.forEach(activity => {
+        const dateKey = activity.date.split('T')[0];
+        if (!teamDailyTotals[dateKey]) {
+          teamDailyTotals[dateKey] = { totalKm: 0, activities: 0 };
+        }
+        teamDailyTotals[dateKey].totalKm += activity.kilometers;
+        teamDailyTotals[dateKey].activities += 1;
+      });
+      
+      // Calculate daily totals for user
       const dailyTotals: Record<string, number> = {};
       challengeActivities.forEach(activity => {
         const dateKey = activity.date.split('T')[0];
@@ -245,7 +309,7 @@ const InsightsWithTabs = () => {
         bestKmDay = { username: user.username, ...userBestDay };
       }
       
-      // Find longest workout (from challenge activities only)
+      // Find longest workout
       const userLongest = challengeActivities.reduce((longest, activity) => {
         return activity.duration > (longest?.duration || 0) ? activity : longest;
       }, null as typeof challengeActivities[0] | null);
@@ -259,41 +323,52 @@ const InsightsWithTabs = () => {
         };
       }
       
-      // Calculate streak (from challenge activities only)
-      const activityDates = [...new Set(challengeActivities.map(a => a.date.split('T')[0]))].sort();
-      let currentStreak = 0;
-      let maxStreak = 0;
+      // Calculate consistency (active days vs total days)
+      const activeDays = Object.keys(dailyTotals).length;
+      const totalDays = Math.max(1, differenceInDays(new Date(), startDate));
+      const consistency = (activeDays / totalDays) * 100;
       
-      for (let i = 0; i < activityDates.length; i++) {
-        if (i === 0 || 
-            Math.abs(new Date(activityDates[i]).getTime() - new Date(activityDates[i-1]).getTime()) <= 2 * 24 * 60 * 60 * 1000) {
-          currentStreak++;
-          maxStreak = Math.max(maxStreak, currentStreak);
-        } else {
-          currentStreak = 1;
-        }
+      if (!mostConsistent || consistency > mostConsistent.consistency) {
+        mostConsistent = {
+          username: user.username,
+          consistency,
+          activeDays
+        };
       }
       
-      if (maxStreak > (bestStreak?.days || 0)) {
-        bestStreak = { username: user.username, days: maxStreak };
-      }
-      
-      // Count sports (from challenge activities only)
+      // Count sports
       challengeActivities.forEach(activity => {
-        sportCounts[activity.activity] = (sportCounts[activity.activity] || 0) + 1;
+        if (!sportCounts[activity.activity]) {
+          sportCounts[activity.activity] = { count: 0, totalKm: 0 };
+        }
+        sportCounts[activity.activity].count += 1;
+        sportCounts[activity.activity].totalKm += activity.kilometers;
       });
     });
     
     const topSports = Object.entries(sportCounts)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([,a], [,b]) => b.count - a.count)
       .slice(0, 5)
-      .map(([name, count]) => ({ name, count }));
+      .map(([name, data]) => ({ name, ...data }));
+    
+    // Find best team days
+    const bestTeamDay = Object.entries(teamDailyTotals).reduce((best, [date, data]) => {
+      return data.totalKm > best.totalKm ? { date, totalKm: data.totalKm } : best;
+    }, { date: '', totalKm: 0 });
+    
+    const mostActiveDay = Object.entries(teamDailyTotals).reduce((best, [date, data]) => {
+      return data.activities > best.activities ? { date, activities: data.activities } : best;
+    }, { date: '', activities: 0 });
     
     setRecords({
       bestKmDay,
       longestWorkout,
-      currentStreak: bestStreak,
-      topSports
+      mostConsistent,
+      topSports,
+      teamRecords: {
+        bestTeamDay,
+        mostActiveDay
+      }
     });
   };
 
@@ -306,10 +381,10 @@ const InsightsWithTabs = () => {
   }
 
   const sections = [
-    { key: 'overview', label: 'Yleiskatsaus', icon: BarChart3 },
-    { key: 'weekly', label: 'Viikko', icon: Calendar },
+    { key: 'analytics', label: 'Tiimin analyysi', icon: BarChart3 },
+    { key: 'performance', label: 'Suorituskyky', icon: TrendingUp },
     { key: 'records', label: 'Ennätykset', icon: Trophy },
-    { key: 'stages', label: 'Etapit', icon: MapPin },
+    { key: 'goals', label: 'Tavoitteet', icon: Target },
   ] as const;
 
   return (
@@ -319,67 +394,39 @@ const InsightsWithTabs = () => {
         {/* Header */}
         <div className="text-center">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-yellow-600 to-slate-600 bg-clip-text text-transparent mb-4">
-            📊 Tilastot
+Analyysit
           </h1>
-          <p className="text-gray-600 mb-6">Tour de France -haasteen edistyminen</p>
+          <p className="text-gray-600 mb-6">Syvälliset näkemykset tiimin suorituskyvystä ja tavoitteiden saavuttamisesta</p>
           
-          {/* Challenge Progress Banner */}
+          {/* Quick Status */}
           <div className={`p-4 rounded-xl border-2 mb-6 ${
-            metrics.progressStatus === 'ahead' ? 'bg-green-50 border-green-300' :
-            metrics.progressStatus === 'behind' ? 'bg-red-50 border-red-300' :
+            analytics.progressStatus === 'ahead' ? 'bg-green-50 border-green-300' :
+            analytics.progressStatus === 'behind' ? 'bg-red-50 border-red-300' :
             'bg-blue-50 border-blue-300'
           }`}>
             <div className="flex items-center justify-center gap-3">
               <div className="text-2xl">
-                {metrics.progressStatus === 'ahead' ? '🚀' : 
-                 metrics.progressStatus === 'behind' ? '⚠️' : '🎯'}
+                {analytics.progressStatus === 'ahead' ? '🚀' : 
+                 analytics.progressStatus === 'behind' ? '⚠️' : '🎯'}
               </div>
               <div className="text-center">
                 <div className="font-bold text-lg">
-                  {metrics.progressStatus === 'ahead' ? 'Etuajassa!' :
-                   metrics.progressStatus === 'behind' ? 'Tavoitteesta jäljessä' :
+                  {analytics.progressStatus === 'ahead' ? 'Etuajassa!' :
+                   analytics.progressStatus === 'behind' ? 'Tavoitteesta jäljessä' :
                    'Aikataulussa'}
                 </div>
                 <div className="text-sm text-gray-600">
-                  {Math.round(metrics.progressDifference)} km {metrics.progressStatus === 'ahead' ? 'yli' : 
-                   metrics.progressStatus === 'behind' ? 'alle' : ''} tavoitteen
+                  {Math.round(analytics.progressDifference)} km {analytics.progressStatus === 'ahead' ? 'yli' : 
+                   analytics.progressStatus === 'behind' ? 'alle' : ''} tavoitteen
                 </div>
               </div>
             </div>
-          </div>
-          
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <QuickStat
-              icon={<Trophy className="w-5 h-5" />}
-              value={`${Math.round(metrics.totalProgress).toLocaleString('fi-FI')} km`}
-              label="Yhteensä"
-              color="text-yellow-600"
-            />
-            <QuickStat
-              icon={<Target className="w-5 h-5" />}
-              value={`${metrics.completionPercentage.toFixed(0)}%`}
-              label="Valmis"
-              color="text-green-600"
-            />
-            <QuickStat
-              icon={<Users className="w-5 h-5" />}
-              value={metrics.activeUsers.toString()}
-              label="Pyöräilijää"
-              color='#facc15'
-            />
-            <QuickStat
-              icon={<Calendar className="w-5 h-5" />}
-              value={metrics.daysRemaining.toString()}
-              label="Päivää jäljellä"
-              color="text-purple-600"
-            />
           </div>
         </div>
 
         {/* Section Navigation */}
         <div className="flex justify-center">
-          <div className="bg-white rounded-xl p-1 shadow-lg border border-yellow-200 inline-flex">
+          <div className="bg-white rounded-xl p-1 shadow-lg border border-yellow-200 inline-flex flex-wrap">
             {sections.map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
@@ -404,88 +451,73 @@ const InsightsWithTabs = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {activeSection === 'overview' && (
+          {activeSection === 'analytics' && (
             <div className="space-y-6">
-              {/* Key Metrics Grid */}
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <MetricCard
+              {/* Key Performance Indicators */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <KPICard
                   icon={<Target className="w-6 h-6" />}
-                  title="Keskiarvo per henkilö"
-                  value={`${Math.round(metrics.avgKmPerUser)} km`}
-                  subtitle={`${metrics.totalActivities} suoritusta yhteensä`}
+                  title="Valmistumisaste"
+                  value={`${analytics.completionPercentage.toFixed(1)}%`}
+                  subtitle={`${Math.round(analytics.totalProgress).toLocaleString('fi-FI')} / ${challengeParams.totalDistance.toLocaleString('fi-FI')} km`}
+                  trend={analytics.progressStatus}
                 />
-                <MetricCard
+                <KPICard
                   icon={<TrendingUp className="w-6 h-6" />}
-                  title="Keskimääräinen päivävauhti"
-                  value={`${Math.round(metrics.dailyAverage)} km`}
-                  subtitle={`Tavoite: ${challengeParams.dailyTarget} km`}
+                  title="Päivittäinen tahti"
+                  value={`${Math.round(analytics.dailyAverage)} km`}
+                  subtitle={`Vaaditaan: ${Math.round(analytics.requiredDailyPace)} km/päivä`}
+                  trend={analytics.dailyAverage >= analytics.requiredDailyPace ? 'ahead' : 'behind'}
                 />
-                <MetricCard
+                <KPICard
                   icon={<Zap className="w-6 h-6" />}
-                  title="Keskimääräinen viikkovauhti"
-                  value={metrics.daysSinceStart >= 7 ? `${Math.round(metrics.weeklyAverage)} km` : 'Ei vielä dataa'}
-                  subtitle={metrics.daysSinceStart >= 7 ? `Tavoite: ${Math.round(challengeParams.weeklyTarget)} km` : 'Tarvitaan vähintään viikko dataa'}
+                  title="Tahdin tehokkuus"
+                  value={`${Math.round(analytics.paceEfficiency)}%`}
+                  subtitle={`${analytics.momentum === 'accelerating' ? 'Kiihtyy' : analytics.momentum === 'slowing' ? 'Hidastuu' : 'Tasainen'}`}
+                  trend={analytics.paceEfficiency >= 100 ? 'ahead' : 'behind'}
                 />
+                <KPICard
+                  icon={<Calendar className="w-6 h-6" />}
+                  title="Arvioitu valmistuminen"
+                  value={analytics.projectedFinishDate ? format(analytics.projectedFinishDate, 'd.M.yyyy') : 'Ei dataa'}
+                  subtitle={analytics.daysFromTarget > 0 ? `${analytics.daysFromTarget} pv myöhässä` : analytics.daysFromTarget < 0 ? `${Math.abs(analytics.daysFromTarget)} pv etuajassa` : 'Aikataulussa'}
+                  trend={analytics.daysFromTarget <= 0 ? 'ahead' : 'behind'}
+                />
+              </div>
+
+              {/* Detailed Analytics */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <AnalyticsCard title="Tiimin kehitys">
+                  <div className="space-y-4">
+                    <MetricRow label="Keskiarvo per henkilö" value={`${Math.round(analytics.avgKmPerUser)} km`} />
+                    <MetricRow label="Yhteensä suorituksia" value={analytics.totalActivities.toString()} />
+                    <MetricRow label="Aktiiviset jäsenet" value={`${analytics.activeUsers}/${analytics.activeUsers}`} />
+                    <MetricRow label="Viikkotahti" value={`${Math.round(analytics.weeklyAverage)} km`} />
+                  </div>
+                </AnalyticsCard>
+                
+                <AnalyticsCard title="Kisatilanne">
+                  <div className="space-y-4">
+                    <MetricRow label="Päiviä kulunut" value={`${analytics.daysSinceStart}/${challengeParams.totalDays}`} />
+                    <MetricRow label="Päiviä jäljellä" value={analytics.daysRemaining.toString()} />
+                    <MetricRow label="Odotettu edistyminen" value={`${Math.round(analytics.expectedProgress)} km`} />
+                    <MetricRow 
+                      label="Ero tavoitteeseen" 
+                      value={`${Math.round(analytics.progressDifference)} km`}
+                      status={analytics.progressStatus}
+                    />
+                  </div>
+                </AnalyticsCard>
               </div>
             </div>
           )}
 
-          {activeSection === 'weekly' && (
+          {activeSection === 'performance' && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-center text-gray-800">📊 Viikon tilanne</h2>
+              <h2 className="text-2xl font-bold text-center text-gray-800">🏃‍♂️ Viikon Suorituskyky</h2>
               <div className="grid gap-4">
                 {weeklyStats.map((stat, index) => (
-                  <div key={stat.username} className="bg-white p-4 rounded-lg shadow border border-yellow-200">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {/* Avatar-kuva Dashboardista */}
-                        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
-                          <Image
-                            src={
-                              stat.profilePicture
-                                ? `https://matka-xi.vercel.app/${stat.username}.png`
-                                : `https://api.dicebear.com/7.x/adventurer/svg?seed=${stat.username}`
-                            }
-                            alt={`${stat.username}'s avatar`}
-                            width={48}
-                            height={48}
-                            className="object-cover w-full h-full"
-                            unoptimized
-                          />
-                        </div>
-                        
-                        {/* Sija-emoji */}
-                        <div className="text-2xl">
-                          {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🚴‍♂️'}
-                        </div>
-                        
-                        <div>
-                          <h3 className="font-semibold text-lg">{stat.username}</h3>
-                          <p className="text-sm text-gray-600">Sija {index + 1}</p>
-                        </div>
-                      </div>
-                      
-                      <div className="text-right">
-                        <div className="text-xl font-bold text-slate-600">{Math.round(stat.weeklyKm)} km</div>
-                        <div className="text-sm text-gray-600">{Math.round(stat.weeklyPercentage)}% tavoitteesta</div>
-                        {stat.dailyTarget > 0 && (
-                          <div className="text-xs text-gray-500">
-                            Tarvitaan: {stat.dailyTarget} km/päivä
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Progress bar */}
-                    <div className="mt-3">
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="h-2 rounded-full bg-gradient-to-r from-yellow-400 to-slate-500"
-                          style={{ width: `${Math.min(100, stat.weeklyPercentage)}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  <PerformanceCard key={stat.username} stat={stat} rank={index + 1} />
                 ))}
               </div>
             </div>
@@ -493,7 +525,9 @@ const InsightsWithTabs = () => {
 
           {activeSection === 'records' && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-center text-gray-800">🏆 Ennätykset</h2>
+              <h2 className="text-2xl font-bold text-center text-gray-800">🏆 Tiimin Ennätykset</h2>
+              
+              {/* Individual Records */}
               <div className="grid md:grid-cols-3 gap-6">
                 <RecordCard
                   icon={<Trophy className="w-6 h-6" />}
@@ -510,19 +544,39 @@ const InsightsWithTabs = () => {
                   detail={records.longestWorkout ? records.longestWorkout.activity : ''}
                 />
                 <RecordCard
-                  icon={<Activity className="w-6 h-6" />}
-                  title="Pisin putki"
-                  value={records.currentStreak ? `${records.currentStreak.days} päivää` : 'Ei dataa'}
-                  subtitle={records.currentStreak ? records.currentStreak.username : ''}
-                  detail=""
+                  icon={<Award className="w-6 h-6" />}
+                  title="Johdonmukaisin"
+                  value={records.mostConsistent ? `${Math.round(records.mostConsistent.consistency)}%` : 'Ei dataa'}
+                  subtitle={records.mostConsistent ? records.mostConsistent.username : ''}
+                  detail={records.mostConsistent ? `${records.mostConsistent.activeDays} aktiivista päivää` : ''}
                 />
               </div>
-              
+
+              {/* Team Records */}
+              <div className="bg-white p-6 rounded-xl shadow border border-yellow-200">
+                <h3 className="text-xl font-semibold mb-4 flex items-center">
+                  <Users className="w-5 h-5 mr-2 text-yellow-500" />
+                  Tiimin ennätykset
+                </h3>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">🎯 Paras tiimipäivä</h4>
+                    <p className="text-2xl font-bold text-yellow-600">{Math.round(records.teamRecords.bestTeamDay.totalKm)} km</p>
+                    <p className="text-sm text-gray-500">{records.teamRecords.bestTeamDay.date ? format(new Date(records.teamRecords.bestTeamDay.date), 'd.M.yyyy') : ''}</p>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">⚡ Aktiivisin päivä</h4>
+                    <p className="text-2xl font-bold text-blue-600">{records.teamRecords.mostActiveDay.activities} suoritusta</p>
+                    <p className="text-sm text-gray-500">{records.teamRecords.mostActiveDay.date ? format(new Date(records.teamRecords.mostActiveDay.date), 'd.M.yyyy') : ''}</p>
+                  </div>
+                </div>
+              </div>
+
               {/* Popular Sports */}
               <div className="bg-white p-6 rounded-xl shadow border border-yellow-200">
                 <h3 className="text-xl font-semibold mb-4 flex items-center">
-                  <Award className="w-5 h-5 mr-2 text-yellow-500" />
-                  Suosituimmat lajit
+                  <Activity className="w-5 h-5 mr-2 text-yellow-500" />
+                  Suosituimmat Lajit
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {records.topSports.map((sport, index) => (
@@ -531,7 +585,10 @@ const InsightsWithTabs = () => {
                         <span className="font-bold text-yellow-600">{index + 1}.</span>
                         <span className="font-medium">{sport.name}</span>
                       </div>
-                      <span className="text-gray-600">{sport.count} kertaa</span>
+                      <div className="text-right">
+                        <div className="text-sm font-semibold">{sport.count} kertaa</div>
+                        <div className="text-xs text-gray-500">{Math.round(sport.totalKm)} km</div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -539,195 +596,87 @@ const InsightsWithTabs = () => {
             </div>
           )}
 
-          {activeSection === 'stages' && (
+          {activeSection === 'goals' && (
             <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-center text-gray-800">🗺️ Tour de France Etapit</h2>
+              <h2 className="text-2xl font-bold text-center text-gray-800">🎯 Tavoitteiden Seuranta</h2>
               
-              {/* Current Stage Display */}
-              {(() => {
-                let currentStage = 0;
-                for (let i = theme.stages.length - 1; i >= 0; i--) {
-                  if (metrics.totalProgress >= theme.stages[i].pointsRequired) {
-                    currentStage = i;
-                    break;
-                  }
-                }
-                
-                const currentStageData = theme.stages[currentStage];
-                const nextStage = theme.stages[currentStage + 1];
-                const progressToNext = nextStage
-                  ? ((metrics.totalProgress - currentStageData.pointsRequired) / 
-                     (nextStage.pointsRequired - currentStageData.pointsRequired)) * 100
-                  : 100;
-
-                return (
-                  <div className="bg-gradient-to-r from-yellow-200 to-yellow-400 p-6 rounded-xl shadow-lg border-2 border-yellow-500">
-                    <div className="text-center text-black">
-                      <div className="text-6xl mb-4">{currentStageData.emoji}</div>
-                      <h3 className="text-2xl font-bold mb-2">
-                        Etappi {currentStage + 1}: {currentStageData.name}
-                      </h3>
-                      <p className="text-lg mb-2">{currentStageData.description}</p>
-                      <div className="flex justify-center gap-4 mb-4 text-sm">
-                        <span>📍 {currentStageData.location}</span>
-                        <span>{theme.weatherIcons[currentStageData.weather]} {currentStageData.weather}</span>
-                        <span>🚴 {currentStageData.stageType}</span>
-                      </div>
-                      
-                      {nextStage && (
-                        <div className="mt-4">
-                          <div className="flex justify-between text-sm mb-2">
-                            <span>Seuraava etappi: {nextStage.name}</span>
-                            <span>{Math.round(progressToNext)}%</span>
-                          </div>
-                          <div className="w-full bg-black/20 rounded-full h-3">
-                            <div
-                              className="h-3 rounded-full bg-white"
-                              style={{ width: `${Math.min(progressToNext, 100)}%` }}
-                            />
-                          </div>
-                          <p className="text-sm mt-2">
-                            {Math.round(nextStage.pointsRequired - metrics.totalProgress)} km seuraavaan etappiin
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {/* Stage Progress Overview */}
+              {/* Goal Achievement Overview */}
               <div className="bg-white p-6 rounded-xl shadow border border-yellow-200">
-                <h3 className="text-xl font-semibold mb-4">🏁 Etappien edistyminen</h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">
-                      {theme.stages.filter((_, i) => metrics.totalProgress >= theme.stages[i].pointsRequired).length}
+                <h3 className="text-xl font-semibold mb-6">🏁 Haasteen Kokonaistilanne</h3>
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex justify-between text-sm font-medium mb-2">
+                      <span>Matka suoritettu</span>
+                      <span>{analytics.completionPercentage.toFixed(1)}%</span>
                     </div>
-                    <div className="text-sm text-gray-600">Suoritetut etapit</div>
-                  </div>
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold" style={{ color: '#facc15' }}>
-                      {theme.stages.length - theme.stages.filter((_, i) => metrics.totalProgress >= theme.stages[i].pointsRequired).length}
-                    </div>
-                    <div className="text-sm text-gray-600">Jäljellä olevia</div>
-                  </div>
-                  <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                    <div className="text-2xl font-bold text-yellow-600">
-                      {Math.round((theme.stages.filter((_, i) => metrics.totalProgress >= theme.stages[i].pointsRequired).length / theme.stages.length) * 100)}%
-                    </div>
-                    <div className="text-sm text-gray-600">Etapeista valmis</div>
-                  </div>
-                  <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <div className="text-2xl font-bold text-purple-600">
-                      {theme.stages.length}
-                    </div>
-                    <div className="text-sm text-gray-600">Etappeja yhteensä</div>
-                  </div>
-                </div>
-
-                {/* Stages List Preview */}
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {theme.stages.slice(0, 10).map((stage, index) => {
-                    const isCompleted = metrics.totalProgress >= stage.pointsRequired;
-                    const isCurrent = index === theme.stages.findIndex((s, i) => {
-                      return i === theme.stages.length - 1 || 
-                             (metrics.totalProgress >= s.pointsRequired && 
-                              metrics.totalProgress < theme.stages[i + 1]?.pointsRequired);
-                    });
-                    
-                    return (
+                    <div className="w-full bg-gray-200 rounded-full h-3">
                       <div
-                        key={index}
-                        className={`flex items-center gap-3 p-3 rounded-lg ${
-                          isCompleted ? 'bg-green-50 border border-green-200' :
-                          isCurrent ? 'bg-yellow-50 border border-yellow-300' :
-                          'bg-gray-50 border border-gray-200'
-                        }`}
-                      >
-                        <div className="text-2xl">{stage.emoji}</div>
-                        <div className="flex-1">
-                          <div className="font-medium text-sm">
-                            Etappi {index + 1}: {stage.name}
-                          </div>
-                          <div className="text-xs text-gray-600">
-                            📍 {stage.location} • {stage.stageType}
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-sm font-bold">
-                            {stage.pointsRequired.toLocaleString('fi-FI')} km
-                          </div>
-                          <div className={`text-xs ${
-                            isCompleted ? 'text-green-600' : 
-                            isCurrent ? 'text-yellow-600' : 'text-gray-500'
-                          }`}>
-                            {isCompleted ? '✅ Valmis' : isCurrent ? '🎯 Nykyinen' : '⏳ Tulossa'}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {theme.stages.length > 10 && (
-                    <div className="text-center text-gray-500 text-sm py-2">
-                      ... ja {theme.stages.length - 10} etappia lisää
+                        className="h-3 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500"
+                        style={{ width: `${Math.min(analytics.completionPercentage, 100)}%` }}
+                      />
                     </div>
-                  )}
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between text-sm font-medium mb-2">
+                      <span>Aika kulunut</span>
+                      <span>{Math.round((analytics.daysSinceStart / challengeParams.totalDays) * 100)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-3">
+                      <div
+                        className="h-3 rounded-full bg-gradient-to-r from-blue-400 to-blue-500"
+                        style={{ width: `${Math.min((analytics.daysSinceStart / challengeParams.totalDays) * 100, 100)}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              {/* Pace Projection */}
-              <div className="bg-white p-6 rounded-xl shadow border border-yellow-200">
-                <h3 className="text-xl font-semibold mb-4">🎯 Vauhtiennuste</h3>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <div className="text-lg font-bold text-gray-800">
-                      {metrics.daysSinceStart >= 7 ? `${Math.round(metrics.weeklyAverage)} km/vko` : 'Ei vielä dataa'}
+              {/* Pace Requirements */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-white p-6 rounded-xl shadow border border-yellow-200">
+                  <h3 className="text-xl font-semibold mb-4 flex items-center">
+                    <TrendingUp className="w-5 h-5 mr-2 text-green-500" />
+                    Nykyinen Tahti
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Päivittäin:</span>
+                      <span className="font-bold">{Math.round(analytics.dailyAverage)} km</span>
                     </div>
-                    <div className="text-sm text-gray-600">
-                      {metrics.daysSinceStart >= 7 ? 'Keskimääräinen viikkovauhti' : 'Viikkovauhti'}
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Viikottain:</span>
+                      <span className="font-bold">{Math.round(analytics.weeklyAverage)} km</span>
                     </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {metrics.daysSinceStart >= 7 ? 
-                        `(${metrics.daysSinceStart} päivän keskiarvo)` : 
-                        `(tarvitaan ${7 - metrics.daysSinceStart} päivää lisää)`
-                      }
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Per henkilö/viikko:</span>
+                      <span className="font-bold">{Math.round(analytics.weeklyAverage / analytics.activeUsers)} km</span>
                     </div>
                   </div>
-                  <div className="text-center p-4 bg-gray-50 rounded-lg">
-                    <div className="text-lg font-bold text-gray-800">
-                      {Math.round(challengeParams.weeklyTarget)} km/vko
+                </div>
+                
+                <div className="bg-white p-6 rounded-xl shadow border border-yellow-200">
+                  <h3 className="text-xl font-semibold mb-4 flex items-center">
+                    <Target className="w-5 h-5 mr-2 text-red-500" />
+                    Vaadittu Tahti
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Päivittäin:</span>
+                      <span className="font-bold">{Math.round(analytics.requiredDailyPace)} km</span>
                     </div>
-                    <div className="text-sm text-gray-600">Vaadittu vauhti</div>
-                  </div>
-                  <div className={`text-center p-4 rounded-lg ${
-                    metrics.progressStatus === 'ahead' ? 'bg-green-50' :
-                    metrics.progressStatus === 'behind' ? 'bg-red-50' :
-                    'bg-blue-50'
-                  }`}>
-                    <div className={`text-lg font-bold ${
-                      metrics.progressStatus === 'ahead' ? 'text-green-600' :
-                      metrics.progressStatus === 'behind' ? 'text-red-600' :
-                      '"#facc15"'
-                    }`}>
-                      {(() => {
-                        const remainingDays = Math.max(1, metrics.daysRemaining);
-                        const remainingKm = challengeParams.totalDistance - metrics.totalProgress;
-                        const requiredDaily = remainingKm / remainingDays;
-                        const projectedFinish = new Date();
-                        const remainingAtCurrentPace = remainingKm / metrics.dailyAverage;
-                        projectedFinish.setDate(projectedFinish.getDate() + Math.ceil(remainingAtCurrentPace));
-                        
-                        const daysFromTarget = Math.ceil((projectedFinish.getTime() - new Date(challengeParams.endDate).getTime()) / (1000 * 60 * 60 * 24));
-                        
-                        if (daysFromTarget === 0) return 'Täsmälleen aikataulussa';
-                        return daysFromTarget > 0 ? `${daysFromTarget} päivää myöhässä` : `${Math.abs(daysFromTarget)} päivää etuajassa`;
-                      })()}
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Viikottain:</span>
+                      <span className="font-bold">{Math.round(challengeParams.weeklyTarget)} km</span>
                     </div>
-                    <div className="text-sm text-gray-600">Ennustettu lopputulos</div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Per henkilö/viikko:</span>
+                      <span className="font-bold">{Math.round(challengeParams.weeklyTarget / analytics.activeUsers)} km</span>
+                    </div>
                   </div>
                 </div>
               </div>
+
             </div>
           )}
         </motion.div>
@@ -737,46 +686,135 @@ const InsightsWithTabs = () => {
 };
 
 // Helper Components
-const QuickStat = ({ 
-  icon, 
-  value, 
-  label, 
-  color 
-}: { 
-  icon: React.ReactNode; 
-  value: string; 
-  label: string; 
-  color: string; 
-}) => (
-  <div className="bg-white p-4 rounded-lg shadow border border-yellow-200">
-    <div className={`flex justify-center mb-2 ${color}`}>
-      {icon}
-    </div>
-    <div className="text-2xl font-bold text-slate-600 text-center">{value}</div>
-    <div className="text-sm text-gray-600 text-center">{label}</div>
-  </div>
-);
-
-const MetricCard = ({ 
+const KPICard = ({ 
   icon, 
   title, 
   value, 
-  subtitle 
+  subtitle, 
+  trend 
 }: { 
   icon: React.ReactNode; 
   title: string; 
   value: string; 
   subtitle: string; 
+  trend: 'ahead' | 'behind' | 'onTrack';
+}) => {
+  const trendColor = trend === 'ahead' ? 'text-green-600' : trend === 'behind' ? 'text-red-600' : 'text-blue-600';
+  const bgColor = trend === 'ahead' ? 'bg-green-50' : trend === 'behind' ? 'bg-red-50' : 'bg-blue-50';
+  
+  return (
+    <div className={`${bgColor} p-6 rounded-xl shadow border`}>
+      <div className="flex items-center gap-3 mb-3">
+        <div className={trendColor}>{icon}</div>
+        <h3 className="font-semibold text-gray-800">{title}</h3>
+      </div>
+      <div className={`text-2xl font-bold ${trendColor} mb-1`}>{value}</div>
+      <div className="text-sm text-gray-600">{subtitle}</div>
+    </div>
+  );
+};
+
+const AnalyticsCard = ({ 
+  title, 
+  children 
+}: { 
+  title: string; 
+  children: React.ReactNode; 
 }) => (
   <div className="bg-white p-6 rounded-xl shadow border border-yellow-200">
-    <div className="flex items-center gap-3 mb-3">
-      <div className="text-yellow-500">{icon}</div>
-      <h3 className="font-semibold text-gray-800">{title}</h3>
-    </div>
-    <div className="text-2xl font-bold text-slate-600 mb-1">{value}</div>
-    <div className="text-sm text-gray-600">{subtitle}</div>
+    <h3 className="text-xl font-semibold mb-4 text-gray-800">{title}</h3>
+    {children}
   </div>
 );
+
+const MetricRow = ({ 
+  label, 
+  value, 
+  status 
+}: { 
+  label: string; 
+  value: string; 
+  status?: 'ahead' | 'behind' | 'onTrack'; 
+}) => {
+  const statusColor = status === 'ahead' ? 'text-green-600' : 
+                      status === 'behind' ? 'text-red-600' : 
+                      'text-gray-800';
+  
+  return (
+    <div className="flex justify-between items-center">
+      <span className="text-gray-600">{label}:</span>
+      <span className={`font-bold ${statusColor}`}>{value}</span>
+    </div>
+  );
+};
+
+const PerformanceCard = ({ 
+  stat, 
+  rank 
+}: { 
+  stat: WeeklyStats; 
+  rank: number; 
+}) => {
+  const daysSinceLastActivity = stat.lastActivity ? 
+    Math.floor((new Date().getTime() - new Date(stat.lastActivity).getTime()) / (1000 * 60 * 60 * 24)) : 3;
+  
+  return (
+    <div className="bg-white p-4 rounded-xl shadow border border-yellow-200">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+            <Image
+              src={
+                stat.profilePicture
+                  ? `https://matka-xi.vercel.app/${stat.username}.png`
+                  : `https://api.dicebear.com/7.x/adventurer/svg?seed=${stat.username}`
+              }
+              alt={`${stat.username}'s avatar`}
+              width={48}
+              height={48}
+              className="object-cover w-full h-full"
+              unoptimized
+            />
+          </div>
+          
+          <div className="text-2xl">
+            {rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '🚴‍♂️'}
+          </div>
+          
+          <div>
+            <h3 className="font-semibold text-lg">{stat.username}</h3>
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <span>Sija {rank}</span>
+              {stat.streak > 0 && <span>🔥 {stat.streak} päivän streak</span>}
+              {daysSinceLastActivity > 3 && (
+                <span className="text-orange-600">⚠️ {daysSinceLastActivity}d hiljaisuutta</span>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        <div className="text-right">
+          <div className="text-xl font-bold text-slate-600">{Math.round(stat.weeklyKm)} km</div>
+          <div className="text-sm text-gray-600">{Math.round(stat.weeklyPercentage)}% tavoitteesta</div>
+          {stat.dailyTarget > 0 && (
+            <div className="text-xs text-gray-500 mt-1">
+              Tarvitaan: {stat.dailyTarget} km/päivä
+            </div>
+          )}
+        </div>
+      </div>
+      
+      <div className="mt-3">
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div
+            className="h-2 rounded-full bg-gradient-to-r from-yellow-400 to-slate-500"
+            style={{ width: `${Math.min(100, stat.weeklyPercentage)}%` }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const RecordCard = ({ 
   icon, 
@@ -802,4 +840,4 @@ const RecordCard = ({
   </div>
 );
 
-export default InsightsWithTabs;
+export default EnhancedTeamInsights;

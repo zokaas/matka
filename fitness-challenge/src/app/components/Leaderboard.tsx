@@ -82,9 +82,12 @@ const Leaderboard = ({ users }: LeaderboardProps) => {
                   <h3 className="mt-2 text-lg font-medium text-gray-800">
                     {user.username}
                   </h3>
-                  {/* Distance */}
+                  {/* Distance with 1 decimal place */}
                   <p className="font-bold text-xl text-slate-600 mt-1">
-                    {Math.round(user.totalKm).toLocaleString("fi-FI")} km
+                    {user.totalKm.toLocaleString("fi-FI", { 
+                      minimumFractionDigits: 1, 
+                      maximumFractionDigits: 1 
+                    })} km
                   </p>
                 </div>
               </Link>
