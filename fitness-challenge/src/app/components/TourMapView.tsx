@@ -110,7 +110,6 @@ const mapRef = useRef<L.Map>(null);
     <div className="space-y-2">
       <div className="relative">
         <MapContainer
-          key={`map-${currentStage}`}
           ref={mapRef}
           center={[46.8566, 2.3522]}
           zoom={3}
