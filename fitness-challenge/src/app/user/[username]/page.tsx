@@ -504,7 +504,7 @@ const UserProfile = () => {
                     <button
                       type="button"
                       onClick={resetForm}
-                      className="w-full sm:flex-1 bg-gray-500 hover:bg-gray-600 text-white py-3 rounded-lg transition-colors text-sm sm:text-base"
+                      className="w-full sm:flex-1 0 hover:bg-gray-600 text-white py-3 rounded-lg transition-colors text-sm sm:text-base"
                     >
                       {t.ui.cancel}
                     </button>
@@ -563,7 +563,7 @@ const UserProfile = () => {
                 {canEditProfile && (
                   <div className="flex space-x-2 mt-3 sm:mt-0 sm:ml-4 self-start">
                     <button
-                      className="text-gray-600 hover:text-gray-800 transition-colors px-3 py-2 rounded text-xs sm:text-sm bg-gray-50 hover:bg-gray-100"
+                      className="text-gray-600 bg-gray-100 hover:text-gray-800 transition-colors px-3 py-2 rounded text-xs sm:text-sm  hover:bg-gray-100"
                       onClick={() => startEdit(activity)}
                     >
                       {t.ui.edit}

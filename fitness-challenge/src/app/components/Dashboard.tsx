@@ -108,7 +108,7 @@ export default function Dashboard() {
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-sm font-medium ${
                   activeView === key
                     ? "bg-yellow-400 text-black shadow-sm"
-                    : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                    : "text-gray-600 hover:text-gray-800 hover:"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -156,7 +156,7 @@ function StatCard({
   color?: string;
 }) {
   return (
-    <div className="bg-gray-50 rounded-lg p-3 flex items-center gap-3">
+    <div className=" rounded-lg p-3 flex items-center gap-3">
       <div className={color}>{icon}</div>
       <div>
         <div className="text-lg font-bold text-gray-800">{value}</div>

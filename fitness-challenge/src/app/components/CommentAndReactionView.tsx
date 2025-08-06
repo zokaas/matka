@@ -172,7 +172,7 @@ const CommentAndReactionView: React.FC<CommentAndReactionViewProps> = ({
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -5 }}
-                  className="bg-gray-50 p-3 rounded border shadow-sm"
+                  className=" p-3 rounded border shadow-sm"
                 >
                   <div className="flex justify-between items-start">
                     <p className="text-gray-700 text-sm">{comment.text}</p>

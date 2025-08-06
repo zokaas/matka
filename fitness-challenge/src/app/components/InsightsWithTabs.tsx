@@ -434,7 +434,7 @@ Analyysit
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-sm font-medium ${
                   activeSection === key
                     ? 'bg-yellow-400 text-black shadow-sm'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
+                    : 'text-gray-600 hover:text-gray-800 hover:'
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -580,7 +580,7 @@ Analyysit
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {records.topSports.map((sport, index) => (
-                    <div key={sport.name} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                    <div key={sport.name} className="flex items-center justify-between  p-3 rounded-lg">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-yellow-600">{index + 1}.</span>
                         <span className="font-medium">{sport.name}</span>

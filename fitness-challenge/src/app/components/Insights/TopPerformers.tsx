@@ -18,7 +18,7 @@ export default function TopPerformers({ weeklyInsights }: Readonly<Props>) {
         {weeklyInsights.map((user, index) => (
           <li
             key={user.username}
-            className="flex items-center p-2 bg-gray-50 rounded"
+            className="flex items-center p-2  rounded"
           >
             <span className="w-8 text-center font-bold text-slate-600">
               {index + 1}.

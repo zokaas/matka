@@ -143,7 +143,7 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
           <motion.button
             key={type}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center bg-white hover:bg-gray-50 px-3 py-1.5 rounded-full transition-colors shadow-sm border border-gray-200"
+            className="flex items-center bg-white hover: px-3 py-1.5 rounded-full transition-colors shadow-sm border border-gray-200"
             onClick={() => !isLoading && toggleReaction(type)}
             disabled={isLoading}
           >
@@ -158,7 +158,7 @@ const ActivityReactions: React.FC<ReactionsProps> = ({ activityId }) => {
         <motion.button
           whileTap={{ scale: 0.95 }}
           onClick={() => !isLoading && setShowEmojiPicker(!showEmojiPicker)}
-          className={`flex items-center justify-center w-8 h-8 bg-white hover:bg-gray-50 active:bg-gray-100 rounded-full transition-colors shadow-sm border border-gray-200 ${
+          className={`flex items-center justify-center w-8 h-8 bg-white hover: active:bg-gray-100 rounded-full transition-colors shadow-sm border border-gray-200 ${
             isLoading ? "opacity-50 cursor-not-allowed" : ""
           } ${showEmojiPicker ? "ring-2 ring-purple-300 bg-slate-50" : ""}`}
           aria-label={t.reactions.addReaction}

@@ -154,7 +154,7 @@
 //                       ? "bg-green-100 border-2 border-green-400/50"
 //                       : isNext
 //                       ? "bg-yellow-100 border-2 border-yellow-400/50"
-//                       : "bg-gray-50 border border-gray-200"
+//                       : " border border-gray-200"
 //                   }`}
 //                 >
 //                   <div className="text-4xl">{stage.emoji}</div>

@@ -330,7 +330,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
               </p>
             </div>
             <div className="bg-slate-50 p-4 rounded-lg">
-              <h3 className="text-sm bg-slate-800 font-medium">
+              <h3 className="text-sm  font-medium">
                 {t.insights.totalHours}
               </h3>
               <p className="text-2xl font-bold">
@@ -338,7 +338,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
               </p>
             </div>
             <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="text-sm bg-slate-800 font-medium">
+              <h3 className="text-sm  font-medium">
                 {t.insights.totalKm}
               </h3>
               <p className="text-2xl font-bold">
@@ -395,7 +395,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
               {t.insights.personalStatistics}
             </h3>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-gray-50 p-4 rounded">
+              <div className=" p-4 rounded">
                 <h4 className="text-sm text-gray-500">
                   {t.insights.avgDuration}
                 </h4>
@@ -403,7 +403,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                   {Math.round(insights.averageDuration)} {t.insights.mins}{" "}
                 </p>
               </div>
-              <div className="bg-gray-50 p-4 rounded">
+              <div className=" p-4 rounded">
                 <h4 className="text-sm text-gray-500">
                   {t.insights.avgDistance}
                 </h4>
@@ -422,7 +422,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
             </h3>
             <div className="space-y-3">
               {insights.activityBreakdown.map((item) => (
-                <div key={item.activity} className="bg-gray-50 p-3 rounded">
+                <div key={item.activity} className=" p-3 rounded">
                   <div className="flex justify-between mb-1">
                     <span className="font-medium">{item.activity}</span>
                     <span>
@@ -430,10 +430,13 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                     </span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div
-                      className="bg-slate-800 h-2.5 rounded-full"
-                      style={{ width: `${item.percentage}%` }}
-                    ></div>
+<div className="w-full bg-gray-200 rounded-full h-3 mt-2">
+  <div
+    className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-3 rounded-full transition-all duration-500"
+    style={{ width: `${item.percentage}%` }}
+  ></div>
+</div>
+
                   </div>
                 </div>
               ))}

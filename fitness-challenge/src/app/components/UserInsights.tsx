@@ -285,7 +285,7 @@ const UserInsights: React.FC<UserInsightsProps> = ({ username }) => {
                 <div
                   key={day.date}
                   className={`flex justify-between items-center p-2 rounded ${
-                    isToday ? "bg-slate-50" : "bg-gray-50"
+                    isToday ? "bg-slate-50" : ""
                   }`}
                 >
                   <div className="w-24">

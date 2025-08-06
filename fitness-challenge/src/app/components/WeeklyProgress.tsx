@@ -40,14 +40,14 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
       });
 
       const weeklyProgress = weekActivities.reduce((sum, activity) => sum + activity.kilometers, 0);
-      const weeklyPercentage = weeklyGoalPerUser > 0 ? Math.round((weeklyProgress / weeklyGoalPerUser) * 100) : 0;
+      const weeklyPercentage = weeklyGoalPerUser > 0 ? ((weeklyProgress / weeklyGoalPerUser) * 100) : 0;
       const remainingKm = Math.max(0, weeklyGoalPerUser - weeklyProgress);
-      const dailyTarget = daysRemaining > 0 ? Math.round(remainingKm / daysRemaining) : 0;
+      const dailyTarget = daysRemaining > 0 ? (remainingKm / daysRemaining) : 0;
 
       return {
         username: user.username,
         weeklyGoal: weeklyGoalPerUser,
-        weeklyProgress: Math.round(weeklyProgress),
+        weeklyProgress: weeklyProgress.toFixed(1),
         weeklyPercentage: Math.min(200, weeklyPercentage),
         dailyTarget,
         rank: 0
@@ -129,7 +129,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-2xl font-bold text-green-800">{insight.weeklyProgress} km</div>
+                        <div className="text-2xl font-bold text-green-800">{insight.weeklyProgress.toFixed(1)}km</div>
                         {activityStatus && (
                           <div className="text-xs text-orange-600 mt-1">
                             Ei aktiivista {activityStatus.days} päivään
@@ -205,7 +205,8 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                     <div className="text-xl font-bold text-yellow-500">{insight.weeklyProgress} km</div>
                     {activityStatus && <span className="text-base">{activityStatus.emoji}</span>}
                   </div>
-                  <div className="text-sm text-gray-500">{insight.weeklyPercentage}%</div>
+<div className="text-sm text-gray-500">{insight.weeklyPercentage.toFixed(1)}%</div>
+
                 </div>
               </div>
 
@@ -237,9 +238,10 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                     ⚠️ Ei aktiivista {activityStatus.days} päivään - tarvitaan kannustusta!
                   </span>
                 ) : (
-                  <span className="text-yellow-800">
-                    Tarvitaan vielä {insight.weeklyGoal - insight.weeklyProgress} km
-                  </span>
+<span className="text-yellow-800">
+  Tarvitaan vielä {(insight.weeklyGoal - insight.weeklyProgress).toFixed(1)} km
+</span>
+
                 )}
               </div>
             </motion.div>

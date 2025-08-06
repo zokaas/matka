@@ -91,7 +91,7 @@ export default function StageProgressCard({ totalKm }: { totalKm: number }) {
                 className={`relative flex-shrink-0 flex flex-col items-center px-2 py-2 w-full rounded-lg text-center transition-all duration-300 border text-xs
                   ${isCurrent ? "bg-yellow-100 border-yellow-400 shadow active-stage" : ""}
                   ${isCompleted ? "bg-green-50 border-green-300 text-green-800" : ""}
-                  ${isUpcoming ? "bg-gray-50 border-gray-200 text-gray-600" : ""}`}
+                  ${isUpcoming ? " border-gray-200 text-gray-600" : ""}`}
                 animate={isCurrent ? { scale: [1, 1.01, 1] } : {}}
                 transition={isCurrent ? { repeat: Infinity, duration: 3 } : {}}
               >
