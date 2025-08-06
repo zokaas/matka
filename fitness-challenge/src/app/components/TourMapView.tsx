@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -90,27 +90,49 @@ const TourMapView: React.FC<TourMapViewProps> = ({
   kmToNextStage,
   eta,
 }) => {
-const mapRef = useRef<L.Map>(null);
-
-  const completedSegments = [];
-  const upcomingSegments = [];
-
-  for (let i = 0; i < stages.length - 1; i++) {
-    const segment = [stages[i].coords, stages[i + 1].coords];
-    if (i < currentStage) {
-      completedSegments.push(segment);
-    } else {
-      upcomingSegments.push(segment);
+  // Pre-calculate segments to avoid any potential issues
+  const completedSegments = React.useMemo(() => {
+    const segments = [];
+    for (let i = 0; i < stages.length - 1; i++) {
+      if (i < currentStage) {
+        segments.push([stages[i].coords, stages[i + 1].coords]);
+      }
     }
-  }
+    return segments;
+  }, [stages, currentStage]);
 
-  const nextStage = currentStage + 1 < stages.length ? stages[currentStage + 1] : null;
+  const upcomingSegments = React.useMemo(() => {
+    const segments = [];
+    for (let i = 0; i < stages.length - 1; i++) {
+      if (i >= currentStage) {
+        segments.push([stages[i].coords, stages[i + 1].coords]);
+      }
+    }
+    return segments;
+  }, [stages, currentStage]);
+
+  const nextStage = React.useMemo(() => {
+    return currentStage + 1 < stages.length ? stages[currentStage + 1] : null;
+  }, [stages, currentStage]);
+
+  // Pre-calculate markers to ensure no hooks are called conditionally
+  const markers = React.useMemo(() => {
+    return stages.map((stage, index) => {
+      const isCompleted = index < currentStage;
+      const isCurrent = index === currentStage;
+      
+      return {
+        key: stage.name,
+        position: stage.coords,
+        icon: createCustomIcon(stage.emoji, isCompleted, isCurrent)
+      };
+    });
+  }, [stages, currentStage]);
 
   return (
     <div className="space-y-2">
       <div className="relative">
         <MapContainer
-          ref={mapRef}
           center={[46.8566, 2.3522]}
           zoom={3}
           scrollWheelZoom={false}
@@ -148,18 +170,13 @@ const mapRef = useRef<L.Map>(null);
             />
           ))}
 
-          {stages.map((stage, index) => {
-            const isCompleted = index < currentStage;
-            const isCurrent = index === currentStage;
-
-            return (
-              <Marker
-                key={stage.name}
-                position={stage.coords}
-                icon={createCustomIcon(stage.emoji, isCompleted, isCurrent)}
-              />
-            );
-          })}
+          {markers.map((marker) => (
+            <Marker
+              key={marker.key}
+              position={marker.position}
+              icon={marker.icon}
+            />
+          ))}
         </MapContainer>
 
         <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 shadow-lg z-10 border border-yellow-200">
@@ -227,13 +244,12 @@ const mapRef = useRef<L.Map>(null);
         .leaflet-control-zoom a {
           width: 26px !important;
           height: 26px !important;
-          line-height: 26px !important;
+          line-line: 26px !important;
           font-size: 14px !important;
         }
       `}</style>
     </div>
   );
 };
-console.log("TourMapView loaded")
 
 export default TourMapView;
