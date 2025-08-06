@@ -47,7 +47,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
       return {
         username: user.username,
         weeklyGoal: weeklyGoalPerUser,
-weeklyProgress: Number(weeklyProgress.toFixed(1))
+weeklyProgress: Number(weeklyProgress.toFixed(1)),
         weeklyPercentage: Math.min(200, weeklyPercentage),
         dailyTarget,
         rank: 0
