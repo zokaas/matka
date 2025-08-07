@@ -119,12 +119,12 @@ export class ProgressController {
     console.log('Activity received:', newActivity);
 
     const hours = (newActivity.duration ?? 0) / 60;
-const adjustedKm = calculateKilometersWithBonus(
-  newActivity.activity ?? '',
-  hours,
-  newActivity.bonus ?? null,
-  username  // ✅ Lisää käyttäjätunnus
-);
+    const adjustedKm = calculateKilometersWithBonus(
+      newActivity.activity ?? '',
+      hours,
+      newActivity.bonus ?? null,
+      username, // ✅ Lisää käyttäjätunnus
+    );
 
     console.log('Adjusted Kilometers:', adjustedKm);
 
@@ -171,6 +171,8 @@ const adjustedKm = calculateKilometersWithBonus(
     return user.activities;
   }
 
+  // In backend/src/progress.controller.ts - Update the updateActivity method
+
   @Put(':username/activities/:id')
   async updateActivity(
     @Param('username') username: string,
@@ -201,24 +203,25 @@ const adjustedKm = calculateKilometersWithBonus(
       throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
     }
 
-    console.log('Updating Activity:', updateData);
-
-    // Extract "Muu(100km/h)" or "Muu(50km/h)" even if a custom name is added
-    const match = updateData.activity.match(/Muu\(.*?\)/);
-    const activityType = match ? match[0] : updateData.activity.trim();
+    console.log('🔄 Updating Activity:', { updateData, username });
 
     const hours = (updateData.duration ?? 0) / 60;
+
+    // ✅ CRITICAL FIX: Pass username to the calculation function
     const adjustedKm = calculateKilometersWithBonus(
-      activityType, // ✅ Extracted correct activity type
+      updateData.activity,
       hours,
       updateData.bonus ?? null,
+      username, // 🔥 This was missing and causing 0 km calculations!
     );
+
+    console.log('📊 Calculated adjusted km:', adjustedKm);
 
     // Remove old kilometers before updating
     user.totalKm -= activity.kilometers;
 
     // Update activity properties
-    activity.activity = updateData.activity; // ✅ Keeps full name e.g., "Custom Name / Muu(100km/h)"
+    activity.activity = updateData.activity;
     activity.duration = updateData.duration;
     activity.date = updateData.date;
     activity.kilometers = adjustedKm;
@@ -227,9 +230,15 @@ const adjustedKm = calculateKilometersWithBonus(
     // Save updated activity
     await this.activityRepository.save(activity);
 
-    // Recalculate user's total kilometers correctly
+    // Add new kilometers to user's total
     user.totalKm += adjustedKm;
     await this.userRepository.save(user);
+
+    console.log('✅ Activity update completed:', {
+      activityId: activity.id,
+      newKm: adjustedKm,
+      userTotalKm: user.totalKm,
+    });
 
     return {
       message: 'Activity updated successfully',

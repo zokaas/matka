@@ -23,29 +23,35 @@ const InfoPage = () => {
         </p>
         <div className="bg-white p-4 my-3 rounded shadow text-sm sm:text-base">
           <code className="block font-mono text-sm">
-            kilometrit = tunnit × lajin kerroin × henkilökohtainen kilometrikerroin
+            🧮 kilometrit = tunnit × lajin kerroin × henkilökohtainen kilometrikerroin
           </code>
         </div>
         <p className="text-sm sm:text-base leading-relaxed">
           Esimerkiksi jos juokset 2 h viikossa ja henkilökohtainen kertoimesi on 4.23, saat
           <strong> 2 × 1.0 × 4.23 = 8.46 km</strong>.
         </p>
+        <p className="text-sm sm:text-base leading-relaxed mt-2">
+          Henkilökohtainen kilometrikerroin on laskettu kaavalla:
+          <code className="font-mono text-sm"> 16.935 / viikkotavoite (tunteina)</code>
+        </p>
       </section>
 
       <section>
         <h2 className="text-xl font-bold mb-4">🚴 Osallistujat ja viikoittaiset kertoimet</h2>
         <div className="space-y-4">
-          {Object.entries(groupedUsers).map(([hours, names]) => {
-            const kmPerHour = (16.935 / Number(hours)).toFixed(2);
-            return (
-              <div key={hours} className="bg-white p-4 rounded shadow text-sm sm:text-base">
-                <p className="font-medium">
-                  <strong>{names.join(", ")}</strong> <br />
-                  {hours} h / viikko → <strong>{kmPerHour} km / laskennallinen tunti</strong>
-                </p>
-              </div>
-            );
-          })}
+          {Object.entries(groupedUsers)
+            .sort(([a], [b]) => Number(a) - Number(b))
+            .map(([hours, names]) => {
+              const kmPerHour = (16.935 / Number(hours)).toFixed(2);
+              return (
+                <div key={hours} className="bg-white p-4 rounded shadow text-sm sm:text-base">
+                  <p className="font-medium">
+                    <strong>{names.join(", ")}</strong> <br />
+                    🕒 {hours} h / viikko → 🎯 <strong>{kmPerHour}x km / tunti</strong>
+                  </p>
+                </div>
+              );
+            })}
         </div>
       </section>
 

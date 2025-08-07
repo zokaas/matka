@@ -34,29 +34,48 @@ export const USER_WEEKLY_HOURS: Record<string, number> = {
 };
 
 export const ACTIVITY_WEIGHTS: Record<string, number> = {
+  // Suosituimmat
   Juoksu: 1.0,
+  Pyöräily: 1.0,
+  Maantiepyöräily: 1.0,
+  Gravel: 1.0,
   Sali: 1.0,
   Tennis: 1.0,
-  Pyöräily: 1.0,
-  Hiihto: 1.0,
-  Uinti: 2.0,
-  Crossfit: 1.0,
+
+  // Ryhmäliikunta & toiminnallinen treeni
   Tribe: 1.0,
+  Spinning: 1.0,
+  Crossfit: 1.0,
+  Kehonpainotreeni: 1.0,
   'Ryhmä, pump': 1.0,
   'Ryhmä, dance': 1.0,
   'Ryhmä, combat': 1.0,
-  Spinning: 1.0,
-  Squash: 1.0,
-  Sulkapallo: 1.0,
-  Padel: 1.0,
-  Jooga: 0.5,
-  Liikkuvuus: 0.5,
-  Golf: 0.25,
   'Ryhmä, HIIT': 1.0,
-  Kehonpainotreeni: 1.0,
+
+  // Kuntoilulajit ja kamppailu
+  Hiihto: 1.0,
+  Uinti: 1.5,
   Jalkapallo: 1.0,
   Jääkiekko: 1.0,
   Kamppailulaji: 1.0,
-  'Muu(100km/h)': 1.0,
-  'Muu(50km/h)': 0.5,
+  Kiipeily: 0.75,
+
+  // Mailapelit ja pallopelit
+  Padel: 1.0,
+  Sulkapallo: 1.0,
+  Squash: 1.0,
+  Beachvolley: 1.0,
+
+  // Kehonhuolto ja kevyemmät lajit
+  Jooga: 0.5,
+  'Liikkuvuus / Kehonhuolto': 0.5,
+  'Laitepilates / Megaformer': 1.0,
+
+  // Matalatehoiset ja vapaa-ajan aktiviteetit
+  Golf: 0.25,
+  'Frisbee golf': 0.5,
+
+  // Muu
+  'Muu (1x)': 1.0,
+  'Muu (0.5x)': 0.5,
 };

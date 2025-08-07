@@ -13,7 +13,7 @@ import SubmitQuote from "@/app/components/SubmitQuote";
 import PersonalInsights from "@/app/components/PersonalInsights";
 import CommentAndReactionView from "@/app/components/CommentAndReactionView";
 import { useTheme } from "@/app/hooks/useTheme";
-import { challengeParams } from "@/app/constants/challengeParams";
+import { ACTIVITY_WEIGHTS, challengeParams } from "@/app/constants/challengeParams";
 
 interface Activity {
   id: number;
@@ -37,33 +37,7 @@ interface User {
   };
 }
 
-const sportsOptions = [
-  "Juoksu",
-  "Sali", 
-  "Tennis",
-  "Pyöräily",
-  "Hiihto",
-  "Uinti",
-  "Crossfit",
-  "Tribe",
-  "Ryhmä, pump",
-  "Ryhmä, dance",
-  "Ryhmä, combat",
-  "Spinning",
-  "Squash",
-  "Sulkapallo",
-  "Padel",
-  "Jooga",
-  "Liikkuvuus",
-  "Golf",
-  "Ryhmä, HIIT",
-  "Kehonpainotreeni",
-  "Jalkapallo",
-  "Jääkiekko",
-  "Kamppailulaji",
-  "Muu(100km/h)",
-  "Muu(50km/h)",
-];
+export const sportsOptions = Object.keys(ACTIVITY_WEIGHTS);
 
 const itemsPerPage = 10;
 
@@ -504,14 +478,14 @@ const UserProfile = () => {
                     <button
                       type="button"
                       onClick={resetForm}
-                      className="w-full sm:flex-1 0 hover:bg-gray-600 text-white py-3 rounded-lg transition-colors text-sm sm:text-base"
+                      className="w-full bg-gray-100 sm:flex-1 0 hover:bg-gray-400 text-gray-600 py-3 rounded-lg transition-colors text-sm sm:text-base"
                     >
                       {t.ui.cancel}
                     </button>
                   )}
                   <button
                     type="submit"
-                    className="w-full sm:flex-1 bg-yellow-400 hover:bg-yellow-500 text-black py-3 rounded-lg transition-colors font-medium text-sm sm:text-base"
+                    className="w-full sm:flex-1 bg-yellow-400 hover:bg-yellow-500 text-gray-600 py-3 rounded-lg transition-colors font-medium text-sm sm:text-base"
                   >
                     {isEditing ? t.userProfile.updatePerformance : t.userProfile.addPerformance}
                   </button>
