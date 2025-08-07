@@ -37,7 +37,7 @@ interface User {
   };
 }
 
-export const sportsOptions = Object.keys(ACTIVITY_WEIGHTS);
+const sportsOptions = Object.keys(ACTIVITY_WEIGHTS);
 
 const itemsPerPage = 10;
 
