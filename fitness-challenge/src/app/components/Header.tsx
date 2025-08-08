@@ -9,13 +9,13 @@ import {
   Target,
   Users,
   Trophy,
+  Loader,
 } from "lucide-react";
-import { useTargetPace } from "../TargetPaceContext";
 import { formatNumberWithSpaces } from "@/app/utils/formatDate";
-import Loader from "../common/Loader";
 import { useTheme } from "@/app/hooks/useTheme";
 import { challengeParams } from "@/app/constants/challengeParams";
 import { ThemeColors } from "@/app/themes/themeTypes";
+import { useTargetPace } from "./TargetPaceContext";
 
 interface HeaderProps {
   participantCount: number;

@@ -179,7 +179,7 @@ const calculateAnalytics = (userData: User[]) => {
   const completionPercentage = Math.min(100, (totalProgress / challengeParams.totalDistance) * 100);
 
   // FIXED: Use consistent calculation for daysSinceStart
-  const daysSinceStart = Math.max(0, differenceInDays(today, startDate));
+const daysSinceStart = Math.max(0, differenceInDays(today, startDate) + 1);
   const daysRemaining = Math.max(0, differenceInDays(endDate, today));
 
   const dailyAverage = totalProgress / Math.max(1, daysSinceStart);
@@ -241,7 +241,7 @@ const calculateAnalytics = (userData: User[]) => {
       const previous = acc.length > 0 ? acc[acc.length - 1].actual : 0;
       
       // Use exactly the same calculation as above
-      const daysSinceStartForThisDate = Math.max(0, differenceInDays(new Date(date), startDate));
+const daysSinceStartForThisDate = Math.max(0, differenceInDays(new Date(date), startDate) + 1);
       const expected = (challengeParams.totalDistance * daysSinceStartForThisDate) / challengeParams.totalDays;
       
       acc.push({ 

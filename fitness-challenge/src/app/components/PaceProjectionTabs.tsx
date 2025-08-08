@@ -54,8 +54,9 @@ const PaceProjectionTabs: React.FC<PaceProjectionTabsProps> = ({
   const totalChallengeDays = challengeParams.totalDays;
   const dailyTargetDistance = challengeParams.dailyTarget;
   const weeklyTargetDistance = challengeParams.weeklyTarget;
-  
-  const daysSinceStart = Math.max(0, differenceInDays(new Date(), challengeStartDate));
+
+const daysSinceStart = Math.max(0, differenceInDays(new Date(), challengeStartDate) + 1);
+
   const daysRemaining = Math.max(0, differenceInDays(challengeEndDate, new Date()));
   const weeksRemaining = Math.max(1, Math.ceil(daysRemaining / 7));
   
