@@ -58,8 +58,8 @@ export const ACTIVITY_WEIGHTS: { [key: string]: number } = {
   // Muu - Support both old and new formats
   'Muu (1x)': 1.0,
   'Muu (0.5x)': 0.5,
-  'Muu(100km/h)': 1.0, // ✅ Add support for old format
-  'Muu(50km/h)': 0.5, // ✅ Add support for old format
+  'Muu(100km/h)': 1.0,
+  'Muu(50km/h)': 0.5,
 };
 
 export const calculateKilometersWithBonus = (
@@ -90,30 +90,24 @@ export const calculateKilometersWithBonus = (
   // Handle custom activities like "Custom Name / Muu(100km/h)" or "Custom Name / Muu (1x)"
   let activityType = activity.trim();
 
-  // Check if it's a custom activity with " / " separator
   if (activity.includes(' / ')) {
     const parts = activity.split(' / ');
     const lastPart = parts[parts.length - 1].trim();
-
-    // Use the last part (should be the activity type)
     activityType = lastPart;
   }
 
   // Try direct lookup first
   let activityWeight = ACTIVITY_WEIGHTS[activityType];
 
-  // If not found, try to match Muu patterns
+  // Handle fallback Muu formats
   if (activityWeight === undefined) {
-    // Handle old format: Muu(100km/h) or Muu(50km/h)
     if (activityType.match(/^Muu\(100km\/h\)$/i)) {
       activityWeight = 1.0;
       activityType = 'Muu(100km/h)';
     } else if (activityType.match(/^Muu\(50km\/h\)$/i)) {
       activityWeight = 0.5;
       activityType = 'Muu(50km/h)';
-    }
-    // Handle new format: Muu (1x) or Muu (0.5x)
-    else if (activityType.match(/^Muu \(1x\)$/i)) {
+    } else if (activityType.match(/^Muu \(1x\)$/i)) {
       activityWeight = 1.0;
       activityType = 'Muu (1x)';
     } else if (activityType.match(/^Muu \(0\.?5x\)$/i)) {
@@ -122,7 +116,6 @@ export const calculateKilometersWithBonus = (
     }
   }
 
-  // Default to 1.0 if still not found
   if (activityWeight === undefined) {
     console.warn(
       `⚠️ Activity type "${activityType}" not found in ACTIVITY_WEIGHTS, using default 1.0`,
@@ -136,22 +129,50 @@ export const calculateKilometersWithBonus = (
     activityWeight,
   });
 
-  const effortHours = hours * activityWeight;
+  // Apply 60min rule to specific activities
+  const ONE_HOUR_THEN_HALF_WEIGHT_ACTIVITIES = new Set([
+    'Hiihto',
+    'Pyöräily',
+    'Maantiepyöräily',
+    'Gravel',
+  ]);
+
+  let effectiveHours: number;
+
+  if (ONE_HOUR_THEN_HALF_WEIGHT_ACTIVITIES.has(activityType)) {
+    const firstHour = Math.min(1, hours);
+    const remaining = Math.max(0, hours - 1);
+    const effort1x = firstHour * 1.0;
+    const effort0_5x = remaining * 0.5;
+    effectiveHours = effort1x + effort0_5x;
+
+    console.log('⏱️ Applied 60min rule:', {
+      firstHour,
+      remaining,
+      effort1x,
+      effort0_5x,
+      totalEffortHours: effectiveHours,
+    });
+  } else {
+    effectiveHours = hours * activityWeight;
+  }
+
   const userHours = USER_WEEKLY_HOURS[username];
   const kmMultiplier = userHours ? WEEKLY_KM_GOAL / userHours : 0;
+  const baseKm = effectiveHours * kmMultiplier;
 
   console.log('🧮 Calculation breakdown:', {
     hours,
     activityWeight,
-    effortHours,
+    effectiveHours,
     userHours,
     kmMultiplier,
-    baseKm: effortHours * kmMultiplier,
+    baseKm,
   });
 
-  let finalKilometers = effortHours * kmMultiplier;
+  let finalKilometers = baseKm;
 
-  // Apply bonus multipliers
+  // Bonus multiplier logic
   switch (bonus) {
     case 'juhlapäivä':
       finalKilometers *= 2;

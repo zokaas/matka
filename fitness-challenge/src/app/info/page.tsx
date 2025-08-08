@@ -10,6 +10,14 @@ const groupUsersByHours = (users: Record<string, number>) => {
   return grouped;
 };
 
+// Activities with special 60min + 0.5x rule
+const SPLIT_MULTIPLIER_ACTIVITIES = new Set([
+  "Hiihto",
+  "Pyöräily",
+  "Maantiepyöräily",
+  "Gravel",
+]);
+
 const InfoPage = () => {
   const groupedUsers = groupUsersByHours(USER_WEEKLY_HOURS);
 
@@ -33,6 +41,11 @@ const InfoPage = () => {
         <p className="text-sm sm:text-base leading-relaxed mt-2">
           Henkilökohtainen kilometrikerroin on laskettu kaavalla:
           <code className="font-mono text-sm"> 16.935 / viikkotavoite (tunteina)</code>
+        </p>
+        <p className="text-sm sm:text-base leading-relaxed mt-4">
+          💡 Joillekin lajeille (kuten hiihto tai pyöräily) käytössä on erityissääntö: <br />
+          <strong>ensimmäinen 60 minuuttia lasketaan 1.0x kertoimella,</strong> ja sen jälkeen aika puolitetaan eli
+          <strong> 0.5x kertoimella</strong>.
         </p>
       </section>
 
@@ -59,13 +72,23 @@ const InfoPage = () => {
         <h2 className="text-xl font-bold mb-4">🏋️‍♂️ Lajikohtaiset kertoimet</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
           {Object.entries(ACTIVITY_WEIGHTS).map(([activity, weight]) => (
-            <div key={activity} className="bg-white rounded shadow px-3 py-2">
+            <div
+              key={activity}
+              className={`bg-white rounded shadow px-3 py-2 ${
+                SPLIT_MULTIPLIER_ACTIVITIES.has(activity) ? "border-l-4 border-blue-400" : ""
+              }`}
+            >
               <strong>{activity}</strong>: {weight}x
+              {SPLIT_MULTIPLIER_ACTIVITIES.has(activity) && (
+                <span className="text-blue-500 text-xs block mt-1">* 60 min = 1.0x, loput 0.5x</span>
+              )}
             </div>
           ))}
         </div>
         <p className="text-xs text-gray-600 mt-3">
-          Kertoimet perustuvat lajin intensiteettiin. Esimerkiksi juoksu = 1.0, golf = 0.25.
+          Kertoimet perustuvat lajin intensiteettiin. Esimerkiksi juoksu = 1.0, golf = 0.25.{" "}
+          <br />
+          <span className="text-blue-500">* Hiihto, pyöräilylajit: 60 min = 1.0x, ylimenevä aika = 0.5x</span>
         </p>
       </section>
     </div>
