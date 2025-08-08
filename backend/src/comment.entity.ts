@@ -1,19 +1,16 @@
-// src/comment.entity.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
   CreateDateColumn,
-  Index,
 } from 'typeorm';
 import { Activity } from './activity.entity';
 
 @Entity()
-@Index(['activity']) // For faster activity-based queries
 export class Comment {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: number; // ✅ Use 'id' instead of 'activityId'
 
   @Column()
   text: string;
@@ -24,5 +21,5 @@ export class Comment {
   activity: Activity;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt: Date; // ✅ Ensure this field exists
 }

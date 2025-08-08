@@ -4,19 +4,16 @@ import {
   Column,
   ManyToOne,
   CreateDateColumn,
-  Index,
 } from 'typeorm';
 import { Activity } from './activity.entity';
 
 @Entity()
-@Index(['activity']) // For faster activity-based queries
-@Index(['activity', 'type']) // For type-specific queries
 export class Reaction {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column({ type: 'text' })
-  type: string;
+  type: string; // "like", "support", "celebrate", etc.
 
   @ManyToOne(() => Activity, (activity) => activity.reactions, {
     onDelete: 'CASCADE',
