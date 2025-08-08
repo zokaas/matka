@@ -257,7 +257,7 @@ export default function Navbar() {
                   <button
                     onClick={async () => {
                       await logout();
-                      router.push("/login");
+                      router.push("/");
                     }}
                     className="hover:opacity-80 transition-all duration-200 rounded p-2"
                     style={{
@@ -462,7 +462,7 @@ export default function Navbar() {
                     onClick={async () => {
                       await logout();
                       setIsMenuOpen(false);
-                      router.push("/login");
+                      router.push("/");
                     }}
 
                     className="block w-full text-left px-4 py-2 hover:opacity-80 transition-opacity"
