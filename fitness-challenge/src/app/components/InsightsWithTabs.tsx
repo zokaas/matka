@@ -160,114 +160,124 @@ const EnhancedTeamInsights = () => {
     fetchData();
   }, []);
 
-  const calculateAnalytics = (userData: User[]) => {
-    const today = new Date();
-    const startDate = new Date(challengeParams.startDate);
-    const endDate = new Date(challengeParams.endDate);
+const calculateAnalytics = (userData: User[]) => {
+  const today = new Date();
+  const startDate = new Date(challengeParams.startDate);
+  const endDate = new Date(challengeParams.endDate);
 
-    // Filter activities within challenge period
-    const challengeActivities = userData.flatMap(user =>
-      user.activities.filter(activity => {
-        const activityDate = new Date(activity.date);
-        return activityDate >= startDate && activityDate <= endDate;
-      })
-    );
+  // Filter activities within challenge period
+  const challengeActivities = userData.flatMap(user =>
+    user.activities.filter(activity => {
+      const activityDate = new Date(activity.date);
+      return activityDate >= startDate && activityDate <= endDate;
+    })
+  );
 
-    const totalProgress = challengeActivities.reduce((sum, activity) => sum + activity.kilometers, 0);
-    const totalActivities = challengeActivities.length;
-    const avgKmPerUser = userData.length > 0 ? totalProgress / userData.length : 0;
-    const completionPercentage = Math.min(100, (totalProgress / challengeParams.totalDistance) * 100);
+  const totalProgress = challengeActivities.reduce((sum, activity) => sum + activity.kilometers, 0);
+  const totalActivities = challengeActivities.length;
+  const avgKmPerUser = userData.length > 0 ? totalProgress / userData.length : 0;
+  const completionPercentage = Math.min(100, (totalProgress / challengeParams.totalDistance) * 100);
 
-    const daysSinceStart = Math.max(1, differenceInDays(today, startDate));
-    const daysRemaining = Math.max(0, differenceInDays(endDate, today));
+  // FIXED: Use consistent calculation for daysSinceStart
+  const daysSinceStart = Math.max(0, differenceInDays(today, startDate));
+  const daysRemaining = Math.max(0, differenceInDays(endDate, today));
 
-    const dailyAverage = totalProgress / daysSinceStart;
-    const weeklyAverage = dailyAverage * 7;
+  const dailyAverage = totalProgress / Math.max(1, daysSinceStart);
+  const weeklyAverage = dailyAverage * 7;
 
-    const expectedProgress = (challengeParams.totalDistance * daysSinceStart) / challengeParams.totalDays;
-    const progressDifference = Math.abs(totalProgress - expectedProgress);
-    const progressStatus = totalProgress >= expectedProgress * 1.05 ? 'ahead' :
-      totalProgress >= expectedProgress * 0.95 ? 'onTrack' : 'behind';
+  // FIXED: Use the same calculation method that will be used in chart
+  const expectedProgress = (challengeParams.totalDistance * daysSinceStart) / challengeParams.totalDays;
 
-    // Calculate weekly comparison
-    const lastWeekKm = getKmInPeriod(challengeActivities, 0, 7);
-    const previousWeekKm = getKmInPeriod(challengeActivities, 7, 14);
-    const weekDelta = lastWeekKm - previousWeekKm;
+  const progressDifference = Math.abs(totalProgress - expectedProgress);
+  const progressStatus = totalProgress >= expectedProgress * 1.05 ? 'ahead' :
+    totalProgress >= expectedProgress * 0.95 ? 'onTrack' : 'behind';
 
-    // Calculate projected finish date
-    let projectedFinishDate = null;
-    let daysFromTarget = 0;
-    if (dailyAverage > 0) {
-      const remainingKm = challengeParams.totalDistance - totalProgress;
-      const daysNeeded = remainingKm / dailyAverage;
-      projectedFinishDate = new Date(today.getTime() + daysNeeded * 24 * 60 * 60 * 1000);
-      daysFromTarget = Math.ceil((projectedFinishDate.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24));
+  // Calculate weekly comparison
+  const lastWeekKm = getKmInPeriod(challengeActivities, 0, 7);
+  const previousWeekKm = getKmInPeriod(challengeActivities, 7, 14);
+  const weekDelta = lastWeekKm - previousWeekKm;
+
+  // Calculate projected finish date
+  let projectedFinishDate = null;
+  let daysFromTarget = 0;
+  if (dailyAverage > 0) {
+    const remainingKm = challengeParams.totalDistance - totalProgress;
+    const daysNeeded = remainingKm / dailyAverage;
+    projectedFinishDate = new Date(today.getTime() + daysNeeded * 24 * 60 * 60 * 1000);
+    daysFromTarget = Math.ceil((projectedFinishDate.getTime() - endDate.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  const requiredDailyPace = daysRemaining > 0 ? (challengeParams.totalDistance - totalProgress) / daysRemaining : 0;
+  const paceEfficiency = requiredDailyPace > 0 ? (dailyAverage / requiredDailyPace) * 100 : 0;
+
+  // Calculate momentum (comparing last 7 days vs previous 7 days)
+  const last7Days = challengeActivities.filter(a =>
+    differenceInDays(today, new Date(a.date)) <= 7
+  ).reduce((sum, a) => sum + a.kilometers, 0);
+
+  const previous7Days = challengeActivities.filter(a => {
+    const daysDiff = differenceInDays(today, new Date(a.date));
+    return daysDiff > 7 && daysDiff <= 14;
+  }).reduce((sum, a) => sum + a.kilometers, 0);
+
+  const momentum = last7Days > previous7Days * 1.1 ? 'accelerating' :
+    last7Days < previous7Days * 0.9 ? 'slowing' : 'steady';
+
+  // Create cumulative progress data for chart
+  const teamDailyTotals: Record<string, { totalKm: number; activities: number }> = {};
+  challengeActivities.forEach(activity => {
+    const dateKey = activity.date.split('T')[0];
+    if (!teamDailyTotals[dateKey]) {
+      teamDailyTotals[dateKey] = { totalKm: 0, activities: 0 };
     }
+    teamDailyTotals[dateKey].totalKm += activity.kilometers;
+    teamDailyTotals[dateKey].activities += 1;
+  });
 
-    const requiredDailyPace = daysRemaining > 0 ? (challengeParams.totalDistance - totalProgress) / daysRemaining : 0;
-    const paceEfficiency = requiredDailyPace > 0 ? (dailyAverage / requiredDailyPace) * 100 : 0;
-
-    // Calculate momentum (comparing last 7 days vs previous 7 days)
-    const last7Days = challengeActivities.filter(a =>
-      differenceInDays(today, new Date(a.date)) <= 7
-    ).reduce((sum, a) => sum + a.kilometers, 0);
-
-    const previous7Days = challengeActivities.filter(a => {
-      const daysDiff = differenceInDays(today, new Date(a.date));
-      return daysDiff > 7 && daysDiff <= 14;
-    }).reduce((sum, a) => sum + a.kilometers, 0);
-
-    const momentum = last7Days > previous7Days * 1.1 ? 'accelerating' :
-      last7Days < previous7Days * 0.9 ? 'slowing' : 'steady';
-
-    // Create cumulative progress data for chart
-    const teamDailyTotals: Record<string, { totalKm: number; activities: number }> = {};
-    challengeActivities.forEach(activity => {
-      const dateKey = activity.date.split('T')[0];
-      if (!teamDailyTotals[dateKey]) {
-        teamDailyTotals[dateKey] = { totalKm: 0, activities: 0 };
-      }
-      teamDailyTotals[dateKey].totalKm += activity.kilometers;
-      teamDailyTotals[dateKey].activities += 1;
-    });
-
-    const cumulativeProgressData = Object.entries(teamDailyTotals)
-      .sort(([a], [b]) => a.localeCompare(b))
-.reduce((acc: CumulativeProgressData[], [date, { totalKm }]) => {
-  const previous = acc.length > 0 ? acc[acc.length - 1].actual : 0;
-  const dayIndex = differenceInDays(new Date(date), startDate) + 1;
-  const expected = (challengeParams.totalDistance * dayIndex) / challengeParams.totalDays;
-  acc.push({ date, actual: previous + totalKm, expected });
-  return acc;
-}, []);
-
+  // FIXED: Use the same calculation method for chart data
+  const cumulativeProgressData = Object.entries(teamDailyTotals)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .reduce((acc: CumulativeProgressData[], [date, { totalKm }]) => {
+      const previous = acc.length > 0 ? acc[acc.length - 1].actual : 0;
       
-console.table(cumulativeProgressData);
-    setCumulativeProgressData(cumulativeProgressData);
+      // Use exactly the same calculation as above
+      const daysSinceStartForThisDate = Math.max(0, differenceInDays(new Date(date), startDate));
+      const expected = (challengeParams.totalDistance * daysSinceStartForThisDate) / challengeParams.totalDays;
+      
+      acc.push({ 
+        date, 
+        actual: previous + totalKm, 
+        expected 
+      });
+      return acc;
+    }, []);
 
-    setAnalytics({
-      totalProgress,
-      totalActivities,
-      avgKmPerUser,
-      activeUsers: userData.length,
-      completionPercentage,
-      daysRemaining,
-      daysSinceStart,
-      dailyAverage,
-      weeklyAverage,
-      progressStatus,
-      expectedProgress,
-      progressDifference,
-      projectedFinishDate,
-      daysFromTarget,
-      requiredDailyPace,
-      paceEfficiency,
-      momentum,
-      lastWeekKm,
-      previousWeekKm,
-      weekDelta
-    });
-  };
+  console.table(cumulativeProgressData);
+  setCumulativeProgressData(cumulativeProgressData);
+
+  setAnalytics({
+    totalProgress,
+    totalActivities,
+    avgKmPerUser,
+    activeUsers: userData.length,
+    completionPercentage,
+    daysRemaining,
+    daysSinceStart,
+    dailyAverage,
+    weeklyAverage,
+    progressStatus,
+    expectedProgress,
+    progressDifference,
+    projectedFinishDate,
+    daysFromTarget,
+    requiredDailyPace,
+    paceEfficiency,
+    momentum,
+    lastWeekKm,
+    previousWeekKm,
+    weekDelta
+  });
+};
 
   const calculateAllTimeStats = (userData: User[]) => {
     const today = new Date();

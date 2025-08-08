@@ -11,7 +11,30 @@ const USER_WEEKLY_HOURS: { [key: string]: number } = {
   Santeri: 6,
 };
 
-const WEEKLY_KM_GOAL = 16.935;
+// FIXED: Calculate one-time multipliers based on challenge totals
+// Total challenge: 3,338.8 km over 19.6 weeks for 10 people
+// Each person needs: 3,338.8 / 10 = 333.88 km total
+// Each person's total hours: weeklyHours * 19.6 weeks
+
+const CHALLENGE_TOTAL_DISTANCE = 3338.8;
+const CHALLENGE_TOTAL_WEEKS = 19.6; // Aug 4 to Dec 19, 2025
+const TEAM_SIZE = 10;
+
+// Calculate individual targets and multipliers (FIXED FOR ENTIRE CHALLENGE)
+const INDIVIDUAL_TARGET_KM = CHALLENGE_TOTAL_DISTANCE / TEAM_SIZE; // 333.88 km per person
+
+const USER_KM_MULTIPLIERS: { [key: string]: number } = {};
+
+// Calculate each person's fixed multiplier
+Object.entries(USER_WEEKLY_HOURS).forEach(([username, weeklyHours]) => {
+  const totalHoursForChallenge = weeklyHours * CHALLENGE_TOTAL_WEEKS;
+  USER_KM_MULTIPLIERS[username] = INDIVIDUAL_TARGET_KM / totalHoursForChallenge;
+});
+
+console.log('🎯 Fixed multipliers for entire challenge:');
+Object.entries(USER_KM_MULTIPLIERS).forEach(([username, multiplier]) => {
+  console.log(`${username}: ${multiplier.toFixed(2)} km/hour`);
+});
 
 export const ACTIVITY_WEIGHTS: { [key: string]: number } = {
   // Suosituimmat
@@ -80,9 +103,12 @@ export const calculateKilometersWithBonus = (
     return 0;
   }
 
-  if (!USER_WEEKLY_HOURS[username]) {
+  // FIXED: Use pre-calculated fixed multiplier instead of dynamic weekly goal
+  const kmMultiplier = USER_KM_MULTIPLIERS[username];
+
+  if (!kmMultiplier) {
     console.warn(
-      `⚠️ Username "${username}" not found in USER_WEEKLY_HOURS, calculation will return 0`,
+      `⚠️ Username "${username}" not found in USER_KM_MULTIPLIERS, calculation will return 0`,
     );
     return 0;
   }
@@ -157,16 +183,14 @@ export const calculateKilometersWithBonus = (
     effectiveHours = hours * activityWeight;
   }
 
-  const userHours = USER_WEEKLY_HOURS[username];
-  const kmMultiplier = userHours ? WEEKLY_KM_GOAL / userHours : 0;
+  // FIXED: Use the pre-calculated fixed multiplier
   const baseKm = effectiveHours * kmMultiplier;
 
   console.log('🧮 Calculation breakdown:', {
     hours,
     activityWeight,
     effectiveHours,
-    userHours,
-    kmMultiplier,
+    kmMultiplier: `${kmMultiplier.toFixed(2)} km/hour (fixed for entire challenge)`,
     baseKm,
   });
 
