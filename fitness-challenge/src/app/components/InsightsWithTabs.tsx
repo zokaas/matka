@@ -883,7 +883,7 @@ const AllTimePerformanceCard = ({
             <div className="text-xs text-gray-600 space-y-0.5">
               <div className="flex items-center gap-2 flex-wrap">
                 <span>📅 {stat.activeDays} aktiivista päivää</span>
-                {stat.streak > 0 && <span>🔥 {stat.streak} päivän streak</span>}
+                {stat.streak > 1 && <span>🔥 {stat.streak} päivän streak</span>}
               </div>
               {daysSinceLastActivity !== null && daysSinceLastActivity > 3 && (
                 <div className="text-orange-600">⚠️ {daysSinceLastActivity} päivää hiljaisuutta</div>

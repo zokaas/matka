@@ -153,7 +153,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                             {insight.username}
                           </h4>
                           <div className="text-sm text-green-600">
-                            🥇 {insight.weeklyPercentage}% saavutettu!
+                            🥇 {Number(insight.weeklyPercentage).toFixed(1)}% saavutettu!
                             {activityStatus && (
                               <span className="ml-2">
                                 {activityStatus.emoji}
