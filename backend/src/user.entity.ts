@@ -1,4 +1,3 @@
-// src/user.entity.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -8,21 +7,25 @@ import {
 } from 'typeorm';
 import { Activity } from './activity.entity';
 
-@Entity()
-@Index(['username']) // Explicit index for username searches
+@Entity('users') // Explicit table name
+@Index(['username']) // Unique username index
 export class Users {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true }) // Make sure this is unique
+  @Column({ unique: true, length: 100 }) // Limit username length
+  @Index() // Explicit index on username
   username: string;
 
-  @Column('float', { default: 0 })
+  @Column('decimal', { precision: 10, scale: 2, default: 0 }) // Use DECIMAL for precise calculations
   totalKm: number;
 
-  @OneToMany(() => Activity, (activity) => activity.user)
-  activities: Activity[];
-
-  @Column({ nullable: true })
+  @Column({ nullable: true, length: 255 }) // Limit profile picture path length
   profilePicture: string;
+
+  @OneToMany(() => Activity, (activity) => activity.user, {
+    cascade: true,
+    lazy: true, // Lazy load activities to avoid N+1 issues
+  })
+  activities: Activity[];
 }
