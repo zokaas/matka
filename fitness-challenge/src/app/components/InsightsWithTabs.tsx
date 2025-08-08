@@ -638,13 +638,6 @@ const daysSinceStartForThisDate = Math.max(0, differenceInDays(new Date(date), s
                   trend={analytics.dailyAverage >= analytics.requiredDailyPace ? 'ahead' : 'behind'}
                 />
                 <KPICard
-                  icon={<Zap className="w-5 h-5" />}
-                  title="Tahdin tehokkuus"
-                  value={`${Math.round(analytics.paceEfficiency)}%`}
-                  subtitle={`${analytics.momentum === 'accelerating' ? 'Kiihtyy' : analytics.momentum === 'slowing' ? 'Hidastuu' : 'Tasainen'}`}
-                  trend={analytics.paceEfficiency >= 100 ? 'ahead' : 'behind'}
-                />
-                <KPICard
                   icon={<Calendar className="w-5 h-5" />}
                   title="Arvioitu valmistuminen"
                   value={analytics.projectedFinishDate ? format(analytics.projectedFinishDate, 'd.M.yyyy') : 'Ei dataa'}

@@ -54,7 +54,9 @@ export const ACTIVITY_WEIGHTS: Record<string, number> = {
 
   // Kuntoilulajit ja kamppailu
   Hiihto: 1.0,
-  Uinti: 2,
+  Uinti: 2.0,
+  Vesijuoksu: 1.0,
+  Synnytys: 10.0,
   Jalkapallo: 1.0,
   Jääkiekko: 1.0,
   Kamppailulaji: 1.0,
