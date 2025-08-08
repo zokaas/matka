@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { LogOut } from "lucide-react";
 import { useTheme } from "@/app/hooks/useTheme";
+import { useRouter } from "next/navigation";
 
 interface User {
   username: string;
@@ -21,6 +22,7 @@ export default function Navbar() {
   const [error, setError] = useState("");
 
   const { currentUser, logout, isLoggedIn } = useAuth();
+  const router = useRouter();
 
   const dropdownButtonRef = useRef<HTMLButtonElement>(null);
   const dropdownContentRef = useRef<HTMLDivElement>(null);
@@ -223,12 +225,12 @@ export default function Navbar() {
                             }}
                             onClick={() => setIsDropdownOpen(false)}
                             onMouseEnter={(e) =>
-                              (e.currentTarget.style.backgroundColor =
-                                colors.secondary)
+                            (e.currentTarget.style.backgroundColor =
+                              colors.secondary)
                             }
                             onMouseLeave={(e) =>
-                              (e.currentTarget.style.backgroundColor =
-                                "transparent")
+                            (e.currentTarget.style.backgroundColor =
+                              "transparent")
                             }
                           >
                             🚴 {user.username}
@@ -253,7 +255,10 @@ export default function Navbar() {
                     {currentUser}
                   </Link>
                   <button
-                    onClick={logout}
+                    onClick={async () => {
+                      await logout();
+                      router.push("/login");
+                    }}
                     className="hover:opacity-80 transition-all duration-200 rounded p-2"
                     style={{
                       backgroundColor: "transparent",
@@ -418,12 +423,12 @@ export default function Navbar() {
                             setIsDropdownOpen(false);
                           }}
                           onMouseEnter={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              colors.secondary)
+                          (e.currentTarget.style.backgroundColor =
+                            colors.secondary)
                           }
                           onMouseLeave={(e) =>
-                            (e.currentTarget.style.backgroundColor =
-                              "transparent")
+                          (e.currentTarget.style.backgroundColor =
+                            "transparent")
                           }
                         >
                           🚴 {user.username}
@@ -454,10 +459,12 @@ export default function Navbar() {
                     🚴 {t.navbar.ownProfile} ({currentUser})
                   </Link>
                   <button
-                    onClick={() => {
-                      logout();
+                    onClick={async () => {
+                      await logout();
                       setIsMenuOpen(false);
+                      router.push("/login");
                     }}
+
                     className="block w-full text-left px-4 py-2 hover:opacity-80 transition-opacity"
                     style={{
                       backgroundColor: "transparent",
