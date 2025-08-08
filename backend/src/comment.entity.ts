@@ -1,4 +1,4 @@
-// src/comment.entity.ts - OPTIMIZED
+// src/comment.entity.ts
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -6,31 +6,23 @@ import {
   ManyToOne,
   CreateDateColumn,
   Index,
-  JoinColumn,
 } from 'typeorm';
 import { Activity } from './activity.entity';
 
 @Entity()
-// OPTIMIZED: Composite index for activity-based queries with sorting
-@Index(['activityId', 'createdAt'])
+@Index(['activity']) // For faster activity-based queries
 export class Comment {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('text') // Use TEXT for potentially longer comments
-  text: string;
-
   @Column()
-  @Index() // Index on activityId for faster joins
-  activityId: number;
+  text: string;
 
   @ManyToOne(() => Activity, (activity) => activity.comments, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'activityId' })
   activity: Activity;
 
   @CreateDateColumn()
-  @Index() // Index on createdAt for sorting
   createdAt: Date;
 }

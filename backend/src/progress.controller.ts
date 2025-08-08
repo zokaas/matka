@@ -1,4 +1,3 @@
-// src/progress.controller.ts - OPTIMIZED VERSION
 import {
   Controller,
   Get,
@@ -26,210 +25,154 @@ export class ProgressController {
     private activityRepository: Repository<Activity>,
   ) {}
 
-  // OPTIMIZED: Reduced queries with proper pagination
+  // In src/progress.controller.ts - update the getUser method
   @Get(':username')
   async getUser(
     @Param('username') username: string,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ) {
-    try {
-      // Define interface for raw result
-      interface UserCountResult {
-        totalActivities: string;
-      }
+    // Use the index-optimized query
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.activities', 'activities')
+      .where('user.username = :username', { username })
+      .orderBy('activities.date', 'DESC') // This will use the activity date index
+      .getOne();
 
-      // Single query to get user with total activity count
-      const userWithCount = await this.userRepository
-        .createQueryBuilder('user')
-        .leftJoin('user.activities', 'activities')
-        .where('user.username = :username', { username })
-        .select(['user.username', 'user.totalKm', 'user.profilePicture'])
-        .addSelect('COUNT(activities.id)', 'totalActivities')
-        .groupBy('user.id')
-        .getRawAndEntities();
-
-      if (!userWithCount.entities.length) {
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-      }
-
-      const user = userWithCount.entities[0];
-      const rawResult = userWithCount.raw[0] as UserCountResult;
-      const totalActivities = parseInt(rawResult?.totalActivities || '0', 10);
-
-      // Separate optimized query for paginated activities
-      const offset = (Number(page) - 1) * Number(limit);
-      const activities = await this.activityRepository
-        .createQueryBuilder('activity')
-        .where(
-          'activity.userId = (SELECT id FROM users WHERE username = :username)',
-          { username },
-        )
-        .orderBy('activity.date', 'DESC')
-        .addOrderBy('activity.id', 'DESC')
-        .limit(Number(limit))
-        .offset(offset)
-        .getMany();
-
-      const totalPages = Math.ceil(totalActivities / Number(limit));
-
-      return {
-        username: user.username,
-        totalKm: user.totalKm,
-        profilePicture: user.profilePicture,
-        activities,
-        pagination: {
-          total: totalActivities,
-          page: Number(page),
-          limit: Number(limit),
-          totalPages,
-        },
-      };
-    } catch (error) {
-      console.error('Error fetching user:', error);
-      throw new HttpException(
-        'Failed to fetch user',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
+
+    // Rest of your pagination logic stays the same
+    const start = (Number(page) - 1) * Number(limit);
+    const paginatedActivities = user.activities.slice(
+      start,
+      start + Number(limit),
+    );
+
+    return {
+      username: user.username,
+      totalKm: user.totalKm,
+      profilePicture: user.profilePicture,
+      activities: paginatedActivities,
+      pagination: {
+        total: user.activities.length,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages: Math.ceil(user.activities.length / Number(limit)),
+      },
+    };
   }
 
-  // OPTIMIZED: Batch operation with transaction
+  // ✅ POST: Add a new user
+  @Post()
+  async addUser(@Body() newUser: { username: string; totalKm?: number }) {
+    const existingUser = await this.userRepository.findOne({
+      where: { username: newUser.username },
+    });
+
+    if (existingUser) {
+      throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
+    }
+
+    const user = this.userRepository.create({
+      username: newUser.username,
+      totalKm: newUser.totalKm ?? 0,
+    });
+
+    await this.userRepository.save(user);
+    return user;
+  }
+
+  // ✅ GET: Fetch all users
+  @Get()
+  async getAllUsers() {
+    const users = await this.userRepository.find({ relations: ['activities'] });
+    if (!users.length) {
+      throw new HttpException('No users found', HttpStatus.NOT_FOUND);
+    }
+    return users;
+  }
+
   @Post(':username/activities')
   async addActivity(
     @Param('username') username: string,
     @Body() newActivity: Partial<Activity>,
   ) {
-    const queryRunner =
-      this.userRepository.manager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-
-    try {
-      // Get user with lock to prevent race conditions
-      const user = await queryRunner.manager
-        .createQueryBuilder()
-        .select('user')
-        .from(Users, 'user')
-        .where('user.username = :username', { username })
-        .setLock('pessimistic_write')
-        .getOne();
-
-      if (!user) {
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-      }
-
-      const hours = (newActivity.duration ?? 0) / 60;
-      const adjustedKm = calculateKilometersWithBonus(
-        newActivity.activity ?? '',
-        hours,
-        newActivity.bonus ?? null,
+    process.stdout.write(
+      JSON.stringify({
+        msg: 'Debug log',
+        activity: newActivity,
         username,
-      );
+      }) + '\n',
+    );
+    const user = await this.userRepository.findOne({
+      where: { username },
+      relations: ['activities'],
+    });
 
-      // Create activity
-      const activity = queryRunner.manager.create(Activity, {
-        ...newActivity,
-        kilometers: adjustedKm,
-        bonus: newActivity.bonus ?? null,
-        userId: user.id,
-      });
-
-      const savedActivity = await queryRunner.manager.save(activity);
-
-      // Update user's total km
-      await queryRunner.manager
-        .createQueryBuilder()
-        .update(Users)
-        .set({ totalKm: () => `totalKm + ${adjustedKm}` })
-        .where('id = :id', { id: user.id })
-        .execute();
-
-      await queryRunner.commitTransaction();
-
-      return {
-        activity: savedActivity,
-        user: {
-          username: user.username,
-          totalKm: user.totalKm + adjustedKm,
-        },
-      };
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      console.error('Error adding activity:', error);
-      throw error;
-    } finally {
-      await queryRunner.release();
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
+
+    console.log('Activity received:', newActivity);
+
+    const hours = (newActivity.duration ?? 0) / 60;
+    const adjustedKm = calculateKilometersWithBonus(
+      newActivity.activity ?? '',
+      hours,
+      newActivity.bonus ?? null,
+      username, // ✅ Lisää käyttäjätunnus
+    );
+
+    console.log('Adjusted Kilometers:', adjustedKm);
+
+    const activity = this.activityRepository.create({
+      ...newActivity,
+      kilometers: adjustedKm,
+      bonus: newActivity.bonus ?? null,
+      user,
+    });
+
+    const savedActivity = await this.activityRepository.save(activity);
+
+    user.activities = [...user.activities, savedActivity];
+    user.totalKm = user.totalKm + savedActivity.kilometers;
+    await this.userRepository.save(user);
+    console.log('Final kilometers:', adjustedKm);
+    console.log('================END================');
+    return {
+      activity: savedActivity,
+      user: {
+        username: user.username,
+        totalKm: user.totalKm,
+        activities: user.activities,
+      },
+    };
   }
-
-  // OPTIMIZED: Get all users with activity counts in single query
-  @Get()
-  async getAllUsers() {
-    try {
-      // Define interface for raw result
-      interface UserActivityCountResult {
-        activityCount: string;
-      }
-
-      const users = await this.userRepository
-        .createQueryBuilder('user')
-        .leftJoin('user.activities', 'activities')
-        .select([
-          'user.id',
-          'user.username',
-          'user.totalKm',
-          'user.profilePicture',
-        ])
-        .addSelect('COUNT(activities.id)', 'activityCount')
-        .groupBy('user.id')
-        .orderBy('user.totalKm', 'DESC')
-        .getRawAndEntities();
-
-      if (!users.entities.length) {
-        throw new HttpException('No users found', HttpStatus.NOT_FOUND);
-      }
-
-      // Transform results to include activity count
-      return users.entities.map((user, index) => {
-        const rawResult = users.raw[index] as UserActivityCountResult;
-        return {
-          ...user,
-          activityCount: parseInt(rawResult?.activityCount || '0', 10),
-        };
-      });
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      throw new HttpException(
-        'Failed to fetch users',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  // OPTIMIZED: Get all activities for a user efficiently
+  // ✅ GET: Fetch all activities for a user (no pagination)
   @Get(':username/activities/all')
   async getAllActivities(@Param('username') username: string) {
-    try {
-      const activities = await this.activityRepository
-        .createQueryBuilder('activity')
-        .innerJoin('activity.user', 'user')
-        .where('user.username = :username', { username })
-        .orderBy('activity.date', 'DESC')
-        .addOrderBy('activity.id', 'DESC')
-        .getMany();
+    const user = await this.userRepository.findOne({
+      where: { username },
+      relations: ['activities'],
+    });
 
-      return activities;
-    } catch (error) {
-      console.error('Error fetching all activities:', error);
-      throw new HttpException(
-        'Failed to fetch activities',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
+
+    // Sort activities by date (newest first)
+    user.activities.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+
+    return user.activities;
   }
 
-  // OPTIMIZED: Update activity with transaction
+  // In backend/src/progress.controller.ts - Update the updateActivity method
+
   @Put(':username/activities/:id')
   async updateActivity(
     @Param('username') username: string,
@@ -242,138 +185,99 @@ export class ProgressController {
       bonus?: string | null;
     },
   ) {
-    const queryRunner =
-      this.activityRepository.manager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const user = await this.userRepository.findOne({
+      where: { username },
+      relations: ['activities'],
+    });
 
-    try {
-      const activityId = parseInt(id, 10);
-
-      // Get activity with user in single query
-      const activity = await queryRunner.manager
-        .createQueryBuilder(Activity, 'activity')
-        .innerJoinAndSelect('activity.user', 'user')
-        .where('activity.id = :id', { id: activityId })
-        .andWhere('user.username = :username', { username })
-        .setLock('pessimistic_write')
-        .getOne();
-
-      if (!activity) {
-        throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
-      }
-
-      const hours = (updateData.duration ?? 0) / 60;
-      const adjustedKm = calculateKilometersWithBonus(
-        updateData.activity,
-        hours,
-        updateData.bonus ?? null,
-        username,
-      );
-
-      const oldKm = activity.kilometers;
-      const kmDifference = adjustedKm - oldKm;
-
-      // Update activity
-      await queryRunner.manager
-        .createQueryBuilder()
-        .update(Activity)
-        .set({
-          activity: updateData.activity,
-          duration: updateData.duration,
-          date: updateData.date,
-          kilometers: adjustedKm,
-          bonus: updateData.bonus || null,
-        })
-        .where('id = :id', { id: activityId })
-        .execute();
-
-      // Update user's total km
-      await queryRunner.manager
-        .createQueryBuilder()
-        .update(Users)
-        .set({ totalKm: () => `totalKm + ${kmDifference}` })
-        .where('id = :id', { id: activity.user.id })
-        .execute();
-
-      await queryRunner.commitTransaction();
-
-      return {
-        message: 'Activity updated successfully',
-        updatedActivity: {
-          ...activity,
-          ...updateData,
-          kilometers: adjustedKm,
-        },
-        updatedTotalKm: activity.user.totalKm + kmDifference,
-      };
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      console.error('Error updating activity:', error);
-      throw error;
-    } finally {
-      await queryRunner.release();
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
+
+    const activityId = parseInt(id, 10);
+    const activity = await this.activityRepository.findOne({
+      where: { id: activityId, user: { username } },
+    });
+
+    if (!activity) {
+      throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
+    }
+
+    console.log('🔄 Updating Activity:', { updateData, username });
+
+    const hours = (updateData.duration ?? 0) / 60;
+
+    // ✅ CRITICAL FIX: Pass username to the calculation function
+    const adjustedKm = calculateKilometersWithBonus(
+      updateData.activity,
+      hours,
+      updateData.bonus ?? null,
+      username, // 🔥 This was missing and causing 0 km calculations!
+    );
+
+    console.log('📊 Calculated adjusted km:', adjustedKm);
+
+    // Remove old kilometers before updating
+    user.totalKm -= activity.kilometers;
+
+    // Update activity properties
+    activity.activity = updateData.activity;
+    activity.duration = updateData.duration;
+    activity.date = updateData.date;
+    activity.kilometers = adjustedKm;
+    activity.bonus = updateData.bonus || null;
+
+    // Save updated activity
+    await this.activityRepository.save(activity);
+
+    // Add new kilometers to user's total
+    user.totalKm += adjustedKm;
+    await this.userRepository.save(user);
+
+    console.log('✅ Activity update completed:', {
+      activityId: activity.id,
+      newKm: adjustedKm,
+      userTotalKm: user.totalKm,
+    });
+
+    return {
+      message: 'Activity updated successfully',
+      updatedActivity: activity,
+      updatedTotalKm: user.totalKm,
+    };
   }
 
-  // OPTIMIZED: Delete activity with transaction
+  // ✅ DELETE: Delete an activity by **ID**
   @Delete(':username/activities/:id')
   async deleteActivity(
     @Param('username') username: string,
-    @Param('id') id: string,
+    @Param('id') id: string, // String because Nest treats route params as strings
   ) {
-    const queryRunner =
-      this.activityRepository.manager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    const user = await this.userRepository.findOne({
+      where: { username },
+      relations: ['activities'],
+    });
 
-    try {
-      const activityId = parseInt(id, 10);
+    if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
-      // Get activity with user in single query
-      const activity = await queryRunner.manager
-        .createQueryBuilder(Activity, 'activity')
-        .innerJoinAndSelect('activity.user', 'user')
-        .where('activity.id = :id', { id: activityId })
-        .andWhere('user.username = :username', { username })
-        .setLock('pessimistic_write')
-        .getOne();
+    const activityId = parseInt(id, 10);
+    const activity = await this.activityRepository.findOne({
+      where: { id: activityId },
+    });
 
-      if (!activity) {
-        throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
-      }
+    if (!activity)
+      throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
 
-      const kmToSubtract = activity.kilometers;
+    user.activities = user.activities.filter((a) => a.id !== activity.id);
+    user.totalKm = user.activities.reduce(
+      (total, a) => total + a.kilometers,
+      0,
+    );
 
-      // Delete activity (cascade will handle comments/reactions)
-      await queryRunner.manager
-        .createQueryBuilder()
-        .delete()
-        .from(Activity)
-        .where('id = :id', { id: activityId })
-        .execute();
+    await this.activityRepository.delete(activity.id);
+    await this.userRepository.save(user);
 
-      // Update user's total km
-      await queryRunner.manager
-        .createQueryBuilder()
-        .update(Users)
-        .set({ totalKm: () => `totalKm - ${kmToSubtract}` })
-        .where('id = :id', { id: activity.user.id })
-        .execute();
-
-      await queryRunner.commitTransaction();
-
-      return {
-        message: 'Activity deleted successfully',
-        deletedKm: kmToSubtract,
-        newTotalKm: activity.user.totalKm - kmToSubtract,
-      };
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      console.error('Error deleting activity:', error);
-      throw error;
-    } finally {
-      await queryRunner.release();
-    }
+    return user;
   }
+  // Add this new endpoint to your Progress
 }

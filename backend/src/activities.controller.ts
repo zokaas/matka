@@ -1,4 +1,4 @@
-// src/activities.controller.ts - OPTIMIZED VERSION
+// src/activities.controller.ts
 import {
   Controller,
   Get,
@@ -46,8 +46,8 @@ export class ActivitiesController {
         50,
       );
 
-      // OPTIMIZED: Single query with proper eager loading and aggregation
-      const activities = await this.activityRepository
+      // Single optimized query with aggregated counts
+      const result = await this.activityRepository
         .createQueryBuilder('activity')
         .leftJoinAndSelect('activity.user', 'user')
         .leftJoin('activity.reactions', 'reactions')
@@ -59,7 +59,6 @@ export class ActivitiesController {
           'activity.date',
           'activity.kilometers',
           'activity.bonus',
-          'user.id',
           'user.username',
           'user.profilePicture',
         ])
@@ -69,12 +68,12 @@ export class ActivitiesController {
         .addGroupBy('user.id')
         .orderBy('activity.date', 'DESC')
         .addOrderBy('activity.id', 'DESC')
-        .limit(parsedLimit)
+        .take(parsedLimit)
         .getRawAndEntities();
 
-      // Transform the results efficiently
-      return activities.entities.map((activity, index): ActivityResponse => {
-        const rawData = activities.raw[index] as ActivityRawResult;
+      // Type-safe mapping with proper null checks
+      return result.entities.map((activity, index): ActivityResponse => {
+        const rawData = result.raw[index] as ActivityRawResult;
 
         return {
           id: activity.id,
@@ -93,36 +92,6 @@ export class ActivitiesController {
       console.error('Error fetching recent activities:', error);
       throw new HttpException(
         'Failed to fetch recent activities',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  // NEW: Get activity details with reactions and comments in one query
-  @Get(':id/details')
-  async getActivityDetails(@Query('id') activityId: number) {
-    try {
-      const activity = await this.activityRepository
-        .createQueryBuilder('activity')
-        .leftJoinAndSelect('activity.user', 'user')
-        .leftJoinAndSelect('activity.reactions', 'reactions')
-        .leftJoinAndSelect('activity.comments', 'comments')
-        .where('activity.id = :id', { id: activityId })
-        .getOne();
-
-      if (!activity) {
-        throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
-      }
-
-      return {
-        ...activity,
-        reactionsCount: activity.reactions?.length || 0,
-        commentsCount: activity.comments?.length || 0,
-      };
-    } catch (error) {
-      console.error('Error fetching activity details:', error);
-      throw new HttpException(
-        'Failed to fetch activity details',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
