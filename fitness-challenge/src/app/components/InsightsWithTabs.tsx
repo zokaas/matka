@@ -615,7 +615,7 @@ console.table(cumulativeProgressData);
               <div className="grid grid-cols-1 gap-4">
                 <KPICard
                   icon={<Target className="w-5 h-5" />}
-                  title="Valmistumisaste"
+                  title="Matkaa pyöräilty"
                   value={`${analytics.completionPercentage.toFixed(1)}%`}
                   subtitle={`${Math.round(analytics.totalProgress).toLocaleString('fi-FI')} / ${challengeParams.totalDistance.toLocaleString('fi-FI')} km`}
                   trend={analytics.progressStatus}
