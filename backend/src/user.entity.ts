@@ -1,12 +1,20 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+// src/user.entity.ts
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  Index,
+} from 'typeorm';
 import { Activity } from './activity.entity';
 
 @Entity()
+@Index(['username']) // Explicit index for username searches
 export class Users {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ unique: true }) // Make sure this is unique
   username: string;
 
   @Column('float', { default: 0 })
@@ -15,6 +23,6 @@ export class Users {
   @OneToMany(() => Activity, (activity) => activity.user)
   activities: Activity[];
 
-  @Column({ nullable: true }) // Allow null values initially
+  @Column({ nullable: true })
   profilePicture: string;
 }

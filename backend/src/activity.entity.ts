@@ -5,12 +5,16 @@ import {
   ManyToOne,
   OneToMany,
   JoinColumn,
+  Index,
 } from 'typeorm';
 import { Users } from './user.entity';
 import { Comment } from './comment.entity';
 import { Reaction } from './reaction.entity';
 
 @Entity()
+@Index(['date']) // For sorting by date
+@Index(['userId', 'date']) // For user-specific queries with date
+@Index(['date', 'id']) // For the exact ORDER BY you use in getRecentActivities
 export class Activity {
   @PrimaryGeneratedColumn()
   id: number;

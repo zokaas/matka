@@ -21,21 +21,19 @@ export class CommentsController {
     private commentRepository: Repository<Comment>,
   ) {}
 
+  // In src/comments.controller.ts
   @Get(':activityId/comments')
   async getActivityComments(@Param('activityId') activityId: string) {
-    const activity = await this.activityRepository.findOne({
-      where: { id: parseInt(activityId, 10) },
-      relations: ['comments'],
-    });
+    const parsedId = parseInt(activityId, 10);
 
-    if (!activity) {
-      throw new HttpException('Activity not found', HttpStatus.NOT_FOUND);
-    }
+    // More efficient query using the new index
+    const comments = await this.commentRepository
+      .createQueryBuilder('comment')
+      .where('comment.activity = :activityId', { activityId: parsedId })
+      .orderBy('comment.createdAt', 'DESC')
+      .getMany();
 
-    return activity.comments.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    );
+    return comments;
   }
 
   @Post(':activityId/comments')

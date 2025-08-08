@@ -25,26 +25,26 @@ export class ProgressController {
     private activityRepository: Repository<Activity>,
   ) {}
 
-  // ✅ GET: Fetch a user and paginate activities
+  // In src/progress.controller.ts - update the getUser method
   @Get(':username')
   async getUser(
     @Param('username') username: string,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
   ) {
-    const user = await this.userRepository.findOne({
-      where: { username },
-      relations: ['activities'],
-    });
+    // Use the index-optimized query
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.activities', 'activities')
+      .where('user.username = :username', { username })
+      .orderBy('activities.date', 'DESC') // This will use the activity date index
+      .getOne();
 
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
 
-    user.activities.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-    );
-
+    // Rest of your pagination logic stays the same
     const start = (Number(page) - 1) * Number(limit);
     const paginatedActivities = user.activities.slice(
       start,
