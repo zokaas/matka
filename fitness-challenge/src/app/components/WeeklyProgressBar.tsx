@@ -14,7 +14,6 @@ const WeeklyProgressBar = () => {
   const { users, loading, error } = useFetchUsers();
   const [showDetails, setShowDetails] = useState(false);
   const [showAllWeeks, setShowAllWeeks] = useState(false);
-
   const weeklyGoalData = useWeeklyGoal(users);
 
   const {
@@ -102,7 +101,7 @@ const WeeklyProgressBar = () => {
             </span>
           </div>
           <div className="text-xs text-slate-500">
-            {r1(weeklyGoalPerUser)} km/hlö
+            {Number(weeklyGoalPerUser).toFixed(1)} km/hlö
           </div>
         </div>
       </div>
@@ -169,17 +168,6 @@ const WeeklyProgressBar = () => {
             <span className="font-medium text-green-600">Viikkotavoite saavutettu! 🎉</span>
           )}
         </div>
-        {hasHistory && goalAdjustment !== 0 && (
-          <div className="text-xs text-slate-500 flex items-center gap-1">
-            {goalAdjustment > 0 ? (
-              <TrendingUp className="w-3 h-3 text-red-500" />
-            ) : (
-              <TrendingDown className="w-3 h-3 text-green-500" />
-            )}
-            {goalAdjustment > 0 ? "+" : ""}
-            {r1(goalAdjustment)} km viime viikosta
-          </div>
-        )}
       </div>
 
       {/* Details panel */}
@@ -220,7 +208,6 @@ const WeeklyProgressBar = () => {
                       <div className="text-lg font-bold text-yellow-600">
                         {r1(currentWeek.achievementRate * 100)}%
                       </div>
-                      <div className="text-xs text-slate-600">saavutettu</div>
                     </div>
                   </div>
                 </div>
@@ -408,17 +395,6 @@ const WeeklyProgressBar = () => {
                         </div>
                       </div>
                     )}
-                    <div className="col-span-2 flex items-center gap-2">
-                      <TrendIcon
-                        className={`w-4 h-4 ${
-                          performanceTrend === "improving"
-                            ? "text-green-600"
-                            : performanceTrend === "declining"
-                            ? "text-red-600"
-                            : "text-slate-500"
-                        }`}
-                      />
-                    </div>
                   </div>
 
                 </div>
