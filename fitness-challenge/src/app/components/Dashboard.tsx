@@ -1,18 +1,19 @@
+// components/Dashboard.tsx - UPDATED WITH DYNAMIC WEEKLY GOALS
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Trophy, Activity, TrendingUp,
+  Trophy, Activity, TrendingUp, Calendar, Target, Users, Info
 } from "lucide-react";
 
 import { useTheme } from "@/app/hooks/useTheme";
-import { useWeeklyGoal } from "@/app/hooks/useWeeklyGoal";
+import { useWeeklyGoal } from "@/app/hooks/useWeeklyGoal"; // Now uses dynamic system
 import { useCurrentStage } from "@/app/hooks/useCurrentStage";
 
 import Leaderboard from "./Leaderboard";
 import WeeklyProgress from "./WeeklyProgress";
 import ActivityFeedPage from "./ActivityFeedPage";
 import SubmitQuote from "./SubmitQuote";
-import WeeklyProgressBar from "./WeeklyProgressBar";
+import WeeklyProgressBar from "./WeeklyProgressBar"; // Enhanced version
 
 import { fetchUsersAndTotalKm } from "../utils/utils";
 import { User } from "@/app/types/types";
@@ -28,15 +29,14 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeView, setActiveView] = useState<'leaderboard' | 'weekly' | 'feed'>('leaderboard');
+  const [showGoalDetails, setShowGoalDetails] = useState(false);
 
-  const { currentStage, current, next, progressToNext } = useCurrentStage(stages, totalKm);
-  const weeklyGoalData = useWeeklyGoal(users);
+  const { currentStage } = useCurrentStage(stages, totalKm);
+  const weeklyGoalData = useWeeklyGoal(users); // Dynamic weekly goal data
 
   useEffect(() => {
     fetchUsersAndTotalKm(setUsers, setTotalKm, setLoading, setError);
   }, []);
-
-
 
   const viewOptions = [
     { key: 'leaderboard', label: t.tabs.leaderboard, icon: Trophy },
@@ -90,12 +90,10 @@ export default function Dashboard() {
             <Quotes />
           </motion.div>
         </motion.header>
-<StageCard
- totalKm={totalKm}
-/>
+        {/* STAGE PROGRESS */}
+        <StageCard totalKm={totalKm} />
 
-
-        {/* WEEKLY PROGRESS BAR */}
+        {/* ENHANCED WEEKLY PROGRESS BAR */}
         <WeeklyProgressBar />
 
         {/* VIEW SELECTOR */}
@@ -144,23 +142,32 @@ export default function Dashboard() {
   );
 }
 
-function StatCard({
+// Helper component for goal metrics
+function GoalMetricCard({
   icon,
-  value,
   label,
-  color = "text-gray-600",
+  value,
+  color,
+  bgColor,
 }: {
   icon: React.ReactNode;
-  value: string;
   label: string;
-  color?: string;
+  value: string;
+  color: string;
+  bgColor: string;
 }) {
   return (
-    <div className=" rounded-lg p-3 flex items-center gap-3">
-      <div className={color}>{icon}</div>
-      <div>
-        <div className="text-lg font-bold text-gray-800">{value}</div>
-        <div className="text-xs text-gray-600">{label}</div>
+    <div className={`p-3 rounded-lg ${bgColor} transition-transform hover:scale-105`}>
+      <div className={`${color} mb-2 flex justify-center`}>
+        {icon}
+      </div>
+      <div className="text-center">
+        <div className={`text-lg font-bold ${color}`}>
+          {value}
+        </div>
+        <div className="text-xs text-gray-600">
+          {label}
+        </div>
       </div>
     </div>
   );

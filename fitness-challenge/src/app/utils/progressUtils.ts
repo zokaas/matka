@@ -15,7 +15,7 @@ export const calculateVisitDate = (
     const visitDate = new Date();
     visitDate.setDate(currentDate.getDate() - estimatedDaysAgo);
 
-    return visitDate.toLocaleDateString("en-US", {
+    return visitDate.toLocaleDateString("fi-FI", {
       month: "short",
       day: "numeric",
     });
