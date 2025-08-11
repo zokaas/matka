@@ -1,11 +1,13 @@
+// components/WeeklyProgress.tsx - 1-DECIMAL ROUNDING APPLIED
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { User } from "@/app/types/types";
 import { useTheme } from "@/app/hooks/useTheme";
-import { useWeeklyGoal } from "@/app/hooks/useWeeklyGoal"; // 🆕 NEW IMPORT
-import { challengeParams } from "../constants/challengeParams";
+import { useWeeklyGoal } from "@/app/hooks/useWeeklyGoal";
+
+const r1 = (n: number) => Number(n.toFixed(1));
 
 interface WeeklyProgressProps {
   users: User[];
@@ -24,15 +26,13 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
   const { t } = useTheme();
   const [weeklyInsights, setWeeklyInsights] = useState<WeeklyInsight[]>([]);
 
-  // 🆕 GET WEEKLY DATA FROM HOOK
+  // weekly data from hook
   const weeklyGoalData = useWeeklyGoal(users);
 
   useEffect(() => {
     if (!users || users.length === 0) return;
 
-    // 🔧 DESTRUCTURE STABLE PROPERTIES
-    const { weeklyGoalPerUser, weekStart, weekEnd, daysRemaining } =
-      weeklyGoalData;
+    const { weeklyGoalPerUser, weekStart, weekEnd, daysRemaining } = weeklyGoalData;
 
     const insights = users
       .map((user) => {
@@ -41,21 +41,21 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
           return activityDate >= weekStart && activityDate <= weekEnd;
         });
 
-        const weeklyProgress = weekActivities.reduce(
-          (sum, activity) => sum + activity.kilometers,
-          0
+        const weeklyProgress = r1(
+          weekActivities.reduce((sum, activity) => sum + activity.kilometers, 0)
         );
-        const weeklyPercentage =
-          weeklyGoalPerUser > 0
-            ? (weeklyProgress / weeklyGoalPerUser) * 100
-            : 0;
-        const remainingKm = Math.max(0, weeklyGoalPerUser - weeklyProgress);
-        const dailyTarget = daysRemaining > 0 ? remainingKm / daysRemaining : 0;
+
+        const weeklyPercentage = r1(
+          weeklyGoalPerUser > 0 ? (weeklyProgress / weeklyGoalPerUser) * 100 : 0
+        );
+
+        const remainingKm = Math.max(0, r1(weeklyGoalPerUser - weeklyProgress));
+        const dailyTarget = daysRemaining > 0 ? r1(remainingKm / daysRemaining) : 0;
 
         return {
           username: user.username,
-          weeklyGoal: weeklyGoalPerUser,
-          weeklyProgress: Number(weeklyProgress.toFixed(1)),
+          weeklyGoal: r1(weeklyGoalPerUser),
+          weeklyProgress,
           weeklyPercentage: Math.min(200, weeklyPercentage),
           dailyTarget,
           rank: 0,
@@ -68,7 +68,8 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
   }, [
     users,
     weeklyGoalData.weeklyGoalPerUser,
-    weeklyGoalData.currentWeekKey, // 🔧 ONLY DEPEND ON STABLE VALUES
+    weeklyGoalData.currentWeekKey,
+    weeklyGoalData.daysRemaining, // recalcs daily target if day advances
   ]);
 
   const getUserActivityStatus = (username: string) => {
@@ -92,15 +93,11 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
   };
 
   // Group by achievement level
-  const champions = weeklyInsights.filter(
-    (insight) => insight.weeklyPercentage >= 100
-  );
+  const champions = weeklyInsights.filter((i) => i.weeklyPercentage >= 100);
   const inProgress = weeklyInsights.filter(
-    (insight) => insight.weeklyPercentage > 0 && insight.weeklyPercentage < 100
+    (i) => i.weeklyPercentage > 0 && i.weeklyPercentage < 100
   );
-  const needsMotivation = weeklyInsights.filter(
-    (insight) => insight.weeklyPercentage === 0
-  );
+  const needsMotivation = weeklyInsights.filter((i) => i.weeklyPercentage === 0);
 
   return (
     <section className="px-4">
@@ -120,11 +117,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
               const activityStatus = getUserActivityStatus(insight.username);
 
               return (
-                <Link
-                  key={insight.username}
-                  href={`/user/${insight.username}`}
-                  className="block"
-                >
+                <Link key={insight.username} href={`/user/${insight.username}`} className="block">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -153,18 +146,14 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                             {insight.username}
                           </h4>
                           <div className="text-sm text-green-600">
-                            🥇 {Number(insight.weeklyPercentage).toFixed(1)}% saavutettu!
-                            {activityStatus && (
-                              <span className="ml-2">
-                                {activityStatus.emoji}
-                              </span>
-                            )}
+                            🥇 {insight.weeklyPercentage.toFixed(1)}% saavutettu!
+                            {activityStatus && <span className="ml-2">{activityStatus.emoji}</span>}
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="text-2xl font-bold text-green-800">
-                          {Number(insight.weeklyProgress.toFixed(1))}km
+                          {insight.weeklyProgress.toFixed(1)}km
                         </div>
                         {activityStatus && (
                           <div className="text-xs text-orange-600 mt-1">
@@ -182,7 +171,6 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
       )}
 
       {/* In Progress */}
-      {/* In Progress */}
       {inProgress.length > 0 && (
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-yellow-400 mb-3">
@@ -193,16 +181,10 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
               const user = users.find((u) => u.username === insight.username);
               const activityStatus = getUserActivityStatus(insight.username);
               const globalRank =
-                weeklyInsights.findIndex(
-                  (w) => w.username === insight.username
-                ) + 1;
+                weeklyInsights.findIndex((w) => w.username === insight.username) + 1;
 
               return (
-                <Link
-                  key={insight.username}
-                  href={`/user/${insight.username}`}
-                  className="block"
-                >
+                <Link key={insight.username} href={`/user/${insight.username}`} className="block">
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -239,11 +221,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                             Sija {globalRank}
                             {globalRank <= 3 && (
                               <span className="ml-1">
-                                {globalRank === 1
-                                  ? "🥇"
-                                  : globalRank === 2
-                                  ? "🥈"
-                                  : "🥉"}
+                                {globalRank === 1 ? "🥇" : globalRank === 2 ? "🥈" : "🥉"}
                               </span>
                             )}
                           </div>
@@ -252,16 +230,12 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                       <div className="text-right">
                         <div className="flex items-center gap-2">
                           <div className="text-xl font-bold text-yellow-500">
-                            {insight.weeklyProgress} km
+                            {insight.weeklyProgress.toFixed(1)} km
                           </div>
-                          {activityStatus && (
-                            <span className="text-base">
-                              {activityStatus.emoji}
-                            </span>
-                          )}
+                          {activityStatus && <span className="text-base">{activityStatus.emoji}</span>}
                         </div>
                         <div className="text-sm text-gray-500">
-                          {Number(insight.weeklyPercentage.toFixed(1))}%
+                          {insight.weeklyPercentage}%
                         </div>
                       </div>
                     </div>
@@ -279,9 +253,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                           {insight.weeklyPercentage > 5 && (
                             <div
                               className="absolute top-0 -right-2 text-sm"
-                              style={{
-                                transform: "translateY(-4px) scaleX(-1)",
-                              }}
+                              style={{ transform: "translateY(-4px) scaleX(-1)" }}
                             >
                               🚴‍♂️
                             </div>
@@ -293,18 +265,11 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                     <div className="text-center mt-2 text-xs">
                       {activityStatus ? (
                         <span className="text-orange-700 font-medium">
-                          ⚠️ Ei aktiivinen {activityStatus.days} päivään -
-                          tarvitaan kannustusta!
+                          ⚠️ Ei aktiivinen {activityStatus.days} päivään - tarvitaan kannustusta!
                         </span>
                       ) : (
                         <span className="text-yellow-800">
-                          Tarvitaan vielä{" "}
-                          {Number(
-                            (
-                              insight.weeklyGoal - insight.weeklyProgress
-                            ).toFixed(1)
-                          )}{" "}
-                          km
+                          Tarvitaan vielä {r1(insight.weeklyGoal - insight.weeklyProgress)} km
                         </span>
                       )}
                     </div>
@@ -328,11 +293,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
               const activityStatus = getUserActivityStatus(insight.username);
 
               return (
-                <Link
-                  key={insight.username}
-                  href={`/user/${insight.username}`}
-                  className="block"
-                >
+                <Link key={insight.username} href={`/user/${insight.username}`} className="block">
                   <motion.div
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -358,23 +319,15 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                           )}
                         </div>
                         <div>
-                          <h4 className="text-sm font-medium text-red-800">
-                            {insight.username}
-                          </h4>
-                          <div className="text-xs text-red-600">
-                            0 km tällä viikolla
-                          </div>
+                          <h4 className="text-sm font-medium text-red-800">{insight.username}</h4>
+                          <div className="text-xs text-red-600">0 km tällä viikolla</div>
                         </div>
                       </div>
                       <div className="text-right">
                         {activityStatus && (
                           <div className="bg-red-100 px-2 py-1 rounded-full flex flex-col items-center">
-                            <div className="text-base">
-                              {activityStatus.emoji}
-                            </div>
-                            <div className="text-xs text-red-700">
-                              {activityStatus.days}
-                            </div>
+                            <div className="text-base">{activityStatus.emoji}</div>
+                            <div className="text-xs text-red-700">{activityStatus.days}</div>
                           </div>
                         )}
                       </div>

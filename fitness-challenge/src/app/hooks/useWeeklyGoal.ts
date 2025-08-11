@@ -1,7 +1,10 @@
-// hooks/useWeeklyGoal.ts - LOPULLISESTI KORJATTU VERSIO
+// hooks/useWeeklyGoal.ts - DYNAMIC WEEKLY GOALS, 1-DECIMAL
 import { useState, useEffect, useMemo } from 'react';
 import { User } from '@/app/types/types';
 import { challengeParams } from '@/app/constants/challengeParams';
+
+const DEFAULT_COMPETITORS = 10;
+const r1 = (n: number) => Number(n.toFixed(1));
 
 interface WeeklyGoalData {
   // Current week data
@@ -10,20 +13,21 @@ interface WeeklyGoalData {
   weeklyGoalPerUser: number;
   remainingDistance: number;
   progressPercentage: number;
-  
+
   // Dynamic recalculation data
-  goalAdjustment: number; // Change from previous week
+  goalAdjustment: number;
   adjustmentReason: 'ahead' | 'behind' | 'on-track';
-  
+
   // Week boundaries
   currentWeekKey: string;
   daysRemaining: number;
   weekStart: Date;
   weekEnd: Date;
-  
-  // Historical tracking
+
+  // Historical tracking - ENHANCED
   previousWeekGoal: number | null;
   weeklyHistory: WeekHistory[];
+  allWeeksData: WeekData[]; // Complete data for all weeks
   performanceTrend: 'improving' | 'declining' | 'stable';
   hasHistory: boolean;
 }
@@ -38,17 +42,31 @@ interface WeekHistory {
   weekEnd: Date;
 }
 
-export const useWeeklyGoal = (users: User[]): WeeklyGoalData => {
-  const [weeklyHistory, setWeeklyHistory] = useState<WeekHistory[]>([]);
+interface WeekData {
+  weekKey: string;
+  weekNumber: number;
+  weekStart: Date;
+  weekEnd: Date;
+  goalSet: number;            // Goal computed at the START of this week (1dp)
+  achieved: number;           // What was done in this week (1dp)
+  achievementRate: number;    // achieved / goalSet
+  cumulativeProgress: number; // total km up to END of this week (1dp)
+  isCurrent: boolean;
+  isCompleted: boolean;
+  daysInWeek: number; // How many days of this week have passed
+}
 
-  // 🔧 STABLE week boundaries calculation
-  const weekBoundaries = useMemo(() => {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
+export const useWeeklyGoal = (users: User[]): WeeklyGoalData => {
+  // Only need setter (legacy storage load)
+  const [, setWeeklyHistory] = useState<WeekHistory[]>([]);
+
+  // Helper: week boundaries (Mon–Sun)
+  const getWeekBoundaries = (date: Date) => {
+    const dayOfWeek = date.getDay();
     const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() + mondayOffset);
+
+    const weekStart = new Date(date);
+    weekStart.setDate(date.getDate() + mondayOffset);
     weekStart.setHours(0, 0, 0, 0);
 
     const weekEnd = new Date(weekStart);
@@ -57,176 +75,198 @@ export const useWeeklyGoal = (users: User[]): WeeklyGoalData => {
 
     const weekYear = weekStart.getFullYear();
     const weekNum = Math.ceil(
-      (weekStart.getTime() - new Date(weekYear, 0, 1).getTime()) / 
-      (7 * 24 * 60 * 60 * 1000)
+      (weekStart.getTime() - new Date(weekYear, 0, 1).getTime()) /
+        (7 * 24 * 60 * 60 * 1000)
     );
-    const currentWeekKey = `${weekYear}-W${weekNum}`;
+    const weekKey = `${weekYear}-W${weekNum}`;
+
+    return { weekStart, weekEnd, weekKey };
+  };
+
+  // Current week boundaries
+  const currentWeekBoundaries = useMemo(() => {
+    const today = new Date();
+    const boundaries = getWeekBoundaries(today);
+    const dayOfWeek = today.getDay();
     const daysRemaining = Math.max(1, 7 - (dayOfWeek === 0 ? 7 : dayOfWeek));
 
     return {
-      weekStart,
-      weekEnd,
-      currentWeekKey,
+      ...boundaries,
+      currentWeekKey: boundaries.weekKey,
       daysRemaining,
       today
     };
   }, []);
 
-  // 🔧 KORJATTU: Total progress calculation (koko haasteen edistyminen)
-  const totalProgress = useMemo(() => {
-    return users.reduce((sum, user) => sum + user.totalKm, 0);
-  }, [users]);
+  // All weeks from start → end (inclusive)
+  const allWeeksInChallenge = useMemo(() => {
+    const challengeStart = new Date(challengeParams.startDate);
+    const challengeEnd = new Date(challengeParams.endDate);
+    const today = new Date();
+    const weeks: WeekData[] = [];
 
-  // 🔧 KORJATTU: KULUVAN VIIKON edistyminen
-  const weeklyProgress = useMemo(() => {
-    if (!users || users.length === 0) return 0;
+    const currentWeekStart = new Date(challengeStart);
+    const dayOfWeek = challengeStart.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    currentWeekStart.setDate(challengeStart.getDate() + mondayOffset);
+    currentWeekStart.setHours(0, 0, 0, 0);
 
-    // console.log('🔍 Calculating weekly progress for current week:', {
-    //   weekStart: weekBoundaries.weekStart.toISOString(),
-    //   weekEnd: weekBoundaries.weekEnd.toISOString(),
-    //   usersCount: users.length
-    // });
+    let weekNumber = 1;
 
-    const totalWeeklyKm = users.reduce((totalProgress, user) => {
-      const weekActivities = user.activities.filter((activity) => {
-        const activityDate = new Date(activity.date);
-        
-        // 🔧 KORJAUS: Tarkista että päivämäärä on validi
-        if (isNaN(activityDate.getTime())) {
-          console.warn('Invalid activity date:', activity.date);
-          return false;
-        }
+    while (currentWeekStart <= challengeEnd) {
+      const wb = getWeekBoundaries(currentWeekStart);
+      const isCurrent = wb.weekKey === currentWeekBoundaries.currentWeekKey;
+      const isCompleted = wb.weekEnd < today;
 
-        // 🔧 KORJAUS: Käytä getTime() vertailuun
-        const isInWeek = activityDate.getTime() >= weekBoundaries.weekStart.getTime() && 
-                        activityDate.getTime() <= weekBoundaries.weekEnd.getTime();
-        
-        if (isInWeek) {
-          // console.log('✅ Activity in current week:', {
-          //   user: user.username,
-          //   activity: activity.activity,
-          //   date: activity.date,
-          //   kilometers: activity.kilometers,
-          //   activityDate: activityDate.toISOString()
-          // });
-        }
-        
-        return isInWeek;
+      let daysInWeek = 7;
+      if (isCurrent) {
+        const dow = today.getDay();
+        daysInWeek = dow === 0 ? 7 : dow;
+      }
+
+      weeks.push({
+        ...wb,
+        weekNumber,
+        goalSet: 0,
+        achieved: 0,
+        achievementRate: 0,
+        cumulativeProgress: 0,
+        isCurrent,
+        isCompleted,
+        daysInWeek
       });
 
-      const userWeeklyKm = weekActivities.reduce((sum, activity) => sum + activity.kilometers, 0);
-      
-      console.log(`User ${user.username}: ${userWeeklyKm} km this week (${weekActivities.length} activities)`);
-      
-      return totalProgress + userWeeklyKm;
-    }, 0);
+      currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+      weekNumber++;
+    }
 
-    // console.log('📊 Total weekly progress:', weeklyProgress.toFixed(1));
-    
-    return totalWeeklyKm;
-  }, [users, weekBoundaries.weekStart, weekBoundaries.weekEnd]);
+    return weeks;
+  }, [currentWeekBoundaries.currentWeekKey]);
 
-  // 🔧 STABLE weekly goal calculation with deficit catching
-  const dynamicWeeklyGoal = useMemo(() => {
-    if (!users || users.length === 0) return {
-      weeklyGoal: 0,
-      goalAdjustment: 0,
-      adjustmentReason: 'on-track' as const,
-      previousGoal: null,
-      hasHistory: false
-    };
+  // Fill each week's data with dynamic goals computed at the START of the week (1dp)
+  const allWeeksData = useMemo(() => {
+    const sourceUsers = users ?? [];
+    let cumulativeBeforeThisWeek = 0; // progress up to the START of the current loop week
 
-    // 🔧 PAKOTA dynaaminen laskenta
-    // Calculate dynamically WITH DEFICIT CATCHING
-    const remainingChallengeDistance = Math.max(0, challengeParams.totalDistance - totalProgress);
-    const daysUntilEnd = Math.max(1, Math.ceil(
-      (new Date(challengeParams.endDate).getTime() - weekBoundaries.today.getTime()) / 
-      (1000 * 60 * 60 * 24)
-    ));
-    const weeksRemaining = Math.ceil(daysUntilEnd / 7);
-    
-    // 🔧 LISÄTTY: Laske odotus vs. todellisuus (deficit catching)
-    const challengeStartDate = new Date(challengeParams.startDate);
-    const daysSinceStart = Math.max(1, Math.ceil(
-      (weekBoundaries.today.getTime() - challengeStartDate.getTime()) / 
-      (1000 * 60 * 60 * 24)
-    ));
-    const totalChallengeDays = challengeParams.totalDays;
-    const expectedProgressByNow = (challengeParams.totalDistance * daysSinceStart) / totalChallengeDays;
-    const deficit = Math.max(0, expectedProgressByNow - totalProgress);
-    
-    console.log('🧮 Dynamic goal calculation:', {
-      remainingChallengeDistance: Math.round(remainingChallengeDistance),
-      weeksRemaining,
-      expectedProgressByNow: Math.round(expectedProgressByNow),
-      actualProgress: Math.round(totalProgress),
-      deficit: Math.round(deficit),
-      daysSinceStart,
-      totalChallengeDays
+    return allWeeksInChallenge.map((week, index) => {
+      const weeksRemaining = allWeeksInChallenge.length - index; // including this week
+      const remainingBeforeWeek = Math.max(
+        0,
+        challengeParams.totalDistance - cumulativeBeforeThisWeek
+      );
+
+      // Equal split of remaining distance across remaining weeks (rounded to 1dp)
+      const goalSet = r1(remainingBeforeWeek / Math.max(1, weeksRemaining));
+
+      // Achieved this week (from activities, 1dp)
+      const weeklyKm = sourceUsers.reduce((totalWeekKm, user) => {
+        const weekActivities = user.activities.filter((activity) => {
+          const activityDate = new Date(activity.date);
+          return activityDate >= week.weekStart && activityDate <= week.weekEnd;
+        });
+        return (
+          totalWeekKm +
+          weekActivities.reduce((sum, activity) => sum + activity.kilometers, 0)
+        );
+      }, 0);
+
+      const achieved = r1(weeklyKm);
+      const achievementRate = goalSet > 0 ? achieved / goalSet : 0;
+
+      // Update cumulative AFTER this week for next iteration (1dp)
+      const cumulativeProgress = r1(cumulativeBeforeThisWeek + achieved);
+      cumulativeBeforeThisWeek += achieved;
+
+      return {
+        ...week,
+        goalSet,
+        achieved,
+        achievementRate,
+        cumulativeProgress
+      };
     });
-    
-    // Base weekly goal + deficit spread over remaining weeks
-    const baseWeeklyGoal = remainingChallengeDistance / weeksRemaining;
-    const deficitPerWeek = deficit / weeksRemaining;
-    const calculatedGoal = Math.ceil(baseWeeklyGoal + deficitPerWeek);
-    
-    console.log('📈 Goal breakdown:', {
-      baseWeeklyGoal: Math.round(baseWeeklyGoal),
-      deficitPerWeek: Math.round(deficitPerWeek),
-      finalGoal: calculatedGoal
-    });
-    
-    // Cache the result (optional - poistettu testaamista varten)
-    // localStorage.setItem(cacheKey, calculatedGoal.toString());
-    
-    const previousGoal = weeklyHistory.length > 0 ? weeklyHistory[weeklyHistory.length - 1].goalSet : null;
-    const goalAdjustment = previousGoal ? calculatedGoal - previousGoal : 0;
-    const adjustmentReason: 'ahead' | 'behind' | 'on-track' = 
-      goalAdjustment > 5 ? 'behind' : goalAdjustment < -5 ? 'ahead' : 'on-track';
-    
+  }, [allWeeksInChallenge, users]);
+
+  // Current week specific data (with fallback competitor count and 1dp rounding)
+  const currentWeekData = useMemo(() => {
+    const currentWeek = allWeeksData.find((w) => w.isCurrent);
+    if (!currentWeek) {
+      return {
+        weeklyGoal: 0,
+        weeklyProgress: 0,
+        weeklyGoalPerUser: 0,
+        remainingDistance: 0,
+        progressPercentage: 0,
+        goalAdjustment: 0,
+        adjustmentReason: 'on-track' as const,
+        previousGoal: null
+      };
+    }
+
+    const competitorCount = Math.max(users.length, DEFAULT_COMPETITORS);
+    const weeklyGoalPerUser = r1(currentWeek.goalSet / competitorCount);
+
+    const remainingDistance = r1(Math.max(0, currentWeek.goalSet - currentWeek.achieved));
+    const progressPercentage = r1(
+      currentWeek.goalSet > 0 ? (currentWeek.achieved / currentWeek.goalSet) * 100 : 0
+    );
+
+    // Previous week comparison
+    const previousWeek = allWeeksData.find(
+      (w) => w.weekNumber === currentWeek.weekNumber - 1
+    );
+    const previousGoal = previousWeek ? previousWeek.goalSet : null;
+    const goalAdjustment = previousGoal ? r1(currentWeek.goalSet - previousGoal) : 0;
+    const adjustmentReason: 'ahead' | 'behind' | 'on-track' =
+      (goalAdjustment ?? 0) > 5 ? 'behind' : (goalAdjustment ?? 0) < -5 ? 'ahead' : 'on-track';
+
     return {
-      weeklyGoal: calculatedGoal,
+      weeklyGoal: currentWeek.goalSet,
+      weeklyProgress: currentWeek.achieved,
+      weeklyGoalPerUser,
+      remainingDistance,
+      progressPercentage,
       goalAdjustment,
       adjustmentReason,
-      previousGoal,
-      hasHistory: weeklyHistory.length > 0
+      previousGoal
     };
-  }, [users, totalProgress, weekBoundaries, weeklyHistory]); // 🔧 POISTETTU cachedWeeklyGoal dependenssi
+  }, [allWeeksData, users.length]);
 
-  // 🔧 STABLE derived calculations
-  const derivedData = useMemo(() => {
-    const weeklyGoalPerUser = users.length > 0 ? Number((dynamicWeeklyGoal.weeklyGoal / users.length).toFixed(1)) : 0;
-    const remainingDistance = Math.max(0, dynamicWeeklyGoal.weeklyGoal - weeklyProgress);
-    const progressPercentage = dynamicWeeklyGoal.weeklyGoal > 0 ? Math.min(100, (weeklyProgress / dynamicWeeklyGoal.weeklyGoal) * 100) : 0;
+  // Historical (completed weeks only)
+  const historicalWeeks = useMemo(() => {
+    return allWeeksData
+      .filter((w) => w.isCompleted)
+      .map((w) => ({
+        weekKey: w.weekKey,
+        goalSet: w.goalSet,
+        achieved: w.achieved,
+        achievementRate: w.achievementRate,
+        cumulativeProgress: w.cumulativeProgress,
+        weekStart: w.weekStart,
+        weekEnd: w.weekEnd
+      }));
+  }, [allWeeksData]);
 
-    return {
-      weeklyGoalPerUser,
-      remainingDistance: Number(remainingDistance.toFixed(1)),
-      progressPercentage: Number(progressPercentage.toFixed(1)),
-    };
-  }, [dynamicWeeklyGoal.weeklyGoal, weeklyProgress, users.length]);
-
-  // Performance trend analysis (simplified)
+  // Trend: compare last two completed weeks
   const performanceTrend = useMemo((): 'improving' | 'declining' | 'stable' => {
-    if (weeklyHistory.length < 2) return 'stable';
-    
-    const recent = weeklyHistory.slice(-2);
-    const improvement = recent[1].achievementRate - recent[0].achievementRate;
-    
-    if (improvement > 0.1) return 'improving';
-    if (improvement < -0.1) return 'declining';
+    const completed = allWeeksData.filter((w) => w.isCompleted);
+    if (completed.length < 2) return 'stable';
+    const recent = completed.slice(-2);
+    const delta = recent[1].achievementRate - recent[0].achievementRate;
+    if (delta > 0.1) return 'improving';
+    if (delta < -0.1) return 'declining';
     return 'stable';
-  }, [weeklyHistory]);
+  }, [allWeeksData]);
 
-  // Load historical data on mount
+  // Legacy load (optional)
   useEffect(() => {
     try {
       const stored = localStorage.getItem(`weekly-history-${challengeParams.startDate}`);
       if (stored) {
-        const history = JSON.parse(stored).map((week: WeekHistory) => ({
-          ...week,
-          weekStart: new Date(week.weekStart),
-          weekEnd: new Date(week.weekEnd)
+        const history = JSON.parse(stored).map((w: WeekHistory) => ({
+          ...w,
+          weekStart: new Date(w.weekStart),
+          weekEnd: new Date(w.weekEnd)
         }));
         setWeeklyHistory(history);
       }
@@ -235,29 +275,27 @@ export const useWeeklyGoal = (users: User[]): WeeklyGoalData => {
     }
   }, []);
 
-  // 🔧 RETURN STABLE OBJECT
-  return useMemo(() => ({
-    weeklyGoal: dynamicWeeklyGoal.weeklyGoal,
-    weeklyProgress: Number(weeklyProgress.toFixed(1)), // 🔧 1 desimaali
-    weeklyGoalPerUser: derivedData.weeklyGoalPerUser,
-    remainingDistance: derivedData.remainingDistance,
-    progressPercentage: derivedData.progressPercentage,
-    goalAdjustment: dynamicWeeklyGoal.goalAdjustment,
-    adjustmentReason: dynamicWeeklyGoal.adjustmentReason,
-    currentWeekKey: weekBoundaries.currentWeekKey,
-    daysRemaining: weekBoundaries.daysRemaining,
-    weekStart: weekBoundaries.weekStart,
-    weekEnd: weekBoundaries.weekEnd,
-    previousWeekGoal: dynamicWeeklyGoal.previousGoal,
-    weeklyHistory,
-    performanceTrend,
-    hasHistory: dynamicWeeklyGoal.hasHistory
-  }), [
-    dynamicWeeklyGoal,
-    weeklyProgress,
-    derivedData,
-    weekBoundaries,
-    weeklyHistory,
+  // Return
+  return useMemo(() => {
+    const { previousGoal, ...currentNoPrev } = currentWeekData;
+
+    return {
+      ...currentNoPrev,
+      previousWeekGoal: previousGoal ?? null,
+      currentWeekKey: currentWeekBoundaries.currentWeekKey,
+      daysRemaining: currentWeekBoundaries.daysRemaining,
+      weekStart: currentWeekBoundaries.weekStart,
+      weekEnd: currentWeekBoundaries.weekEnd,
+      weeklyHistory: historicalWeeks,
+      allWeeksData,
+      performanceTrend,
+      hasHistory: historicalWeeks.length > 0
+    };
+  }, [
+    currentWeekData,
+    currentWeekBoundaries,
+    historicalWeeks,
+    allWeeksData,
     performanceTrend
   ]);
 };
