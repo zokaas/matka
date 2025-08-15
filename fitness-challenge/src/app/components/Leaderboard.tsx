@@ -15,6 +15,19 @@ const getMedal = (index: number) => {
   return null;
 };
 
+const formatDuration = (totalMinutes: number) => {
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  
+  if (hours === 0) {
+    return `${minutes} min`;
+  } else if (minutes === 0) {
+    return `${hours} h`;
+  } else {
+    return `${hours}h ${minutes}min`;
+  }
+};
+
 const Leaderboard = ({ users }: LeaderboardProps) => {
   const { t } = useTheme();
 
@@ -26,73 +39,82 @@ const Leaderboard = ({ users }: LeaderboardProps) => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {users
           .sort((a, b) => b.totalKm - a.totalKm) // Sort by total kilometers
-          .map((user, index) => (
-            <motion.div
-              key={user.username}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Link
-                href={`/user/${user.username}`}
-                className={`block bg-white p-4 rounded-lg shadow-md transform transition-all duration-200 hover:scale-105 hover:shadow-lg ${
-                  index === 0
-                    ? "border-yellow-500 border-2"
-                    : index === 1
-                    ? "border-gray-400 border-2"
-                    : index === 2
-                    ? "border-orange-400 border-2"
-                    : ""
-                }`}
+          .map((user, index) => {
+            // Calculate total duration for this user
+            const totalDuration = user.activities.reduce((sum, activity) => sum + activity.duration, 0);
+            
+            return (
+              <motion.div
+                key={user.username}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
               >
-                <div className="flex flex-col items-center">
-                  <div className="relative mb-2">
-                    {/* Profile Picture */}
-                    <div className="w-24 h-24 rounded-full overflow-hidden shadow-md">
-                      <Image
-                        src={
-                          user.profilePicture
-                            ? `https://matka-xi.vercel.app/${user.username}.png`
-                            : `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.username}`
-                        }
-                        alt={`${user.username}'s avatar`}
-                        width={96}
-                        height={96}
-                        className="object-cover w-full h-full"
-                        unoptimized
-                      />
-                    </div>
-                    {/* Medals for Top 3 */}
-                    {getMedal(index) && (
-                      <div 
-                        className="absolute -bottom-3 -right-3 text-3xl rounded-full p-1"
-                        title={
-                          index === 0 
-                            ? t.leaderboard.goldMedal 
-                            : index === 1 
-                            ? t.leaderboard.silverMedal 
-                            : t.leaderboard.bronzeMedal
-                        }
-                      >
-                        {getMedal(index)}
+                <Link
+                  href={`/user/${user.username}`}
+                  className={`block bg-white p-4 rounded-lg shadow-md transform transition-all duration-200 hover:scale-105 hover:shadow-lg ${
+                    index === 0
+                      ? "border-yellow-500 border-2"
+                      : index === 1
+                      ? "border-gray-400 border-2"
+                      : index === 2
+                      ? "border-orange-400 border-2"
+                      : ""
+                  }`}
+                >
+                  <div className="flex flex-col items-center">
+                    <div className="relative mb-2">
+                      {/* Profile Picture */}
+                      <div className="w-24 h-24 rounded-full overflow-hidden shadow-md">
+                        <Image
+                          src={
+                            user.profilePicture
+                              ? `https://matka-xi.vercel.app/${user.username}.png`
+                              : `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.username}`
+                          }
+                          alt={`${user.username}'s avatar`}
+                          width={96}
+                          height={96}
+                          className="object-cover w-full h-full"
+                          unoptimized
+                        />
                       </div>
-                    )}
+                      {/* Medals for Top 3 */}
+                      {getMedal(index) && (
+                        <div 
+                          className="absolute -bottom-3 -right-3 text-3xl rounded-full p-1"
+                          title={
+                            index === 0 
+                              ? t.leaderboard.goldMedal 
+                              : index === 1 
+                              ? t.leaderboard.silverMedal 
+                              : t.leaderboard.bronzeMedal
+                          }
+                        >
+                          {getMedal(index)}
+                        </div>
+                      )}
+                    </div>
+                    {/* Username */}
+                    <h3 className="mt-2 text-lg font-medium text-gray-800 text-center">
+                      {user.username}
+                    </h3>
+                    {/* Distance with 1 decimal place */}
+                    <p className="font-bold text-xl text-slate-600 mt-1">
+                      {user.totalKm.toLocaleString("fi-FI", { 
+                        minimumFractionDigits: 1, 
+                        maximumFractionDigits: 1 
+                      })} km
+                    </p>
+                    {/* Duration */}
+                    <p className="text-sm text-gray-500 mt-1">
+                      Aika: {formatDuration(totalDuration)}
+                    </p>
                   </div>
-                  {/* Username */}
-                  <h3 className="mt-2 text-lg font-medium text-gray-800">
-                    {user.username}
-                  </h3>
-                  {/* Distance with 1 decimal place */}
-                  <p className="font-bold text-xl text-slate-600 mt-1">
-                    {user.totalKm.toLocaleString("fi-FI", { 
-                      minimumFractionDigits: 1, 
-                      maximumFractionDigits: 1 
-                    })} km
-                  </p>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+                </Link>
+              </motion.div>
+            );
+          })}
       </div>
     </section>
   );

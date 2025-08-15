@@ -55,9 +55,11 @@ interface TeamAnalytics {
   requiredDailyPace: number;
   paceEfficiency: number;
   momentum: 'accelerating' | 'steady' | 'slowing';
-  lastWeekKm: number;
+  currentWeekKm: number;
   previousWeekKm: number;
   weekDelta: number;
+  weeklyPercentageChange: number;
+  weeklyTrend: 'improving' | 'declining' | 'same';
 }
 
 interface AllTimeStats {
@@ -90,12 +92,53 @@ interface CumulativeProgressData {
   expected: number;
 }
 
-// Helper function to get km in a specific period
-const getKmInPeriod = (activities: any[], startOffset: number, endOffset: number) => {
+// Helper function to get equivalent week ranges (same day of week)
+const getEquivalentWeekRanges = () => {
   const today = new Date();
+  const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  
+  // Calculate Monday of current week
+  const currentMonday = new Date(today);
+  const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  currentMonday.setDate(today.getDate() + mondayOffset);
+  currentMonday.setHours(0, 0, 0, 0);
+  
+  // End of current period (today)
+  const currentEnd = new Date(today);
+  currentEnd.setHours(23, 59, 59, 999);
+  
+  // Calculate same day last week
+  const lastWeekSameDay = new Date(today);
+  lastWeekSameDay.setDate(today.getDate() - 7);
+  lastWeekSameDay.setHours(23, 59, 59, 999);
+  
+  // Calculate Monday of previous week
+  const previousMonday = new Date(currentMonday);
+  previousMonday.setDate(currentMonday.getDate() - 7);
+  
+  // Create readable labels
+  const dayNames = ['su', 'ma', 'ti', 'ke', 'to', 'pe', 'la'];
+  const currentDayLabel = dayNames[dayOfWeek];
+  
+  return {
+    currentWeek: {
+      start: currentMonday,
+      end: currentEnd,
+      label: `ma-${currentDayLabel}`
+    },
+    previousWeek: {
+      start: previousMonday,
+      end: lastWeekSameDay,
+      label: `ma-${currentDayLabel}`
+    }
+  };
+};
+
+// Helper function to get km in a specific week range
+const getKmInWeekRange = (activities: any[], startDate: Date, endDate: Date) => {
   return activities.filter(a => {
-    const diff = Math.floor((today.getTime() - new Date(a.date).getTime()) / (1000 * 60 * 60 * 24));
-    return diff >= startOffset && diff < endOffset;
+    const activityDate = new Date(a.date);
+    return activityDate >= startDate && activityDate <= endDate;
   }).reduce((sum, a) => sum + a.kilometers, 0);
 };
 
@@ -122,9 +165,11 @@ const EnhancedTeamInsights = () => {
     requiredDailyPace: 0,
     paceEfficiency: 0,
     momentum: 'steady',
-    lastWeekKm: 0,
+    currentWeekKm: 0,
     previousWeekKm: 0,
-    weekDelta: 0
+    weekDelta: 0,
+    weeklyPercentageChange: 0,
+    weeklyTrend: 'same'
   });
 
   const [allTimeStats, setAllTimeStats] = useState<AllTimeStats[]>([]);
@@ -178,24 +223,76 @@ const calculateAnalytics = (userData: User[]) => {
   const avgKmPerUser = userData.length > 0 ? totalProgress / userData.length : 0;
   const completionPercentage = Math.min(100, (totalProgress / challengeParams.totalDistance) * 100);
 
-  // FIXED: Use consistent calculation for daysSinceStart
-const daysSinceStart = Math.max(0, differenceInDays(today, startDate) + 1);
+  const totalChallengeDays = challengeParams.totalDays;
+
+  // Create cumulative progress data for chart
+  const teamDailyTotals: Record<string, { totalKm: number; activities: number }> = {};
+  challengeActivities.forEach(activity => {
+    const dateKey = activity.date.split('T')[0];
+    if (!teamDailyTotals[dateKey]) {
+      teamDailyTotals[dateKey] = { totalKm: 0, activities: 0 };
+    }
+    teamDailyTotals[dateKey].totalKm += activity.kilometers;
+    teamDailyTotals[dateKey].activities += 1;
+  });
+
+  // Build chart data from actual activity dates
+  const cumulativeProgressData = Object.entries(teamDailyTotals)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .reduce((acc: CumulativeProgressData[], [date, { totalKm }]) => {
+      const previous = acc.length > 0 ? acc[acc.length - 1].actual : 0;
+      
+      const daysSinceStartForThisDate = Math.max(0, differenceInDays(new Date(date), startDate) + 1);
+      const expected = (challengeParams.totalDistance * daysSinceStartForThisDate) / totalChallengeDays;
+      
+      acc.push({ 
+        date, 
+        actual: previous + totalKm, 
+        expected 
+      });
+      return acc;
+    }, []);
+
+  // OPTION 2: Add today's projection if it's after the last data point
+  const lastDataDate = cumulativeProgressData.length > 0 
+    ? new Date(cumulativeProgressData[cumulativeProgressData.length - 1].date)
+    : startDate;
+  
+  if (today > lastDataDate) {
+    const daysSinceStartToday = Math.max(0, differenceInDays(today, startDate) + 1);
+    const expectedToday = (challengeParams.totalDistance * daysSinceStartToday) / totalChallengeDays;
+    
+    cumulativeProgressData.push({
+      date: today.toISOString().split('T')[0],
+      actual: totalProgress, // No new activities since last data point
+      expected: expectedToday
+    });
+  }
+
+  // Use today's date for the status calculation
+  const daysSinceStart = Math.max(0, differenceInDays(today, startDate) + 1);
   const daysRemaining = Math.max(0, differenceInDays(endDate, today));
 
   const dailyAverage = totalProgress / Math.max(1, daysSinceStart);
   const weeklyAverage = dailyAverage * 7;
 
-  // FIXED: Use the same calculation method that will be used in chart
-  const expectedProgress = (challengeParams.totalDistance * daysSinceStart) / challengeParams.totalDays;
+  // Use today's expected progress
+  const expectedProgress = (challengeParams.totalDistance * daysSinceStart) / totalChallengeDays;
 
   const progressDifference = Math.abs(totalProgress - expectedProgress);
   const progressStatus = totalProgress >= expectedProgress * 1.05 ? 'ahead' :
     totalProgress >= expectedProgress * 0.95 ? 'onTrack' : 'behind';
 
-  // Calculate weekly comparison
-  const lastWeekKm = getKmInPeriod(challengeActivities, 0, 7);
-  const previousWeekKm = getKmInPeriod(challengeActivities, 7, 14);
-  const weekDelta = lastWeekKm - previousWeekKm;
+  // FIXED: Calculate weekly comparison using equivalent periods (fair comparison)
+  const { currentWeek, previousWeek } = getEquivalentWeekRanges();
+  
+  const currentWeekKm = getKmInWeekRange(challengeActivities, currentWeek.start, currentWeek.end);
+  const previousWeekKm = getKmInWeekRange(challengeActivities, previousWeek.start, previousWeek.end);
+  const weekDelta = currentWeekKm - previousWeekKm;
+
+  // Calculate percentage change and trend
+  const weeklyPercentageChange = previousWeekKm > 0 ? ((weekDelta / previousWeekKm) * 100) : 0;
+  const weeklyTrend = weekDelta > 0 ? 'improving' : weekDelta < 0 ? 'declining' : 'same';
 
   // Calculate projected finish date
   let projectedFinishDate = null;
@@ -210,49 +307,28 @@ const daysSinceStart = Math.max(0, differenceInDays(today, startDate) + 1);
   const requiredDailyPace = daysRemaining > 0 ? (challengeParams.totalDistance - totalProgress) / daysRemaining : 0;
   const paceEfficiency = requiredDailyPace > 0 ? (dailyAverage / requiredDailyPace) * 100 : 0;
 
-  // Calculate momentum (comparing last 7 days vs previous 7 days)
-  const last7Days = challengeActivities.filter(a =>
-    differenceInDays(today, new Date(a.date)) <= 7
-  ).reduce((sum, a) => sum + a.kilometers, 0);
+  // Calculate momentum (comparing current week vs previous week)
+  const momentum = currentWeekKm > previousWeekKm * 1.1 ? 'accelerating' :
+    currentWeekKm < previousWeekKm * 0.9 ? 'slowing' : 'steady';
 
-  const previous7Days = challengeActivities.filter(a => {
-    const daysDiff = differenceInDays(today, new Date(a.date));
-    return daysDiff > 7 && daysDiff <= 14;
-  }).reduce((sum, a) => sum + a.kilometers, 0);
-
-  const momentum = last7Days > previous7Days * 1.1 ? 'accelerating' :
-    last7Days < previous7Days * 0.9 ? 'slowing' : 'steady';
-
-  // Create cumulative progress data for chart
-  const teamDailyTotals: Record<string, { totalKm: number; activities: number }> = {};
-  challengeActivities.forEach(activity => {
-    const dateKey = activity.date.split('T')[0];
-    if (!teamDailyTotals[dateKey]) {
-      teamDailyTotals[dateKey] = { totalKm: 0, activities: 0 };
-    }
-    teamDailyTotals[dateKey].totalKm += activity.kilometers;
-    teamDailyTotals[dateKey].activities += 1;
+  console.log('Weekly Comparison Debug:', {
+    currentWeek: `${currentWeek.start.toISOString().split('T')[0]} to ${currentWeek.end.toISOString().split('T')[0]} (${currentWeek.label})`,
+    previousWeek: `${previousWeek.start.toISOString().split('T')[0]} to ${previousWeek.end.toISOString().split('T')[0]} (${previousWeek.label})`,
+    currentWeekKm,
+    previousWeekKm,
+    weekDelta,
+    weeklyPercentageChange: Math.round(weeklyPercentageChange),
+    weeklyTrend
   });
 
-  // FIXED: Use the same calculation method for chart data
-  const cumulativeProgressData = Object.entries(teamDailyTotals)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .reduce((acc: CumulativeProgressData[], [date, { totalKm }]) => {
-      const previous = acc.length > 0 ? acc[acc.length - 1].actual : 0;
-      
-      // Use exactly the same calculation as above
-const daysSinceStartForThisDate = Math.max(0, differenceInDays(new Date(date), startDate) + 1);
-      const expected = (challengeParams.totalDistance * daysSinceStartForThisDate) / challengeParams.totalDays;
-      
-      acc.push({ 
-        date, 
-        actual: previous + totalKm, 
-        expected 
-      });
-      return acc;
-    }, []);
+  console.log('Expected Progress Calculation Debug:', {
+    today: today.toISOString().split('T')[0],
+    daysSinceStart,
+    totalChallengeDays,
+    expectedProgress,
+    chartLastPoint: cumulativeProgressData[cumulativeProgressData.length - 1]?.expected
+  });
 
-  console.table(cumulativeProgressData);
   setCumulativeProgressData(cumulativeProgressData);
 
   setAnalytics({
@@ -266,16 +342,18 @@ const daysSinceStartForThisDate = Math.max(0, differenceInDays(new Date(date), s
     dailyAverage,
     weeklyAverage,
     progressStatus,
-    expectedProgress,
+    expectedProgress, // Now matches the chart's latest point
     progressDifference,
     projectedFinishDate,
     daysFromTarget,
     requiredDailyPace,
     paceEfficiency,
     momentum,
-    lastWeekKm,
+    currentWeekKm,
     previousWeekKm,
-    weekDelta
+    weekDelta,
+    weeklyPercentageChange,
+    weeklyTrend
   });
 };
 
@@ -541,7 +619,7 @@ const daysSinceStartForThisDate = Math.max(0, differenceInDays(new Date(date), s
         >
           {activeSection === 'analytics' && (
             <div className="space-y-4">
-              {/* Mobile-Optimized Quick Status */}
+              {/* Mobile-Optimized Quick Status - FIXED: Now uses same expectedProgress as chart */}
               <div className={`p-4 rounded-xl border-2 ${
                 analytics.progressStatus === 'ahead' ? 'bg-green-50 border-green-300' :
                 analytics.progressStatus === 'behind' ? 'bg-red-50 border-red-300' :
@@ -572,7 +650,7 @@ const daysSinceStartForThisDate = Math.max(0, differenceInDays(new Date(date), s
                 </div>
               </div>
 
-              {/* Expected vs Actual Progress Chart */}
+              {/* Expected vs Actual Progress Chart - Now includes projection to today */}
               <AnalyticsCard title="Edistyminen vs. odotus">
                 <ResponsiveContainer width="100%" height={250}>
                   <LineChart data={cumulativeProgressData}>
@@ -586,7 +664,7 @@ const daysSinceStartForThisDate = Math.max(0, differenceInDays(new Date(date), s
 
 <YAxis
   width={40}
-  tickCount={4} // or 5 depending on your range
+  tickCount={4}
   tickFormatter={(value) => `${Math.round(value)} km`}
 />
 
@@ -653,11 +731,89 @@ const daysSinceStartForThisDate = Math.max(0, differenceInDays(new Date(date), s
                     <MetricRow label="Keskiarvo per henkilö" value={`${Math.round(analytics.avgKmPerUser)} km`} />
                     <MetricRow label="Yhteensä suorituksia" value={analytics.totalActivities.toString()} />
                     <MetricRow label="Viikkotahti" value={`${Math.round(analytics.weeklyAverage)} km`} />
-                    <MetricRow
-                      label="Muutos viime viikosta"
-                      value={`${analytics.weekDelta >= 0 ? '+' : ''}${Math.round(analytics.weekDelta)} km`}
-                      status={analytics.weekDelta >= 0 ? 'ahead' : 'behind'}
-                    />
+                    
+                    {/* Enhanced weekly comparison - Option 3: Visually Improved */}
+                    <div className="py-3 border-t border-gray-100">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-gray-600 text-sm font-medium">
+                          Viikkovertailu ({getEquivalentWeekRanges().currentWeek.label}):
+                        </span>
+                      </div>
+                      
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="flex justify-between items-center mb-2">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <span className="text-sm text-gray-700">Tämä viikko</span>
+                          </div>
+                          <span className="text-lg font-bold text-gray-800">
+                            {Math.round(analytics.currentWeekKm)} km
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center mb-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                            <span className="text-sm text-gray-500">Viime viikko</span>
+                          </div>
+                          <span className="text-sm font-medium text-gray-600">
+                            {Math.round(analytics.previousWeekKm)} km
+                          </span>
+                        </div>
+                        
+                        <div className="border-t border-gray-200 pt-2">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                              <span className={`text-lg ${
+                                analytics.weekDelta >= 0 ? 'text-green-600' : 'text-red-600'
+                              }`}>
+                                {analytics.weekDelta >= 0 ? '📈' : '📉'}
+                              </span>
+                              <span className="text-sm text-gray-700">Muutos</span>
+                            </div>
+                            <div className="text-right">
+                              <div className={`text-lg font-bold ${
+                                analytics.weekDelta >= 0 ? 'text-green-600' : 'text-red-600'
+                              }`}>
+                                {analytics.weekDelta >= 0 ? '+' : ''}{Math.round(analytics.weekDelta)} km
+                              </div>
+                              {analytics.previousWeekKm > 0 && (
+                                <div className={`text-xs ${
+                                  analytics.weekDelta >= 0 ? 'text-green-500' : 'text-red-500'
+                                }`}>
+                                  ({analytics.weeklyPercentageChange >= 0 ? '+' : ''}{Math.round(analytics.weeklyPercentageChange)}%)
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {analytics.weeklyTrend === 'improving' && (
+                          <div className="mt-3 flex items-center justify-center gap-2 bg-green-50 rounded-md py-2 px-3">
+                            <span className="text-green-600">🚀</span>
+                            <span className="text-sm font-medium text-green-700">
+                              Paraneva suorituskyky!
+                            </span>
+                          </div>
+                        )}
+                        {analytics.weeklyTrend === 'declining' && (
+                          <div className="mt-3 flex items-center justify-center gap-2 bg-orange-50 rounded-md py-2 px-3">
+                            <span className="text-orange-600">⚠️</span>
+                            <span className="text-sm font-medium text-orange-700">
+                              Viikon suoritus laski
+                            </span>
+                          </div>
+                        )}
+                        {analytics.weeklyTrend === 'same' && analytics.previousWeekKm > 0 && (
+                          <div className="mt-3 flex items-center justify-center gap-2 bg-gray-50 rounded-md py-2 px-3">
+                            <span className="text-gray-500">➡️</span>
+                            <span className="text-sm font-medium text-gray-600">
+                              Sama taso viime viikkoon
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </AnalyticsCard>
 
