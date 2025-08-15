@@ -319,13 +319,6 @@ const UserProfile = () => {
           </div>
         </header>
 
-        {/* User Weekly Progress - Clear & Accurate */}
-        {/* {user && (
-          <div className="mx-1 sm:mx-0">
-            <ClearWeeklyProgress user={user} totalUsers={10} />
-          </div>
-        )} */}
-
         {/* Toggle button - Always show if insights are available OR user can add activities */}
         {(canViewInsights || canAddActivity) && (
           <div className="flex justify-center px-4">
@@ -373,6 +366,7 @@ const UserProfile = () => {
             <PersonalInsights
               activities={user.activities}
               username={user.username}
+              user={user}
             />
           </div>
         ) : canAddActivity ? (

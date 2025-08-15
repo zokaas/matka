@@ -1,210 +1,163 @@
-// components/ClearWeeklyProgress.tsx - Super clear weekly progress using real challenge data
+// components/ClearWeeklyProgress.tsx - Enhanced with percentage comparisons
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { User } from "@/app/types/types";
+import { useWeeklyGoal } from "@/app/hooks/useWeeklyGoal";
 import { challengeParams } from "@/app/constants/challengeParams";
 
 const r1 = (n: number) => Number(n.toFixed(1));
 
 interface ClearWeeklyProgressProps {
   user: User;
-  totalUsers?: number; // Pass actual team size from parent
+  totalUsers?: number;
 }
 
-const ClearWeeklyProgress: React.FC<ClearWeeklyProgressProps> = ({ user, totalUsers = 10 }) => {
-  const weeklyData = useMemo(() => {
-    // Current week (Monday to Sunday)
+const ClearWeeklyProgress: React.FC<ClearWeeklyProgressProps> = ({ 
+  user, 
+  totalUsers = 10 
+}) => {
+  const weeklyGoalData = useWeeklyGoal([user]);
+  
+  const data = useMemo(() => {
     const today = new Date();
-    const dayOfWeek = today.getDay();
-    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
-    
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() + mondayOffset);
-    weekStart.setHours(0, 0, 0, 0);
-    
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 6);
-    weekEnd.setHours(23, 59, 59, 999);
-
-    // This week's activities
-    const weekActivities = user.activities.filter((activity) => {
-      const activityDate = new Date(activity.date);
-      return activityDate >= weekStart && activityDate <= weekEnd;
-    });
-    const thisWeekKm = r1(weekActivities.reduce((sum, activity) => sum + activity.kilometers, 0));
-
-    // Challenge timeline from challengeParams
     const challengeStart = new Date(challengeParams.startDate);
-    const challengeEnd = new Date(challengeParams.endDate);
     
-    // Calculate actual challenge progress
-    const totalChallengeDays = Math.ceil((challengeEnd.getTime() - challengeStart.getTime()) / (1000 * 60 * 60 * 24));
+    const totalChallengeDays = challengeParams.totalDays;
     const daysPassed = Math.max(0, Math.ceil((today.getTime() - challengeStart.getTime()) / (1000 * 60 * 60 * 24)));
-    const daysRemaining = Math.max(0, Math.ceil((challengeEnd.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)));
     
-    // Individual targets based on real challenge data
-    const myTotalTarget = challengeParams.totalDistance / totalUsers;
-    const myDailyTarget = challengeParams.dailyTarget / totalUsers;
-    const myWeeklyTarget = r1(myDailyTarget * 7);
-    
-    // Where I should be by now (linear progression)
+    const myTotalTarget = r1(challengeParams.totalDistance / totalUsers);
     const expectedProgressByNow = r1((myTotalTarget * daysPassed) / totalChallengeDays);
-    
-    // Am I ahead or behind overall?
     const difference = r1(user.totalKm - expectedProgressByNow);
-    const isOnTrack = Math.abs(difference) <= myDailyTarget; // Within one day's target
-    const isAhead = difference > myDailyTarget;
-    const isBehind = difference < -myDailyTarget;
-
-    // Week status
-    let weekStatus: string;
-    let weekColor: string;
-    let weekEmoji: string;
-
-    if (thisWeekKm >= myWeeklyTarget) {
-      weekStatus = 'Hyvä viikko! 🎯';
-      weekColor = 'text-green-600';
-      weekEmoji = '💪';
-    } else if (thisWeekKm >= myWeeklyTarget * 0.75) {
-      weekStatus = 'Hyvässä vauhdissa';
-      weekColor = 'text-yellow-600';
-      weekEmoji = '👍';
-    } else {
-      weekStatus = 'Tarvitsee lisää vauhtia';
-      weekColor = 'text-red-600';
-      weekEmoji = '⚡';
+    
+    // Calculate percentages
+    const actualProgressPercentage = r1((user.totalKm / myTotalTarget) * 100);
+    const expectedProgressPercentage = r1((expectedProgressByNow / myTotalTarget) * 100);
+    const percentageDifference = r1(actualProgressPercentage - expectedProgressPercentage);
+    
+    // Performance ratio (how well performing compared to expected)
+    const performanceRatio = expectedProgressByNow > 0 ? r1((user.totalKm / expectedProgressByNow) * 100) : 100;
+    
+    // Onko haasteen vauhdissa?
+    let challengeStatus = 'ontrack';
+    let challengeEmoji = '🎯';
+    let challengeText = 'Aikataulussa';
+    let challengeColor = 'text-blue-600';
+    
+    if (difference > 5) {
+      challengeStatus = 'ahead';
+      challengeEmoji = '🚀';
+      challengeText = 'Etuajassa';
+      challengeColor = 'text-green-600';
+    } else if (difference < -5) {
+      challengeStatus = 'behind';
+      challengeEmoji = '⚠️';
+      challengeText = 'Jäljessä';
+      challengeColor = 'text-red-600';
     }
 
     return {
-      thisWeekKm,
-      myWeeklyTarget,
-      weekStatus,
-      weekColor,
-      weekEmoji,
-      activitiesCount: weekActivities.length,
-      
-      // Overall progress
+      challengeStatus,
+      challengeEmoji,
+      challengeText,
+      challengeColor,
+      totalKm: r1(user.totalKm),
+      expectedKm: r1(expectedProgressByNow),
+      differenceKm: r1(Math.abs(difference)),
+      actualProgressPercentage,
+      expectedProgressPercentage,
+      percentageDifference,
+      performanceRatio,
       myTotalTarget,
-      currentTotal: r1(user.totalKm),
-      expectedTotal: expectedProgressByNow,
-      difference,
-      isOnTrack,
-      isAhead,
-      isBehind,
-      
-      // Timeline
-      daysPassed,
-      daysRemaining,
-      totalChallengeDays,
-      
-      // Percentage
-      weekPercentage: Math.round((thisWeekKm / myWeeklyTarget) * 100),
-      overallPercentage: Math.round((user.totalKm / myTotalTarget) * 100)
     };
-  }, [user.activities, user.totalKm, totalUsers]);
+  }, [user, totalUsers, weeklyGoalData]);
 
   return (
-    <div className="bg-white p-5 rounded-xl shadow-lg border border-yellow-200">
-      {/* Simple header */}
-      <div className="text-center mb-5">
-        <h3 className="text-xl font-bold text-gray-800 mb-1">Tämä viikko</h3>
-        <p className="text-sm text-gray-500">
-          {weeklyData.activitiesCount} suoritusta • Tavoite {weeklyData.myWeeklyTarget} km
-        </p>
+    <div className={`p-4 rounded-lg border-2 ${
+      data.challengeStatus === 'ahead' ? 'bg-green-50 border-green-300' :
+      data.challengeStatus === 'behind' ? 'bg-red-50 border-red-300' :
+      'bg-blue-50 border-blue-300'
+    }`}>
+      <div className="text-center mb-3">
+        <div className="text-xl">{data.challengeEmoji}</div>
+        <div className={`font-bold text-lg ${data.challengeColor}`}>
+          Koko haaste: {data.challengeText}
+        </div>
+        {/* Performance ratio display */}
+        <div className="text-sm text-gray-600 mt-1">
+          Suorituskyky: <span className={`font-bold ${data.challengeColor}`}>
+            {data.performanceRatio}%
+          </span> aikataulusta
+        </div>
       </div>
-
-      {/* Main progress */}
-      <div className="text-center mb-6">
-        <div className="text-5xl font-bold text-gray-800 mb-3">
-          {weeklyData.thisWeekKm} km
+      
+      {/* HAASTEEN PROGRESS BAR */}
+      <div className="mb-3">
+        <div className="flex justify-between text-sm text-gray-600 mb-2">
+          <span>Haasteen edistyminen:</span>
+          <span>{data.actualProgressPercentage}% / {data.expectedProgressPercentage}%</span>
         </div>
-        
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <span className="text-xl">{weeklyData.weekEmoji}</span>
-          <span className={`text-lg font-medium ${weeklyData.weekColor}`}>
-            {weeklyData.weekStatus}
-          </span>
-        </div>
-
-        {/* Simple progress bar */}
-        <div className="w-full bg-gray-200 rounded-full h-4 mb-2">
+        <div className="w-full bg-gray-200 rounded-full h-3 relative">
+          {/* Tavoitelinja (missä pitäisi olla) */}
+          <div 
+            className="absolute top-0 h-3 w-0.5 bg-gray-600 z-10"
+            style={{ left: `${Math.min(100, data.expectedProgressPercentage)}%` }}
+            title="Missä pitäisi olla"
+          />
+          {/* Todellinen edistyminen */}
           <motion.div
-            className={`h-4 rounded-full flex items-center justify-center ${
-              weeklyData.weekPercentage >= 100 ? 'bg-green-500' :
-              weeklyData.weekPercentage >= 75 ? 'bg-yellow-500' :
-              'bg-red-500'
+            className={`h-3 rounded-full ${
+              data.challengeStatus === 'ahead' ? 'bg-green-500' :
+              data.challengeStatus === 'behind' ? 'bg-red-500' :
+              'bg-blue-500'
             }`}
             initial={{ width: 0 }}
-            animate={{ width: `${Math.min(weeklyData.weekPercentage, 100)}%` }}
-            transition={{ duration: 1, ease: "easeOut" }}
-          >
-            {weeklyData.weekPercentage >= 15 && (
-              <span className="text-white text-sm font-medium">
-                {weeklyData.weekPercentage}%
-              </span>
-            )}
-          </motion.div>
+            animate={{ width: `${Math.min(100, data.actualProgressPercentage)}%` }}
+            transition={{ duration: 1.5 }}
+          />
         </div>
-        
-        {weeklyData.weekPercentage < 15 && (
-          <div className="text-right text-sm font-medium text-gray-700">
-            {weeklyData.weekPercentage}%
-          </div>
-        )}
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>0 km</span>
+          <span className="text-gray-600 font-medium">← Tavoitelinja</span>
+          <span>{data.myTotalTarget} km</span>
+        </div>
       </div>
-
-      {/* Overall status */}
-      <div className="border-t pt-4">
-        <div className="grid grid-cols-2 gap-4 text-center">
+      
+      {/* Percentage comparison section */}
+      <div className="bg-white/50 rounded-lg p-3 mb-3">
+        <div className="text-sm font-medium text-gray-700 mb-2">Prosentuaalinen vertailu:</div>
+        <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <div className="text-2xl font-bold text-blue-600">
-              {weeklyData.currentTotal}
-            </div>
-            <div className="text-sm text-gray-600">Yhteensä kilometriä</div>
-            <div className="text-xs text-gray-500">
-              {weeklyData.overallPercentage}% kokonaistavoitteesta
-            </div>
+            <div className="text-gray-600">Todellinen edistyminen:</div>
+            <div className="font-bold text-lg">{data.actualProgressPercentage}%</div>
+            <div className="text-xs text-gray-500">{data.totalKm} km</div>
           </div>
-          
           <div>
-            <div className={`text-2xl font-bold ${
-              weeklyData.isAhead ? 'text-green-600' :
-              weeklyData.isBehind ? 'text-red-600' :
+            <div className="text-gray-600">Odotettu edistyminen:</div>
+            <div className="font-bold text-lg">{data.expectedProgressPercentage}%</div>
+            <div className="text-xs text-gray-500">{data.expectedKm} km</div>
+          </div>
+        </div>
+        <div className="mt-2 pt-2 border-t border-gray-200">
+          <div className="text-center">
+            <span className="text-gray-600">Ero: </span>
+            <span className={`font-bold ${
+              data.percentageDifference > 0 ? 'text-green-600' : 
+              data.percentageDifference < 0 ? 'text-red-600' : 
               'text-blue-600'
             }`}>
-              {weeklyData.isAhead ? `+${weeklyData.difference}` :
-               weeklyData.isBehind ? weeklyData.difference :
-               '0'}
-            </div>
-            <div className="text-sm text-gray-600">Tavoitetahdista</div>
-            <div className="text-xs text-gray-500">
-              {weeklyData.isAhead ? 'Etuajassa' :
-               weeklyData.isBehind ? 'Jäljessä' :
-               'Aikataulussa'}
-            </div>
+              {data.percentageDifference > 0 ? '+' : ''}{data.percentageDifference}% ({data.percentageDifference > 0 ? '+' : ''}{data.differenceKm} km)
+            </span>
           </div>
         </div>
-
-        {/* Simple advice */}
-        <div className="mt-4 text-center">
-          {weeklyData.thisWeekKm < weeklyData.myWeeklyTarget && (
-            <div className="bg-blue-50 text-blue-700 p-3 rounded-lg text-sm">
-              💡 Tarvitset vielä <strong>{r1(weeklyData.myWeeklyTarget - weeklyData.thisWeekKm)} km</strong> tällä viikolla tavoitteen saavuttamiseksi
-            </div>
-          )}
-          
-          {weeklyData.isBehind && (
-            <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm mt-2">
-              🚨 Olet <strong>{Math.abs(weeklyData.difference)} km jäljessä</strong> kokonaistavoitteesta
-            </div>
-          )}
-          
-          {weeklyData.isAhead && (
-            <div className="bg-green-50 text-green-700 p-3 rounded-lg text-sm mt-2">
-              🚀 Loistavaa! Olet <strong>{weeklyData.difference} km etuajassa</strong>
-            </div>
-          )}
-        </div>
+      </div>
+      
+      <div className="text-sm text-gray-600 text-center">
+        Olet tehnyt <strong>{data.totalKm} km</strong> • Omasta tavoitteesta pitäisi olla <strong>{data.expectedKm} km</strong>
+        {data.challengeStatus !== 'ontrack' && (
+          <div className={`font-bold mt-1 ${data.challengeColor}`}>
+            {data.challengeStatus === 'ahead' ? '🚀 Etuajassa' : '⚠️ Jäljessä'} {data.differenceKm} km
+          </div>
+        )}
       </div>
     </div>
   );

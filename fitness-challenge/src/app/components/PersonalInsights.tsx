@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import _ from "lodash";
 import { useTheme } from "@/app/hooks/useTheme";
+import ClearWeeklyProgress from "./UserWeeklyProgress";
 
 // Define the Activity interface based on your existing model
 interface Activity {
@@ -18,6 +19,7 @@ interface Activity {
 interface PersonalInsightProps {
   activities: Activity[];
   username: string;
+  user?: any; // Add user prop for ClearWeeklyProgress
 }
 
 // Define the structure for our insights data
@@ -51,13 +53,14 @@ interface InsightsData {
 const PersonalInsights: React.FC<PersonalInsightProps> = ({
   activities,
   username,
+  user,
 }) => {
   const { t } = useTheme();
   
-  // State for active tab
+  // State for active tab - default to "tavoite"
   const [activeTab, setActiveTab] = useState<
-    "overview" | "activity"
-  >("overview");
+    "tavoite" | "overview" | "activity"
+  >("tavoite");
   
   // State for all activities (in case we need to fetch them separately)
   const [allActivities, setAllActivities] = useState<Activity[]>([]);
@@ -291,9 +294,19 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
       <h2 className="text-xl font-semibold mb-4">
         {t.insights.title}
       </h2>
-
+      
       {/* Tabs Navigation */}
       <div className="flex border-b mb-6">
+        <button
+          className={`px-4 py-2 ${
+            activeTab === "tavoite"
+              ? "border-b-2 border-purple-500 text-slate-600"
+              : "text-gray-600"
+          }`}
+          onClick={() => setActiveTab("tavoite")}
+        >
+Tavoite
+        </button>
         <button
           className={`px-4 py-2 ${
             activeTab === "overview"
@@ -316,6 +329,18 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
         </button>
       </div>
 
+      {/* Tavoite Tab */}
+      {activeTab === "tavoite" && (
+        <div className="space-y-6">
+          {/* ClearWeeklyProgress Component */}
+          {user && (
+            <div className="mx-1 sm:mx-0">
+              <ClearWeeklyProgress user={user} totalUsers={10} />
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Overview Tab */}
       {activeTab === "overview" && (
         <div className="space-y-6">
@@ -326,11 +351,11 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                 {t.insights.totalActivities}
               </h3>
               <p className="text-2xl font-bold">
-                {Math.round(insights.totalActivities)}
+                {insights.totalActivities.toFixed(1)}
               </p>
             </div>
             <div className="bg-slate-50 p-4 rounded-lg">
-              <h3 className="text-sm  font-medium">
+              <h3 className="text-sm font-medium">
                 {t.insights.totalHours}
               </h3>
               <p className="text-2xl font-bold">
@@ -338,11 +363,11 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
               </p>
             </div>
             <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="text-sm  font-medium">
+              <h3 className="text-sm font-medium">
                 {t.insights.totalKm}
               </h3>
               <p className="text-2xl font-bold">
-                {Math.round(insights.totalKilometers)} km
+                {insights.totalKilometers.toFixed(1)} km
               </p>
             </div>
             <div className="bg-indigo-50 p-4 rounded-lg">
@@ -350,7 +375,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                 {t.insights.weeklyKm}
               </h3>
               <p className="text-2xl font-bold">
-                {Math.round(insights.avgWeeklyKm)} {t.insights.km}
+                {insights.avgWeeklyKm.toFixed(1)} {t.insights.km}
               </p>
             </div>
           </div>
@@ -362,7 +387,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                 {t.insights.currentStreak}
               </h3>
               <p className="text-2xl font-bold">
-                {Math.round(insights.streakData.currentStreak)}{" "}
+                {insights.streakData.currentStreak.toFixed(1)}{" "}
                 {t.insights.days}
               </p>
             </div>
@@ -371,7 +396,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                 {t.insights.longestStreak}
               </h3>
               <p className="text-2xl font-bold">
-                {Math.round(insights.streakData.longestStreak)}{" "}
+                {insights.streakData.longestStreak.toFixed(1)}{" "}
                 {t.insights.days}
               </p>
             </div>
@@ -395,15 +420,15 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
               {t.insights.personalStatistics}
             </h3>
             <div className="grid grid-cols-2 gap-4">
-              <div className=" p-4 rounded">
+              <div className="p-4 rounded">
                 <h4 className="text-sm text-gray-500">
                   {t.insights.avgDuration}
                 </h4>
                 <p className="text-xl font-medium">
-                  {Math.round(insights.averageDuration)} {t.insights.mins}{" "}
+                  {Math.round(insights.averageDuration)} {t.insights.mins}
                 </p>
               </div>
-              <div className=" p-4 rounded">
+              <div className="p-4 rounded">
                 <h4 className="text-sm text-gray-500">
                   {t.insights.avgDistance}
                 </h4>
@@ -422,21 +447,18 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
             </h3>
             <div className="space-y-3">
               {insights.activityBreakdown.map((item) => (
-                <div key={item.activity} className=" p-3 rounded">
+                <div key={item.activity} className="p-3 rounded">
                   <div className="flex justify-between mb-1">
                     <span className="font-medium">{item.activity}</span>
                     <span>
-                      {item.count} {t.insights.times} ({item.percentage}%)
+                      {item.count} kertaa ({item.percentage}%)
                     </span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-<div className="w-full bg-gray-200 rounded-full h-3 mt-2">
-  <div
-    className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-3 rounded-full transition-all duration-500"
-    style={{ width: `${item.percentage}%` }}
-  ></div>
-</div>
-
+                  <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
+                    <div
+                      className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-3 rounded-full transition-all duration-500"
+                      style={{ width: `${item.percentage}%` }}
+                    ></div>
                   </div>
                 </div>
               ))}
