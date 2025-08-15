@@ -12,6 +12,7 @@ import Pagination from "@/app/components/Pagination";
 import SubmitQuote from "@/app/components/SubmitQuote";
 import PersonalInsights from "@/app/components/PersonalInsights";
 import CommentAndReactionView from "@/app/components/CommentAndReactionView";
+import ClearWeeklyProgress from "@/app/components/UserWeeklyProgress";
 import { useTheme } from "@/app/hooks/useTheme";
 import { ACTIVITY_WEIGHTS, challengeParams } from "@/app/constants/challengeParams";
 
@@ -25,6 +26,7 @@ interface Activity {
 }
 
 interface User {
+  id: string;
   username: string;
   totalKm: number;
   profilePicture: string;
@@ -67,8 +69,8 @@ const UserProfile = () => {
 
   const isActivitySubmissionDisabled = false;
   const canEditProfile = isLoggedIn && currentUser === username; // Only owner can edit/delete
-  const canAddActivity = isLoggedIn; // 🔥 ANYONE CAN ADD ACTIVITIES TO ANYONE
-  const canViewInsights = true; // 🔥 EVERYONE CAN VIEW INSIGHTS
+  const canAddActivity = isLoggedIn; // Anyone can add activities to anyone
+  const canViewInsights = true; // Everyone can view insights
 
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
   const formRef = useRef<HTMLDivElement>(null);
@@ -317,6 +319,13 @@ const UserProfile = () => {
           </div>
         </header>
 
+        {/* User Weekly Progress - Clear & Accurate */}
+        {/* {user && (
+          <div className="mx-1 sm:mx-0">
+            <ClearWeeklyProgress user={user} totalUsers={10} />
+          </div>
+        )} */}
+
         {/* Toggle button - Always show if insights are available OR user can add activities */}
         {(canViewInsights || canAddActivity) && (
           <div className="flex justify-center px-4">
@@ -444,16 +453,15 @@ const UserProfile = () => {
                     <label className="block text-sm font-medium mb-2 text-gray-700">
                       {t.userProfile.date}
                     </label>
-<input
-  type="date"
-  value={date}
-  onChange={(e) => setDate(e.target.value)}
-  min={challengeParams.startDate}
-  max={challengeParams.endDate}
-  className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
-  required
-/>
-
+                    <input
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      min={challengeParams.startDate}
+                      max={challengeParams.endDate}
+                      className="w-full bg-white border border-gray-300 rounded-lg px-3 py-3 sm:px-4 sm:py-3 text-gray-800 focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm sm:text-base"
+                      required
+                    />
                   </div>
                 </div>
 
