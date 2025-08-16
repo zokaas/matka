@@ -184,7 +184,7 @@ const Leaderboard = ({ users }: LeaderboardProps) => {
                   </div>
                   
                   {/* Progress bar */}
-                  <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2 relative overflow-hidden">
+                  <div className="w-full bg-gray-200 h-2.5 mb-2 relative overflow-hidden">
                     {/* Expected progress line */}
                     <div 
                       className="absolute top-0 h-2.5 w-0.5 bg-gray-600 z-10"
