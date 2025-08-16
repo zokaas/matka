@@ -187,13 +187,13 @@ const Leaderboard = ({ users }: LeaderboardProps) => {
                   <div className="w-full bg-gray-200 h-2.5 mb-2 relative overflow-hidden">
                     {/* Expected progress line */}
                     <div 
-                      className="absolute top-0 h-2.5 w-0.5 bg-gray-600 z-10"
+                      className="absolute top-0 h-2.5 w-0.5 rounded-full bg-gray-600 z-10"
                       style={{ left: `${Math.min(100, (expectedProgress / personalTarget) * 100)}%` }}
                       title={`Missä pitäisi olla: ${expectedProgress.toFixed(1)} km`}
                     />
                     {/* Actual progress */}
                     <motion.div
-                      className={`h-2.5 rounded-full ${
+                      className={`h-2.5  ${
                         status === 'ahead' ? 'bg-gradient-to-r from-green-400 to-green-500' :
                         status === 'behind' ? 'bg-gradient-to-r from-red-400 to-red-500' :
                         'bg-gradient-to-r from-blue-400 to-blue-500'
