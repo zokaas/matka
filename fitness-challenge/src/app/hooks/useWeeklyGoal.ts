@@ -1,4 +1,4 @@
-// hooks/useWeeklyGoal.ts - DYNAMIC WEEKLY GOALS, 1-DECIMAL
+// hooks/useWeeklyGoal.ts - FIXED WEEKLY GOALS
 import { useState, useEffect, useMemo } from 'react';
 import { User } from '@/app/types/types';
 import { challengeParams } from '@/app/constants/challengeParams';
@@ -24,10 +24,10 @@ interface WeeklyGoalData {
   weekStart: Date;
   weekEnd: Date;
 
-  // Historical tracking - ENHANCED
+  // Historical tracking
   previousWeekGoal: number | null;
   weeklyHistory: WeekHistory[];
-  allWeeksData: WeekData[]; // Complete data for all weeks
+  allWeeksData: WeekData[];
   performanceTrend: 'improving' | 'declining' | 'stable';
   hasHistory: boolean;
 }
@@ -47,17 +47,16 @@ interface WeekData {
   weekNumber: number;
   weekStart: Date;
   weekEnd: Date;
-  goalSet: number;            // Goal computed at the START of this week (1dp)
-  achieved: number;           // What was done in this week (1dp)
-  achievementRate: number;    // achieved / goalSet
-  cumulativeProgress: number; // total km up to END of this week (1dp)
+  goalSet: number;
+  achieved: number;
+  achievementRate: number;
+  cumulativeProgress: number;
   isCurrent: boolean;
   isCompleted: boolean;
-  daysInWeek: number; // How many days of this week have passed
+  daysInWeek: number;
 }
 
 export const useWeeklyGoal = (users: User[]): WeeklyGoalData => {
-  // Only need setter (legacy storage load)
   const [, setWeeklyHistory] = useState<WeekHistory[]>([]);
 
   // Helper: week boundaries (Mon–Sun)
@@ -143,22 +142,13 @@ export const useWeeklyGoal = (users: User[]): WeeklyGoalData => {
     return weeks;
   }, [currentWeekBoundaries.currentWeekKey]);
 
-  // Fill each week's data with dynamic goals computed at the START of the week (1dp)
+  // FIXED: Calculate each week's data with proper dynamic goal recalculation
   const allWeeksData = useMemo(() => {
     const sourceUsers = users ?? [];
-    let cumulativeBeforeThisWeek = 0; // progress up to the START of the current loop week
+    let cumulativeProgress = 0;
 
-    return allWeeksInChallenge.map((week, index) => {
-      const weeksRemaining = allWeeksInChallenge.length - index; // including this week
-      const remainingBeforeWeek = Math.max(
-        0,
-        challengeParams.totalDistance - cumulativeBeforeThisWeek
-      );
-
-      // Equal split of remaining distance across remaining weeks (rounded to 1dp)
-      const goalSet = r1(remainingBeforeWeek / Math.max(1, weeksRemaining));
-
-      // Achieved this week (from activities, 1dp)
+    // First pass: calculate achieved km for each week
+    const weeksWithAchieved = allWeeksInChallenge.map((week) => {
       const weeklyKm = sourceUsers.reduce((totalWeekKm, user) => {
         const weekActivities = user.activities.filter((activity) => {
           const activityDate = new Date(activity.date);
@@ -171,23 +161,52 @@ export const useWeeklyGoal = (users: User[]): WeeklyGoalData => {
       }, 0);
 
       const achieved = r1(weeklyKm);
-      const achievementRate = goalSet > 0 ? achieved / goalSet : 0;
+      cumulativeProgress += achieved;
 
-      // Update cumulative AFTER this week for next iteration (1dp)
-      const cumulativeProgress = r1(cumulativeBeforeThisWeek + achieved);
-      cumulativeBeforeThisWeek += achieved;
+      return {
+        ...week,
+        achieved,
+        cumulativeProgress: r1(cumulativeProgress)
+      };
+    });
+
+    // Second pass: calculate goals using dynamic recalculation
+    let remainingDistanceAtWeekStart = challengeParams.totalDistance;
+    
+    return weeksWithAchieved.map((week, index) => {
+      const weeksRemaining = allWeeksInChallenge.length - index;
+      
+      // For completed weeks, use the remaining distance at the start of that week
+      // For current/future weeks, use current remaining distance
+      let goalCalculationBase = remainingDistanceAtWeekStart;
+      
+      if (week.isCurrent || !week.isCompleted) {
+        // For current and future weeks, use actual current remaining distance
+        const currentCumulativeProgress = weeksWithAchieved
+          .slice(0, index)
+          .reduce((sum, w) => sum + w.achieved, 0);
+        goalCalculationBase = Math.max(0, challengeParams.totalDistance - currentCumulativeProgress);
+      }
+
+      // FIXED: Equal distribution of remaining distance across remaining weeks
+      const goalSet = weeksRemaining > 0 ? r1(goalCalculationBase / weeksRemaining) : 0;
+      
+      const achievementRate = goalSet > 0 ? week.achieved / goalSet : 0;
+
+      // Update remaining distance for next iteration (only for completed weeks)
+      if (week.isCompleted) {
+        remainingDistanceAtWeekStart -= week.achieved;
+      }
 
       return {
         ...week,
         goalSet,
-        achieved,
-        achievementRate,
-        cumulativeProgress
+        achievementRate
       };
     });
   }, [allWeeksInChallenge, users]);
 
-  // Current week specific data (with fallback competitor count and 1dp rounding)
+  // Current week specific data
   const currentWeekData = useMemo(() => {
     const currentWeek = allWeeksData.find((w) => w.isCurrent);
     if (!currentWeek) {
@@ -217,8 +236,11 @@ export const useWeeklyGoal = (users: User[]): WeeklyGoalData => {
     );
     const previousGoal = previousWeek ? previousWeek.goalSet : null;
     const goalAdjustment = previousGoal ? r1(currentWeek.goalSet - previousGoal) : 0;
+    
+    // FIXED: More reasonable thresholds for adjustment classification
     const adjustmentReason: 'ahead' | 'behind' | 'on-track' =
-      (goalAdjustment ?? 0) > 5 ? 'behind' : (goalAdjustment ?? 0) < -5 ? 'ahead' : 'on-track';
+      Math.abs(goalAdjustment) < 10 ? 'on-track' : 
+      goalAdjustment > 0 ? 'behind' : 'ahead';
 
     return {
       weeklyGoal: currentWeek.goalSet,
