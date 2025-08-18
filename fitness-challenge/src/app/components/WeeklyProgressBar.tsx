@@ -1,4 +1,4 @@
-// components/WeeklyProgressBar.tsx - 1-DECIMAL FORMATTING APPLIED
+// components/WeeklyProgressBar.tsx - UPDATED: Only show completed + current weeks
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TrendingUp, TrendingDown, Info, Calendar, Target, BarChart2 } from "lucide-react";
@@ -53,6 +53,7 @@ const WeeklyProgressBar = () => {
   const completedWeeks = allWeeksData.filter((week) => week.isCompleted);
   const previousWeek = completedWeeks[completedWeeks.length - 1];
 
+  // Only count completed weeks for success rate
   const successfulWeeksCount = completedWeeks.filter((w) => w.achievementRate >= 1).length;
   const averageAchievementRate = completedWeeks.length
     ? completedWeeks.reduce((acc, w) => acc + w.achievementRate, 0) / completedWeeks.length
@@ -66,6 +67,9 @@ const WeeklyProgressBar = () => {
     (previousWeek?.cumulativeProgress ?? currentWeek?.cumulativeProgress ?? 0);
 
   const totalDistance = challengeParams.totalDistance;
+
+  // Filter to only show completed + current weeks
+  const visibleWeeks = allWeeksData.filter(week => week.isCompleted || week.isCurrent);
 
   const TrendIcon =
     performanceTrend === "improving" ? TrendingUp : performanceTrend === "declining" ? TrendingDown : Info;
@@ -266,19 +270,19 @@ const WeeklyProgressBar = () => {
                 </div>
               )}
 
-              {/* All weeks toggle */}
-              {completedWeeks.length > 1 && (
+              {/* Weekly history toggle - only show if there are completed weeks */}
+              {completedWeeks.length > 0 && (
                 <div className="text-center">
                   <button
                     onClick={() => setShowAllWeeks(!showAllWeeks)}
                     className="text-sm text-blue-600 hover:text-blue-800 transition-colors underline"
                   >
-                    {showAllWeeks ? "Piilota kaikki viikot" : `Näytä kaikki viikot (${allWeeksData.length})`}
+                    {showAllWeeks ? "Piilota viikkohistoria" : `Näytä viikkohistoria (${visibleWeeks.length} viikkoa)`}
                   </button>
                 </div>
               )}
 
-              {/* All weeks history */}
+              {/* Weeks history - only completed + current weeks */}
               <AnimatePresence>
                 {showAllWeeks && (
                   <motion.div
@@ -289,37 +293,32 @@ const WeeklyProgressBar = () => {
                   >
                     <h4 className="font-medium text-slate-800 text-sm flex items-center gap-1">
                       <Target className="w-4 h-4" />
-                      Kaikki viikot haasteen alusta
+                      Suoritetut viikot + nykyinen viikko
                     </h4>
-                    {allWeeksData.map((week) => (
+                    {visibleWeeks.map((week) => (
                       <div
                         key={week.weekKey}
                         className={`p-2 rounded border text-xs ${
                           week.isCurrent
                             ? "bg-yellow-50 border-yellow-300"
-                            : week.isCompleted
-                            ? week.achievementRate >= 1
-                              ? "bg-green-50 border-green-200"
-                              : "bg-red-50 border-red-200"
-                            : "bg-gray-50 border-gray-200"
+                            : week.achievementRate >= 1
+                            ? "bg-green-50 border-green-200"
+                            : "bg-red-50 border-red-200"
                         }`}
                       >
                         <div className="flex justify-between items-center">
                           <div className="flex items-center gap-2">
                             <span className="font-medium">Viikko {week.weekNumber}</span>
                             {week.isCurrent && <span className="text-yellow-600">• NYK</span>}
-                            {!week.isCurrent && !week.isCompleted && <span className="text-gray-500">• TULOSSA</span>}
                           </div>
                           <div className="text-right">
                             <span
                               className={`font-medium ${
                                 week.isCurrent
                                   ? "text-yellow-600"
-                                  : week.isCompleted
-                                  ? week.achievementRate >= 1
-                                    ? "text-green-600"
-                                    : "text-red-600"
-                                  : "text-gray-500"
+                                  : week.achievementRate >= 1
+                                  ? "text-green-600"
+                                  : "text-red-600"
                               }`}
                             >
                               {r1(week.achieved)}/{r1(week.goalSet)} km
@@ -339,11 +338,9 @@ const WeeklyProgressBar = () => {
                               className={`h-1 rounded-full ${
                                 week.isCurrent
                                   ? "bg-gradient-to-r from-yellow-300 to-yellow-500"
-                                  : week.isCompleted
-                                  ? week.achievementRate >= 1
-                                    ? "bg-gradient-to-r from-green-400 to-green-500"
-                                    : "bg-gradient-to-r from-red-400 to-red-500"
-                                  : "bg-gray-300"
+                                  : week.achievementRate >= 1
+                                  ? "bg-gradient-to-r from-green-400 to-green-500"
+                                  : "bg-gradient-to-r from-red-400 to-red-500"
                               }`}
                               style={{ width: `${Math.min(week.achievementRate * 100, 100)}%` }}
                             />
@@ -362,7 +359,7 @@ const WeeklyProgressBar = () => {
               </AnimatePresence>
 
               {/* Summary stats */}
-              {allWeeksData.length > 0 && (
+              {visibleWeeks.length > 0 && (
                 <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
                   <h4 className="font-medium text-slate-800 text-sm mb-2">Yhteenveto</h4>
                   <div className="grid grid-cols-2 gap-4 text-xs">
@@ -396,7 +393,6 @@ const WeeklyProgressBar = () => {
                       </div>
                     )}
                   </div>
-
                 </div>
               )}
             </div>
