@@ -170,33 +170,23 @@ export const useWeeklyGoal = (users: User[]): WeeklyGoalData => {
       };
     });
 
-    // Second pass: calculate goals using dynamic recalculation
-    let remainingDistanceAtWeekStart = challengeParams.totalDistance;
-    
+    // Second pass: calculate goals using FIXED dynamic recalculation
     return weeksWithAchieved.map((week, index) => {
+      // Calculate remaining weeks from this week forward
       const weeksRemaining = allWeeksInChallenge.length - index;
       
-      // For completed weeks, use the remaining distance at the start of that week
-      // For current/future weeks, use current remaining distance
-      let goalCalculationBase = remainingDistanceAtWeekStart;
+      // Calculate actual cumulative progress up to the START of this week
+      const cumulativeProgressBeforeThisWeek = weeksWithAchieved
+        .slice(0, index)
+        .reduce((sum, w) => sum + w.achieved, 0);
       
-      if (week.isCurrent || !week.isCompleted) {
-        // For current and future weeks, use actual current remaining distance
-        const currentCumulativeProgress = weeksWithAchieved
-          .slice(0, index)
-          .reduce((sum, w) => sum + w.achieved, 0);
-        goalCalculationBase = Math.max(0, challengeParams.totalDistance - currentCumulativeProgress);
-      }
-
-      // FIXED: Equal distribution of remaining distance across remaining weeks
-      const goalSet = weeksRemaining > 0 ? r1(goalCalculationBase / weeksRemaining) : 0;
+      // Remaining distance to distribute across remaining weeks
+      const remainingDistance = Math.max(0, challengeParams.totalDistance - cumulativeProgressBeforeThisWeek);
+      
+      // FIXED: Equal distribution - each remaining week gets the same target
+      const goalSet = weeksRemaining > 0 ? r1(remainingDistance / weeksRemaining) : 0;
       
       const achievementRate = goalSet > 0 ? week.achieved / goalSet : 0;
-
-      // Update remaining distance for next iteration (only for completed weeks)
-      if (week.isCompleted) {
-        remainingDistanceAtWeekStart -= week.achieved;
-      }
 
       return {
         ...week,
