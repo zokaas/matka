@@ -1,4 +1,4 @@
-// hooks/useWeeklyGoal.ts - FIXED WEEKLY GOALS
+// hooks/useWeeklyGoal.ts - CORRECT LOGIC: Only calculate current week goal
 import { useState, useEffect, useMemo } from 'react';
 import { User } from '@/app/types/types';
 import { challengeParams } from '@/app/constants/challengeParams';
@@ -142,7 +142,7 @@ export const useWeeklyGoal = (users: User[]): WeeklyGoalData => {
     return weeks;
   }, [currentWeekBoundaries.currentWeekKey]);
 
-  // FIXED: Calculate each week's data with proper dynamic goal recalculation
+  // CORRECTED: Calculate goals properly - only current week gets real goal
   const allWeeksData = useMemo(() => {
     const sourceUsers = users ?? [];
     let cumulativeProgress = 0;
@@ -170,22 +170,49 @@ export const useWeeklyGoal = (users: User[]): WeeklyGoalData => {
       };
     });
 
-    // Second pass: calculate goals using FIXED dynamic recalculation
+    // Second pass: calculate goals CORRECTLY
     return weeksWithAchieved.map((week, index) => {
-      // Calculate remaining weeks from this week forward
-      const weeksRemaining = allWeeksInChallenge.length - index;
-      
-      // Calculate actual cumulative progress up to the START of this week
-      const cumulativeProgressBeforeThisWeek = weeksWithAchieved
-        .slice(0, index)
-        .reduce((sum, w) => sum + w.achieved, 0);
-      
-      // Remaining distance to distribute across remaining weeks
-      const remainingDistance = Math.max(0, challengeParams.totalDistance - cumulativeProgressBeforeThisWeek);
-      
-      // FIXED: Equal distribution - each remaining week gets the same target
-      const goalSet = weeksRemaining > 0 ? r1(remainingDistance / weeksRemaining) : 0;
-      
+      let goalSet: number;
+
+      if (week.isCompleted) {
+        // COMPLETED WEEKS: Use the goal that was actually set when this week was current
+        // For now, we'll calculate what it should have been at that time
+        const completedWeeksBeforeThis = index;
+        const cumulativeProgressBeforeThis = weeksWithAchieved
+          .slice(0, index)
+          .reduce((sum, w) => sum + w.achieved, 0);
+        
+        const remainingDistanceAtStart = Math.max(0, challengeParams.totalDistance - cumulativeProgressBeforeThis);
+        const weeksRemainingAtStart = allWeeksInChallenge.length - completedWeeksBeforeThis;
+        
+        goalSet = weeksRemainingAtStart > 0 ? r1(remainingDistanceAtStart / weeksRemainingAtStart) : 0;
+        
+      } else if (week.isCurrent) {
+        // CURRENT WEEK: Calculate the real goal based on current situation
+        const cumulativeProgressSoFar = weeksWithAchieved
+          .slice(0, index)
+          .reduce((sum, w) => sum + w.achieved, 0);
+        
+        const remainingDistance = Math.max(0, challengeParams.totalDistance - cumulativeProgressSoFar);
+        const weeksRemaining = allWeeksInChallenge.length - index;
+        
+        goalSet = weeksRemaining > 0 ? r1(remainingDistance / weeksRemaining) : 0;
+        
+      } else {
+        // FUTURE WEEKS: Show ESTIMATED goal (will be recalculated when current)
+        // Use current remaining distance and weeks for estimation
+        const currentWeekIndex = weeksWithAchieved.findIndex(w => w.isCurrent);
+        const cumulativeProgressNow = weeksWithAchieved
+          .slice(0, currentWeekIndex >= 0 ? currentWeekIndex : index)
+          .reduce((sum, w) => sum + w.achieved, 0);
+        
+        const remainingDistanceNow = Math.max(0, challengeParams.totalDistance - cumulativeProgressNow);
+        const weeksRemainingFromNow = allWeeksInChallenge.length - (currentWeekIndex >= 0 ? currentWeekIndex : index);
+        
+        // ESTIMATED goal for future weeks (subject to change)
+        goalSet = weeksRemainingFromNow > 0 ? r1(remainingDistanceNow / weeksRemainingFromNow) : 0;
+      }
+
       const achievementRate = goalSet > 0 ? week.achieved / goalSet : 0;
 
       return {
@@ -227,7 +254,7 @@ export const useWeeklyGoal = (users: User[]): WeeklyGoalData => {
     const previousGoal = previousWeek ? previousWeek.goalSet : null;
     const goalAdjustment = previousGoal ? r1(currentWeek.goalSet - previousGoal) : 0;
     
-    // FIXED: More reasonable thresholds for adjustment classification
+    // More reasonable thresholds for adjustment classification
     const adjustmentReason: 'ahead' | 'behind' | 'on-track' =
       Math.abs(goalAdjustment) < 10 ? 'on-track' : 
       goalAdjustment > 0 ? 'behind' : 'ahead';
