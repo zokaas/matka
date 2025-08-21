@@ -143,7 +143,11 @@ const UserProfile = () => {
   const [dateRange] = useState({ start: "", end: "" }); // not used yet
   const [expandedActivity, setExpandedActivity] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-
+// unifies height + prevents iOS zoom (16px on mobile)
+const controlBase =
+  "w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white text-base md:text-sm"; 
+// for selects/date that need a chevron/picker space:
+const controlWithChevron = `${controlBase} appearance-none pr-10`;
   // Toast state
   const [toast, setToast] = useState<{
     message: string;
@@ -548,89 +552,61 @@ const UserProfile = () => {
                     <div>
                       <label className="block text-sm font-medium mb-2 text-gray-700">Laji</label>
                       <div className="relative">
-                        <select
-                          value={activity}
-                          onChange={(e) => setActivity(e.target.value)}
-                          className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white text-sm appearance-none pr-10"
-                          required
-                        >
-                          <option value="">Valitse laji</option>
-                          {sportsOptions.map((sport) => (
-                            <option key={sport} value={sport}>
-                              {sport}
-                            </option>
-                          ))}
-                        </select>
-                        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                          <ChevronDown className="w-4 h-4 text-gray-500" />
-                        </span>
-                      </div>
-                    </div>
+                        {/* Laji */}
+<select
+  value={activity}
+  onChange={(e) => setActivity(e.target.value)}
+  className={controlWithChevron}
+  required
+>
+  <option value="">Valitse laji</option>
+  {sportsOptions.map((sport) => (
+    <option key={sport} value={sport}>{sport}</option>
+  ))}
+</select>
 
-                    {/* Custom activity */}
-                    {(activity.includes("Muu (") || activity.includes("Muu(")) && (
-                      <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-700">Tarkenna laji</label>
-                        <input
-                          type="text"
-                          value={customActivity}
-                          onChange={(e) => setCustomActivity(e.target.value)}
-                          className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm"
-                          placeholder="Esim: Suunnistus"
-                          required
-                        />
-                      </div>
-                    )}
+{/* Kesto (min) */}
+<input
+  type="number"
+  inputMode="numeric"
+  value={duration}
+  onChange={(e) => setDuration(e.target.value)}
+  className={controlBase}
+  required
+/>
 
-                    {/* Kesto + Päivämäärä */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-2 text-gray-700">Kesto (min)</label>
-                        <input
-                          type="number"
-                          value={duration}
-                          onChange={(e) => setDuration(e.target.value)}
-                          className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium mb-2 text-gray-700">Päivämäärä</label>
-                        <div className="relative">
-                          <input
-                            type="date"
-                            value={date}
-                            onChange={(e) => setDate(e.target.value)}
-                            min={challengeParams.startDate}
-                            max={challengeParams.endDate}
-                            className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm [color-scheme:light] appearance-none pr-10"
-                            required
-                          />
-                          <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                            <ChevronDown className="w-4 h-4 text-gray-500" />
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+{/* Päivämäärä */}
+<div className="relative">
+  <input
+    type="date"
+    value={date}
+    onChange={(e) => setDate(e.target.value)}
+    min={challengeParams.startDate}
+    max={challengeParams.endDate}
+    className={`${controlWithChevron} [color-scheme:light]`}
+    required
+  />
+  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+    <ChevronDown className="w-4 h-4 text-gray-500" />
+  </span>
+</div>
 
-                    {/* Bonus */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-700">Bonus</label>
-                      <div className="relative">
-                        <select
-                          value={bonus}
-                          onChange={(e) => setBonus(e.target.value)}
-                          className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white text-sm appearance-none pr-10"
-                        >
-                          <option value="">Ei bonusta</option>
-                          <option value="juhlapäivä">🌞 Täydelliset olosuhteet (juhlapäivä) (2x)</option>
-                          <option value="enemmän kuin kolme urheilee yhdessä">👥 Ryhmäaktiviteetti (1.5x)</option>
-                          <option value="kaikki yhdessä">🏔️ Koko tiimi mukana (3x)</option>
-                        </select>
-                        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                          <ChevronDown className="w-4 h-4 text-gray-500" />
-                        </span>
-                      </div>
+{/* Bonus */}
+<div className="relative">
+  <select
+    value={bonus}
+    onChange={(e) => setBonus(e.target.value)}
+    className={controlWithChevron}
+  >
+    <option value="">Ei bonusta</option>
+    <option value="juhlapäivä">🌞 Täydelliset olosuhteet (juhlapäivä) (2x)</option>
+    <option value="enemmän kuin kolme urheilee yhdessä">👥 Ryhmäaktiviteetti (1.5x)</option>
+    <option value="kaikki yhdessä">🏔️ Koko tiimi mukana (3x)</option>
+  </select>
+  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+    <ChevronDown className="w-4 h-4 text-gray-500" />
+  </span>
+</div>
                     </div>
 
                     {/* Actions */}
