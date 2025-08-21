@@ -1,11 +1,11 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import { useCallback, useEffect, useRef, useState, useMemo } from "react”;
-import { useParams } from "next/navigation”;
-import Link from "next/link”;
-import Image from "next/image”;
-import { useAuth } from "@/app/contexts/AuthContext”;
+import { useCallback, useEffect, useRef, useState, useMemo } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { useAuth } from "@/app/contexts/AuthContext";
 import {
 Bike,
 User,
@@ -25,14 +25,14 @@ Filter,
 CheckCircle,
 AlertCircle,
 Info
-} from "lucide-react”;
-import ConfirmationModal from "@/app/components/ConfirmationModal”;
-import PersonalInsights from "@/app/components/PersonalInsights”;
-import CommentAndReactionView from "@/app/components/CommentAndReactionView”;
-import SubmitQuote from "@/app/components/SubmitQuote”;
-import { useTheme } from "@/app/hooks/useTheme”;
-import { ACTIVITY_WEIGHTS, challengeParams } from "@/app/constants/challengeParams”;
-import { motion, AnimatePresence } from "framer-motion”;
+} from "lucide-react";
+import ConfirmationModal from "@/app/components/ConfirmationModal";
+import PersonalInsights from "@/app/components/PersonalInsights";
+import CommentAndReactionView from "@/app/components/CommentAndReactionView";
+import SubmitQuote from "@/app/components/SubmitQuote";
+import { useTheme } from "@/app/hooks/useTheme";
+import { ACTIVITY_WEIGHTS, challengeParams } from "@/app/constants/challengeParams";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Activity {
 id: number;
@@ -110,16 +110,16 @@ const { t } = useTheme();
 // Core state
 const [user, setUser] = useState<User | null>(null);
 const [loading, setLoading] = useState(true);
-const [error, setError] = useState(””);
+const [error, setError] = useState("");
 
 // Form state with drafts
 const [showAddForm, setShowAddForm] = useState(true);
 const [isEditing, setIsEditing] = useState(false);
 const [editingActivity, setEditingActivity] = useState<Activity | null>(null);
-const [activity, setActivity] = useState(””);
-const [customActivity, setCustomActivity] = useState(””);
-const [duration, setDuration] = useState(””);
-const [date, setDate] = useState(() => new Date().toISOString().split("T”)[0]);
+const [activity, setActivity] = useState("");
+const [customActivity, setCustomActivity] = useState("");
+const [duration, setDuration] = useState("");
+const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
 const [bonus, setBonus] = useState<string | null>(null);
 const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -165,7 +165,7 @@ const parsed = JSON.parse(draft);
 setActivity(parsed.activity || ‘’);
 setDuration(parsed.duration || ‘’);
 setCustomActivity(parsed.customActivity || ‘’);
-setDate(parsed.date || new Date().toISOString().split("T”)[0]);
+setDate(parsed.date || new Date().toISOString().split("T")[0]);
 setBonus(parsed.bonus || null);
 }
 };
@@ -252,7 +252,7 @@ const fetchUser = useCallback(async () => {
 setLoading(true);
 try {
 const response = await fetch(`${backendUrl}/users/${username}`);
-if (!response.ok) throw new Error("Käyttäjätietojen lataaminen epäonnistui”);
+if (!response.ok) throw new Error("Käyttäjätietojen lataaminen epäonnistui");
 const data = await response.json();
 setUser(data);
 } catch (err) {
@@ -333,10 +333,10 @@ try {
 const resetForm = () => {
 setIsEditing(false);
 setEditingActivity(null);
-setActivity(””);
-setCustomActivity(””);
-setDuration(””);
-setDate(new Date().toISOString().split("T”)[0]);
+setActivity("");
+setCustomActivity("");
+setDuration("");
+setDate(new Date().toISOString().split("T")[0]);
 setBonus(null);
 setShowAddForm(false);
 clearDraft();
@@ -373,13 +373,13 @@ if (!activityToDelete?.id || !canEditProfile) return;
 try {
 const response = await fetch(
 `${backendUrl}/users/${username}/activities/${activityToDelete.id}`,
-{ method: "DELETE”, headers: { "Content-Type”: "application/json” } }
+{ method: "DELETE", headers: { "Content-Type": "application/json" } }
 );
-if (!response.ok) throw new Error("Suorituksen poistaminen epäonnistui”);
+if (!response.ok) throw new Error("Suorituksen poistaminen epäonnistui");
 setIsModalOpen(false);
 setActivityToDelete(null);
 fetchUser();
-showToast("Suoritus poistettu”, ‘success’);
+showToast("Suoritus poistettu", ‘success’);
 } catch (err) {
 setError((err as Error).message);
 showToast((err as Error).message, ‘error’);
@@ -429,7 +429,7 @@ return (
 <div className="min-h-screen flex items-center justify-center p-4 sm:p-6 bg-gray-50">
 <div className="text-center bg-white rounded-2xl p-6 sm:p-8 shadow-lg max-w-sm w-full">
 <Bike className="w-12 sm:w-16 h-12 sm:h-16 mx-auto mb-4 text-gray-400" />
-<p className="text-gray-600 text-sm sm:text-base">{error || "Käyttäjää ei löytynyt”}</p>
+<p className="text-gray-600 text-sm sm:text-base">{error || "Käyttäjää ei löytynyt"}</p>
 </div>
 </div>
 );
