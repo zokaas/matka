@@ -1,11 +1,12 @@
+import { challengeParams } from "../constants/challengeParams";
 import { Theme } from "./themeTypes";
 import { ThemeTranslations } from "./translationKeys";
 
 export const tourDeFranceTheme: Theme = {
   name: "Tour de France 2025",
   totalStages: 21,
-  totalDistance: 3338.8,
-  totalPoints: 3338.8,
+  totalDistance: challengeParams.totalDistance,
+  totalPoints: challengeParams.totalDistance,
   colors: {
     primary: "#facc15", // yellow
     background: "#fffefc",

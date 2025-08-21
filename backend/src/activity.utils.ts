@@ -118,10 +118,11 @@ export const calculateKilometersWithBonus = (
   // Handle custom activities like "Custom Name / Muu(100km/h)" or "Custom Name / Muu (1x)"
   let activityType = activity.trim();
 
-  if (activity.includes(' / ')) {
+  if (activity.includes(' / ') && activity.toLowerCase().includes('muu')) {
     const parts = activity.split(' / ');
     const lastPart = parts[parts.length - 1].trim();
     activityType = lastPart;
+    console.log('🔧 Detected custom Muu activity, using:', activityType);
   }
 
   // Try direct lookup first

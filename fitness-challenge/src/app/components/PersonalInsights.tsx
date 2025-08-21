@@ -3,9 +3,12 @@
 import { useState, useMemo, useEffect } from "react";
 import _ from "lodash";
 import { useTheme } from "@/app/hooks/useTheme";
+import { TrendingUp, Calendar, Target, Clock, Activity, Award, BarChart3, TrendingDown } from "lucide-react";
+import { motion } from "framer-motion";
+import { format } from "date-fns";
+import { challengeParams } from "@/app/constants/challengeParams";
 import ClearWeeklyProgress from "./UserWeeklyProgress";
 
-// Define the Activity interface based on your existing model
 interface Activity {
   id: number;
   activity: string;
@@ -15,39 +18,10 @@ interface Activity {
   bonus?: string;
 }
 
-// Define the props interface for the component
 interface PersonalInsightProps {
   activities: Activity[];
   username: string;
-  user?: any; // Add user prop for ClearWeeklyProgress
-}
-
-// Define the structure for our insights data
-interface InsightsData {
-  totalActivities: number;
-  totalDuration: number;
-  totalKilometers: number;
-  averageDuration: number;
-  mostFrequentActivity: string;
-  trendData: Array<{
-    date: string;
-    kilometers: number;
-    duration: number;
-  }>;
-  activityBreakdown: Array<{
-    activity: string;
-    count: number;
-    percentage: number;
-  }>;
-  weekdayBreakdown: Array<{
-    name: string;
-    activities: number;
-  }>;
-  streakData: {
-    currentStreak: number;
-    longestStreak: number;
-  };
-  avgWeeklyKm: number;
+  user?: any;
 }
 
 const PersonalInsights: React.FC<PersonalInsightProps> = ({
@@ -56,416 +30,590 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
   user,
 }) => {
   const { t } = useTheme();
-  
-  // State for active tab - default to "tavoite"
-  const [activeTab, setActiveTab] = useState<
-    "tavoite" | "overview" | "activity"
-  >("tavoite");
-  
-  // State for all activities (in case we need to fetch them separately)
   const [allActivities, setAllActivities] = useState<Activity[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  
-  // Fetch all activities for accurate statistics
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'overview' | 'weekly' | 'breakdown'>('overview');
+  const [showAllWeeks, setShowAllWeeks] = useState(false);
+
   useEffect(() => {
     const fetchAllActivities = async () => {
       try {
         setLoading(true);
         const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL!;
-        const response = await fetch(
-          `${backendUrl}/users/${username}/activities/all`
-        );
-        
+        const response = await fetch(`${backendUrl}/users/${username}/activities/all`);
         if (response.ok) {
           const data = await response.json();
           setAllActivities(data);
         } else {
-          // If API request fails, use the provided activities
           setAllActivities(activities);
         }
       } catch (error) {
         console.error("Error fetching all activities:", error);
-        // Fallback to the activities passed via props
         setAllActivities(activities);
       } finally {
         setLoading(false);
       }
     };
-    
     fetchAllActivities();
   }, [username, activities]);
 
-  // Process activity data for insights using ALL activities
-  const insights = useMemo<InsightsData>(() => {
+  const personalWeeklyTarget = useMemo(() => {
+    const totalUsers = 10; // You can pass this as a prop if needed
+    const individualTarget = challengeParams.totalDistance / totalUsers;
+    const challengeStart = new Date(challengeParams.startDate);
+    const challengeEnd = new Date(challengeParams.endDate);
+    const totalWeeks = Math.ceil((challengeEnd.getTime() - challengeStart.getTime()) / (7 * 24 * 60 * 60 * 1000));
+    return individualTarget / totalWeeks;
+  }, []);
+
+  const analytics = useMemo(() => {
     const activitiesToUse = allActivities.length > 0 ? allActivities : activities;
-    
     if (!activitiesToUse || activitiesToUse.length === 0) {
-      return {
-        totalActivities: 0,
-        totalDuration: 0,
-        totalKilometers: 0,
-        averageDuration: 0,
-        mostFrequentActivity: "",
-        trendData: [],
-        activityBreakdown: [],
-        weekdayBreakdown: [],
-        streakData: { currentStreak: 0, longestStreak: 0 },
-        avgWeeklyKm: 0,
-      };
+      return null;
     }
 
-    // Sort activities by date
-    const sortedActivities = _.sortBy(activitiesToUse, (a) => new Date(a.date));
+    const today = new Date();
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    startOfWeek.setHours(0, 0, 0, 0);
 
-    // Total stats
-    const totalActivities = activitiesToUse.length;
-    const totalDuration = _.sumBy(activitiesToUse, "duration");
-    const totalKilometers = _.sumBy(activitiesToUse, "kilometers");
-    const averageDuration = totalDuration / totalActivities;
+    const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-    // Most frequent activity
-    const activityCounts = _.countBy(activitiesToUse, "activity");
-    const mostFrequentActivity = Object.entries(activityCounts).reduce(
-      (max, [activity, count]) => (count > max[1] ? [activity, count] : max),
-      ["", 0]
-    )[0];
+    // Calculate time periods
+    const thisWeekActivities = activitiesToUse.filter(activity => {
+      const activityDate = new Date(activity.date);
+      return activityDate >= startOfWeek;
+    });
 
-    // Trend data (last 30 activities)
-    const last30Activities = sortedActivities.slice(-30);
-    const trendData = last30Activities.map((activity) => ({
-      date: new Date(activity.date).toLocaleDateString("fi-FI"),
-      kilometers: activity.kilometers,
-      duration: activity.duration,
-    }));
+    const thisMonthActivities = activitiesToUse.filter(activity => {
+      const activityDate = new Date(activity.date);
+      return activityDate >= startOfMonth;
+    });
+
+    // Last 7 days activities
+    const last7Days = new Date(today);
+    last7Days.setDate(today.getDate() - 7);
+    const last7DaysActivities = activitiesToUse.filter(activity => {
+      const activityDate = new Date(activity.date);
+      return activityDate >= last7Days;
+    });
 
     // Activity breakdown
+    const activityCounts = _.countBy(activitiesToUse, "activity");
     const activityBreakdown = Object.entries(activityCounts)
       .map(([activity, count]) => ({
         activity,
         count,
-        percentage: Math.round((count / totalActivities) * 100),
+        percentage: Math.round((count / activitiesToUse.length) * 100),
+        totalKm: activitiesToUse.filter(a => a.activity === activity).reduce((sum, a) => sum + a.kilometers, 0)
       }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 5); // Top 5 activities
+      .slice(0, 5);
 
-    // Weekday breakdown
-    const weekdayData = _.groupBy(activitiesToUse, (a) => new Date(a.date).getDay());
-    const weekdays = [
-      "Sunnuntai",
-      "Maanantai",
-      "Tiistai",
-      "Keskiviikko",
-      "Torstai",
-      "Perjantai",
-      "Lauantai",
-    ];
+    // Current streak calculation
+    const sortedDates = activitiesToUse
+      .map(a => new Date(a.date).toDateString())
+      .filter((date, i, arr) => arr.indexOf(date) === i)
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
-    const weekdayBreakdown = weekdays.map((day, index) => ({
-      name: day,
-      activities: weekdayData[index] ? weekdayData[index].length : 0,
-    }));
-
-    // Calculate average weekly kilometers
-    const firstDate = new Date(sortedActivities[0].date);
-    const lastDate = new Date(sortedActivities[sortedActivities.length - 1].date);
-    
-    // Calculate the number of weeks between first and last activity
-    const weeksDiff = Math.max(
-      1,
-      Math.ceil((lastDate.getTime() - firstDate.getTime()) / (7 * 24 * 60 * 60 * 1000))
-    );
-    
-    // Calculate average weekly kilometers
-    const avgWeeklyKm = totalKilometers / weeksDiff;
-
-    // Calculate streaks
-    const activityDates = sortedActivities
-      .map(activity => new Date(activity.date).toISOString().split('T')[0])
-      .filter((date, index, self) => self.indexOf(date) === index) // Remove duplicates
-      .sort(); // Ensure dates are sorted ascending (oldest first)
-
-    // Now calculate streaks properly
     let currentStreak = 0;
-    let longestStreak = 0;
-    let tempStreak = 0;
+    if (sortedDates.length > 0) {
+      const lastActivityDate = new Date(sortedDates[0]);
+      const daysSinceLastActivity = Math.floor((today.getTime() - lastActivityDate.getTime()) / (1000 * 60 * 60 * 24));
 
-    // Loop through the unique dates
-    for (let i = 0; i < activityDates.length; i++) {
-      const currentDate = new Date(activityDates[i]);
-      
-      if (i === 0) {
-        // First activity starts a streak
-        tempStreak = 1;
-      } else {
-        const prevDate = new Date(activityDates[i-1]);
-        const dayDiff = Math.round((currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
-        
-        if (dayDiff === 1) {
-          // Consecutive day, continue streak
-          tempStreak++;
-        } else {
-          // Gap detected, reset streak
-          tempStreak = 1;
-        }
-      }
-      
-      // Update longest streak if current one is longer
-      if (tempStreak > longestStreak) {
-        longestStreak = tempStreak;
-      }
-    }
-
-    // Calculate current streak (check if the most recent activity was today or yesterday)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-
-    // Only calculate current streak if there are any activity dates
-    if (activityDates.length > 0) {
-      // Need to get the most recent activity date
-      const mostRecentActivityDate = new Date(activityDates[activityDates.length - 1]);
-      mostRecentActivityDate.setHours(0, 0, 0, 0);
-
-      // Check if the most recent activity was today or yesterday
-      if (mostRecentActivityDate.getTime() === today.getTime() || 
-          mostRecentActivityDate.getTime() === yesterday.getTime()) {
-        // If so, count back from the most recent date to find the current streak
+      if (daysSinceLastActivity <= 1) {
         currentStreak = 1;
-        for (let i = activityDates.length - 2; i >= 0; i--) {
-          const currentDate = new Date(activityDates[i]);
-          const nextDate = new Date(activityDates[i + 1]);
-          const dayDiff = Math.round((nextDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
-          
-          if (dayDiff === 1) {
+        for (let i = 1; i < sortedDates.length; i++) {
+          const currentDate = new Date(sortedDates[i]);
+          const prevDate = new Date(sortedDates[i - 1]);
+          const diffDays = Math.floor((prevDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
+
+          if (diffDays === 1) {
             currentStreak++;
           } else {
-            break; // Streak is broken
+            break;
           }
         }
-      } else {
-        // Most recent activity is older than yesterday, so no current streak
-        currentStreak = 0;
       }
     }
 
-    const streakData = { currentStreak, longestStreak };
+    // Daily totals for records and weekly breakdown
+    const dailyTotals: Record<string, number> = {};
+    activitiesToUse.forEach(activity => {
+      const dateKey = activity.date.split('T')[0];
+      dailyTotals[dateKey] = (dailyTotals[dateKey] || 0) + activity.kilometers;
+    });
+
+    // Weekly breakdown calculation
+    const getWeekKey = (date: Date) => {
+      const startOfWeek = new Date(date);
+      startOfWeek.setDate(date.getDate() - date.getDay()); // Start of week (Sunday)
+      startOfWeek.setHours(0, 0, 0, 0);
+      return startOfWeek.toISOString().split('T')[0];
+    };
+
+    const weeklyData: Record<string, { km: number; activities: number; dates: string[] }> = {};
+
+    activitiesToUse.forEach(activity => {
+      const activityDate = new Date(activity.date);
+      const weekKey = getWeekKey(activityDate);
+
+      if (!weeklyData[weekKey]) {
+        weeklyData[weekKey] = { km: 0, activities: 0, dates: [] };
+      }
+
+      weeklyData[weekKey].km += activity.kilometers;
+      weeklyData[weekKey].activities += 1;
+
+      const dateKey = activity.date.split('T')[0];
+      if (!weeklyData[weekKey].dates.includes(dateKey)) {
+        weeklyData[weekKey].dates.push(dateKey);
+      }
+    });
+
+    const weeklyBreakdown = Object.entries(weeklyData)
+      .map(([weekStart, data]) => {
+        const startDate = new Date(weekStart);
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + 6);
+
+        const weekNumber = Math.ceil(
+          (startDate.getTime() - new Date(startDate.getFullYear(), 0, 1).getTime()) /
+          (7 * 24 * 60 * 60 * 1000)
+        );
+
+        const isCurrentWeek = getWeekKey(today) === weekStart;
+        const achievementRate = data.km / personalWeeklyTarget;
+
+        return {
+          weekStart: startDate,
+          weekEnd: endDate,
+          weekNumber,
+          km: data.km,
+          activities: data.activities,
+          activeDays: data.dates.length,
+          isCurrentWeek,
+          achievementRate,
+          target: personalWeeklyTarget
+        };
+      })
+      .sort((a, b) => b.weekStart.getTime() - a.weekStart.getTime())
+      .slice(0, 8); // Last 8 weeks
+
+    // Records
+    const longestWorkout = activitiesToUse.reduce((longest, activity) => {
+      return activity.duration > (longest?.duration || 0) ? activity : longest;
+    }, null as typeof activitiesToUse[0] | null);
+
+    const bestDay = Object.entries(dailyTotals).reduce((best, [date, km]) => {
+      return km > (best?.km || 0) ? { date, km } : best;
+    }, null as { date: string; km: number } | null);
 
     return {
-      totalActivities,
-      totalDuration,
-      totalKilometers,
-      averageDuration,
-      mostFrequentActivity,
-      trendData,
+      // Totals
+      totalKm: _.sumBy(activitiesToUse, "kilometers"),
+      totalActivities: activitiesToUse.length,
+      totalHours: _.sumBy(activitiesToUse, "duration") / 60,
+
+      // Time periods
+      thisWeekKm: _.sumBy(thisWeekActivities, "kilometers"),
+      thisWeekActivities: thisWeekActivities.length,
+      thisMonthKm: _.sumBy(thisMonthActivities, "kilometers"),
+      thisMonthActivities: thisMonthActivities.length,
+      last7DaysKm: _.sumBy(last7DaysActivities, "kilometers"),
+
+      // Averages
+      avgPerActivity: activitiesToUse.length > 0 ? _.sumBy(activitiesToUse, "kilometers") / activitiesToUse.length : 0,
+      avgDuration: activitiesToUse.length > 0 ? _.sumBy(activitiesToUse, "duration") / activitiesToUse.length : 0,
+      dailyAverage: activitiesToUse.length > 0 ? _.sumBy(activitiesToUse, "kilometers") / Math.max(1, Object.keys(dailyTotals).length) : 0,
+
+      // Current status
+      currentStreak,
+      activeDays: Object.keys(dailyTotals).length,
+
+      // Breakdown
       activityBreakdown,
-      weekdayBreakdown,
-      streakData,
-      avgWeeklyKm,
+      weeklyBreakdown,
+
+      // Records
+      longestWorkout,
+      bestDay,
     };
-  }, [allActivities, activities]);
+  }, [allActivities, activities, personalWeeklyTarget]);
 
   if (!activities || activities.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-lg font-semibold mb-4">
-          {t.insights.title}
-        </h2>
-        <p className="text-gray-600">{t.insights.addActivitiesToSee}</p>
-      </div>
-    );
-  }
-  
-  if (loading) {
-    return (
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-lg font-semibold mb-4">
-          {t.insights.title}
-        </h2>
-        <div className="flex justify-center">
-          <div className="animate-spin h-10 w-10 border-4 border-purple-500 rounded-full border-t-transparent"></div>
+      <div className="space-y-6">
+        {user && (
+          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
+            <h2 className="text-lg font-semibold mb-4">Tavoitteet</h2>
+            <ClearWeeklyProgress user={user} totalUsers={10} />
+          </div>
+        )}
+
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
+          <h2 className="text-lg font-semibold mb-4">Tilastot</h2>
+          <div className="text-center py-8">
+            <TrendingUp className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+            <p className="text-gray-600">Lisää suorituksia nähdäksesi tilastoja</p>
+          </div>
         </div>
       </div>
     );
   }
+
+  if (loading || !analytics) {
+    return (
+      <div className="space-y-6">
+        {user && (
+          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
+            <h2 className="text-lg font-semibold mb-4">Tavoitteet</h2>
+            <ClearWeeklyProgress user={user} totalUsers={10} />
+          </div>
+        )}
+
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm animate-pulse">
+          <div className="h-6 bg-gray-200 rounded w-32 mb-4"></div>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="h-20 bg-gray-200 rounded-xl"></div>
+              <div className="h-20 bg-gray-200 rounded-xl"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const tabs = [
+    { key: 'overview', label: 'Yleiskatsaus', icon: BarChart3 },
+    { key: 'weekly', label: 'Viikot', icon: Calendar },
+    { key: 'breakdown', label: 'Lajit', icon: Activity },
+  ] as const;
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow">
-      <h2 className="text-xl font-semibold mb-4">
-        {t.insights.title}
-      </h2>
-      
-      {/* Tabs Navigation */}
-      <div className="flex border-b mb-6">
-        <button
-          className={`px-4 py-2 ${
-            activeTab === "tavoite"
-              ? "border-b-2 border-purple-500 text-slate-600"
-              : "text-gray-600"
-          }`}
-          onClick={() => setActiveTab("tavoite")}
-        >
-Tavoite
-        </button>
-        <button
-          className={`px-4 py-2 ${
-            activeTab === "overview"
-              ? "border-b-2 border-purple-500 text-slate-600"
-              : "text-gray-600"
-          }`}
-          onClick={() => setActiveTab("overview")}
-        >
-          {t.insights.overview}
-        </button>
-        <button
-          className={`px-4 py-2 ${
-            activeTab === "activity"
-              ? "border-b-2 border-purple-500 text-slate-600"
-              : "text-gray-600"
-          }`}
-          onClick={() => setActiveTab("activity")}
-        >
-          {t.insights.activity}
-        </button>
-      </div>
-
-      {/* Tavoite Tab */}
-      {activeTab === "tavoite" && (
-        <div className="space-y-6">
-          {/* ClearWeeklyProgress Component */}
-          {user && (
-            <div className="mx-1 sm:mx-0">
-              <ClearWeeklyProgress user={user} totalUsers={10} />
-            </div>
-          )}
+    <div className="space-y-6">
+      {user && (
+        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
+          <h2 className="text-lg font-semibold mb-4">Tavoitteet</h2>
+          <ClearWeeklyProgress user={user} totalUsers={10} />
         </div>
       )}
 
-      {/* Overview Tab */}
-      {activeTab === "overview" && (
-        <div className="space-y-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-slate-50 p-4 rounded-lg">
-              <h3 className="text-sm text-slate-800 font-medium">
-                {t.insights.totalActivities}
-              </h3>
-              <p className="text-2xl font-bold">
-                {insights.totalActivities.toFixed(1)}
-              </p>
-            </div>
-            <div className="bg-slate-50 p-4 rounded-lg">
-              <h3 className="text-sm font-medium">
-                {t.insights.totalHours}
-              </h3>
-              <p className="text-2xl font-bold">
-                {(insights.totalDuration / 60).toFixed(1)} h
-              </p>
-            </div>
-            <div className="bg-green-50 p-4 rounded-lg">
-              <h3 className="text-sm font-medium">
-                {t.insights.totalKm}
-              </h3>
-              <p className="text-2xl font-bold">
-                {insights.totalKilometers.toFixed(1)} km
-              </p>
-            </div>
-            <div className="bg-indigo-50 p-4 rounded-lg">
-              <h3 className="text-sm text-indigo-800 font-medium">
-                {t.insights.weeklyKm}
-              </h3>
-              <p className="text-2xl font-bold">
-                {insights.avgWeeklyKm.toFixed(1)} {t.insights.km}
-              </p>
-            </div>
-          </div>
+      <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm">
+        <h2 className="text-lg font-semibold mb-4">Tilastot</h2>
 
-          {/* Streak Info */}
-          <div className="flex space-x-4">
-            <div className="flex-1 bg-amber-50 p-4 rounded-lg">
-              <h3 className="text-sm text-amber-800 font-medium">
-                {t.insights.currentStreak}
-              </h3>
-              <p className="text-2xl font-bold">
-                {insights.streakData.currentStreak.toFixed(1)}{" "}
-                {t.insights.days}
-              </p>
-            </div>
-            <div className="flex-1 bg-orange-50 p-4 rounded-lg">
-              <h3 className="text-sm text-orange-800 font-medium">
-                {t.insights.longestStreak}
-              </h3>
-              <p className="text-2xl font-bold">
-                {insights.streakData.longestStreak.toFixed(1)}{" "}
-                {t.insights.days}
-              </p>
-            </div>
-          </div>
-
-          {/* Favorite Activity */}
-          <div className="bg-slate-50 p-4 rounded-lg">
-            <h3 className="text-sm text-slate-800 font-medium">
-              {t.insights.mostFrequentActivity}
-            </h3>
-            <p className="text-xl font-bold">{insights.mostFrequentActivity}</p>
+        {/* Tab Navigation */}
+        <div className="flex justify-center mb-6">
+          <div className="bg-gray-100 rounded-lg p-1 inline-flex">
+            {tabs.map(({ key, label, icon: Icon }) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-md transition-all text-sm font-medium ${activeTab === key
+                    ? 'bg-white text-yellow-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-800'
+                  }`}
+              >
+                <Icon className="w-4 h-4" />
+                <span className="hidden sm:inline">{label}</span>
+              </button>
+            ))}
           </div>
         </div>
-      )}
 
-      {/* Activity Tab */}
-      {activeTab === "activity" && (
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-lg font-medium mb-2">
-              {t.insights.personalStatistics}
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 rounded">
-                <h4 className="text-sm text-gray-500">
-                  {t.insights.avgDuration}
-                </h4>
-                <p className="text-xl font-medium">
-                  {Math.round(insights.averageDuration)} {t.insights.mins}
-                </p>
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          {activeTab === 'overview' && (
+            <div className="space-y-6">
+              {/* Key Metrics Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="text-center bg-blue-50 rounded-xl p-4">
+                  <div className="text-2xl font-bold text-blue-600 mb-1">{analytics.totalKm.toFixed(1)}</div>
+                  <div className="text-sm text-blue-700">Kilometrit</div>
+                </div>
+                <div className="text-center bg-green-50 rounded-xl p-4">
+                  <div className="text-2xl font-bold text-green-600 mb-1">{analytics.totalActivities}</div>
+                  <div className="text-sm text-green-700">Suoritukset</div>
+                </div>
+                <div className="text-center bg-purple-50 rounded-xl p-4">
+                  <div className="text-2xl font-bold text-purple-600 mb-1">{analytics.totalHours.toFixed(1)}</div>
+                  <div className="text-sm text-purple-700">Tuntia</div>
+                </div>
+                <div className="text-center bg-orange-50 rounded-xl p-4">
+                  <div className="text-2xl font-bold text-orange-600 mb-1">{analytics.currentStreak}</div>
+                  <div className="text-sm text-orange-700">Nykyinen putki</div>
+                </div>
               </div>
-              <div className="p-4 rounded">
-                <h4 className="text-sm text-gray-500">
-                  {t.insights.avgDistance}
-                </h4>
-                <p className="text-xl font-medium">
-                  {Math.round(
-                    insights.totalKilometers / insights.totalActivities
-                  )}{" "}
-                  {t.insights.km}
-                </p>
+
+              {/* Time Period Comparison */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-800 mb-2">Tämä viikko</h4>
+                  <div className="text-lg font-bold text-gray-900">{analytics.thisWeekKm.toFixed(1)} km</div>
+                  <div className="text-sm text-gray-600">{analytics.thisWeekActivities} suoritusta</div>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-800 mb-2">Tämä kuukausi</h4>
+                  <div className="text-lg font-bold text-gray-900">{analytics.thisMonthKm.toFixed(1)} km</div>
+                  <div className="text-sm text-gray-600">{analytics.thisMonthActivities} suoritusta</div>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="font-medium text-gray-800 mb-2">Viimeiset 7 päivää</h4>
+                  <div className="text-lg font-bold text-gray-900">{analytics.last7DaysKm.toFixed(1)} km</div>
+                  <div className="text-sm text-gray-600">Keskiarvo: {(analytics.last7DaysKm / 7).toFixed(1)} km/pv</div>
+                </div>
               </div>
-            </div>
-          </div>
-          <div>
-            <h3 className="text-lg font-medium mb-4">
-              {t.insights.activityBreakdown}
-            </h3>
-            <div className="space-y-3">
-              {insights.activityBreakdown.map((item) => (
-                <div key={item.activity} className="p-3 rounded">
-                  <div className="flex justify-between mb-1">
-                    <span className="font-medium">{item.activity}</span>
-                    <span>
-                      {item.count} kertaa ({item.percentage}%)
-                    </span>
+
+              {/* Personal Records */}
+              <div>
+                <h3 className="font-medium text-gray-900 mb-3">Henkilökohtaiset ennätykset</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Award className="w-5 h-5 text-yellow-600" />
+                      <span className="font-medium text-yellow-800">Paras päivä</span>
+                    </div>
+                    <div className="text-lg font-bold text-yellow-900">
+                      {analytics.bestDay ? `${analytics.bestDay.km.toFixed(1)} km` : 'Ei dataa'}
+                    </div>
+                    {analytics.bestDay && (
+                      <div className="text-sm text-yellow-700">
+                        {format(new Date(analytics.bestDay.date), 'd.M.yyyy')}
+                      </div>
+                    )}
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3 mt-2">
-                    <div
-                      className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-3 rounded-full transition-all duration-500"
-                      style={{ width: `${item.percentage}%` }}
-                    ></div>
+                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Clock className="w-5 h-5 text-blue-600" />
+                      <span className="font-medium text-blue-800">Pisin treeni</span>
+                    </div>
+                    <div className="text-lg font-bold text-blue-900">
+                      {analytics.longestWorkout ? `${analytics.longestWorkout.duration} min` : 'Ei dataa'}
+                    </div>
+                    {analytics.longestWorkout && (
+                      <div className="text-sm text-blue-700">{analytics.longestWorkout.activity}</div>
+                    )}
+                  </div>
+                  <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Calendar className="w-5 h-5 text-green-600" />
+                      <span className="font-medium text-green-800">Aktiivisia päiviä</span>
+                    </div>
+                    <div className="text-lg font-bold text-green-900">{analytics.activeDays}</div>
+                    <div className="text-sm text-green-700">
+                      Keskiarvo: {analytics.dailyAverage.toFixed(1)} km/aktiivipäivä
+                    </div>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          )}
+
+          {activeTab === 'weekly' && (
+            <div className="space-y-6">
+
+              {/* Weekly Breakdown List */}
+              <div>
+                <h3 className="font-medium text-gray-900 mb-4">Viikkotilastot</h3>
+                <div className="space-y-3">
+                  {analytics.weeklyBreakdown.slice(0, showAllWeeks ? undefined : 3).map((week, index) => {
+                    const TrendIcon = week.achievementRate >= 1 ? TrendingUp : TrendingDown;
+
+                    return (
+                      <div
+                        key={week.weekStart.toISOString()}
+                        className={`p-4 rounded-lg border ${week.isCurrentWeek
+                            ? 'bg-yellow-50 border-yellow-300'
+                            : week.achievementRate >= 1
+                              ? 'bg-green-50 border-green-200'
+                              : 'bg-red-50 border-red-200'
+                          }`}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center gap-2">
+                            <TrendIcon className={`w-4 h-4 ${week.isCurrentWeek ? 'text-yellow-600' :
+                                week.achievementRate >= 1 ? 'text-green-600' : 'text-red-600'
+                              }`} />
+                            <span className="font-medium text-gray-900">
+                              Viikko {week.weekNumber}
+                            </span>
+                            {week.isCurrentWeek && (
+                              <span className="text-xs bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full">
+                                Nykyinen
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <div className={`text-lg font-bold ${week.isCurrentWeek ? 'text-yellow-600' :
+                                week.achievementRate >= 1 ? 'text-green-600' : 'text-red-600'
+                              }`}>
+                              {week.km.toFixed(1)} km
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              Tavoite: {Number(week.target).toFixed(1)} km
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Progress bar */}
+                        <div className="mb-3">
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <motion.div
+                              className={`h-2 rounded-full ${week.isCurrentWeek
+                                  ? 'bg-gradient-to-r from-yellow-400 to-yellow-500'
+                                  : week.achievementRate >= 1
+                                    ? 'bg-gradient-to-r from-green-400 to-green-500'
+                                    : 'bg-gradient-to-r from-red-400 to-red-500'
+                                }`}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${Math.min(week.achievementRate * 100, 100)}%` }}
+                              transition={{ duration: 1, delay: index * 0.1 }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-4 text-sm">
+                          <div>
+                            <div className="text-gray-600">Saavutus</div>
+                            <div className="font-medium">
+                              {(week.achievementRate * 100).toFixed(0)}%
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-gray-600">Suoritukset</div>
+                            <div className="font-medium">{week.activities} kpl</div>
+                          </div>
+                          <div>
+                            <div className="text-gray-600">Aktiivisia päiviä</div>
+                            <div className="font-medium">{week.activeDays}/7</div>
+                          </div>
+                        </div>
+
+                        <div className="text-xs text-gray-500 mt-2">
+                          {week.weekStart.toLocaleDateString('fi-FI', { day: 'numeric', month: 'numeric' })} - {' '}
+                          {week.weekEnd.toLocaleDateString('fi-FI', { day: 'numeric', month: 'numeric' })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {analytics.weeklyBreakdown.length > 3 && (
+                  <div className="text-center mt-4">
+                    <button
+                      onClick={() => setShowAllWeeks(!showAllWeeks)}
+                      className="text-sm text-blue-600 hover:text-blue-800 transition-colors underline"
+                    >
+                      {showAllWeeks ? 'Näytä vähemmän' : `Näytä kaikki ${analytics.weeklyBreakdown.length} viikkoa`}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+
+              {/* Weekly Performance Summary */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-blue-600">
+                      {analytics.weeklyBreakdown.filter(w => w.achievementRate >= 1).length}
+                    </div>
+                    <div className="text-sm text-blue-700">Onnistunutta viikkoa</div>
+                    <div className="text-xs text-blue-600">
+                      / {analytics.weeklyBreakdown.length} viikkoa yhteensä
+                    </div>
+                  </div>
+                </div>
+                <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-green-600">
+                      {analytics.weeklyBreakdown.length > 0 ?
+                        (analytics.weeklyBreakdown.reduce((sum, w) => sum + w.achievementRate, 0) / analytics.weeklyBreakdown.length * 100).toFixed(0)
+                        : 0}%
+                    </div>
+                    <div className="text-sm text-green-700">Keskimääräinen saavutus</div>
+                  </div>
+                </div>
+                <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-purple-600">
+                      {analytics.weeklyBreakdown.length > 0 ?
+                        Math.max(...analytics.weeklyBreakdown.map(w => w.km)).toFixed(1)
+                        : 0}
+                    </div>
+                    <div className="text-sm text-purple-700">Paras viikko (km)</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {activeTab === 'breakdown' && (
+            <div className="space-y-6">
+              {/* Activity Breakdown */}
+              <div>
+                <h3 className="font-medium text-gray-900 mb-4">Lajien jakautuminen</h3>
+                <div className="space-y-4">
+                  {analytics.activityBreakdown.map(({ activity, count, percentage, totalKm }, index) => (
+                    <div key={activity} className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-bold text-yellow-600">#{index + 1}</span>
+                          <span className="font-medium">{activity}</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-bold">{count} kertaa ({percentage}%)</div>
+                          <div className="text-xs text-gray-500">{totalKm.toFixed(1)} km yhteensä</div>
+                        </div>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-3">
+                        <motion.div
+                          className="h-3 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500"
+                          initial={{ width: 0 }}
+                          animate={{ width: `${percentage}%` }}
+                          transition={{ duration: 1, delay: index * 0.1 }}
+                        />
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-600">
+                        <span>Keskimäärin {(totalKm / count).toFixed(1)} km per kerta</span>
+                        <span>Keskikesto: {Math.round(analytics.totalHours * 60 * (count / analytics.totalActivities) / count)} min</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Activity Summary */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-medium text-gray-800 mb-3">Yhteenveto</h4>
+                <div className="space-y-2 text-sm text-gray-700">
+                  <div className="flex justify-between">
+                    <span>Eri lajeja harrastettu:</span>
+                    <span className="font-medium">{analytics.activityBreakdown.length} kpl</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Suosituin laji:</span>
+                    <span className="font-medium">{analytics.activityBreakdown[0]?.activity || 'Ei dataa'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Monipuolisuus:</span>
+                    <span className="font-medium">
+                      {analytics.activityBreakdown.length > 3 ? 'Erittäin monipuolinen' :
+                        analytics.activityBreakdown.length > 1 ? 'Monipuolinen' : 'Keskittynyt'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </motion.div>
+      </div>
     </div>
   );
 };

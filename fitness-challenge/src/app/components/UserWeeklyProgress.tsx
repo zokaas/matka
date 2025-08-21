@@ -1,9 +1,11 @@
-// components/ClearWeeklyProgress.tsx - Enhanced with percentage comparisons
+"use client";
+
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import { User } from "@/app/types/types";
 import { useWeeklyGoal } from "@/app/hooks/useWeeklyGoal";
 import { challengeParams } from "@/app/constants/challengeParams";
+import { TrendingUp, TrendingDown, Target } from "lucide-react";
 
 const r1 = (n: number) => Number(n.toFixed(1));
 
@@ -17,147 +19,174 @@ const ClearWeeklyProgress: React.FC<ClearWeeklyProgressProps> = ({
   totalUsers = 10 
 }) => {
   const weeklyGoalData = useWeeklyGoal([user]);
-  
+
   const data = useMemo(() => {
     const today = new Date();
     const challengeStart = new Date(challengeParams.startDate);
-    
+    const challengeEnd = new Date(challengeParams.endDate);
     const totalChallengeDays = challengeParams.totalDays;
-    const daysPassed = Math.max(0, Math.ceil((today.getTime() - challengeStart.getTime()) / (1000 * 60 * 60 * 24)));
-    
+    const daysPassed = Math.max(0, Math.min(
+      Math.ceil((today.getTime() - challengeStart.getTime()) / (1000 * 60 * 60 * 24)),
+      totalChallengeDays
+    ));
+
     const myTotalTarget = r1(challengeParams.totalDistance / totalUsers);
     const expectedProgressByNow = r1((myTotalTarget * daysPassed) / totalChallengeDays);
     const difference = r1(user.totalKm - expectedProgressByNow);
-    
-    // Calculate percentages
+
     const actualProgressPercentage = r1((user.totalKm / myTotalTarget) * 100);
     const expectedProgressPercentage = r1((expectedProgressByNow / myTotalTarget) * 100);
-    const percentageDifference = r1(actualProgressPercentage - expectedProgressPercentage);
+    const daysRemaining = Math.max(0, totalChallengeDays - daysPassed);
     
-    // Performance ratio (how well performing compared to expected)
-    const performanceRatio = expectedProgressByNow > 0 ? r1((user.totalKm / expectedProgressByNow) * 100) : 100;
-    
-    // Onko haasteen vauhdissa?
-    let challengeStatus = 'ontrack';
-    let challengeEmoji = '🎯';
-    let challengeText = 'Aikataulussa';
-    let challengeColor = 'text-blue-600';
-    
-    if (difference > 5) {
-      challengeStatus = 'ahead';
-      challengeEmoji = '🚀';
-      challengeText = 'Etuajassa';
-      challengeColor = 'text-green-600';
-    } else if (difference < -5) {
-      challengeStatus = 'behind';
-      challengeEmoji = '⚠️';
-      challengeText = 'Jäljessä';
-      challengeColor = 'text-red-600';
+    const remainingKm = Math.max(0, myTotalTarget - user.totalKm);
+    const dailyPaceNeeded = daysRemaining > 0 ? r1(remainingKm / daysRemaining) : 0;
+    const currentDailyPace = daysPassed > 0 ? r1(user.totalKm / daysPassed) : 0;
+
+    let status = "ontrack";
+    let statusColor = "blue";
+    let statusIcon = <Target className="w-4 h-4" />;
+    let statusMessage = "Aikataulussa";
+
+    if (difference > 3) {
+      status = "ahead";
+      statusColor = "green";
+      statusIcon = <TrendingUp className="w-4 h-4" />;
+      statusMessage = "Etuajassa";
+    } else if (difference < -3) {
+      status = "behind";
+      statusColor = "orange";
+      statusIcon = <TrendingDown className="w-4 h-4" />;
+      statusMessage = "Jäljessä";
     }
 
     return {
-      challengeStatus,
-      challengeEmoji,
-      challengeText,
-      challengeColor,
+      status,
+      statusColor,
+      statusIcon,
+      statusMessage,
       totalKm: r1(user.totalKm),
       expectedKm: r1(expectedProgressByNow),
       differenceKm: r1(Math.abs(difference)),
       actualProgressPercentage,
       expectedProgressPercentage,
-      percentageDifference,
-      performanceRatio,
       myTotalTarget,
+      daysRemaining,
+      dailyPaceNeeded,
+      currentDailyPace,
+      daysPassed,
     };
   }, [user, totalUsers, weeklyGoalData]);
 
+  const getStatusColors = () => {
+    switch (data.statusColor) {
+      case 'green':
+        return {
+          bg: 'bg-green-50',
+          border: 'border-green-200',
+          text: 'text-green-800',
+          progress: 'bg-green-500'
+        };
+      case 'orange':
+        return {
+          bg: 'bg-orange-50',
+          border: 'border-orange-200',
+          text: 'text-orange-800',
+          progress: 'bg-orange-500'
+        };
+      default:
+        return {
+          bg: 'bg-blue-50',
+          border: 'border-blue-200',
+          text: 'text-blue-800',
+          progress: 'bg-blue-500'
+        };
+    }
+  };
+
+  const colors = getStatusColors();
+
   return (
-    <div className={`p-4 rounded-lg border-2 ${
-      data.challengeStatus === 'ahead' ? 'bg-green-50 border-green-300' :
-      data.challengeStatus === 'behind' ? 'bg-red-50 border-red-300' :
-      'bg-blue-50 border-blue-300'
-    }`}>
-      <div className="text-center mb-3">
-        <div className="text-xl">{data.challengeEmoji}</div>
-        <div className={`font-bold text-lg ${data.challengeColor}`}>
-          Koko haaste: {data.challengeText}
-        </div>
-        {/* Performance ratio display */}
-        <div className="text-sm text-gray-600 mt-1">
-          Suorituskyky: <span className={`font-bold ${data.challengeColor}`}>
-            {data.performanceRatio}%
-          </span> aikataulusta
-        </div>
-      </div>
-      
-      {/* HAASTEEN PROGRESS BAR */}
-      <div className="mb-3">
-        <div className="flex justify-between text-sm text-gray-600 mb-2">
-          <span>Haasteen edistyminen:</span>
-          <span>{data.actualProgressPercentage}% / {data.expectedProgressPercentage}%</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-3 relative">
-          {/* Tavoitelinja (missä pitäisi olla) */}
-          <div 
-            className="absolute top-0 h-3 w-0.5 bg-gray-600 z-10"
-            style={{ left: `${Math.min(100, data.expectedProgressPercentage)}%` }}
-            title="Missä pitäisi olla"
-          />
-          {/* Todellinen edistyminen */}
-          <motion.div
-            className={`h-3 rounded-full ${
-              data.challengeStatus === 'ahead' ? 'bg-green-500' :
-              data.challengeStatus === 'behind' ? 'bg-red-500' :
-              'bg-blue-500'
-            }`}
-            initial={{ width: 0 }}
-            animate={{ width: `${Math.min(100, data.actualProgressPercentage)}%` }}
-            transition={{ duration: 1.5 }}
-          />
-        </div>
-        <div className="flex justify-between text-xs text-gray-500 mt-1">
-          <span>0 km</span>
-          <span className="text-gray-600 font-medium">← Tavoitelinja</span>
-          <span>{data.myTotalTarget} km</span>
-        </div>
-      </div>
-      
-      {/* Percentage comparison section */}
-      <div className="bg-white/50 rounded-lg p-3 mb-3">
-        <div className="text-sm font-medium text-gray-700 mb-2">Prosentuaalinen vertailu:</div>
-        <div className="grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <div className="text-gray-600">Todellinen edistyminen:</div>
-            <div className="font-bold text-lg">{data.actualProgressPercentage}%</div>
-            <div className="text-xs text-gray-500">{data.totalKm} km</div>
+    <div className={`rounded-xl border ${colors.bg} ${colors.border} overflow-hidden`}>
+      {/* Mobile-optimized status header */}
+      <div className="p-4 bg-white/60">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 rounded-lg ${colors.bg}`}>
+              {data.statusIcon}
+            </div>
+            <div>
+              <div className={`font-bold ${colors.text}`}>
+                {data.statusMessage}
+              </div>
+              <div className="text-sm text-gray-600">
+                {data.totalKm} / {data.myTotalTarget} km
+              </div>
+            </div>
           </div>
-          <div>
-            <div className="text-gray-600">Odotettu edistyminen:</div>
-            <div className="font-bold text-lg">{data.expectedProgressPercentage}%</div>
-            <div className="text-xs text-gray-500">{data.expectedKm} km</div>
-          </div>
-        </div>
-        <div className="mt-2 pt-2 border-t border-gray-200">
-          <div className="text-center">
-            <span className="text-gray-600">Ero: </span>
-            <span className={`font-bold ${
-              data.percentageDifference > 0 ? 'text-green-600' : 
-              data.percentageDifference < 0 ? 'text-red-600' : 
-              'text-blue-600'
-            }`}>
-              {data.percentageDifference > 0 ? '+' : ''}{data.percentageDifference}% ({data.percentageDifference > 0 ? '+' : ''}{data.differenceKm} km)
-            </span>
+          
+          <div className="text-right">
+            <div className={`text-lg font-bold ${colors.text}`}>
+              {data.status === "ahead" ? "+" : data.status === "behind" ? "-" : ""}{data.differenceKm} km
+            </div>
+            <div className="text-xs text-gray-600">
+              {data.status === "ahead" ? "edellä" : data.status === "behind" ? "jäljessä" : "tasassa"}
+            </div>
           </div>
         </div>
       </div>
-      
-      <div className="text-sm text-gray-600 text-center">
-        Olet tehnyt <strong>{data.totalKm} km</strong> • Omasta tavoitteesta pitäisi olla <strong>{data.expectedKm} km</strong>
-        {data.challengeStatus !== 'ontrack' && (
-          <div className={`font-bold mt-1 ${data.challengeColor}`}>
-            {data.challengeStatus === 'ahead' ? '🚀 Etuajassa' : '⚠️ Jäljessä'} {data.differenceKm} km
+
+      <div className="p-4 space-y-4">
+        {/* Simplified progress bar */}
+        <div>
+          <div className="relative w-full bg-gray-200 rounded-full h-3 mb-2">
+            {/* Expected progress marker */}
+            <div
+              className="absolute top-0 h-3 w-0.5 bg-gray-600 z-10"
+              style={{ left: `${Math.min(100, data.expectedProgressPercentage)}%` }}
+              title="Tavoitelinja"
+            />
+            
+            {/* Actual progress */}
+            <motion.div
+              className={`h-3 rounded-full ${colors.progress}`}
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(100, data.actualProgressPercentage)}%` }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+            />
           </div>
-        )}
+          
+          <div className="flex justify-between text-xs text-gray-500">
+            <span>0 km</span>
+            <span>Tavoite: {data.expectedKm} km</span>
+            <span>{data.myTotalTarget} km</span>
+          </div>
+        </div>
+
+        {/* Key metrics - mobile grid */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white/70 rounded-lg p-3 text-center">
+            <div className="text-lg font-bold text-gray-800">{data.daysRemaining}</div>
+            <div className="text-xs text-gray-600">päivää jäljellä</div>
+          </div>
+          
+          <div className="bg-white/70 rounded-lg p-3 text-center">
+            <div className="text-lg font-bold text-gray-800">{((data.myTotalTarget - data.totalKm) / Math.max(1, data.daysRemaining / 7)).toFixed(1)}</div>
+            <div className="text-xs text-gray-600">km/viikko tavoite</div>
+          </div>
+        </div>
+
+        {/* Simple status message */}
+        <div className="bg-white/70 rounded-lg p-3">
+          <div className="text-sm text-gray-700 text-center">
+            {data.status === "ahead" ? (
+              <span>Erinomaista! Olet {data.differenceKm} km edellä tavoitetta.</span>
+            ) : data.status === "behind" ? (
+              <span>Tavoite on vielä saavutettavissa säännöllisellä harjoittelulla.</span>
+            ) : (
+              <span>Olet täsmälleen aikataulussa. Jatka samaan malliin!</span>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
