@@ -633,19 +633,19 @@ const UserProfile = () => {
 <div>
   <label className="block text-sm font-medium mb-2 text-gray-700">Bonus</label>
   <div className="relative">
-    <select
-      value={bonus}
-      onChange={(e) => setBonus(e.target.value)}
-      className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white text-sm appearance-none pr-10"
-    >
-      <option value="">Ei bonusta</option>
-      {bonusOptions.map((bonusOption) => (
-        <option key={bonusOption} value={bonusOption}>
-          {bonusOption}
-        </option>
-      ))}
-    </select>
-    {/* custom chevron */}
+  <select
+    value={bonus} // always a string now
+    onChange={(e) => setBonus(e.target.value)}
+    className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white text-sm appearance-none pr-10"
+  >
+    <option value="">Ei bonusta</option>
+    {bonusOptions.map((b) => (
+      <option key={b} value={b}>
+        {b}
+      </option>
+    ))}
+  </select>
+</div>
     <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
       <ChevronDown className="w-4 h-4 text-gray-500" />
     </span>
