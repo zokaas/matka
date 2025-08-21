@@ -31,3 +31,9 @@
 .trivia-popup {
   z-index: 10000 !important; /* Ensures it appears above other elements */
 }
+
+/* Remove iOS calendar icon so width matches */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
+}
