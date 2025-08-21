@@ -8,9 +8,7 @@ import Image from "next/image";
 import { useAuth } from "@/app/contexts/AuthContext";
 import {
   Bike,
-  User as UserIcon,
   Lock,
-  Search,
   Target,
   Clock,
   Plus,
@@ -30,7 +28,6 @@ import ConfirmationModal from "@/app/components/ConfirmationModal";
 import PersonalInsights from "@/app/components/PersonalInsights";
 import CommentAndReactionView from "@/app/components/CommentAndReactionView";
 import SubmitQuote from "@/app/components/SubmitQuote";
-import { useTheme } from "@/app/hooks/useTheme";
 import { ACTIVITY_WEIGHTS, challengeParams } from "@/app/constants/challengeParams";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -56,6 +53,13 @@ interface UserProfileData {
     totalPages: number;
   };
 }
+
+const bonusOptions: string[] = [
+  "", // empty = Ei bonusta
+  "juhlapäivä",
+  "enemmän kuin kolme urheilee yhdessä",
+  "kaikki yhdessä",
+];
 
 // Toast notification component
 const Toast = ({
@@ -115,7 +119,6 @@ const UserProfile = () => {
   const params = useParams();
   const username = params?.username as string;
   const { currentUser, isLoggedIn } = useAuth();
-  const { t } = useTheme();
 
   // Core state
   const [user, setUser] = useState<UserProfileData | null>(null);
@@ -130,14 +133,14 @@ const UserProfile = () => {
   const [customActivity, setCustomActivity] = useState("");
   const [duration, setDuration] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
-  const [bonus, setBonus] = useState<string>(""); // not null
+  const [bonus, setBonus] = useState<string>(""); // always string
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // UI state
   const [activeTab, setActiveTab] = useState<"activities" | "stats">("activities");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedActivityType, setSelectedActivityType] = useState("");
-  const [dateRange, setDateRange] = useState({ start: "", end: "" });
+  const [searchTerm] = useState(""); // not used yet
+  const [selectedActivityType] = useState(""); // not used yet
+  const [dateRange] = useState({ start: "", end: "" }); // not used yet
   const [expandedActivity, setExpandedActivity] = useState<number | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -186,7 +189,7 @@ const UserProfile = () => {
       setDuration(parsed.duration || "");
       setCustomActivity(parsed.customActivity || "");
       setDate(parsed.date || new Date().toISOString().split("T")[0]);
-      setBonus(parsed.bonus || null);
+      setBonus(parsed.bonus || ""); // keep string
     }
   };
 
@@ -236,19 +239,16 @@ const UserProfile = () => {
 
     let filtered = user.activities;
 
-    // Text search
     if (searchTerm) {
       filtered = filtered.filter((a) =>
         a.activity.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    // Activity type filter
     if (selectedActivityType) {
       filtered = filtered.filter((a) => a.activity.includes(selectedActivityType));
     }
 
-    // Date range filter
     if (dateRange.start) {
       filtered = filtered.filter((a) => a.date >= dateRange.start);
     }
@@ -281,7 +281,6 @@ const UserProfile = () => {
   }, [fetchUser]);
 
   useEffect(() => {
-    // Load draft when component mounts
     if (showAddForm && !isEditing) {
       loadDraft();
     }
@@ -289,7 +288,6 @@ const UserProfile = () => {
   }, [showAddForm]);
 
   useEffect(() => {
-    // Auto-save draft
     const timer = setTimeout(saveDraft, 1000);
     return () => clearTimeout(timer);
   }, [activity, duration, customActivity, date, bonus]);
@@ -303,7 +301,6 @@ const UserProfile = () => {
     try {
       let selectedActivity = activity;
       if ((activity.includes("Muu (") || activity.includes("Muu(")) && customActivity.trim()) {
-        // Format as "CustomSport / Muu(1x)" - custom sport first
         selectedActivity = `${customActivity.trim()} / ${activity}`;
       }
 
@@ -320,7 +317,7 @@ const UserProfile = () => {
           activity: selectedActivity,
           duration: Number(duration),
           date,
-          bonus,
+          bonus: bonus || undefined, // omit if empty
         }),
       });
 
@@ -348,7 +345,7 @@ const UserProfile = () => {
     setCustomActivity("");
     setDuration("");
     setDate(new Date().toISOString().split("T")[0]);
-    setBonus(null);
+    setBonus(""); // keep string
     setShowAddForm(false);
     clearDraft();
   };
@@ -356,7 +353,6 @@ const UserProfile = () => {
   const startEdit = (a: Activity) => {
     if (!canEditProfile) return;
 
-    // Check if this is a custom activity in format "CustomSport / Muu(...)"
     const customMatch = a.activity.match(/^(.+?)\s*\/\s*(Muu.*)$/i);
     if (customMatch) {
       setCustomActivity(customMatch[1].trim());
@@ -369,7 +365,7 @@ const UserProfile = () => {
     setEditingActivity(a);
     setDuration(a.duration.toString());
     setDate(a.date.split("T")[0]);
-    setBonus(a.bonus || null);
+    setBonus(a.bonus || "");
     setIsEditing(true);
     setShowAddForm(true);
     setActiveTab("activities");
@@ -548,128 +544,118 @@ const UserProfile = () => {
                   </div>
 
                   <form ref={formRef} onSubmit={handleSubmit} className="p-3 sm:p-5 space-y-4 text-sm">
-  {/* LAJI */}
-  <div>
-    <label className="block text-sm font-medium mb-2 text-gray-700">Laji</label>
-    <div className="relative">
-      <select
-        value={activity}
-        onChange={(e) => setActivity(e.target.value)}
-        className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white text-sm appearance-none pr-10"
-        required
-      >
-        <option value="">Valitse laji</option>
-        {sportsOptions.map((sport) => (
-          <option key={sport} value={sport}>
-            {sport}
-          </option>
-        ))}
-      </select>
-      {/* custom chevron */}
-      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-        <ChevronDown className="w-4 h-4 text-gray-500" />
-      </span>
-    </div>
-  </div>
+                    {/* Laji */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-gray-700">Laji</label>
+                      <div className="relative">
+                        <select
+                          value={activity}
+                          onChange={(e) => setActivity(e.target.value)}
+                          className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white text-sm appearance-none pr-10"
+                          required
+                        >
+                          <option value="">Valitse laji</option>
+                          {sportsOptions.map((sport) => (
+                            <option key={sport} value={sport}>
+                              {sport}
+                            </option>
+                          ))}
+                        </select>
+                        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                          <ChevronDown className="w-4 h-4 text-gray-500" />
+                        </span>
+                      </div>
+                    </div>
 
-  {/* CUSTOM ACTIVITY */}
-  {(activity.includes("Muu (") || activity.includes("Muu(")) && (
-    <div className="space-y-2">
-      <label className="block text-sm font-medium text-gray-700">Tarkenna laji</label>
-      <input
-        type="text"
-        value={customActivity}
-        onChange={(e) => setCustomActivity(e.target.value)}
-        className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm"
-        placeholder="Esim: Suunnistus"
-        required
-      />
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
-        <p className="text-xs text-blue-700 break-words">
-          💾 Tallennetaan:{" "}
-          <span className="font-medium">
-            {customActivity || "Suunnistus"} / {activity}
-          </span>
-        </p>
-      </div>
-    </div>
-  )}
+                    {/* Custom activity */}
+                    {(activity.includes("Muu (") || activity.includes("Muu(")) && (
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700">Tarkenna laji</label>
+                        <input
+                          type="text"
+                          value={customActivity}
+                          onChange={(e) => setCustomActivity(e.target.value)}
+                          className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm"
+                          placeholder="Esim: Suunnistus"
+                          required
+                        />
+                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
+                          <p className="text-xs text-blue-700 break-words">
+                            💾 Tallennetaan: <span className="font-medium">{customActivity || "Suunnistus"} / {activity}</span>
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
-  {/* KESTO + PÄIVÄMÄÄRÄ */}
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-    <div>
-      <label className="block text-sm font-medium mb-2 text-gray-700">Kesto (min)</label>
-      <input
-        type="number"
-        value={duration}
-        onChange={(e) => setDuration(e.target.value)}
-        className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm"
-        required
-      />
-    </div>
-   {/* Päivämäärä */}
-<div>
-  <label className="block text-sm font-medium mb-2 text-gray-700">Päivämäärä</label>
-  <div className="relative">
-    <input
-      type="date"
-      value={date}
-      onChange={(e) => setDate(e.target.value)}
-      min={challengeParams.startDate}
-      max={challengeParams.endDate}
-      className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm [color-scheme:light] appearance-none pr-10"
-      required
-    />
-    {/* custom chevron */}
-    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-      <ChevronDown className="w-4 h-4 text-gray-500" />
-    </span>
-  </div>
-</div>
-  </div>
+                    {/* Kesto + Päivämäärä */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2 text-gray-700">Kesto (min)</label>
+                        <input
+                          type="number"
+                          value={duration}
+                          onChange={(e) => setDuration(e.target.value)}
+                          className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-2 text-gray-700">Päivämäärä</label>
+                        <div className="relative">
+                          <input
+                            type="date"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                            min={challengeParams.startDate}
+                            max={challengeParams.endDate}
+                            className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm [color-scheme:light] appearance-none pr-10"
+                            required
+                          />
+                          <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                            <ChevronDown className="w-4 h-4 text-gray-500" />
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
-  {/* BONUS */}
-  {/* Bonus */}
-<div>
-  <label className="block text-sm font-medium mb-2 text-gray-700">Bonus</label>
-  <div className="relative">
-  <select
-    value={bonus} // always a string now
-    onChange={(e) => setBonus(e.target.value)}
-    className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white text-sm appearance-none pr-10"
-  >
-    <option value="">Ei bonusta</option>
-    {bonusOptions.map((b) => (
-      <option key={b} value={b}>
-        {b}
-      </option>
-    ))}
-  </select>
-</div>
-    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-      <ChevronDown className="w-4 h-4 text-gray-500" />
-    </span>
-  </div>
-</div>
+                    {/* Bonus */}
+                    <div>
+                      <label className="block text-sm font-medium mb-2 text-gray-700">Bonus</label>
+                      <div className="relative">
+                        <select
+                          value={bonus}
+                          onChange={(e) => setBonus(e.target.value)}
+                          className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white text-sm appearance-none pr-10"
+                        >
+                          <option value="">Ei bonusta</option>
+                          <option value="juhlapäivä">🌞 Täydelliset olosuhteet (juhlapäivä) (2x)</option>
+                          <option value="enemmän kuin kolme urheilee yhdessä">👥 Ryhmäaktiviteetti (1.5x)</option>
+                          <option value="kaikki yhdessä">🏔️ Koko tiimi mukana (3x)</option>
+                        </select>
+                        <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+                          <ChevronDown className="w-4 h-4 text-gray-500" />
+                        </span>
+                      </div>
+                    </div>
 
-  {/* ACTION BUTTONS */}
-  <div className="flex flex-col sm:flex-row gap-3 pt-2">
-    <button
-      type="button"
-      onClick={resetForm}
-      className="w-full sm:flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 sm:py-4 rounded-xl font-medium transition-colors order-2 sm:order-1"
-    >
-      Peruuta
-    </button>
-    <button
-      type="submit"
-      disabled={isSubmitting}
-      className="w-full sm:flex-1 bg-yellow-400 hover:bg-yellow-500 disabled:bg-gray-300 disabled:cursor-not-allowed text-black py-3 sm:py-4 rounded-xl text-sm font-semibold order-1 sm:order-2"
-    >
-      {isSubmitting ? "Tallennetaan..." : isEditing ? "Tallenna" : "Lisää"}
-    </button>
-  </div>
-</form>
+                    {/* Actions */}
+                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={resetForm}
+                        className="w-full sm:flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 sm:py-4 rounded-xl font-medium transition-colors order-2 sm:order-1"
+                      >
+                        Peruuta
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full sm:flex-1 bg-yellow-400 hover:bg-yellow-500 disabled:bg-gray-300 disabled:cursor-not-allowed text-black py-3 sm:py-4 rounded-xl text-sm font-semibold order-1 sm:order-2"
+                      >
+                        {isSubmitting ? "Tallennetaan..." : isEditing ? "Tallenna" : "Lisää"}
+                      </button>
+                    </div>
+                  </form>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -689,7 +675,6 @@ const UserProfile = () => {
                 </div>
               </div>
 
-              {/* Activities */}
               <div className="divide-y divide-gray-100">
                 {filteredActivities.length === 0 ? (
                   <div className="text-center py-12">
@@ -768,9 +753,7 @@ const UserProfile = () => {
                             }
                             className="p-2 sm:p-3 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
                             title={
-                              expandedActivity === a.id
-                                ? "Piilota kommentit"
-                                : "Näytä kommentit"
+                              expandedActivity === a.id ? "Piilota kommentit" : "Näytä kommentit"
                             }
                           >
                             {expandedActivity === a.id ? (
