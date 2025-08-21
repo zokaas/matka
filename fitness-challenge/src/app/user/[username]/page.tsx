@@ -607,18 +607,25 @@ const UserProfile = () => {
         required
       />
     </div>
-    <div>
-      <label className="block text-sm font-medium mb-2 text-gray-700">Päivämäärä</label>
-      <input
-        type="date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-        min={challengeParams.startDate}
-        max={challengeParams.endDate}
-        className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm [color-scheme:light]"
-        required
-      />
-    </div>
+   {/* Päivämäärä */}
+<div>
+  <label className="block text-sm font-medium mb-2 text-gray-700">Päivämäärä</label>
+  <div className="relative">
+    <input
+      type="date"
+      value={date}
+      onChange={(e) => setDate(e.target.value)}
+      min={challengeParams.startDate}
+      max={challengeParams.endDate}
+      className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm [color-scheme:light] appearance-none pr-10"
+      required
+    />
+    {/* custom chevron */}
+    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+      <ChevronDown className="w-4 h-4 text-gray-500" />
+    </span>
+  </div>
+</div>
   </div>
 
   {/* BONUS */}
