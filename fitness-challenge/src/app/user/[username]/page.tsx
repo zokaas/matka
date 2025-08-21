@@ -283,8 +283,9 @@ const UserProfile = () => {
     
     try {
       let selectedActivity = activity;
-      if (activity.startsWith("Muu(") && customActivity) {
-        selectedActivity = `${customActivity} / ${activity}`;
+      if (activity.startsWith("Muu(") && customActivity.trim()) {
+        // Format as "CustomSport / Muu(1x)" - custom sport first
+        selectedActivity = `${customActivity.trim()} / ${activity}`;
       }
 
       const url = isEditing 
@@ -336,10 +337,11 @@ const UserProfile = () => {
   const startEdit = (activity: Activity) => {
     if (!canEditProfile) return;
     
-    const customMatch = activity.activity.match(/(.*?)\s*\/\s*(Muu\(.*?\))/);
+    // Check if this is a custom activity in format "CustomSport / Muu(1x)"
+    const customMatch = activity.activity.match(/^(.+?)\s*\/\s*(Muu\(.+?\))$/);
     if (customMatch) {
-      setCustomActivity(customMatch[1]);
-      setActivity(customMatch[2]);
+      setCustomActivity(customMatch[1].trim());
+      setActivity(customMatch[2].trim());
     } else {
       setActivity(activity.activity);
       setCustomActivity("");
@@ -554,9 +556,12 @@ const UserProfile = () => {
                           value={customActivity}
                           onChange={(e) => setCustomActivity(e.target.value)}
                           className="w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent text-sm"
-                          placeholder="Kirjoita mikä laji"
+                          placeholder="Esim: Suunnistus"
                           required
                         />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Tallennetaan muodossa: {customActivity || "Suunnistus"} / {activity}
+                        </p>
                       </div>
                     )}
 
