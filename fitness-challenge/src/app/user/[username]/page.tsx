@@ -629,22 +629,28 @@ const UserProfile = () => {
   </div>
 
   {/* BONUS */}
-  <div>
-    <label className="block text-sm font-medium mb-2 text-gray-700">Bonus</label>
+  {/* Bonus */}
+<div>
+  <label className="block text-sm font-medium mb-2 text-gray-700">Bonus</label>
+  <div className="relative">
     <select
-      value={bonus || ""}
-      onChange={(e) => setBonus(e.target.value || null)}
+      value={bonus}
+      onChange={(e) => setBonus(e.target.value)}
       className="w-full h-12 px-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-yellow-400 focus:border-transparent bg-white text-sm appearance-none pr-10"
     >
       <option value="">Ei bonusta</option>
-      <option value="juhlapäivä">🌞 Täydelliset olosuhteet (juhlapäivä) (2x)</option>
-      <option value="enemmän kuin kolme urheilee yhdessä">👥 Ryhmäaktiviteetti (1.5x)</option>
-      <option value="kaikki yhdessä">🏔️ Koko tiimi mukana (3x)</option>
+      {bonusOptions.map((bonusOption) => (
+        <option key={bonusOption} value={bonusOption}>
+          {bonusOption}
+        </option>
+      ))}
     </select>
-    <span className="pointer-events-none absolute right-3 -mt-8 flex items-center">
+    {/* custom chevron */}
+    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
       <ChevronDown className="w-4 h-4 text-gray-500" />
     </span>
   </div>
+</div>
 
   {/* ACTION BUTTONS */}
   <div className="flex flex-col sm:flex-row gap-3 pt-2">
