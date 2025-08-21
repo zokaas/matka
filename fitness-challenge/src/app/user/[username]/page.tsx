@@ -549,66 +549,75 @@ const controlWithChevron = `${controlBase} appearance-none pr-10`;
 
                   <form ref={formRef} onSubmit={handleSubmit} className="p-3 sm:p-5 space-y-4 text-sm">
                     {/* Laji */}
-                    <div>
-                      <label className="block text-sm font-medium mb-2 text-gray-700">Laji</label>
-                      <div className="relative">
-                        {/* Laji */}
-<select
-  value={activity}
-  onChange={(e) => setActivity(e.target.value)}
-  className={controlWithChevron}
-  required
->
-  <option value="">Valitse laji</option>
-  {sportsOptions.map((sport) => (
-    <option key={sport} value={sport}>{sport}</option>
-  ))}
-</select>
+ {/* Laji */}
+<div>
+  <label className="block text-sm font-medium mb-2 text-gray-700">Laji</label>
+  <div className="relative">
+    <select
+      value={activity}
+      onChange={(e) => setActivity(e.target.value)}
+      className={controlWithChevron}
+      required
+    >
+      <option value="">Valitse laji</option>
+      {sportsOptions.map((sport) => (
+        <option key={sport} value={sport}>{sport}</option>
+      ))}
+    </select>
+  </div>
+</div>
 
 {/* Kesto (min) */}
-<input
-  type="number"
-  inputMode="numeric"
-  value={duration}
-  onChange={(e) => setDuration(e.target.value)}
-  className={controlBase}
-  required
-/>
-
-{/* Päivämäärä */}
-<div className="relative">
+<div>
+  <label className="block text-sm font-medium mb-2 text-gray-700">Kesto (min)</label>
   <input
-    type="date"
-    value={date}
-    onChange={(e) => setDate(e.target.value)}
-    min={challengeParams.startDate}
-    max={challengeParams.endDate}
-    className={`${controlWithChevron} [color-scheme:light]`}
+    type="number"
+    inputMode="numeric"
+    value={duration}
+    onChange={(e) => setDuration(e.target.value)}
+    className={controlBase}
     required
   />
-  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-    <ChevronDown className="w-4 h-4 text-gray-500" />
-  </span>
+</div>
+
+{/* Päivämäärä */}
+<div>
+  <label className="block text-sm font-medium mb-2 text-gray-700">Päivämäärä</label>
+  <div className="relative">
+    <input
+      type="date"
+      value={date}
+      onChange={(e) => setDate(e.target.value)}
+      min={challengeParams.startDate}
+      max={challengeParams.endDate}
+      className={`${controlWithChevron} [color-scheme:light]`}
+      required
+    />
+    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+      <ChevronDown className="w-4 h-4 text-gray-500" />
+    </span>
+  </div>
 </div>
 
 {/* Bonus */}
-<div className="relative">
-  <select
-    value={bonus}
-    onChange={(e) => setBonus(e.target.value)}
-    className={controlWithChevron}
-  >
-    <option value="">Ei bonusta</option>
-    <option value="juhlapäivä">🌞 Täydelliset olosuhteet (juhlapäivä) (2x)</option>
-    <option value="enemmän kuin kolme urheilee yhdessä">👥 Ryhmäaktiviteetti (1.5x)</option>
-    <option value="kaikki yhdessä">🏔️ Koko tiimi mukana (3x)</option>
-  </select>
-  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-    <ChevronDown className="w-4 h-4 text-gray-500" />
-  </span>
+<div>
+  <label className="block text-sm font-medium mb-2 text-gray-700">Bonus</label>
+  <div className="relative">
+    <select
+      value={bonus}
+      onChange={(e) => setBonus(e.target.value)}
+      className={controlWithChevron}
+    >
+      <option value="">Ei bonusta</option>
+      <option value="juhlapäivä">🌞 Täydelliset olosuhteet (juhlapäivä) (2x)</option>
+      <option value="enemmän kuin kolme urheilee yhdessä">👥 Ryhmäaktiviteetti (1.5x)</option>
+      <option value="kaikki yhdessä">🏔️ Koko tiimi mukana (3x)</option>
+    </select>
+    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+      <ChevronDown className="w-4 h-4 text-gray-500" />
+    </span>
+  </div>
 </div>
-                    </div>
-
                     {/* Actions */}
                     <div className="flex flex-col sm:flex-row gap-3 pt-2">
                       <button
