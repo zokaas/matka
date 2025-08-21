@@ -579,11 +579,6 @@ const UserProfile = () => {
                           placeholder="Esim: Suunnistus"
                           required
                         />
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-2">
-                          <p className="text-xs text-blue-700 break-words">
-                            💾 Tallennetaan: <span className="font-medium">{customActivity || "Suunnistus"} / {activity}</span>
-                          </p>
-                        </div>
                       </div>
                     )}
 
