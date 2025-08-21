@@ -130,7 +130,7 @@ const UserProfile = () => {
   const [customActivity, setCustomActivity] = useState("");
   const [duration, setDuration] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
-  const [bonus, setBonus] = useState<string | null>(null);
+  const [bonus, setBonus] = useState<string>(""); // not null
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // UI state
