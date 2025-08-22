@@ -58,7 +58,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
   }, [username, activities]);
 
   const personalWeeklyTarget = useMemo(() => {
-    const totalUsers = 10; // You can pass this as a prop if needed
+    const totalUsers = 10;
     const individualTarget = challengeParams.totalDistance / totalUsers;
     const challengeStart = new Date(challengeParams.startDate);
     const challengeEnd = new Date(challengeParams.endDate);
@@ -73,10 +73,18 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
     }
 
     const today = new Date();
-    const startOfWeek = new Date(today);
-    startOfWeek.setDate(today.getDate() - today.getDay());
-    startOfWeek.setHours(0, 0, 0, 0);
+    
+    // Get current week (Monday to Sunday)
+    const getCurrentWeekStart = (date: Date) => {
+      const d = new Date(date);
+      const dayOfWeek = d.getDay();
+      const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      d.setDate(d.getDate() - daysToMonday);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    };
 
+    const startOfWeek = getCurrentWeekStart(today);
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
     // Calculate time periods
@@ -137,29 +145,40 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
       }
     }
 
-    // Daily totals for records and weekly breakdown
+    // Daily totals for records
     const dailyTotals: Record<string, number> = {};
     activitiesToUse.forEach(activity => {
       const dateKey = activity.date.split('T')[0];
       dailyTotals[dateKey] = (dailyTotals[dateKey] || 0) + activity.kilometers;
     });
 
-    // Weekly breakdown calculation
-    const getWeekKey = (date: Date) => {
-      const startOfWeek = new Date(date);
-      startOfWeek.setDate(date.getDate() - date.getDay()); // Start of week (Sunday)
-      startOfWeek.setHours(0, 0, 0, 0);
-      return startOfWeek.toISOString().split('T')[0];
+    // CORRECTED: Weekly breakdown calculation with proper Monday-Sunday weeks
+    const getMondayOfWeek = (date: Date): Date => {
+      const d = new Date(date);
+      const dayOfWeek = d.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+      
+      // Calculate days to subtract to get to Monday
+      const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+      
+      d.setDate(d.getDate() - daysToMonday);
+      d.setHours(0, 0, 0, 0);
+      return d;
     };
 
-    const weeklyData: Record<string, { km: number; activities: number; dates: string[] }> = {};
+    const weeklyData: Record<string, { km: number; activities: number; dates: string[]; monday: Date }> = {};
 
     activitiesToUse.forEach(activity => {
       const activityDate = new Date(activity.date);
-      const weekKey = getWeekKey(activityDate);
+      const monday = getMondayOfWeek(activityDate);
+      const weekKey = monday.toISOString().split('T')[0];
 
       if (!weeklyData[weekKey]) {
-        weeklyData[weekKey] = { km: 0, activities: 0, dates: [] };
+        weeklyData[weekKey] = { 
+          km: 0, 
+          activities: 0, 
+          dates: [],
+          monday: monday
+        };
       }
 
       weeklyData[weekKey].km += activity.kilometers;
@@ -172,23 +191,30 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
     });
 
     const weeklyBreakdown = Object.entries(weeklyData)
-      .map(([weekStart, data]) => {
-        const startDate = new Date(weekStart);
-        const endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 6);
+      .map(([weekKey, data]) => {
+        const weekStart = data.monday; // Monday
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 6); // Sunday
+        weekEnd.setHours(23, 59, 59, 999);
 
-        const weekNumber = Math.ceil(
-          (startDate.getTime() - new Date(startDate.getFullYear(), 0, 1).getTime()) /
-          (7 * 24 * 60 * 60 * 1000)
-        );
+        // Calculate week number (ISO week number)
+        const year = weekStart.getFullYear();
+        const jan1 = new Date(year, 0, 1);
+        const jan1Day = jan1.getDay() || 7; // Make Sunday = 7
+        const firstMonday = new Date(year, 0, 1 + (8 - jan1Day) % 7);
+        
+        const weekNumber = Math.floor((weekStart.getTime() - firstMonday.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
 
-        const isCurrentWeek = getWeekKey(today) === weekStart;
+        // Check if this is the current week
+        const currentWeekMonday = getMondayOfWeek(today);
+        const isCurrentWeek = weekStart.getTime() === currentWeekMonday.getTime();
+        
         const achievementRate = data.km / personalWeeklyTarget;
 
         return {
-          weekStart: startDate,
-          weekEnd: endDate,
-          weekNumber,
+          weekStart,
+          weekEnd,
+          weekNumber: weekNumber > 0 ? weekNumber : 1, // Ensure positive week number
           km: data.km,
           activities: data.activities,
           activeDays: data.dates.length,
@@ -416,10 +442,9 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
 
           {activeTab === 'weekly' && (
             <div className="space-y-6">
-
               {/* Weekly Breakdown List */}
               <div>
-                <h3 className="font-medium text-gray-900 mb-4">Viikkotilastot</h3>
+                <h3 className="font-medium text-gray-900 mb-4">Viikkotilastot (maanantai-sunnuntai)</h3>
                 <div className="space-y-3">
                   {analytics.weeklyBreakdown.slice(0, showAllWeeks ? undefined : 3).map((week, index) => {
                     const TrendIcon = week.achievementRate >= 1 ? TrendingUp : TrendingDown;
@@ -515,7 +540,6 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                 )}
               </div>
 
-
               {/* Weekly Performance Summary */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
@@ -550,7 +574,6 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                   </div>
                 </div>
               </div>
-
             </div>
           )}
 
