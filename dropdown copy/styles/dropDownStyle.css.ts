@@ -1,0 +1,88 @@
+// styles/dropDownStyle.css.ts
+import { style } from "@vanilla-extract/css";
+
+export const dropDownContainerStyle = style({
+    flexGrow: 1,
+});
+
+export const dropDownLabel = style({
+    fontSize: "1rem",
+});
+
+export const dropDownStyle = style({
+    display: "inline-flex",
+    fontSize: "1rem",
+    lineHeight: "1.5rem",
+    width: "100%",
+    backgroundColor: "white",
+    border: "1px solid #cccccc",
+    borderRadius: "6px",
+    justifyContent: "space-between",
+    padding: "10px",
+});
+
+export const dropDownOpenIconStyle = style({
+    color: "#cccccc",
+    borderLeft: "1px solid #cccccc",
+    paddingLeft: "10px",
+});
+
+export const dropDownListStyle = style({
+    overflow: "hidden",
+    backgroundColor: "white",
+    borderRadius: "6px",
+    boxShadow: "0 0 2px 0 rgba(0, 0, 0, 0.6), 0 2px 2px 0 rgba(0, 0, 0, 0.5)",
+    // Disable auto-scrolling to selected item
+    selectors: {
+        '&[data-state="open"]': {
+            scrollBehavior: 'auto',
+        }
+    }
+});
+
+export const dropDownViewportStyle = style({
+    padding: "5px",
+});
+
+export const dropDownItemStyles = style({
+    fontSize: "1rem",
+    lineHeight: "1.5rem",
+    color: "#000000",
+    display: "flex",
+    alignItems: "center",
+    height: "25px",
+    padding: "5px 35px 5px 25px",
+    position: "relative",
+    userSelect: "none",
+    selectors: {
+        "&[data-highlighted]": {
+            outline: "none",
+            backgroundColor: "#e2ecf6",
+            color: "#274f8b",
+        },
+    },
+});
+
+export const dropdownItemIndicatorStyles = style({
+    position: "absolute",
+    left: 0,
+    width: "25px",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+});
+
+// Only new style needed for search
+export const searchInputStyle = style({
+    width: "100%",
+    padding: "8px",
+    border: "1px solid #cccccc",
+    borderRadius: "4px",
+    fontSize: "14px",
+    outline: "none",
+    selectors: {
+        "&:focus": {
+            borderColor: "#274f8b",
+        },
+    },
+});
