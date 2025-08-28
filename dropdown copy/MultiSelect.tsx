@@ -1,6 +1,5 @@
-// MultiSelect.tsx
-import React, { useState, useEffect } from "react";
-import {Popover, Checkbox} from "radix-ui";
+import React, { useState, useEffect, useCallback } from "react";
+import { Popover, Checkbox } from "radix-ui";
 import {
     dropDownContainerStyle,
     dropDownOpenIconStyle,
@@ -9,11 +8,26 @@ import {
     dropDownViewportStyle,
     dropDownItemStyles,
     dropDownLabel,
+    multiSelectTagsContainer,
+    multiSelectPlaceholder,
+    multiSelectTag,
+    multiSelectTagRemove,
+    multiSelectCheckbox,
+    iconStyle,
+    selectFieldContainer,
+    dropdownItemIndicatorStyles,
+    multiSelectOptionButton,
+    multiSelectOptionButtonDisabled,
+    filterContainer,
+    noOptionsMessage,
+    multiSelectOptionText
 } from "./styles";
 import { Container } from "@ui/container";
 import { T_MultiSelectProps } from "./types";
 import { Icon } from "@ui/icon";
 import { ErrorMessage } from "@ui/error";
+import { Filter } from "@ui/filter";
+import { DEFAULT_PLACEHOLDER, NO_RESULTS, NO_RESULTS_DEFAULT_TEXT } from "./dropdown.constants";
 
 export const MultiSelect: React.FC<T_MultiSelectProps> = ({
     fieldName,
@@ -21,23 +35,25 @@ export const MultiSelect: React.FC<T_MultiSelectProps> = ({
     options,
     onChange,
     onBlur,
-    placeholder = "Select options...",
+    placeholder,
+    showSelectedItemIcon,
     errorClassNames,
     error,
     classNames,
-    value = [],
+    searchEnabled,
+    searchNoResultsText,
+    searchPlaceholder,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
-    // Local state to ensure we have a controlled component
-    const [selectedValues, setSelectedValues] = useState<string[]>(value);
+    const [selectedValues, setSelectedValues] = useState<Array<string>>([]);
+    const [optionsArray, setOptionsArray] = useState(options || []);
 
-    // Sync with parent value changes
+    // Update options array when options prop changes
     useEffect(() => {
-        if (JSON.stringify(value) !== JSON.stringify(selectedValues)) {
-            setSelectedValues(value);
-        }
-    }, [value, selectedValues]);
+        setOptionsArray(options || []);
+    }, [options]);
 
+    // CSS class assignments - matching DropDown exactly
     const selectContainer = classNames?.dropDownContainer || dropDownContainerStyle;
     const selectLabel = classNames?.dropDownLabel || dropDownLabel;
     const selectField = classNames?.dropDownField || dropDownStyle;
@@ -45,37 +61,69 @@ export const MultiSelect: React.FC<T_MultiSelectProps> = ({
     const selectValuesList = classNames?.dropDownSelectionList || dropDownListStyle;
     const selectViewport = classNames?.dropDownViewport || dropDownViewportStyle;
     const selectItem = classNames?.dropDownItem || dropDownItemStyles;
+    const selectItemIndicator = classNames?.dropDownItemIndicator || dropdownItemIndicatorStyles;
+    const searchLabel = searchNoResultsText || NO_RESULTS_DEFAULT_TEXT;
+    const searchPlaceholderText = searchPlaceholder || DEFAULT_PLACEHOLDER;
 
-    const handleCheckChange = (optionValue: string | number | boolean | string[], checked: boolean) => {
+    // Filter function matching the DropDown pattern exactly
+    const filterContent = useCallback((searchText: string) => {
+        if (searchText.length > 1 && options) {
+            const result = options.filter((option) =>
+                option.text.toLowerCase().includes(searchText.toLowerCase())
+            );
+            console.log(result);
+            if (result.length > 0) {
+                setOptionsArray(result);
+            } else {
+                setOptionsArray([{ text: searchLabel, value: NO_RESULTS }]);
+            }
+        }
+
+        if (!searchText) setOptionsArray(options || []);
+    }, [options, searchLabel]);
+
+    const handleCheckChange = (
+        optionValue: string | number | boolean | string[],
+        checked: boolean
+    ) => {
         const stringValue = String(optionValue);
         let newValues: string[];
-        
+
         if (checked) {
-            // Add value if not already present
-            newValues = selectedValues.includes(stringValue) 
-                ? selectedValues 
-                : [...selectedValues, stringValue];
+            if (!selectedValues.includes(stringValue)) {
+                newValues = [...selectedValues, stringValue];
+            } else {
+                newValues = selectedValues;
+            }
         } else {
-            // Remove value
-            newValues = selectedValues.filter(v => v !== stringValue);
+            newValues = selectedValues.filter((v) => v !== stringValue);
         }
-        
+
         setSelectedValues(newValues);
-        // Call parent onChange with new values
+
         if (onChange) {
             onChange(newValues);
         }
     };
 
     const selectedCount = selectedValues.length;
-    const displayText = selectedCount === 0 
-        ? placeholder 
-        : `${selectedCount} selected`;
 
-    const clearAll = (e: React.MouseEvent) => {
+    const getSelectedItems = () => {
+        return selectedValues.map((value) => {
+            const option = options?.find((opt) => String(opt.value) === value);
+            return {
+                value,
+                text: option?.text || value,
+            };
+        });
+    };
+
+    const selectedItems = getSelectedItems();
+
+    const removeItem = (e: React.MouseEvent, valueToRemove: string) => {
         e.preventDefault();
         e.stopPropagation();
-        const newValues: string[] = [];
+        const newValues = selectedValues.filter((v) => v !== valueToRemove);
         setSelectedValues(newValues);
         if (onChange) {
             onChange(newValues);
@@ -87,135 +135,119 @@ export const MultiSelect: React.FC<T_MultiSelectProps> = ({
             <label className={selectLabel} htmlFor={fieldName}>
                 {label}
             </label>
-            
-            <Popover.Root 
-                open={isOpen} 
-                onOpenChange={setIsOpen}
-            >
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <Popover.Root
+                onOpenChange={(state) => {
+                    setIsOpen(state);
+                }}
+                defaultOpen={isOpen}>
+                <Container className={selectFieldContainer}>
                     <Popover.Trigger asChild>
                         <button
                             type="button"
                             className={selectField}
                             aria-label={label}
-                            onBlur={onBlur}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                width: '100%',
-                                paddingRight: selectedCount > 0 ? '60px' : '40px' // Make room for clear button
-                            }}
-                        >
-                            <span style={{ 
-                                color: selectedCount === 0 ? '#999' : 'inherit',
-                                flex: 1,
-                                textAlign: 'left'
-                            }}>
-                                {displayText}
-                            </span>
-                            
-                            <div className={selectIcon}>
+                            onBlur={onBlur}>
+                            <div className={multiSelectTagsContainer}>
+                                {selectedCount === 0 ? (
+                                    <span className={multiSelectPlaceholder}>{placeholder}</span>
+                                ) : (
+                                    selectedItems.map((item) => (
+                                        <span key={item.value} className={multiSelectTag}>
+                                            {item.text}
+                                            <button
+                                                type="button"
+                                                className={multiSelectTagRemove}
+                                                onClick={(e) => removeItem(e, item.value)}
+                                                title={`Remove ${item.text}`}
+                                                aria-label={`Remove ${item.text}`}>
+                                                ×
+                                            </button>
+                                        </span>
+                                    ))
+                                )}
+                            </div>
+                            <Container className={selectIcon}>
                                 {isOpen ? (
                                     <Icon iconName="chevron-up" iconPrefix="far" />
                                 ) : (
                                     <Icon iconName="chevron-down" iconPrefix="far" />
                                 )}
-                            </div>
+                            </Container>
                         </button>
                     </Popover.Trigger>
-                    
-                    {selectedCount > 0 && (
-                        <button
-                            type="button"
-                            onClick={clearAll}
-                            style={{
-                                position: 'absolute',
-                                right: '30px',
-                                padding: '2px 6px',
-                                fontSize: '12px',
-                                cursor: 'pointer',
-                                color: '#666',
-                                borderRadius: '3px',
-                                backgroundColor: '#f0f0f0',
-                                border: 'none',
-                                zIndex: 1
-                            }}
-                            title="Clear all"
-                            aria-label="Clear all selections"
-                        >
-                            Clear
-                        </button>
-                    )}
-                </div>
-                
+                </Container>
                 <Popover.Portal>
-                    <Popover.Content
-                        className={selectValuesList}
-                        sideOffset={5}
-                        align="start"
-                        style={{ width: 'var(--radix-popover-trigger-width)' }}
-                    >
-                        <div className={selectViewport}>
-                            {options?.map((option, index) => {
-                                if (!option || option.value == null) return null;
-                                
-                                const optionValue = String(option.value);
-                                const isChecked = selectedValues.includes(optionValue);
-                                
-                                return (
-                                    <div
-                                        key={`${fieldName}_${optionValue}_${index}`}
-                                        className={selectItem}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '8px',
-                                            cursor: 'pointer',
-                                            padding: '8px'
-                                        }}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleCheckChange(option.value!, !isChecked);
-                                        }}
-                                    >
-                                        <Checkbox.Root
-                                            checked={isChecked}
-                                            onCheckedChange={(checked) => {
-                                                handleCheckChange(option.value!, checked === true);
-                                            }}
-                                            style={{
-                                                width: '16px',
-                                                height: '16px',
-                                                backgroundColor: 'white',
-                                                border: '1px solid #ccc',
-                                                borderRadius: '3px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center'
-                                            }}
-                                        >
-                                            <Checkbox.Indicator>
-                                                <Icon iconName="check" iconPrefix="fas" />
-                                            </Checkbox.Indicator>
-                                        </Checkbox.Root>
-                                        <span style={{ flex: 1 }}>
-                                            {option.text}
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                            
-                            {(!options || options.length === 0) && (
-                                <div className={selectItem} style={{ color: '#999', padding: '8px' }}>
+                    <Popover.Content className={selectValuesList}>
+                        {searchEnabled && (
+                            <div className={filterContainer}>
+                                <Filter
+                                    placeholder={searchPlaceholderText}
+                                    onChange={(searchValue) => filterContent(searchValue)}
+                                    fieldName={`search_${fieldName}`}
+                                    classNames={{
+                                        containerCLassName: classNames?.filterContainer,
+                                        inputClassName: classNames?.filterInput,
+                                    }}
+                                />
+                            </div>
+                        )}
+                        <Container className={selectViewport}>
+                            {optionsArray.length === 0 ? (
+                                <div className={noOptionsMessage}>
                                     No options available
                                 </div>
+                            ) : (
+                                optionsArray?.map((option, index) => {
+                                    if (!option?.value) return null;
+
+                                    const optionValue = String(option.value);
+                                    const isChecked = selectedValues.includes(optionValue);
+                                    const isNoResults = option.value === NO_RESULTS;
+
+                                    return (
+                                        <button
+                                            type="button"
+                                            key={`${fieldName}_${index}`}
+                                            className={`${selectItem} ${isNoResults ? multiSelectOptionButtonDisabled : multiSelectOptionButton}`}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (!isNoResults) {
+                                                    handleCheckChange(option.value!, !isChecked);
+                                                }
+                                            }}
+                                            disabled={isNoResults}>
+                                            {!isNoResults && (
+                                                <Checkbox.Root
+                                                    checked={isChecked}
+                                                    onCheckedChange={(checked) => {
+                                                        handleCheckChange(option.value!, checked === true);
+                                                    }}
+                                                    className={multiSelectCheckbox}>
+                                                    <Checkbox.Indicator>
+                                                        <Icon 
+                                                            iconName="check" 
+                                                            iconPrefix="fas"
+                                                            className={iconStyle}
+                                                        />
+                                                    </Checkbox.Indicator>
+                                                </Checkbox.Root>
+                                            )}
+                                            <span className={multiSelectOptionText}>{option.text}</span>
+                                            {showSelectedItemIcon && isChecked && !isNoResults && (
+                                                <Icon 
+                                                    iconName="check" 
+                                                    iconPrefix="fas"
+                                                    className={selectItemIndicator}
+                                                />
+                                            )}
+                                        </button>
+                                    );
+                                })
                             )}
-                        </div>
+                        </Container>
                     </Popover.Content>
                 </Popover.Portal>
             </Popover.Root>
-            
             <ErrorMessage error={error} classNames={errorClassNames} />
         </Container>
     );

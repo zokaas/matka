@@ -9,11 +9,14 @@ import {
     dropDownItemStyles,
     dropdownItemIndicatorStyles,
     dropDownLabel,
+    iconStyle,
 } from "./styles";
 import { Container } from "@ui/container";
 import { ItemProps, ItemRef, T_DropDownProps } from "./types";
 import { Icon } from "@ui/icon";
 import { ErrorMessage } from "@ui/error";
+import { Filter } from "@ui/filter";
+import { DEFAULT_PLACEHOLDER, NO_RESULTS, NO_RESULTS_DEFAULT_TEXT } from "./dropdown.constants";
 
 export const DropDown: React.FC<T_DropDownProps> = ({
     fieldName,
@@ -26,8 +29,12 @@ export const DropDown: React.FC<T_DropDownProps> = ({
     error,
     classNames,
     showSelectedItemIcon,
+    searchEnabled,
+    searchNoResultsText,
+    searchPlaceholder,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [optionsArray, setOptionsArray] = useState(options || []);
 
     const selectContainer = classNames?.dropDownContainer || dropDownContainerStyle;
     const selectLabel = classNames?.dropDownLabel || dropDownLabel;
@@ -38,6 +45,24 @@ export const DropDown: React.FC<T_DropDownProps> = ({
     const selectViewport = classNames?.dropDownViewport || dropDownViewportStyle;
     const selectItem = classNames?.dropDownItem || dropDownItemStyles;
     const selectItemIndicator = classNames?.dropDownItemIndicator || dropdownItemIndicatorStyles;
+    const searchLabel = searchNoResultsText || NO_RESULTS_DEFAULT_TEXT;
+    const searchPlaceholderText = searchPlaceholder || DEFAULT_PLACEHOLDER;
+
+    const filterContent = (searchText: string) => {
+        if (searchText.length > 1 && options) {
+            const result = options?.filter((option) =>
+                option.text.toLowerCase().includes(searchText.toLowerCase())
+            );
+            console.log(result);
+            if (result.length > 0) {
+                setOptionsArray(result);
+            } else {
+                setOptionsArray([{ text: searchLabel, value: NO_RESULTS }]);
+            }
+        }
+
+        if (!searchText) setOptionsArray(options || []);
+    };
 
     return (
         <Container className={selectContainer}>
@@ -49,7 +74,8 @@ export const DropDown: React.FC<T_DropDownProps> = ({
                 onOpenChange={(state) => {
                     setIsOpen(state);
                 }}
-                defaultOpen={isOpen}>
+                defaultOpen={isOpen}
+                name={fieldName}>
                 <Select.Trigger
                     className={selectField}
                     aria-label={label}
@@ -65,10 +91,22 @@ export const DropDown: React.FC<T_DropDownProps> = ({
                 </Select.Trigger>
                 <Select.Portal>
                     <Select.Content className={selectValuesList}>
+                        {searchEnabled && (
+                            <Filter
+                                placeholder={searchPlaceholderText}
+                                onChange={(searchValue) => filterContent(searchValue)}
+                                fieldName={`search_${fieldName}`}
+                                classNames={{
+                                    containerCLassName: classNames?.filterContainer,
+                                    inputClassName: classNames?.filterInput,
+                                }}
+                            />
+                        )}
                         <Select.Viewport className={selectViewport}>
-                            {options?.map((option, index) => (
+                            {optionsArray?.map((option, index) => (
                                 <SelectItem
                                     value={`${option.value}`}
+                                    disabled={option.value === NO_RESULTS}
                                     className={selectItem}
                                     indicatorClassName={selectItemIndicator}
                                     showSelectedIndicator={showSelectedItemIcon}
@@ -95,7 +133,7 @@ const SelectItem = React.forwardRef<ItemRef, ItemProps>(
                 <Select.ItemText>{children}</Select.ItemText>
                 {showSelectedIndicator && (
                     <Select.ItemIndicator className={indicatorClassName}>
-                        <Icon iconName="check" iconPrefix="fas" />
+                        <Icon iconName="check" iconPrefix="fas" className={iconStyle}/>
                     </Select.ItemIndicator>
                 )}
             </Select.Item>

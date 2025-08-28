@@ -7,11 +7,7 @@ export interface ItemProps {
     className?: string;
     showSelectedIndicator?: boolean;
     indicatorClassName?: string;
-    multiSelect?: boolean;
-    isSelected?: boolean;
-    onChange?: (value: any) => void;
-    currentValue?: any;
-    onMultiSelectClick?: (value: string) => void;
+    disabled?: boolean;
 }
 
 export type ItemRef = HTMLDivElement;
@@ -28,7 +24,8 @@ export type T_ClassNamesProps = {
     dropDownViewport?: string;
     dropDownItem?: string;
     dropDownItemIndicator?: string;
-    searchInput?: string;
+    filterContainer?: string;
+    filterInput?: string;
 };
 
 export type T_DropDownProps = {
@@ -42,9 +39,9 @@ export type T_DropDownProps = {
     classNames?: T_ClassNamesProps;
     errorClassNames?: T_ErrorClassNamesProps;
     error?: string;
-    searchable?: boolean;
-    multiSelect?: boolean;
-    value?: T_DropDownOptionValue;
+    searchEnabled?: boolean;
+    searchPlaceholder?: string;
+    searchNoResultsText?: string;
 };
 
 export type T_DropDownOption = {
@@ -52,15 +49,3 @@ export type T_DropDownOption = {
     text: string;
 };
 
-export type T_MultiSelectProps = {
-    label: string;
-    fieldName: string;
-    options: Array<T_DropDownOption> | null;
-    onChange: (value: Array<string>) => void;
-    onBlur?: (value?: React.FocusEvent<HTMLButtonElement, Element>) => void;
-    placeholder?: string | null;
-    classNames?: T_ClassNamesProps;
-    errorClassNames?: T_ErrorClassNamesProps;
-    error?: string;
-    value?: Array<string>;
-};
