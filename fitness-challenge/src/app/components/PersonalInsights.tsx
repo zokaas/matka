@@ -226,42 +226,54 @@ const getWeeklyTargetForWeek = (
       }
     });
 
-    const weeklyBreakdown = Object.entries(weeklyData)
-      .map(([, data]) => {
-        const weekStart = data.monday; // Monday
-        const weekEnd = new Date(weekStart);
-        weekEnd.setDate(weekStart.getDate() + 6); // Sunday
-        weekEnd.setHours(23, 59, 59, 999);
+// ✅ New: generate all weeks (even empty)
+const allWeekStarts: Date[] = [];
+const cursor = getMondayOfWeek(new Date(challengeParams.startDate));
+const todayMonday = getMondayOfWeek(today);
 
-        // Calculate week number (ISO week number)
-        const year = weekStart.getFullYear();
-        const jan1 = new Date(year, 0, 1);
-        const jan1Day = jan1.getDay() || 7; // Make Sunday = 7
-        const firstMonday = new Date(year, 0, 1 + (8 - jan1Day) % 7);
-        
-        const weekNumber = Math.floor((weekStart.getTime() - firstMonday.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
+while (cursor <= new Date(challengeParams.endDate)) {
+  allWeekStarts.push(new Date(cursor));
+  cursor.setDate(cursor.getDate() + 7);
+}
 
-        // Check if this is the current week
-        const currentWeekMonday = getMondayOfWeek(today);
-        const isCurrentWeek = weekStart.getTime() === currentWeekMonday.getTime();
-        
-const weeklyTarget = getWeeklyTargetForWeek(weekStart, activitiesToUse, 10);
-const achievementRate = weeklyTarget > 0 ? data.km / weeklyTarget : 0;
+const weeklyBreakdown = allWeekStarts.map(weekStart => {
+  const data = weeklyData[weekStart.toISOString().split("T")[0]];
 
-        return {
-          weekStart,
-          weekEnd,
-          weekNumber: weekNumber > 0 ? weekNumber : 1, // Ensure positive week number
-          km: data.km,
-          activities: data.activities,
-          activeDays: data.dates.length,
-          isCurrentWeek,
-          achievementRate,
-          target: weeklyTarget // Dynamic target for each week
-        };
-      })
-      .sort((a, b) => b.weekStart.getTime() - a.weekStart.getTime())
-      .slice(0, 8); // Last 8 weeks
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  // ISO week number logic...
+  const year = weekStart.getFullYear();
+  const jan1 = new Date(year, 0, 1);
+  const jan1Day = jan1.getDay() || 7;
+  const firstMonday = new Date(year, 0, 1 + (8 - jan1Day) % 7);
+  const weekNumber = Math.floor((weekStart.getTime() - firstMonday.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
+
+  const isCurrentWeek = weekStart.getTime() === todayMonday.getTime();
+
+  const weeklyTarget = getWeeklyTargetForWeek(weekStart, activitiesToUse, 10);
+  const km = data?.km ?? 0;
+  const activities = data?.activities ?? 0;
+  const activeDays = data?.dates.length ?? 0;
+  const achievementRate = weeklyTarget > 0 ? km / weeklyTarget : 0;
+
+  return {
+    weekStart,
+    weekEnd,
+    weekNumber: weekNumber > 0 ? weekNumber : 1,
+    km,
+    activities,
+    activeDays,
+    isCurrentWeek,
+    achievementRate,
+    target: weeklyTarget
+  };
+})
+.filter(w => w.weekStart <= todayMonday) // show only past + current weeks
+.sort((a, b) => b.weekStart.getTime() - a.weekStart.getTime())
+.slice(0, 8);
+
 
     // Records
     const longestWorkout = activitiesToUse.reduce((longest, activity) => {

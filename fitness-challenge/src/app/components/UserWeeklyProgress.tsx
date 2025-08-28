@@ -137,7 +137,7 @@ const data = useMemo(() => {
           <div className="relative w-full bg-gray-200 rounded-full h-3 mb-2">
             {/* Expected progress marker */}
             <div
-              className="absolute top-0 h-3 w-0.5 bg-gray-600 z-10"
+              className="absolute top-0 h-3 w-0.5 bg-gray-600 z-5"
               style={{ left: `${Math.min(100, data.expectedProgressPercentage)}%` }}
               title="Tavoitelinja"
             />
