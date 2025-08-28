@@ -202,40 +202,70 @@ const controlWithChevron = `${controlBase} appearance-none pr-10`;
   };
 
   // Personal bests calculation
-  const personalBests = useMemo(() => {
-    if (!user?.activities?.length) return null;
+const personalBests = useMemo(() => {
+  if (!user?.activities?.length) return null;
 
-    const activities = user.activities;
-    const longestDistance = Math.max(...activities.map((a) => a.kilometers));
-    const longestDuration = Math.max(...activities.map((a) => a.duration));
+  const activities = user.activities;
+  const longestDistance = Math.max(...activities.map((a) => a.kilometers));
+  const longestDuration = Math.max(...activities.map((a) => a.duration));
 
-    // Current streak
-    const uniqueDates = [...new Set(activities.map((a) => a.date.split("T")[0]))].sort();
-    let currentStreak = 0;
-    const today = new Date().toISOString().split("T")[0];
-
-    for (let i = uniqueDates.length - 1; i >= 0; i--) {
-      const d = uniqueDates[i];
-      const daysDiff =
-        Math.floor(
-          (new Date(today).getTime() - new Date(d).getTime()) / (1000 * 60 * 60 * 24)
-        );
-
-      if (daysDiff === currentStreak || (currentStreak === 0 && daysDiff <= 1)) {
-        currentStreak++;
-      } else {
-        break;
+  // FIXED: Current streak calculation
+  const uniqueDates = [...new Set(activities.map(a => a.date.split('T')[0]))].sort();
+  let currentStreak = 0;
+  
+  if (uniqueDates.length > 0) {
+    const today = new Date();
+    const todayString = today.toISOString().split('T')[0];
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+    const yesterdayString = yesterday.toISOString().split('T')[0];
+    
+    // Check if there's activity today or yesterday to start the streak
+    const hasActivityToday = uniqueDates.includes(todayString);
+    const hasActivityYesterday = uniqueDates.includes(yesterdayString);
+    
+    if (hasActivityToday || hasActivityYesterday) {
+      // Start from the most recent date in descending order
+      const sortedDatesDesc = [...uniqueDates].sort((a, b) => b.localeCompare(a));
+      
+      // Find consecutive days working backwards from the most recent activity
+      currentStreak = 1; // Count the first day
+      
+      for (let i = 1; i < sortedDatesDesc.length; i++) {
+        const currentDate = new Date(sortedDatesDesc[i]);
+        const previousDate = new Date(sortedDatesDesc[i - 1]);
+        
+        // Calculate difference in days
+        const diffDays = Math.round((previousDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
+        
+        if (diffDays === 1) {
+          // Consecutive day found
+          currentStreak++;
+        } else {
+          // Gap found, break the streak
+          break;
+        }
+      }
+      
+      // If the most recent activity is not today, check if it was yesterday
+      // If more than 1 day ago, reset streak to 0
+      const mostRecentDate = new Date(sortedDatesDesc[0]);
+      const daysSinceRecent = Math.round((today.getTime() - mostRecentDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysSinceRecent > 1) {
+        currentStreak = 0;
       }
     }
+  }
 
-    return {
-      longestDistance,
-      longestDuration,
-      currentStreak,
-      totalActivities: activities.length,
-      activeDays: uniqueDates.length,
-    };
-  }, [user?.activities]);
+  return {
+    longestDistance,
+    longestDuration,
+    currentStreak,
+    totalActivities: activities.length,
+    activeDays: uniqueDates.length,
+  };
+}, [user?.activities]);
 
   // Enhanced filter functionality
   const filteredActivities = useMemo(() => {

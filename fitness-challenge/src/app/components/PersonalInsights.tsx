@@ -3,11 +3,12 @@
 import { useState, useMemo, useEffect } from "react";
 import _ from "lodash";
 import { useTheme } from "@/app/hooks/useTheme";
-import { TrendingUp, Calendar, Target, Clock, Activity, Award, BarChart3, TrendingDown } from "lucide-react";
+import { TrendingUp, Calendar, Clock, Activity, Award, BarChart3, TrendingDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import { challengeParams } from "@/app/constants/challengeParams";
 import ClearWeeklyProgress from "./UserWeeklyProgress";
+import { useWeeklyGoal } from "@/app/hooks/useWeeklyGoal";
 
 interface Activity {
   id: number;
@@ -21,7 +22,14 @@ interface Activity {
 interface PersonalInsightProps {
   activities: Activity[];
   username: string;
-  user?: any;
+  user?: User;
+}
+
+interface User {
+  id: string;
+  username: string;
+  totalKm: number;
+  activities: Activity[];
 }
 
 const PersonalInsights: React.FC<PersonalInsightProps> = ({
@@ -29,11 +37,26 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
   username,
   user,
 }) => {
-  const { t } = useTheme();
   const [allActivities, setAllActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'weekly' | 'breakdown'>('overview');
   const [showAllWeeks, setShowAllWeeks] = useState(false);
+
+  // Get dynamic weekly goals from the hook
+  const weeklyGoalData = useWeeklyGoal(user ? [user] : []);
+
+  // Helper function to get Monday of any week
+  const getMondayOfWeek = (date: Date): Date => {
+    const d = new Date(date);
+    const dayOfWeek = d.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    
+    // Calculate days to subtract to get to Monday
+    const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    
+    d.setDate(d.getDate() - daysToMonday);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
 
   useEffect(() => {
     const fetchAllActivities = async () => {
@@ -57,14 +80,38 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
     fetchAllActivities();
   }, [username, activities]);
 
-  const personalWeeklyTarget = useMemo(() => {
-    const totalUsers = 10;
-    const individualTarget = challengeParams.totalDistance / totalUsers;
+  // FIXED: Use dynamic weekly goals from the useWeeklyGoal hook
+  const getWeeklyTargetForWeek = (weekStart: Date, totalUserActivities: Activity[]) => {
+    // For current week, use the dynamic goal from the hook
+    const currentWeekMonday = getMondayOfWeek(new Date());
+    if (weekStart.getTime() === currentWeekMonday.getTime()) {
+      return weeklyGoalData.weeklyGoalPerUser;
+    }
+    
+    // For past weeks, calculate what the goal was when that week was current
+    // This simulates the dynamic recalculation that would have happened
     const challengeStart = new Date(challengeParams.startDate);
     const challengeEnd = new Date(challengeParams.endDate);
-    const totalWeeks = Math.ceil((challengeEnd.getTime() - challengeStart.getTime()) / (7 * 24 * 60 * 60 * 1000));
-    return individualTarget / totalWeeks;
-  }, []);
+    
+    // Calculate progress up to the start of this week
+    const progressBeforeWeek = totalUserActivities
+      .filter(activity => new Date(activity.date) < weekStart)
+      .reduce((sum, activity) => sum + activity.kilometers, 0);
+    
+    // Estimate total team progress (multiply by estimated team size)
+    const estimatedTeamProgress = progressBeforeWeek * 10; // Assuming 10 users
+    const remainingDistance = Math.max(0, challengeParams.totalDistance - estimatedTeamProgress);
+    
+    // Calculate remaining weeks from this week's start
+    const remainingWeeks = Math.max(1, Math.ceil((challengeEnd.getTime() - weekStart.getTime()) / (7 * 24 * 60 * 60 * 1000)));
+    
+    // Weekly target per user for this week
+    const weeklyTarget = (remainingDistance / remainingWeeks) / 10; // Divide by team size
+    
+    // Return reasonable target (with bounds checking)
+    const staticTarget = challengeParams.totalDistance / 10 / Math.ceil((challengeEnd.getTime() - challengeStart.getTime()) / (7 * 24 * 60 * 60 * 1000));
+    return weeklyTarget > 0 && weeklyTarget < staticTarget * 3 ? weeklyTarget : staticTarget;
+  };
 
   const analytics = useMemo(() => {
     const activitiesToUse = allActivities.length > 0 ? allActivities : activities;
@@ -153,18 +200,6 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
     });
 
     // CORRECTED: Weekly breakdown calculation with proper Monday-Sunday weeks
-    const getMondayOfWeek = (date: Date): Date => {
-      const d = new Date(date);
-      const dayOfWeek = d.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-      
-      // Calculate days to subtract to get to Monday
-      const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-      
-      d.setDate(d.getDate() - daysToMonday);
-      d.setHours(0, 0, 0, 0);
-      return d;
-    };
-
     const weeklyData: Record<string, { km: number; activities: number; dates: string[]; monday: Date }> = {};
 
     activitiesToUse.forEach(activity => {
@@ -191,7 +226,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
     });
 
     const weeklyBreakdown = Object.entries(weeklyData)
-      .map(([weekKey, data]) => {
+      .map(([, data]) => {
         const weekStart = data.monday; // Monday
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 6); // Sunday
@@ -209,7 +244,9 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
         const currentWeekMonday = getMondayOfWeek(today);
         const isCurrentWeek = weekStart.getTime() === currentWeekMonday.getTime();
         
-        const achievementRate = data.km / personalWeeklyTarget;
+        // FIXED: Get dynamic weekly target for this specific week
+        const weeklyTarget = getWeeklyTargetForWeek(weekStart, activitiesToUse);
+        const achievementRate = weeklyTarget > 0 ? data.km / weeklyTarget : 0;
 
         return {
           weekStart,
@@ -220,7 +257,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
           activeDays: data.dates.length,
           isCurrentWeek,
           achievementRate,
-          target: personalWeeklyTarget
+          target: weeklyTarget // Dynamic target for each week
         };
       })
       .sort((a, b) => b.weekStart.getTime() - a.weekStart.getTime())
@@ -265,7 +302,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
       longestWorkout,
       bestDay,
     };
-  }, [allActivities, activities, personalWeeklyTarget]);
+  }, [allActivities, activities, weeklyGoalData.weeklyGoalPerUser]);
 
   if (!activities || activities.length === 0) {
     return (
@@ -538,41 +575,6 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
                     </button>
                   </div>
                 )}
-              </div>
-
-              {/* Weekly Performance Summary */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-blue-600">
-                      {analytics.weeklyBreakdown.filter(w => w.achievementRate >= 1).length}
-                    </div>
-                    <div className="text-sm text-blue-700">Onnistunutta viikkoa</div>
-                    <div className="text-xs text-blue-600">
-                      / {analytics.weeklyBreakdown.length} viikkoa yhteensä
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-green-50 rounded-lg p-4 border border-green-200">
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-green-600">
-                      {analytics.weeklyBreakdown.length > 0 ?
-                        (analytics.weeklyBreakdown.reduce((sum, w) => sum + w.achievementRate, 0) / analytics.weeklyBreakdown.length * 100).toFixed(0)
-                        : 0}%
-                    </div>
-                    <div className="text-sm text-green-700">Keskimääräinen saavutus</div>
-                  </div>
-                </div>
-                <div className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-                  <div className="text-center">
-                    <div className="text-lg font-bold text-purple-600">
-                      {analytics.weeklyBreakdown.length > 0 ?
-                        Math.max(...analytics.weeklyBreakdown.map(w => w.km)).toFixed(1)
-                        : 0}
-                    </div>
-                    <div className="text-sm text-purple-700">Paras viikko (km)</div>
-                  </div>
-                </div>
               </div>
             </div>
           )}
