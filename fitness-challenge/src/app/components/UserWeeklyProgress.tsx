@@ -6,6 +6,7 @@ import { User } from "@/app/types/types";
 import { useWeeklyGoal } from "@/app/hooks/useWeeklyGoal";
 import { challengeParams } from "@/app/constants/challengeParams";
 import { TrendingUp, TrendingDown, Target } from "lucide-react";
+import { getChallengeDays, startOfLocalDay } from "@/app/utils/challengeClock";
 
 const r1 = (n: number) => Number(n.toFixed(1));
 
@@ -18,29 +19,34 @@ const ClearWeeklyProgress: React.FC<ClearWeeklyProgressProps> = ({
   user, 
   totalUsers = 10 
 }) => {
-  const weeklyGoalData = useWeeklyGoal([user]);
+const weeklyGoalData = useWeeklyGoal([user]); // keep for re-render sync
 
-  const data = useMemo(() => {
+const data = useMemo(() => {
     const today = new Date();
     const challengeStart = new Date(challengeParams.startDate);
     const challengeEnd = new Date(challengeParams.endDate);
-    const totalChallengeDays = challengeParams.totalDays;
-    const daysPassed = Math.max(0, Math.min(
-      Math.ceil((today.getTime() - challengeStart.getTime()) / (1000 * 60 * 60 * 24)),
-      totalChallengeDays
-    ));
+
+    const { totalDays, daysPassedInclCutoff, daysRemainingExclCutoff } =
+      getChallengeDays(challengeStart, challengeEnd, today);
 
     const myTotalTarget = r1(challengeParams.totalDistance / totalUsers);
-    const expectedProgressByNow = r1((myTotalTarget * daysPassed) / totalChallengeDays);
+
+    // progress includes today's activities (user.totalKm is already total-to-date)
+    const expectedProgressByNow = r1((myTotalTarget * daysPassedInclCutoff) / totalDays);
     const difference = r1(user.totalKm - expectedProgressByNow);
 
     const actualProgressPercentage = r1((user.totalKm / myTotalTarget) * 100);
     const expectedProgressPercentage = r1((expectedProgressByNow / myTotalTarget) * 100);
-    const daysRemaining = Math.max(0, totalChallengeDays - daysPassed);
-    
+
     const remainingKm = Math.max(0, myTotalTarget - user.totalKm);
-    const dailyPaceNeeded = daysRemaining > 0 ? r1(remainingKm / daysRemaining) : 0;
-    const currentDailyPace = daysPassed > 0 ? r1(user.totalKm / daysPassed) : 0;
+    const dailyPaceNeeded = daysRemainingExclCutoff > 0 ? r1(remainingKm / daysRemainingExclCutoff) : 0;
+
+    // *** Unified weekly target ***
+    const weeklyNeeded = daysRemainingExclCutoff > 0
+      ? r1(remainingKm / (daysRemainingExclCutoff / 7))
+      : 0;
+
+    const currentDailyPace = daysPassedInclCutoff > 0 ? r1(user.totalKm / daysPassedInclCutoff) : 0;
 
     let status = "ontrack";
     let statusColor = "blue";
@@ -48,32 +54,22 @@ const ClearWeeklyProgress: React.FC<ClearWeeklyProgressProps> = ({
     let statusMessage = "Aikataulussa";
 
     if (difference > 3) {
-      status = "ahead";
-      statusColor = "green";
-      statusIcon = <TrendingUp className="w-4 h-4" />;
-      statusMessage = "Etuajassa";
+      status = "ahead"; statusColor = "green"; statusIcon = <TrendingUp className="w-4 h-4" />; statusMessage = "Etuajassa";
     } else if (difference < -3) {
-      status = "behind";
-      statusColor = "orange";
-      statusIcon = <TrendingDown className="w-4 h-4" />;
-      statusMessage = "Jäljessä";
+      status = "behind"; statusColor = "orange"; statusIcon = <TrendingDown className="w-4 h-4" />; statusMessage = "Jäljessä";
     }
 
     return {
-      status,
-      statusColor,
-      statusIcon,
-      statusMessage,
+      status, statusColor, statusIcon, statusMessage,
       totalKm: r1(user.totalKm),
       expectedKm: r1(expectedProgressByNow),
       differenceKm: r1(Math.abs(difference)),
-      actualProgressPercentage,
-      expectedProgressPercentage,
+      actualProgressPercentage, expectedProgressPercentage,
       myTotalTarget,
-      daysRemaining,
-      dailyPaceNeeded,
-      currentDailyPace,
-      daysPassed,
+      daysRemaining: daysRemainingExclCutoff,           // <- exclude today
+      dailyPaceNeeded, currentDailyPace,
+      daysPassed: daysPassedInclCutoff,
+      weeklyNeeded,                                     // <- add
     };
   }, [user, totalUsers, weeklyGoalData]);
 
@@ -170,7 +166,7 @@ const ClearWeeklyProgress: React.FC<ClearWeeklyProgressProps> = ({
           </div>
           
           <div className="bg-white/70 rounded-lg p-3 text-center">
-            <div className="text-lg font-bold text-gray-800">{((data.myTotalTarget - data.totalKm) / Math.max(1, data.daysRemaining / 7)).toFixed(1)}</div>
+            <div className="text-lg font-bold text-gray-800">{data.weeklyNeeded.toFixed(1)}</div>
             <div className="text-xs text-gray-600">km/viikko tavoite</div>
           </div>
         </div>

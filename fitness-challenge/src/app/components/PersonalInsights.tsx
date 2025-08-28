@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { challengeParams } from "@/app/constants/challengeParams";
 import ClearWeeklyProgress from "./UserWeeklyProgress";
 import { useWeeklyGoal } from "@/app/hooks/useWeeklyGoal";
+import { endOfLocalDay, sumKmUpTo, startOfLocalDay, diffDays } from "../utils/challengeClock";
 
 interface Activity {
   id: number;
@@ -41,6 +42,7 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'overview' | 'weekly' | 'breakdown'>('overview');
   const [showAllWeeks, setShowAllWeeks] = useState(false);
+  const DEFAULT_TEAM_SIZE = 10;
 
   // Get dynamic weekly goals from the hook
   const weeklyGoalData = useWeeklyGoal(user ? [user] : []);
@@ -80,38 +82,37 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
     fetchAllActivities();
   }, [username, activities]);
 
-  // FIXED: Use dynamic weekly goals from the useWeeklyGoal hook
-  const getWeeklyTargetForWeek = (weekStart: Date, totalUserActivities: Activity[]) => {
-    // For current week, use the dynamic goal from the hook
-    const currentWeekMonday = getMondayOfWeek(new Date());
-    if (weekStart.getTime() === currentWeekMonday.getTime()) {
-      return weeklyGoalData.weeklyGoalPerUser;
-    }
-    
-    // For past weeks, calculate what the goal was when that week was current
-    // This simulates the dynamic recalculation that would have happened
-    const challengeStart = new Date(challengeParams.startDate);
-    const challengeEnd = new Date(challengeParams.endDate);
-    
-    // Calculate progress up to the start of this week
-    const progressBeforeWeek = totalUserActivities
-      .filter(activity => new Date(activity.date) < weekStart)
-      .reduce((sum, activity) => sum + activity.kilometers, 0);
-    
-    // Estimate total team progress (multiply by estimated team size)
-    const estimatedTeamProgress = progressBeforeWeek * 10; // Assuming 10 users
-    const remainingDistance = Math.max(0, challengeParams.totalDistance - estimatedTeamProgress);
-    
-    // Calculate remaining weeks from this week's start
-    const remainingWeeks = Math.max(1, Math.ceil((challengeEnd.getTime() - weekStart.getTime()) / (7 * 24 * 60 * 60 * 1000)));
-    
-    // Weekly target per user for this week
-    const weeklyTarget = (remainingDistance / remainingWeeks) / 10; // Divide by team size
-    
-    // Return reasonable target (with bounds checking)
-    const staticTarget = challengeParams.totalDistance / 10 / Math.ceil((challengeEnd.getTime() - challengeStart.getTime()) / (7 * 24 * 60 * 60 * 1000));
-    return weeklyTarget > 0 && weeklyTarget < staticTarget * 3 ? weeklyTarget : staticTarget;
-  };
+const getWeeklyTargetForWeek = (
+  weekStart: Date,
+  totalUserActivities: Activity[],
+  totalUsers = DEFAULT_TEAM_SIZE
+) => {
+  const challengeStart = startOfLocalDay(new Date(challengeParams.startDate));
+  const challengeEnd   = endOfLocalDay(new Date(challengeParams.endDate));
+
+  // Clamp weekStart to challenge window (use Monday 00:00)
+  let wk = startOfLocalDay(weekStart);
+  if (wk < challengeStart) wk = challengeStart;
+  if (wk > challengeEnd)   wk = challengeEnd;
+
+  // Km done BEFORE this week (up to Sunday)
+  const prevDay = new Date(wk);
+  prevDay.setDate(prevDay.getDate() - 1);
+  const kmDoneBeforeWeek = sumKmUpTo(totalUserActivities, prevDay);
+
+  // Per-user total target
+  const myTotalTarget = challengeParams.totalDistance / totalUsers;
+
+  // Days/weeks remaining INCLUDING this week
+  const daysRemainingFromWeekStart = diffDays(wk, challengeEnd) + 1; // inclusive
+  const weeksRemainingFromWeekStart = daysRemainingFromWeekStart / 7;
+
+  const remainingKm = Math.max(0, myTotalTarget - kmDoneBeforeWeek);
+
+  return weeksRemainingFromWeekStart > 0
+    ? remainingKm / weeksRemainingFromWeekStart
+    : 0;
+};
 
   const analytics = useMemo(() => {
     const activitiesToUse = allActivities.length > 0 ? allActivities : activities;
@@ -244,9 +245,8 @@ const PersonalInsights: React.FC<PersonalInsightProps> = ({
         const currentWeekMonday = getMondayOfWeek(today);
         const isCurrentWeek = weekStart.getTime() === currentWeekMonday.getTime();
         
-        // FIXED: Get dynamic weekly target for this specific week
-        const weeklyTarget = getWeeklyTargetForWeek(weekStart, activitiesToUse);
-        const achievementRate = weeklyTarget > 0 ? data.km / weeklyTarget : 0;
+const weeklyTarget = getWeeklyTargetForWeek(weekStart, activitiesToUse, 10);
+const achievementRate = weeklyTarget > 0 ? data.km / weeklyTarget : 0;
 
         return {
           weekStart,
