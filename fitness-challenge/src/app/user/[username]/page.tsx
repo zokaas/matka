@@ -577,95 +577,114 @@ const personalBests = useMemo(() => {
                     </div>
                   </div>
 
-                  <form ref={formRef} onSubmit={handleSubmit} className="p-3 sm:p-5 space-y-4 text-sm">
-                    {/* Laji */}
- {/* Laji */}
-<div>
-  <label className="block text-sm font-medium mb-2 text-gray-700">Laji</label>
-  <div className="relative">
-    <select
-      value={activity}
-      onChange={(e) => setActivity(e.target.value)}
-      className={controlWithChevron}
-      required
-    >
-      <option value="">Valitse laji</option>
-      {sportsOptions.map((sport) => (
-        <option key={sport} value={sport}>{sport}</option>
-      ))}
-    </select>
+// In your user/[username]/page.tsx file, replace the form section with this:
+
+<form ref={formRef} onSubmit={handleSubmit} className="p-3 sm:p-5 space-y-4 text-sm">
+  {/* Laji */}
+  <div>
+    <label className="block text-sm font-medium mb-2 text-gray-700">Laji</label>
+    <div className="relative">
+      <select
+        value={activity}
+        onChange={(e) => setActivity(e.target.value)}
+        className={controlWithChevron}
+        required
+      >
+        <option value="">Valitse laji</option>
+        {sportsOptions.map((sport) => (
+          <option key={sport} value={sport}>{sport}</option>
+        ))}
+      </select>
+    </div>
   </div>
-</div>
 
-{/* Kesto (min) */}
-<div>
-  <label className="block text-sm font-medium mb-2 text-gray-700">Kesto (min)</label>
-  <input
-    type="number"
-    inputMode="numeric"
-    value={duration}
-    onChange={(e) => setDuration(e.target.value)}
-    className={controlBase}
-    required
-  />
-</div>
+  {/* Custom Activity Field - Show when "Muu" is selected */}
+  {(activity === "Muu (1x)" || activity === "Muu (0.5x)") && (
+    <div>
+      <label className="block text-sm font-medium mb-2 text-gray-700">
+        Mikä laji? <span className="text-red-500">*</span>
+      </label>
+      <input
+        type="text"
+        value={customActivity}
+        onChange={(e) => setCustomActivity(e.target.value)}
+        className={controlBase}
+        placeholder="Kirjoita lajin nimi"
+        required
+      />
+    </div>
+  )}
 
-{/* Päivämäärä */}
-<div>
-  <label className="block text-sm font-medium mb-2 text-gray-700">Päivämäärä</label>
-  <div className="relative">
+  {/* Kesto (min) */}
+  <div>
+    <label className="block text-sm font-medium mb-2 text-gray-700">Kesto (min)</label>
     <input
-      type="date"
-      value={date}
-      onChange={(e) => setDate(e.target.value)}
-      min={challengeParams.startDate}
-      max={challengeParams.endDate}
-      className={`${controlWithChevron} [color-scheme:light]`}
+      type="number"
+      inputMode="numeric"
+      value={duration}
+      onChange={(e) => setDuration(e.target.value)}
+      className={controlBase}
       required
     />
-    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-      <ChevronDown className="w-4 h-4 text-gray-500" />
-    </span>
   </div>
-</div>
 
-{/* Bonus */}
-<div>
-  <label className="block text-sm font-medium mb-2 text-gray-700">Bonus</label>
-  <div className="relative">
-    <select
-      value={bonus}
-      onChange={(e) => setBonus(e.target.value)}
-      className={controlWithChevron}
-    >
-      <option value="">Ei bonusta</option>
-      <option value="juhlapäivä">🌞 Täydelliset olosuhteet (juhlapäivä) (2x)</option>
-      <option value="enemmän kuin kolme urheilee yhdessä">👥 Ryhmäaktiviteetti (1.5x)</option>
-      <option value="kaikki yhdessä">🏔️ Koko tiimi mukana (3x)</option>
-    </select>
-    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-      <ChevronDown className="w-4 h-4 text-gray-500" />
-    </span>
+  {/* Päivämäärä */}
+  <div>
+    <label className="block text-sm font-medium mb-2 text-gray-700">Päivämäärä</label>
+    <div className="relative">
+      <input
+        type="date"
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+        min={challengeParams.startDate}
+        max={challengeParams.endDate}
+        className={`${controlWithChevron} [color-scheme:light]`}
+        required
+      />
+      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+        <ChevronDown className="w-4 h-4 text-gray-500" />
+      </span>
+    </div>
   </div>
-</div>
-                    {/* Actions */}
-                    <div className="flex flex-col sm:flex-row gap-3 pt-2">
-                      <button
-                        type="button"
-                        onClick={resetForm}
-                        className="w-full sm:flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 sm:py-4 rounded-xl font-medium transition-colors order-2 sm:order-1"
-                      >
-                        Peruuta
-                      </button>
-                      <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full sm:flex-1 bg-yellow-400 hover:bg-yellow-500 disabled:bg-gray-300 disabled:cursor-not-allowed text-black py-3 sm:py-4 rounded-xl text-sm font-semibold order-1 sm:order-2"
-                      >
-                        {isSubmitting ? "Tallennetaan..." : isEditing ? "Tallenna" : "Lisää"}
-                      </button>
-                    </div>
-                  </form>
+
+  {/* Bonus */}
+  <div>
+    <label className="block text-sm font-medium mb-2 text-gray-700">Bonus</label>
+    <div className="relative">
+      <select
+        value={bonus}
+        onChange={(e) => setBonus(e.target.value)}
+        className={controlWithChevron}
+      >
+        <option value="">Ei bonusta</option>
+        <option value="juhlapäivä">🌞 Täydelliset olosuhteet (juhlapäivä) (2x)</option>
+        <option value="enemmän kuin kolme urheilee yhdessä">👥 Ryhmäaktiviteetti (1.5x)</option>
+        <option value="kaikki yhdessä">🏔️ Koko tiimi mukana (3x)</option>
+      </select>
+      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+        <ChevronDown className="w-4 h-4 text-gray-500" />
+      </span>
+    </div>
+  </div>
+
+  {/* Actions */}
+  <div className="flex flex-col sm:flex-row gap-3 pt-2">
+    <button
+      type="button"
+      onClick={resetForm}
+      className="w-full sm:flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 sm:py-4 rounded-xl font-medium transition-colors order-2 sm:order-1"
+    >
+      Peruuta
+    </button>
+    <button
+      type="submit"
+      disabled={isSubmitting || (activity === "Muu (1x)" || activity === "Muu (0.5x)") && !customActivity.trim()}
+      className="w-full sm:flex-1 bg-yellow-400 hover:bg-yellow-500 disabled:bg-gray-300 disabled:cursor-not-allowed text-black py-3 sm:py-4 rounded-xl text-sm font-semibold order-1 sm:order-2"
+    >
+      {isSubmitting ? "Tallennetaan..." : isEditing ? "Tallenna" : "Lisää"}
+    </button>
+  </div>
+</form>
                 </motion.div>
               )}
             </AnimatePresence>
