@@ -577,7 +577,6 @@ const personalBests = useMemo(() => {
                     </div>
                   </div>
 
-// In your user/[username]/page.tsx file, replace the form section with this:
 
 <form ref={formRef} onSubmit={handleSubmit} className="p-3 sm:p-5 space-y-4 text-sm">
   {/* Laji */}
