@@ -115,6 +115,25 @@ const ActivitySkeleton = () => (
 
 const sportsOptions = Object.keys(ACTIVITY_WEIGHTS);
 
+const getMaxDate = () => {
+  const today = new Date();
+  const maxDate = new Date(today);
+  maxDate.setDate(today.getDate() + 7); // Allow up to 7 days in the future
+  return maxDate.toISOString().split('T')[0];
+};
+
+const getMinDate = () => {
+  const challengeStart = new Date(challengeParams.startDate);
+  const today = new Date();
+  
+  // Use the later of challenge start date or 30 days ago
+  const thirtyDaysAgo = new Date(today);
+  thirtyDaysAgo.setDate(today.getDate() - 30);
+  
+  const minDate = challengeStart > thirtyDaysAgo ? challengeStart : thirtyDaysAgo;
+  return minDate.toISOString().split('T')[0];
+};
+
 const UserProfile = () => {
   const params = useParams();
   const username = params?.username as string;
@@ -628,23 +647,28 @@ const personalBests = useMemo(() => {
   </div>
 
   {/* Päivämäärä */}
-  <div>
-    <label className="block text-sm font-medium mb-2 text-gray-700">Päivämäärä</label>
-    <div className="relative">
-      <input
-        type="date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-        min={challengeParams.startDate}
-        max={challengeParams.endDate}
-        className={`${controlWithChevron} [color-scheme:light]`}
-        required
-      />
-      <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-        <ChevronDown className="w-4 h-4 text-gray-500" />
-      </span>
-    </div>
+<div>
+  <label className="block text-sm font-medium mb-2 text-gray-700">
+    Päivämäärä
+    <span className="text-xs text-gray-500 block font-normal">
+      (Voit lisätä suorituksia enintään 7 päivää menneisyyteen)
+    </span>
+  </label>
+  <div className="relative">
+    <input
+      type="date"
+      value={date}
+      onChange={(e) => setDate(e.target.value)}
+      min={getMinDate()}
+      max={getMaxDate()}
+      className={`${controlWithChevron} [color-scheme:light]`}
+      required
+    />
+    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
+      <ChevronDown className="w-4 h-4 text-gray-500" />
+    </span>
   </div>
+</div>
 
   {/* Bonus */}
   <div>
