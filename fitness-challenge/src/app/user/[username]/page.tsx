@@ -28,7 +28,7 @@ import ConfirmationModal from "@/app/components/ConfirmationModal";
 import PersonalInsights from "@/app/components/PersonalInsights";
 import CommentAndReactionView from "@/app/components/CommentAndReactionView";
 import SubmitQuote from "@/app/components/SubmitQuote";
-import { ACTIVITY_WEIGHTS, challengeParams } from "@/app/constants/challengeParams";
+import { ACTIVITY_WEIGHTS } from "@/app/constants/challengeParams";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Activity {
@@ -115,23 +115,11 @@ const ActivitySkeleton = () => (
 
 const sportsOptions = Object.keys(ACTIVITY_WEIGHTS);
 
-const getMaxDate = () => {
-  const today = new Date();
-  const maxDate = new Date(today);
-  maxDate.setDate(today.getDate() + 7); // Allow up to 7 days in the future
-  return maxDate.toISOString().split('T')[0];
-};
-
 const getMinDate = () => {
-  const challengeStart = new Date(challengeParams.startDate);
   const today = new Date();
-  
-  // Use the later of challenge start date or 30 days ago
-  const thirtyDaysAgo = new Date(today);
-  thirtyDaysAgo.setDate(today.getDate() - 30);
-  
-  const minDate = challengeStart > thirtyDaysAgo ? challengeStart : thirtyDaysAgo;
-  return minDate.toISOString().split('T')[0];
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 7);
+  return sevenDaysAgo.toISOString().split('T')[0];
 };
 
 const UserProfile = () => {
@@ -646,7 +634,7 @@ const personalBests = useMemo(() => {
     />
   </div>
 
-  {/* Päivämäärä */}
+{/* Päivämäärä */}
 <div>
   <label className="block text-sm font-medium mb-2 text-gray-700">
     Päivämäärä
@@ -660,7 +648,6 @@ const personalBests = useMemo(() => {
       value={date}
       onChange={(e) => setDate(e.target.value)}
       min={getMinDate()}
-      max={getMaxDate()}
       className={`${controlWithChevron} [color-scheme:light]`}
       required
     />
