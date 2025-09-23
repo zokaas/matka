@@ -10,6 +10,20 @@ export const labelTextStyle = style({
     fontSize: "1rem",
     fontWeight: "400",
     color: "oklch(21% 0.006 285.885)",
+    wordWrap: "break-word",
+    lineHeight: "1.5",
+});
+
+export const labelWithTooltipStyle = style({
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+});
+
+export const tooltipWrapperStyle = style({
+  flexShrink: 0,
+  alignSelf: "center",
+  lineHeight: "1",
 });
 
 export const subHeaderStyle = style({
@@ -17,4 +31,6 @@ export const subHeaderStyle = style({
     color: "oklch(55.1% 0.027 264.364)",
     fontStyle: "italic",
     marginTop: "2px",
+    wordWrap: "break-word",
+    lineHeight: "1.4",
 });

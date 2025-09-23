@@ -11,7 +11,7 @@ export type T_InputProps = {
     error: string;
     classNames?: T_InputFieldClassNames;
     errorClassNames?: T_ErrorClassNamesProps;
-    infoItems?: T_LabelInfo | null;
+    infoItems?: T_LabelInfo[] | null;
 };
 
 export type T_InputFieldProps = T_InputProps & {
