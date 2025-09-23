@@ -22,5 +22,5 @@ export type T_RadioGroupProps = {
     options: Array<T_Option>;
     defaultValue?: string;
     classNames?: T_ClassNamesProps;
-    infoItems?: T_LabelInfo | null;
+    infoItems?: T_LabelInfo[] | null;
 };

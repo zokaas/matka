@@ -15,7 +15,7 @@ export type T_MultiSelectProps = {
     searchEnabled?: boolean;
     searchPlaceholder?: string;
     searchNoResultsText?: string;
-    infoItems?: T_LabelInfo | null;
+    infoItems?: T_LabelInfo[] | null;
 };
 
 export type T_MultiSelectClassNamesProps = T_DropDownClassNamesProps & {

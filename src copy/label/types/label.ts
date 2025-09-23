@@ -9,5 +9,5 @@ export type T_LabelProps = {
     children: React.ReactNode;
     className?: string;
     labelClassName?: string;
-    infoItems?: T_LabelInfo | null;
+    infoItems?: T_LabelInfo[] | null;
 };

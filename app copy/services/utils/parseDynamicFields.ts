@@ -50,8 +50,11 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
 
         if (isInfo(dynamicField)) {
             infoItems.push({
-                ...dynamicField,
+                id: dynamicField.id,
                 __component: "kyc.info",
+                componentType: dynamicField.componentType,
+                infoHeader: dynamicField.infoHeader,
+                infoDescription: dynamicField.infoDescription,
             });
         }
 
@@ -63,7 +66,6 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
         }
     });
 
-    // Only set infoItems - no backward compatibility needed
     result.infoItems = infoItems;
 
     return result;

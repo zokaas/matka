@@ -17,7 +17,7 @@ export type T_BeneficialOwnerProps = {
     classNames?: T_BeneficialOwnerClassNames;
     beneficialOwnerFieldsData: T_BeneficialOwnerCardProps;
     error?: string;
-    infoItems?: T_LabelInfo | null;
+    infoItems?: T_LabelInfo[] | null;
 };
 
 export type T_BeneficialOwnerData = {
