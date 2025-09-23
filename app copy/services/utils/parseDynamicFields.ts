@@ -45,6 +45,7 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
                     error: item.attributes.error,
                     message: item.attributes.message,
                 })),
+                infoItems: [],
             };
         }
 

@@ -12,25 +12,27 @@ export const Label: React.FC<T_LabelProps> = ({
     labelClassName = labelTextStyle,
     infoItems,
 }) => {
+    const tooltips = infoItems?.filter((item) => item.componentType === "tooltip") || [];
+    const subHeaders = infoItems?.filter((item) => item.componentType === "subHeader") || [];
+
     return (
         <Container className={className}>
             <div style={{ display: "flex", alignItems: "center" }}>
                 <label className={labelClassName} htmlFor={htmlFor}>
                     {children}
                 </label>
-                {infoItems?.componentType === "tooltip" && (
-                    <Tooltip
-                        header={infoItems.infoHeader}
-                        description={infoItems.infoDescription}
-                    />
-                )}
+                {/* Render all tooltips */}
+                {tooltips.map((tooltip, index) => (
+                    <Tooltip header={tooltip.infoHeader} description={tooltip.infoDescription} />
+                ))}
             </div>
-            {infoItems?.componentType === "subHeader" && (
+            {/* Render all subHeaders */}
+            {subHeaders.map((subHeader, index) => (
                 <Info className={subHeaderStyle}>
-                    {infoItems.infoHeader && <span>{infoItems.infoHeader}</span>}
-                    {infoItems.infoDescription && <p>{infoItems.infoDescription}</p>}
+                    {subHeader.infoHeader && <span>{subHeader.infoHeader}</span>}
+                    {subHeader.infoDescription && <p>{subHeader.infoDescription}</p>}
                 </Info>
-            )}
+            ))}
         </Container>
     );
 };

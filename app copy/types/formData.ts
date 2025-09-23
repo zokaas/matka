@@ -51,7 +51,8 @@ type T_DependentQuestionPropertiesToPick =
     | "questionParameter"
     | "useCountryList"
     | "errorMessages"
-    | "placeholder";
+    | "placeholder"
+    | "infoItems";
 
 export type T_DependentQuestion =
     | (Pick<T_QuestionData, T_DependentQuestionPropertiesToPick> & {
