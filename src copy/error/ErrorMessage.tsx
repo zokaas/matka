@@ -7,12 +7,8 @@ import { errorContainerStyle, errorTextStyle } from "./styles";
 export const ErrorMessage: React.FC<T_ErrorMessageProps> = ({ error, classNames }) => {
     if (!error) return null;
 
-    const containerStyle = classNames?.errorContainerStyle
-        ? classNames.errorContainerStyle
-        : errorContainerStyle;
-
-    const textStyle = classNames?.errorTextStyle ? classNames.errorTextStyle : errorTextStyle;
-
+    const containerStyle = classNames?.containerClassName || errorContainerStyle;
+    const textStyle = classNames?.textClassName || errorTextStyle;
     return (
         <Container className={containerStyle}>
             <Text className={textStyle}>{error}</Text>

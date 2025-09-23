@@ -7,8 +7,8 @@ export const labelContainerStyle = style({
 });
 
 export const labelTextStyle = style({
-    fontSize: "1rem",
-    fontWeight: "400",
+    fontSize: "16px",
+    fontWeight: "400", 
     color: "oklch(21% 0.006 285.885)",
     wordWrap: "break-word",
     lineHeight: "1.5",

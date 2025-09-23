@@ -8,7 +8,6 @@ import {
     dropDownViewportStyle,
     dropDownItemStyles,
     dropDownItemIndicatorStyles,
-    dropDownLabel,
     iconStyle,
 } from "./styles";
 import { Container } from "@ui/container";
@@ -39,7 +38,6 @@ export const DropDown: React.FC<T_DropDownProps> = ({
     const [optionsArray, setOptionsArray] = useState(options || []);
 
     const selectContainer = classNames?.dropDownContainer || dropDownContainerStyle;
-    const selectLabel = classNames?.dropDownLabel || dropDownLabel;
     const selectField = classNames?.dropDownField || dropDownStyle;
     const selectValue = classNames?.dropDownValue || dropDownOpenIconStyle;
     const selectIcon = classNames?.dropDownIcon || dropDownOpenIconStyle;
@@ -69,7 +67,6 @@ export const DropDown: React.FC<T_DropDownProps> = ({
         <Container className={selectContainer}>
             <Label 
                 htmlFor={fieldName}
-                labelClassName={selectLabel}
                 infoItems={infoItems}
             >
                 {label}

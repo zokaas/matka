@@ -1,7 +1,7 @@
 import React from "react";
 import { T_InputFieldProps } from "./types";
 import { Container } from "@ui/container";
-import { inputContainerStyle, inputLabelStyle, inputFieldStyle } from "./styles";
+import { inputContainerStyle, inputFieldStyle } from "./styles";
 import { ErrorMessage } from "@ui/error";
 import { Label } from "@ui/label";
 
@@ -19,7 +19,6 @@ export const InputField: React.FC<T_InputFieldProps> = ({
     infoItems
 }) => {
     const containerStyle = inputContainerStyle;
-    const labelStyle = classNames?.labelClassName || inputLabelStyle;
     const fieldStyle = classNames?.fieldClassName || inputFieldStyle;
     const fieldSetContainerStyle = classNames?.containerClassName || "";
 
@@ -28,7 +27,6 @@ export const InputField: React.FC<T_InputFieldProps> = ({
             <Container className={fieldSetContainerStyle}>
             <Label 
                 htmlFor={fieldName}
-                labelClassName={labelStyle}
                 infoItems={infoItems}
             >
                 {label}

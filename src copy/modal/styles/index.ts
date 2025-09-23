@@ -1,1 +1,1 @@
-export * from "./modalStyle.css";
+export * from "./modalStyles.css";
