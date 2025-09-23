@@ -29,7 +29,7 @@ export const Questions: React.FC<T_QuestionsProps> = (props: T_QuestionsProps) =
         const includeCountryListProperty = isCountryListUsed(item);
 
         return (
-            <>
+            <React.Fragment key={item.id}>
                 <Question
                     questionType={item.question.componentType as E_ComponentTypes}
                     questionProps={props}
@@ -52,7 +52,7 @@ export const Questions: React.FC<T_QuestionsProps> = (props: T_QuestionsProps) =
                         }
                     />
                 )}
-            </>
+            </React.Fragment>
         );
     });
 

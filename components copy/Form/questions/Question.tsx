@@ -1,3 +1,4 @@
+// components copy/Form/questions/Question.tsx
 import React from "react";
 import { Container } from "@ui/container";
 import { DropDown, MultiSelect, T_DropDownOptionValue } from "@ui/dropdown";
@@ -28,7 +29,7 @@ export const Question: React.FC<T_QuestionProps> = ({
             <Container className={questionsStyle}>
                 <DropDown
                     label={question?.questionLabel || ""}
-                    infoItems={question?.infoItems}
+                    infoItems={question?.infoItems || null}
                     fieldName={question!.questionParameter}
                     placeholder={question?.placeholder || ""}
                     options={question?.options || []}
@@ -56,6 +57,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     error={questionProps.validationErrors[question!.questionParameter]}
+                    infoItems={question?.infoItems || null}
                 />
             </Container>
         );
@@ -72,6 +74,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     error={questionProps.validationErrors[question!.questionParameter]}
+                    infoItems={question?.infoItems || null}
                 />
             </Container>
         );
@@ -94,6 +97,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                         radioIndicator: b2bRadioIndicatorStyle,
                         radioLabel: b2bRadioItemLabelStyle,
                     }}
+                    infoItems={question?.infoItems || null}
                 />
             </Container>
         );
@@ -110,6 +114,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     error={questionProps.validationErrors[question!.questionParameter]}
+                    infoItems={question?.infoItems || null}
                 />
             </Container>
         );
@@ -126,6 +131,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     error={questionProps.validationErrors[question!.questionParameter]}
+                    infoItems={question?.infoItems || null}
                 />
             </Container>
         );
@@ -174,6 +180,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                         throw new Error("Function not implemented.");
                     }}
                     countryList={questionProps.countryList || []}
+                    infoItems={boQuestion.infoItems || null}
                 />
             </Container>
         );

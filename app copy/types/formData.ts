@@ -1,5 +1,3 @@
-//TODO: check formData.ts for obsolete code
-
 import {
     T_FormGeneralFormProperties,
     T_FormMainCommonProperties,

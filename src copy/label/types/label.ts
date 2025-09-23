@@ -1,7 +1,7 @@
 export type T_LabelInfo = {
     componentType: "tooltip" | "subHeader";
-    infoHeader?: string | null;
-    infoDescription?: string | null;
+    infoHeader: string | null;
+    infoDescription: string | null;
 };
 
 export type T_LabelProps = {
@@ -9,5 +9,5 @@ export type T_LabelProps = {
     children: React.ReactNode;
     className?: string;
     labelClassName?: string;
-    infoItems?: T_LabelInfo[] | null;
+    infoItems?: T_LabelInfo | T_LabelInfo[] | null;
 };

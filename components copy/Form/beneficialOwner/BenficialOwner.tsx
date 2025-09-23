@@ -15,13 +15,16 @@ import { BeneficialOwnerForm } from "./BeneficialOwnerForm";
 import { BeneficialOwnerResult } from "./BeneficialOwnerResult";
 import { Button } from "@ui/button";
 import { Icon } from "@ui/icon";
+import { Label } from "@ui/label";
 
 export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
     label,
+    fieldName,
     classNames,
     beneficialOwnerFieldsData,
     beneficialOwnersMaxCount,
     countryList,
+    infoItems,
 }) => {
     const [popoverOpen, setPopoverOpen] = useState(false);
 
@@ -61,7 +64,13 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
     return (
         <Container className={boComponentContainer}>
             <Container className={boQuestionContainer}>
-                <label className={classNames?.beneficialOwnerLabel}>{label}</label>
+                <Label
+                    htmlFor={fieldName}
+                    labelClassName={classNames?.beneficialOwnerLabel}
+                    infoItems={infoItems}
+                >
+                    {label}
+                </Label>
                 {fieldsMap.size < beneficialOwnersMaxCount && (
                     <Popover
                         popoverOpen={popoverOpen}
