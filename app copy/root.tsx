@@ -17,7 +17,6 @@ import Error from "../components/Error/Error";
 import tailwindStyles from "./global.css?url";
 import { bodyStyles, bodyStylesThemeClass } from "./styles.css";
 import { getSession } from "./services/sessionStorage.server";
-import { useSessionManager, useSessionSuppressed } from "./hooks";
 
 const DEFAULT_THEME = "sweden-b2b-application";
 const DEFAULT_BG_IMAGE = "var(--bg-image)";
@@ -26,13 +25,12 @@ const DEFAULT_BG_IMAGE = "var(--bg-image)";
 type LoaderData = {
     theme: string;
     backgroundImage: string;
-    sessionId?: string;
-    productId?: string;
-    exp?: number;
+    sessionId: string;
+    productId: string;
+    exp: number;
     maxSessionRefresh: number;
     sessionRefreshCount: number;
-    applicationId?: string;
-    serverNow: number; // epoch ms (server time)
+    applicationId: string;
 };
 
 export const links: LinksFunction = () => [{ rel: "stylesheet", href: tailwindStyles }];
@@ -40,30 +38,18 @@ export const links: LinksFunction = () => [{ rel: "stylesheet", href: tailwindSt
 export const loader: LoaderFunction = async ({ params, request }: LoaderFunctionArgs) => {
     const productId = params.productId ?? DEFAULT_THEME;
     const session = await getSession(request.headers?.get("Cookie"));
-
-    // Prefer absolute expiry from the session store if available
-    const expAbsFromStore = session.get("expiresAtMs"); // stored as absolute ms
-    const ttlSec = session.get("ttl"); // seconds remaining
-    const serverNow = Date.now();
-
-    let exp: number | undefined;
-    if (typeof expAbsFromStore === "number" && expAbsFromStore > 0) {
-        exp = expAbsFromStore;
-    } else if (typeof ttlSec === "number" && ttlSec > 0) {
-        exp = serverNow + ttlSec * 1000;
-    }
-
+    const now = Date.now();
+    const expiresAt = session.get("ttl") * 1000 + now;
     return {
         theme: productId,
         backgroundImage: DEFAULT_BG_IMAGE,
-        sessionId: session.get("sessionId") ?? undefined,
-        productId: session.get("productId") ?? undefined,
-        exp,
-        maxSessionRefresh: session.get("maxSessionRefresh") ?? 1,
-        sessionRefreshCount: session.get("sessionRefreshCount") ?? 0,
-        applicationId: session.get("applicationId") ?? undefined,
-        serverNow,
-    } satisfies LoaderData;
+        sessionId: session.get("sessionId"),
+        productId: session.get("productId"),
+        exp: expiresAt,
+        maxSessionRefresh: session.get("maxSessionRefresh"),
+        sessionRefreshCount: session.get("sessionRefreshCount"),
+        applicationId: session.get("applicationId"),
+    };
 };
 
 function Document({
@@ -92,25 +78,12 @@ function Document({
     );
 }
 
-function SessionManagerMount() {
-    // A component to mount the hook once
-    useSessionManager();
-    return null;
-}
-
-function SessionManagerGate() {
-    // suppress timers on these routes
-    const suppressed = useSessionSuppressed(["/expired", "/logout"]);
-    return suppressed ? null : <SessionManagerMount />;
-}
-
 export default function App() {
     const initialSession = useLoaderData<LoaderData>();
 
     return (
         <Document theme={initialSession?.theme || DEFAULT_THEME}>
             <SessionProvider initialSession={initialSession}>
-                <SessionManagerGate />
                 <Outlet />
             </SessionProvider>
         </Document>

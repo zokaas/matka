@@ -1,4 +1,4 @@
-import { T_ParseDynamicFieldsResult } from "~/types";
+import { T_Info, T_ParseDynamicFieldsResult } from "~/types";
 import { T_QuestionTypeBasic } from "~/types/questionType";
 import { isBeneficialOwnerQuestion, isDependentQuestion, isInfo } from "~/utils";
 
@@ -10,7 +10,7 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
         countryPlaceholder: null,
         countryQuestion: null,
         dependentQuestion: null,
-        info: null,
+        infoItems: [],
         nameParameter: null,
         namePlaceholder: null,
         nameQuestion: null,
@@ -22,7 +22,10 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
         ssnQuestion: null,
         useCountryList: null,
     };
+    
     if (!item.question.dynamicField) return result;
+
+    const infoItems: T_Info[] = [];
 
     item.question.dynamicField.forEach((dynamicField) => {
         if (isDependentQuestion(dynamicField)) {
@@ -38,7 +41,7 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
                 questionParameter: dynamicField.questionParameter,
                 useCountryList: dynamicField.useCountryList,
                 placeholder: dynamicField.placeholder,
-                errorMessages: dynamicField.errorMessages.data.map((item) => ({
+                errorMessages: dynamicField.error_messages.data.map((item) => ({
                     error: item.attributes.error,
                     message: item.attributes.message,
                 })),
@@ -46,10 +49,10 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
         }
 
         if (isInfo(dynamicField)) {
-            result.info = {
+            infoItems.push({
                 ...dynamicField,
                 __component: "kyc.info",
-            };
+            });
         }
 
         if (isBeneficialOwnerQuestion(dynamicField)) {
@@ -59,6 +62,9 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
             };
         }
     });
+
+    // Only set infoItems - no backward compatibility needed
+    result.infoItems = infoItems;
 
     return result;
 };

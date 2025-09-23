@@ -51,7 +51,7 @@ export type T_DynamicFieldDependentQuestion = {
     questionParameter: string;
     questionDescription: string | null;
     countryNameLang: string | null;
-    errorMessages: {
+    error_messages: {
         data: Array<T_ErrorMessageWithId>;
     };
 };

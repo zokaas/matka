@@ -1,15 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { ModalDialog } from "@ui/modal";
-import { T_SessionModalPayload } from "./types";
+import { T_SessionModalType } from "./types";
 import { useRedirectToLogin } from "~/hooks";
 import { useSession } from "~/context/SessionContext";
 
-export function showSessionModal(payload: T_SessionModalPayload) {
-    if (typeof window === "undefined") return;
-    window.dispatchEvent(
-        new CustomEvent<T_SessionModalPayload>("session:modal:show", { detail: payload })
-    );
-}
+let showModalCallback: ((type?: T_SessionModalType) => void) | null = null;
+
+export const showModal = (type?: T_SessionModalType) => {
+    if (showModalCallback) showModalCallback(type);
+};
 
 export const SessionModalManager: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -29,9 +28,8 @@ export const SessionModalManager: React.FC = () => {
     };
 
     const expiredModalContent = {
-        title: "Session Expired",
-        description:
-            "You have reached the maximum session refresh limit. To continue, you should log in again.",
+        title: "Session Expiring",
+        description: "You have reached the maximum session refresh limit. Please log in again.",
         continueButton: "Log in again",
         logoutButton: "Logout",
     };
@@ -48,28 +46,6 @@ export const SessionModalManager: React.FC = () => {
         }
     };
 
-    useEffect(() => {
-        const onShow = (ev: Event) => {
-            const d = (ev as CustomEvent<T_SessionModalPayload>).detail;
-            setModalType(d.type);
-            setIsOpen(true);
-
-            const ms = Math.max(5_000, typeof d.remainingMs === "number" ? d.remainingMs : 60_000);
-            clearAutoLogoutTimer();
-            autoLogoutTimerRef.current = setTimeout(() => {
-                window.location.assign(
-                    `/expired?appId=${encodeURIComponent(session.applicationId ?? "")}`
-                );
-            }, ms);
-        };
-
-        window.addEventListener("session:modal:show", onShow as EventListener);
-        return () => {
-            window.removeEventListener("session:modal:show", onShow as EventListener);
-            clearAutoLogoutTimer();
-        };
-    }, [session.applicationId]);
-
     const handleContinue = async () => {
         clearAutoLogoutTimer();
 
@@ -80,12 +56,7 @@ export const SessionModalManager: React.FC = () => {
 
         setIsLoading(true);
         console.log("Continue session");
-
-        const res = await refreshSession();
-        if (!res) {
-            window.location.assign("/error");
-            return;
-        }
+        await refreshSession();
         setIsOpen(false);
         setIsLoading(false);
     };
@@ -115,6 +86,22 @@ export const SessionModalManager: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    // Allow `useSessionManager` to trigger modal via callback
+    showModalCallback = (type?: string) => {
+        setModalType(type);
+        setIsOpen(true);
+
+        // Auto-logout if user does not respond
+        const remainingTime = 60 * 1000; // Default warning window or could be passed dynamically
+        autoLogoutTimerRef.current = setTimeout(async () => {
+            console.log("Session expired due to inactivity, redirecting...");
+
+            window.location.assign(
+                `/expired?appId=${encodeURIComponent(session.applicationId ?? "")}`
+            );
+        }, remainingTime);
     };
 
     return (

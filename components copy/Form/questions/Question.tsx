@@ -28,6 +28,7 @@ export const Question: React.FC<T_QuestionProps> = ({
             <Container className={questionsStyle}>
                 <DropDown
                     label={question?.questionLabel || ""}
+                    infoItems={question?.infoItems}
                     fieldName={question!.questionParameter}
                     placeholder={question?.placeholder || ""}
                     options={question?.options || []}
