@@ -1,3 +1,5 @@
+//TODO: check formData.ts for obsolete code
+
 import {
     T_FormGeneralFormProperties,
     T_FormMainCommonProperties,
@@ -51,8 +53,7 @@ type T_DependentQuestionPropertiesToPick =
     | "questionParameter"
     | "useCountryList"
     | "errorMessages"
-    | "placeholder"
-    | "infoItems";
+    | "placeholder";
 
 export type T_DependentQuestion =
     | (Pick<T_QuestionData, T_DependentQuestionPropertiesToPick> & {

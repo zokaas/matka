@@ -1,1 +1,1 @@
-export * from "./errorStyles.css";
+export * from "./errorStyle.css";

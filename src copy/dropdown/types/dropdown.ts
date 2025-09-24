@@ -1,6 +1,5 @@
 import { ReactNode } from "react";
 import { T_ErrorClassNamesProps } from "@ui/error";
-import { T_LabelInfo } from "@ui/label";
 
 export interface ItemProps {
     value: string;
@@ -44,7 +43,6 @@ export type T_DropDownProps = {
     searchEnabled?: boolean;
     searchPlaceholder?: string;
     searchNoResultsText?: string;
-    infoItems?: T_LabelInfo[] | null;
 };
 
 export type T_DropDownOption = {

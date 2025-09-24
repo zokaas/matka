@@ -1,6 +1,6 @@
 import React from "react";
 import { T_ModalProps } from "./types";
-import { actionBlock, modalContentContainer, modalStyles } from "./styles";
+import { actionBlock, modalButton, modalContentContainer, modalDescription, modalStyles, modalTitle } from "./styles";
 
 export const ModalDialog: React.FC<T_ModalProps> = (props: T_ModalProps) => {
     const {
@@ -12,19 +12,31 @@ export const ModalDialog: React.FC<T_ModalProps> = (props: T_ModalProps) => {
         secondActionText,
         secondAction,
         isLoading,
+        classNames,
     } = props;
+    
     if (!isOpen) return null;
 
+    const overlayClass = classNames?.modalOverlay || modalStyles;
+    const contentClass = classNames?.modalContentContainer || modalContentContainer;
+    const titleClass = classNames?.modalTitle || modalTitle;
+    const descriptionClass = classNames?.modalDescription || modalDescription;
+    const actionClass = classNames?.modalActionBlock || actionBlock;
+    const buttonClass = classNames?.modalButton || modalButton;
+
     return (
-        <div className={modalStyles}>
-            <div className={modalContentContainer}>
-                <h2>{title}</h2>
-                {description && <p>{description}</p>}
-                {/* TODO Show loader or disable buttons if isLoading */}
-                <div className={actionBlock}>
-                    <button onClick={firstAction}>{firstActionText}</button>
+        <div className={overlayClass}>
+            <div className={contentClass}>
+                <h2 className={titleClass}>{title}</h2>
+                {description && <p className={descriptionClass}>{description}</p>}
+                <div className={actionClass}>
+                    <button className={buttonClass} onClick={firstAction} disabled={isLoading}>
+                        {firstActionText}
+                    </button>
                     {secondActionText && secondAction && (
-                        <button onClick={secondAction}>{secondActionText}</button>
+                        <button className={buttonClass} onClick={secondAction} disabled={isLoading}>
+                            {secondActionText}
+                        </button>
                     )}
                 </div>
             </div>

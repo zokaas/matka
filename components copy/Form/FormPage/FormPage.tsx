@@ -23,6 +23,7 @@ import { Icon } from "@ui/icon";
 import { Questions } from "../questions/Questions";
 import { Footer } from "@ui/footer";
 import { T_AnswersMapValue } from "~/types";
+import { TestSessionModal } from "../../SessionModal";
 
 export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
     const { formData /* , generalData */ } = props;
@@ -98,6 +99,7 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
         <main className={mainContentStyle}>
             <Container className={mainContainerStyle}>
                 {/* Header */}
+                <TestSessionModal/>
                 <Title
                     title={formData.generalFormData.formHeader.title}
                     subtitle={formData.generalFormData.formHeader.subtitle}

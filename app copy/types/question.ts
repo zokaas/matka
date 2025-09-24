@@ -9,7 +9,7 @@ export type T_QuestionData = {
     placeholder: string | null;
     options: Array<T_Option> | null;
     errorMessages?: Array<T_ErrorMessage>;
-    infoItems: T_Info[];
+    info: T_Info | null;
     dependentQuestion: T_DependentQuestion | null;
     useCountryList: boolean | null;
     addBObutton: string | null;

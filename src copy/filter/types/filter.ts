@@ -6,6 +6,6 @@ export type T_FilterProps = {
 };
 
 export type T_FilterClassNames = {
-    containerClassName?: string;
+    containerCLassName?: string;
     inputClassName?: string;
 };

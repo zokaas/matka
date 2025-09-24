@@ -11,7 +11,6 @@ import {
     radioLabelStyle,
 } from "./styles/radiogroupStyles.css";
 import { RadioItemContainer } from "./RadioItemContainer";
-import { Label } from "@ui/label";
 
 export const Radiogroup: React.FC<T_RadioGroupProps> = ({
     options,
@@ -20,7 +19,6 @@ export const Radiogroup: React.FC<T_RadioGroupProps> = ({
     onChange,
     classNames,
     defaultValue,
-    infoItems
 }) => {
     const rootStyle = classNames?.radioRoot || radiogroupContainerStyle;
     const itemContainerStyle = classNames?.radioItemContainer || radioItemContainerStyle;
@@ -34,13 +32,7 @@ export const Radiogroup: React.FC<T_RadioGroupProps> = ({
 
     return (
         <Container className={radiogroupContainerStyle}>
-            <Label 
-                htmlFor={fieldName}
-                labelClassName={labelStyle}
-                infoItems={infoItems}
-            >
-                {label}
-            </Label>
+            <label className={labelStyle}>{label}</label>
             <RadioGroup.Root
                 className={rootStyle}
                 name={fieldName}

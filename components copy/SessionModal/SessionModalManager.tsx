@@ -28,7 +28,7 @@ export const SessionModalManager: React.FC = () => {
     };
 
     const expiredModalContent = {
-        title: "Session Expiring",
+        title: "Session Expired",
         description: "You have reached the maximum session refresh limit. Please log in again.",
         continueButton: "Log in again",
         logoutButton: "Logout",
@@ -115,5 +115,35 @@ export const SessionModalManager: React.FC = () => {
             secondAction={handleLogout}
             isLoading={isLoading}
         />
+    );
+};
+
+
+// TestSessionModal.tsx
+import { Button } from "@ui/button";
+
+export const TestSessionModal: React.FC = () => {
+    return (
+        <div style={{ padding: "20px" }}>
+            <h2>Session Modal Test</h2>
+            
+            <Button
+                type="button"
+                label="Test Session Expiring Modal"
+                onClick={() => showModal("refresh")}
+            />
+            
+            <Button
+                type="button"
+                label="Test Session Expired Modal"
+                onClick={() => showModal("expired")}
+            />
+            
+            <Button
+                type="button"
+                label="Test Default Modal"
+                onClick={() => showModal()}
+            />
+        </div>
     );
 };

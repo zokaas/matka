@@ -1,25 +1,25 @@
-import { showModal } from "apps/kyc/components";
+import { showModal } from "apps/kyc/components/SessionModal";
 import { useState } from "react";
 import { useActivityTracker } from "./useActivityTracker";
 import { T_RefreshResult } from "./types";
 import { useExternalRefreshListener } from "./useExternalRefreshListener";
 import { useExpiryTimer } from "./useExpiryTimer";
-import { T_SessionModalType } from "apps/kyc/components/SessionModal/types";
+import { T_SessionModalPayload } from "apps/kyc/components/SessionModal/types";
 import { useNavigate } from "react-router";
 import { useSession } from "~/context/SessionContext";
 
 export const useSessionManager = () => {
     const navigate = useNavigate();
     const { session, refreshSession, updateSession } = useSession();
+    const { now } = session;
 
-    // state: expiresAt in ms and refresh count
     const [expiresAt, setExpiresAt] = useState<number>(session.exp ?? 0);
     const [refreshCount, setRefreshCount] = useState<number>(session.sessionRefreshCount ?? 0);
 
     const { getLastActivity } = useActivityTracker();
 
     // handle a successful refresh result (update local state)
-    const handleRefreshResult = (res: T_RefreshResult) => {
+    const handleRefreshResult = (res: T_RefreshResult | null) => {
         console.log("[handleRefreshResult]", res);
         if (res) {
             setExpiresAt(res.exp);
@@ -44,8 +44,7 @@ export const useSessionManager = () => {
         return res;
     };
 
-    const onShowModal = (type?: T_SessionModalType) => showModal(type);
-
+    const onShowModal = (payload: T_SessionModalPayload) => showModal(payload.type);
     useExpiryTimer({
         expiresAtMs: expiresAt,
         getLastActivity,
@@ -53,6 +52,7 @@ export const useSessionManager = () => {
         maxRefresh: session.maxSessionRefresh ?? 1,
         onAttemptRefresh: attemptRefresh,
         onShowModal,
+        now,
     });
 
     return null;

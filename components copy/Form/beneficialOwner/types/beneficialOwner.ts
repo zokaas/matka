@@ -1,7 +1,6 @@
 import { T_ErrorClassNamesProps } from "@ui/error";
 import { T_BeneficialOwnerCardProps } from "./beneficialOwnerCard";
 import { T_CountryArray } from "~/types";
-import { T_LabelInfo } from "@ui/label";
 
 export type T_BeneficialOwnerClassNames = {
     beneficialOwnerLabel: string;
@@ -17,7 +16,6 @@ export type T_BeneficialOwnerProps = {
     classNames?: T_BeneficialOwnerClassNames;
     beneficialOwnerFieldsData: T_BeneficialOwnerCardProps;
     error?: string;
-    infoItems?: T_LabelInfo[] | null;
 };
 
 export type T_BeneficialOwnerData = {

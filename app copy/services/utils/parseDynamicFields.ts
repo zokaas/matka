@@ -1,7 +1,6 @@
-import { T_Info, T_ParseDynamicFieldsResult } from "~/types";
+import { T_ParseDynamicFieldsResult } from "~/types";
 import { T_QuestionTypeBasic } from "~/types/questionType";
 import { isBeneficialOwnerQuestion, isDependentQuestion, isInfo } from "~/utils";
-
 export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFieldsResult => {
     let result: T_ParseDynamicFieldsResult = {
         addBObutton: null,
@@ -10,7 +9,7 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
         countryPlaceholder: null,
         countryQuestion: null,
         dependentQuestion: null,
-        infoItems: [],
+        info: null,
         nameParameter: null,
         namePlaceholder: null,
         nameQuestion: null,
@@ -25,10 +24,15 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
     
     if (!item.question.dynamicField) return result;
 
-    const infoItems: T_Info[] = [];
-
     item.question.dynamicField.forEach((dynamicField) => {
         if (isDependentQuestion(dynamicField)) {
+            // Handle both errorMessages and error_messages, and handle when they're undefined
+            const errorMessages = dynamicField.errorMessages || dynamicField.error_messages;
+            const processedErrorMessages = errorMessages?.data?.map((item) => ({
+                error: item.attributes.error,
+                message: item.attributes.message,
+            })) || [];
+
             result.dependentQuestion = {
                 __component: "kyc.dependent-question",
                 componentType: dynamicField.componentType,
@@ -41,22 +45,15 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
                 questionParameter: dynamicField.questionParameter,
                 useCountryList: dynamicField.useCountryList,
                 placeholder: dynamicField.placeholder,
-                errorMessages: dynamicField.error_messages.data.map((item) => ({
-                    error: item.attributes.error,
-                    message: item.attributes.message,
-                })),
-                infoItems: [],
+                errorMessages: processedErrorMessages,
             };
         }
 
         if (isInfo(dynamicField)) {
-            infoItems.push({
-                id: dynamicField.id,
+            result.info = {
+                ...dynamicField,
                 __component: "kyc.info",
-                componentType: dynamicField.componentType,
-                infoHeader: dynamicField.infoHeader,
-                infoDescription: dynamicField.infoDescription,
-            });
+            };
         }
 
         if (isBeneficialOwnerQuestion(dynamicField)) {
@@ -66,8 +63,6 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
             };
         }
     });
-
-    result.infoItems = infoItems;
 
     return result;
 };

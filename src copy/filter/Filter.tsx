@@ -10,7 +10,7 @@ export const Filter: React.FC<T_FilterProps> = ({
     classNames,
     onChange,
 }) => {
-    const containerStyle = classNames?.containerClassName || filterContainerStyle;
+    const containerStyle = classNames?.containerCLassName || filterContainerStyle;
     const inputStyle = classNames?.inputClassName || filterInputStyle;
     return (
         <Container className={containerStyle}>

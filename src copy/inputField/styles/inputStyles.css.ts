@@ -7,6 +7,12 @@ export const inputContainerStyle = style({
     flexGrow: 1,
 });
 
+export const inputLabelStyle = style({
+    fontSize: "16px",
+    fontWeight: "400",
+    color: "oklch(21% 0.006 285.885)",
+});
+
 export const inputFieldStyle = style({
     width: "100%",
     padding: "0.5rem",

@@ -1,1 +1,1 @@
-export * from "./inputField";
+export * from "./types";

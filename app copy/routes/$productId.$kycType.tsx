@@ -13,7 +13,6 @@ import { Header } from "@ui/header";
 import { Container } from "@ui/container";
 import { pageContentStyle } from "~/styles/pageContentStyle.css";
 import { SessionModalManager } from "apps/kyc/components";
-import { useSessionManager, useSessionTTL } from "~/hooks";
 
 export const loader = async ({
     request,
@@ -85,10 +84,6 @@ export default function KycFormPage(): JSX.Element {
 
     const formData = loaderData.formData as T_ParsedFormData;
     const pageData = loaderData.pageData as T_ProductIdPageData;
-
-    //const ttl = pageData.ttl;
-    //useSessionTTL(ttl);
-    useSessionManager();
 
     return (
         <Container className={pageContentStyle}>

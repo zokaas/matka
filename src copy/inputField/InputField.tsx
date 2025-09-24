@@ -1,9 +1,8 @@
 import React from "react";
 import { T_InputFieldProps } from "./types";
 import { Container } from "@ui/container";
-import { inputContainerStyle, inputFieldStyle } from "./styles";
+import { inputContainerStyle, inputLabelStyle, inputFieldStyle } from "./styles";
 import { ErrorMessage } from "@ui/error";
-import { Label } from "@ui/label";
 
 export const InputField: React.FC<T_InputFieldProps> = ({
     fieldName,
@@ -16,21 +15,18 @@ export const InputField: React.FC<T_InputFieldProps> = ({
     error,
     errorClassNames,
     type,
-    infoItems
 }) => {
     const containerStyle = inputContainerStyle;
+    const labelStyle = classNames?.labelClassName || inputLabelStyle;
     const fieldStyle = classNames?.fieldClassName || inputFieldStyle;
     const fieldSetContainerStyle = classNames?.containerClassName || "";
 
     return (
         <Container className={containerStyle}>
             <Container className={fieldSetContainerStyle}>
-            <Label 
-                htmlFor={fieldName}
-                infoItems={infoItems}
-            >
-                {label}
-            </Label>
+                <label className={labelStyle} htmlFor={fieldName}>
+                    {label}
+                </label>
                 <input
                     name={fieldName}
                     id={fieldName}

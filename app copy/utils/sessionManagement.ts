@@ -15,28 +15,17 @@ export const handleRefreshSession = async (
         }
 
         const data = await res.json();
-        if (!data || typeof data.exp !== "number" || typeof data.sessionRefreshCount !== "number") {
-            console.error("[SessionManager] Invalid refresh response:", res);
-            return null;
-        }
-        console.log(
-            "[SessionManager] Session refreshed. New exp:",
-            data.exp,
-            "New refresh count:",
-            data.sessionRefreshCount
-        );
 
-        // Dispatch event so other hooks/components can react if needed (optional)
-        window.dispatchEvent(
-            new CustomEvent("session:refreshed", {
-                detail: {
-                    exp: data.exp,
-                    sessionRefreshCount: data.sessionRefreshCount,
-                },
-            })
-        );
+        // Normalize exp => milliseconds
+        let exp = data?.exp;
+        if (typeof exp !== "number") return null;
+        // if seconds (epoch ~ 1.7e9), convert to ms (epoch ~ 1.7e12)
+        if (exp < 1e12) exp = exp * 1000;
 
-        return { exp: data.exp, sessionRefreshCount: data.sessionRefreshCount };
+        const sessionRefreshCount = data?.sessionRefreshCount;
+        if (typeof sessionRefreshCount !== "number") return null;
+
+        return { exp, sessionRefreshCount };
     } catch (err) {
         console.error("[SessionManager] Error during session refresh:", err);
         return null;

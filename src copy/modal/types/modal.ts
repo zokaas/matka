@@ -7,4 +7,14 @@ export type T_ModalProps = {
     secondActionText?: string;
     secondAction?: () => void;
     isLoading: boolean;
+    classNames?: T_ModalClassNamesProps;
+};
+
+export type T_ModalClassNamesProps = {
+    modalOverlay?: string;
+    modalContentContainer?: string;
+    modalTitle?: string;
+    modalDescription?: string;
+    modalActionBlock?: string;
+    modalButton?: string;
 };

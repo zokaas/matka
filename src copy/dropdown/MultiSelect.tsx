@@ -192,7 +192,7 @@ export const MultiSelect: React.FC<T_MultiSelectProps> = ({
                                 onChange={(searchValue) => filterContent(searchValue)}
                                 fieldName={`search_${fieldName}`}
                                 classNames={{
-                                    containerClassName: classNames?.filterContainer,
+                                    containerCLassName: classNames?.filterContainer,
                                     inputClassName: classNames?.filterInput,
                                 }}
                             />

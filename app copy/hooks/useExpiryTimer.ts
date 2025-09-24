@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
-import { T_RefreshResult } from "./types";
-import { T_SessionModalType } from "apps/kyc/components/SessionModal/types";
+import type { T_RefreshResult } from "./types";
+import type { T_SessionModalPayload } from "apps/kyc/components/SessionModal/types";
 import { useNavigate } from "react-router";
 
 /**
@@ -13,65 +13,89 @@ export function useExpiryTimer({
     maxRefresh,
     onAttemptRefresh,
     onShowModal,
+    now,
 }: {
     expiresAtMs: number;
     getLastActivity: () => number;
     refreshCount: number;
     maxRefresh: number;
-    onAttemptRefresh: () => Promise<T_RefreshResult>;
-    onShowModal: (type?: T_SessionModalType) => void;
+    onAttemptRefresh: () => Promise<T_RefreshResult | null>;
+    onShowModal: (payload: T_SessionModalPayload) => void;
+    now: () => number;
 }) {
     const navigate = useNavigate();
-
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    // Only the timer created for this exp may act; others are stale
+    const activeExpRef = useRef<number>(0);
+
+    // prevent multiple fires for the *same* exp within the warning window
+    const firedForExpRef = useRef<number | null>(null);
+
+    const isVisible = () =>
+        typeof document !== "undefined" && document.visibilityState === "visible";
 
     useEffect(() => {
         if (!expiresAtMs) return;
 
-        const now = Date.now();
-        const warningTime = 60 * 1000; // show/attempt 60s before expiry
-        const delay = expiresAtMs - now - warningTime;
+        activeExpRef.current = expiresAtMs;
 
-        if (delay <= 0) {
-            // already within warning window: show modal immediately
-            onShowModal("refresh");
-            return;
-        }
+        const WARNING_TIME = 60_000;
+        const delay = Math.max(0, expiresAtMs - now() - WARNING_TIME);
 
-        // clear any existing timer
         if (timerRef.current) clearTimeout(timerRef.current);
 
-        timerRef.current = setTimeout(async () => {
-            console.log("[useExpiryTimer] refreshCount maxRefresh: ", refreshCount, maxRefresh);
-            // if reached max refreshes => inform user
+        const expForThisTimer = expiresAtMs;
+
+        const fire = async () => {
+            if (activeExpRef.current !== expForThisTimer) return;
+
+            // Prevent re-firing for the same exp in the same warning window
+            if (firedForExpRef.current === expForThisTimer) return;
+            firedForExpRef.current = expForThisTimer;
+
+            // If we already hit max refreshes, inform the user (final window)
             if (refreshCount >= maxRefresh) {
-                console.log("[useExpiryTimer] reached max refreshes");
-                onShowModal("expired");
+                const remainingMs = Math.max(0, expForThisTimer - now());
+                console.log("expiring", remainingMs);
+                onShowModal({ type: "expired", remainingMs });
                 return;
             }
 
-            // Determine if user was recently active (within N ms)
-            const INACTIVITY_LIMIT = 30 * 1000; // 30 seconds
-            const inactiveMs = Date.now() - getLastActivity();
+            if (!isVisible()) {
+                const vis = () => {
+                    document.removeEventListener("visibilitychange", vis);
+                    // Re-run only if this timer is still current
+                    if (activeExpRef.current === expForThisTimer) void fire();
+                };
+                document.addEventListener("visibilitychange", vis, { once: true });
+                return;
+            }
+
+            const INACTIVITY_LIMIT = 30_000;
+            const inactiveMs = now() - getLastActivity();
             const isActiveRecently = inactiveMs < INACTIVITY_LIMIT;
-            console.log("[useExpiryTimer] is user active recently: ", isActiveRecently);
+
             if (isActiveRecently) {
-                // try to refresh
                 try {
                     const res = await onAttemptRefresh();
-                    if (!res) {
-                        // refresh failed or returned invalid payload
-                        navigate("/error");
-                    }
+                    if (!res) navigate("/error");
+                    // On success, expiresAtMs will change, replacing activeExpRef and cancelling this timer
                 } catch (err) {
                     console.error("[useExpiryTimer] refresh error", err);
                     navigate("/error");
                 }
             } else {
-                // user inactive -> show modal
-                onShowModal("refresh");
+                const remainingMs = Math.max(5_000, expForThisTimer - now());
+                onShowModal({ type: "refresh", remainingMs });
             }
-        }, delay);
+        };
+
+        if (delay === 0) {
+            void fire();
+        } else {
+            timerRef.current = setTimeout(fire, delay);
+        }
 
         return () => {
             if (timerRef.current) {
@@ -79,5 +103,14 @@ export function useExpiryTimer({
                 timerRef.current = null;
             }
         };
-    }, [expiresAtMs, refreshCount, maxRefresh, getLastActivity, onAttemptRefresh, onShowModal]);
+    }, [
+        expiresAtMs,
+        refreshCount,
+        maxRefresh,
+        getLastActivity,
+        onAttemptRefresh,
+        onShowModal,
+        now,
+        navigate,
+    ]);
 }

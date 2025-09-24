@@ -1,5 +1,4 @@
 import { T_ErrorClassNamesProps } from "@ui/error";
-import { T_LabelInfo } from "@ui/label";
 
 export type T_InputProps = {
     label: string;
@@ -11,7 +10,6 @@ export type T_InputProps = {
     error: string;
     classNames?: T_InputFieldClassNames;
     errorClassNames?: T_ErrorClassNamesProps;
-    infoItems?: T_LabelInfo[] | null;
 };
 
 export type T_InputFieldProps = T_InputProps & {

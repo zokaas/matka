@@ -1,1 +1,1 @@
-export * from "./footerStyles.css";
+export * from "./footerStyle.css";

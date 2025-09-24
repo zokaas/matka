@@ -8,6 +8,7 @@ import {
     dropDownViewportStyle,
     dropDownItemStyles,
     dropDownItemIndicatorStyles,
+    dropDownLabel,
     iconStyle,
 } from "./styles";
 import { Container } from "@ui/container";
@@ -16,7 +17,6 @@ import { Icon } from "@ui/icon";
 import { ErrorMessage } from "@ui/error";
 import { Filter } from "@ui/filter";
 import { DEFAULT_PLACEHOLDER, NO_RESULTS, NO_RESULTS_DEFAULT_TEXT } from "./dropdown.constants";
-import { Label } from "@ui/label";
 
 export const DropDown: React.FC<T_DropDownProps> = ({
     fieldName,
@@ -32,12 +32,12 @@ export const DropDown: React.FC<T_DropDownProps> = ({
     searchEnabled,
     searchNoResultsText,
     searchPlaceholder,
-    infoItems,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [optionsArray, setOptionsArray] = useState(options || []);
 
     const selectContainer = classNames?.dropDownContainer || dropDownContainerStyle;
+    const selectLabel = classNames?.dropDownLabel || dropDownLabel;
     const selectField = classNames?.dropDownField || dropDownStyle;
     const selectValue = classNames?.dropDownValue || dropDownOpenIconStyle;
     const selectIcon = classNames?.dropDownIcon || dropDownOpenIconStyle;
@@ -65,12 +65,9 @@ export const DropDown: React.FC<T_DropDownProps> = ({
     };
     return (
         <Container className={selectContainer}>
-            <Label 
-                htmlFor={fieldName}
-                infoItems={infoItems}
-            >
+            <label className={selectLabel} htmlFor={fieldName}>
                 {label}
-            </Label>
+            </label>
             <Select.Root
                 onValueChange={(e) => onChange(e)}
                 onOpenChange={(state) => {

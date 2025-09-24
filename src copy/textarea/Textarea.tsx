@@ -1,9 +1,8 @@
 import React from "react";
 import { T_TextareaProps } from "./types";
 import { Container } from "@ui/container";
-import { textareaContainerStyle, textareaFieldStyle } from "./styles";
+import { textareaContainerStyle, textareaLabelStyle, textareaFieldStyle } from "./styles";
 import { ErrorMessage } from "@ui/error";
-import { Label } from "@ui/label";
 
 export const Textarea: React.FC<T_TextareaProps> = ({
     fieldName,
@@ -15,19 +14,16 @@ export const Textarea: React.FC<T_TextareaProps> = ({
     value,
     error,
     errorClassNames,
-    infoItems
 }) => {
     const containerStyle = classNames?.containerClassName || textareaContainerStyle;
+    const labelStyle = classNames?.labelClassName || textareaLabelStyle;
     const fieldStyle = classNames?.fieldClassName || textareaFieldStyle;
 
     return (
         <Container className={containerStyle}>
-            <Label 
-                htmlFor={fieldName}
-                infoItems={infoItems}
-            >
+            <label className={labelStyle} htmlFor={fieldName}>
                 {label}
-            </Label>
+            </label>
             <textarea
                 name={fieldName}
                 className={fieldStyle}

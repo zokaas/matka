@@ -1,1 +1,1 @@
-export * from "./headerStyles.css";
+export * from "./headerStyle.css";
