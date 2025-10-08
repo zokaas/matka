@@ -14,7 +14,7 @@ import { isCountryListUsed, isDependentQuestion } from "~/utils";
 import { parseDynamicFields } from "./parseDynamicFields";
 
 export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData => {
-    const { id, product, formType, steps, button, footer, companyBlock, formHeader, questions } =
+    const { id, product, formType, steps, button, footer, companyBlock, formHeader, sessionModal, questions } =
         apiResponse;
 
     const parsedSteps: Array<T_ParsedStep> = [];
@@ -76,6 +76,7 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
         footer,
         companyBlock,
         formHeader,
+        sessionModal,
         useCountryList,
     };
 

@@ -32,7 +32,7 @@ export const loader: LoaderFunction = async ({ request }) => {
                 productId,
                 kycType,
                 applicationId,
-                ttl,
+                ttl: 30,
                 companyName,
                 orgNumber,
                 maxSessionRefresh,

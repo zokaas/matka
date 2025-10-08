@@ -40,7 +40,7 @@ export function useExpiryTimer({
 
         activeExpRef.current = expiresAtMs;
 
-        const WARNING_TIME = 60_000;
+        const WARNING_TIME = 10_000; // CHANGED: 60_000 → 10_000 (10 seconds)
         const delay = Math.max(0, expiresAtMs - now() - WARNING_TIME);
 
         if (timerRef.current) clearTimeout(timerRef.current);
@@ -72,7 +72,7 @@ export function useExpiryTimer({
                 return;
             }
 
-            const INACTIVITY_LIMIT = 30_000;
+            const INACTIVITY_LIMIT = 10_000;
             const inactiveMs = now() - getLastActivity();
             const isActiveRecently = inactiveMs < INACTIVITY_LIMIT;
 

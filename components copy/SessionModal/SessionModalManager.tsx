@@ -3,6 +3,7 @@ import { ModalDialog } from "@ui/modal";
 import { T_SessionModalPayload } from "./types";
 import { useRedirectToLogin } from "~/hooks";
 import { useSession } from "~/context/SessionContext";
+import { T_SessionModal } from "~/types";
 
 export function showSessionModal(payload: T_SessionModalPayload) {
     if (typeof window === "undefined") return;
@@ -11,7 +12,15 @@ export function showSessionModal(payload: T_SessionModalPayload) {
     );
 }
 
-export const SessionModalManager: React.FC = () => {
+export const SessionModalManager: React.FC<T_SessionModal> = ({
+    refreshTitle,
+    refreshDescription,
+    continueSessionButton,
+    expiredTitle,
+    expiredDescription,
+    loginButton,
+    logoutButton,
+}) => {
     const [isOpen, setIsOpen] = useState(false);
     const [modalType, setModalType] = useState<string | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(false);
@@ -20,23 +29,22 @@ export const SessionModalManager: React.FC = () => {
     const redirectToLogin = useRedirectToLogin(session.applicationId ?? "");
 
     const refreshModalContent = {
-        title: "Session Expiring",
-        description: "Your session is about to expire. Do you want to continue?",
-        continueButton: "Continue Session",
-        logoutButton: "Logout",
+        title: refreshTitle,
+        description: refreshDescription,
+        continueButton: continueSessionButton,
+        logoutButton: logoutButton,
     };
 
     const expiredModalContent = {
-        title: "Session Expired",
-        description:
-            "You have reached the maximum session refresh limit. To continue, you should log in again.",
-        continueButton: "Log in again",
-        logoutButton: "Logout",
+        title: expiredTitle,
+        description: expiredDescription,
+        continueButton: loginButton,
+        logoutButton: logoutButton,
     };
 
     const modalContent = modalType === "expired" ? expiredModalContent : refreshModalContent;
 
-    const { title, description, continueButton, logoutButton } = modalContent;
+    const { title, description, continueButton, logoutButton: logoutText } = modalContent;
 
     // Clears any pending auto-logout timer
     const clearAutoLogoutTimer = () => {
@@ -121,7 +129,7 @@ export const SessionModalManager: React.FC = () => {
             title={title}
             description={description}
             firstActionText={continueButton}
-            secondActionText={logoutButton}
+            secondActionText={logoutText}
             firstAction={handleContinue}
             secondAction={handleLogout}
             isLoading={isLoading}

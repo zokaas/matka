@@ -1,5 +1,3 @@
-//TODO: check formDataPartials.ts for obsolete code
-
 import { T_Question } from "./question";
 
 export type T_FormMainCommonProperties = {
@@ -56,7 +54,7 @@ export type T_FormHeader = {
 
 export type T_SessionModal = {
     refreshTitle: string;
-    refreshSession: string;
+    refreshDescription: string;
     continueSessionButton: string;
     expiredTitle: string;
     expiredDescription: string;

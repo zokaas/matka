@@ -89,7 +89,7 @@ export default function KycFormPage(): JSX.Element {
         <Container className={pageContentStyle}>
             <Header logoSrc="/logos/t.svg" title={formData.generalFormData.formHeader.title} />
             <FormPage generalData={pageData} formData={formData} />
-            <SessionModalManager />
+            <SessionModalManager {...formData.generalFormData.sessionModal} />
         </Container>
     );
 }
