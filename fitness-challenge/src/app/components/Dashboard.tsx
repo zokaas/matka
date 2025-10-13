@@ -19,6 +19,7 @@ import { fetchUsersAndTotalKm } from "../utils/utils";
 import { User } from "@/app/types/types";
 import StageCard from "./StageCard";
 import Quotes from "./Quotes";
+import PartyBanner from "./PartyBanner";
 
 export default function Dashboard() {
   const { t, colors, theme } = useTheme();
@@ -77,7 +78,7 @@ export default function Dashboard() {
       <div className="max-w-6xl mx-auto space-y-6">
 
         {/* HERO */}
-        <motion.header
+        {/* <motion.header
           className="text-center"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -89,9 +90,11 @@ export default function Dashboard() {
           >
             <Quotes />
           </motion.div>
-        </motion.header>
+        </motion.header> */}
         {/* STAGE PROGRESS */}
-        <StageCard totalKm={totalKm} />
+        {/* <StageCard totalKm={totalKm} /> */}
+        <PartyBanner users={users} />
+
 
         {/* ENHANCED WEEKLY PROGRESS BAR */}
         <WeeklyProgressBar />
@@ -103,11 +106,10 @@ export default function Dashboard() {
               <button
                 key={key}
                 onClick={() => setActiveView(key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-sm font-medium ${
-                  activeView === key
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all text-sm font-medium ${activeView === key
                     ? "bg-yellow-400 text-black shadow-sm"
                     : "text-gray-600 hover:text-gray-800 hover:"
-                }`}
+                  }`}
               >
                 <Icon className="w-4 h-4" />
                 <span className="hidden sm:inline">{label}</span>
