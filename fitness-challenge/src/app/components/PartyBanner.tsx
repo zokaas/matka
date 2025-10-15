@@ -125,7 +125,7 @@ const PartyBanner: React.FC<PartyBannerProps> = ({ users }) => {
                   <div className="flex items-center gap-2 mb-3">
                     <CheckCircle className="w-4 h-4 text-green-600" />
                     <h4 className="font-bold text-gray-900 text-sm">
-                      Kutsutut ({partyStats.invited.length})
+                      Kutsuttujen listalla ({partyStats.invited.length})
                     </h4>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
