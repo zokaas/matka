@@ -1,4 +1,4 @@
-// components/WeeklyProgressBar.tsx - Dropdown for personal goals
+// components/WeeklyProgressBar.tsx - Fixed weekly history with personal goals
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TrendingUp, TrendingDown, Info, Calendar, Target, BarChart2, Users, ChevronDown, ChevronUp } from "lucide-react";
@@ -12,7 +12,6 @@ const r1 = (n: number) => Number(n.toFixed(1));
 const WeeklyProgressBar = () => {
   const { t } = useTheme();
   const { users, loading, error } = useFetchUsers();
-  const [showDetails, setShowDetails] = useState(false);
   const [showAllWeeks, setShowAllWeeks] = useState(false);
   const [showPersonalGoals, setShowPersonalGoals] = useState(false);
   const weeklyGoalData = useWeeklyGoal(users);
@@ -43,7 +42,7 @@ const WeeklyProgressBar = () => {
   const personalGoals = users.map(user => {
     // Check if user has completed their personal goal
     const isCompleted = user.totalKm >= personalTargetPerUser;
-    
+
     if (isCompleted) {
       return {
         username: user.username,
@@ -55,40 +54,40 @@ const WeeklyProgressBar = () => {
         overallPercentage: 100
       };
     }
-    
+
     // Calculate remaining distance
     const remainingPersonal = Math.max(0, personalTargetPerUser - user.totalKm);
-    
+
     // Calculate remaining weeks
     const today = new Date();
     const challengeEnd = new Date(challengeParams.endDate);
     const weeksRemaining = Math.max(1, Math.ceil(
       (challengeEnd.getTime() - today.getTime()) / (7 * 24 * 60 * 60 * 1000)
     ));
-    
+
     // Calculate weekly goal
     const weeklyGoal = r1(remainingPersonal / weeksRemaining);
-    
+
     // Get activities for the current week
     const weekStart = weeklyGoalData.weekStart;
     const weeklyActivities = user.activities.filter(activity => {
       const activityDate = new Date(activity.date);
       return activityDate >= weekStart;
     });
-    
+
     // Calculate this week's progress
     const weeklyProgress = r1(
       weeklyActivities.reduce((sum, activity) => sum + activity.kilometers, 0)
     );
-    
+
     // Calculate percentage
-    const progressPercentage = weeklyGoal > 0 
+    const progressPercentage = weeklyGoal > 0
       ? r1((weeklyProgress / weeklyGoal) * 100)
       : 100;
-      
+
     // Calculate overall percentage
     const overallPercentage = r1((user.totalKm / personalTargetPerUser) * 100);
-    
+
     return {
       username: user.username,
       isCompleted,
@@ -99,28 +98,28 @@ const WeeklyProgressBar = () => {
       overallPercentage: Math.min(100, overallPercentage)
     };
   });
-  
+
   // Sort users by completion status first, then by weekly progress percentage
   const sortedPersonalGoals = [...personalGoals].sort((a, b) => {
     // Completed users first
     if (a.isCompleted && !b.isCompleted) return -1;
     if (!a.isCompleted && b.isCompleted) return 1;
-    
+
     // Then by progress percentage for active users
     return b.progressPercentage - a.progressPercentage;
   });
-  
+
   // Get counts
   const completedUsersCount = personalGoals.filter(u => u.isCompleted).length;
   const activeUsersCount = users.length - completedUsersCount;
-  
+
   // Calculate cumulative weekly data
   const totalWeeklyGoal = r1(personalGoals.reduce((sum, u) => sum + u.weeklyGoal, 0));
   const totalWeeklyProgress = r1(personalGoals.reduce((sum, u) => sum + u.weeklyProgress, 0));
-  const overallProgressPercentage = totalWeeklyGoal > 0 
+  const overallProgressPercentage = totalWeeklyGoal > 0
     ? r1((totalWeeklyProgress / totalWeeklyGoal) * 100)
     : 100;
-    
+
   // Calculate remaining distance
   const remainingDistance = Math.max(0, r1(totalWeeklyGoal - totalWeeklyProgress));
 
@@ -130,19 +129,105 @@ const WeeklyProgressBar = () => {
     hasHistory,
     performanceTrend
   } = weeklyGoalData;
-  
+
   const currentWeek = allWeeksData.find((week) => week.isCurrent);
   const completedWeeks = allWeeksData.filter((week) => week.isCompleted);
   const previousWeek = completedWeeks[completedWeeks.length - 1];
 
-  // Only count completed weeks for success rate
-  const successfulWeeksCount = completedWeeks.filter((w) => w.achievementRate >= 1).length;
+  // Recalculate each week's data based on personal goals
+  const recalculatedWeeks = allWeeksData.map(week => {
+    // For each week, calculate personal goals for each user
+    const weekGoals = users.map(user => {
+      // Check if user had completed their personal goal at this point
+      const userActivitiesBeforeWeekEnd = user.activities.filter(activity => {
+        const activityDate = new Date(activity.date);
+        return activityDate <= week.weekEnd;
+      });
+
+      const userKmBeforeWeekEnd = r1(
+        userActivitiesBeforeWeekEnd.reduce((sum, activity) => sum + activity.kilometers, 0)
+      );
+
+      const isCompleted = userKmBeforeWeekEnd >= personalTargetPerUser;
+
+      if (isCompleted) {
+        return {
+          username: user.username,
+          isCompleted: true,
+          weeklyGoal: 0,
+          weeklyProgress: 0,
+        };
+      }
+
+      // Calculate what was remaining at that point
+      const remainingPersonal = Math.max(0, personalTargetPerUser - userKmBeforeWeekEnd);
+
+      // Calculate remaining weeks from that point
+      const weeksRemaining = Math.max(1, Math.ceil(
+        (new Date(challengeParams.endDate).getTime() - week.weekStart.getTime()) /
+        (7 * 24 * 60 * 60 * 1000)
+      ));
+
+      // Weekly goal for that time period
+      const weeklyGoal = r1(remainingPersonal / weeksRemaining);
+
+      // Week's activities
+      const weekActivities = user.activities.filter(activity => {
+        const activityDate = new Date(activity.date);
+        return activityDate >= week.weekStart && activityDate <= week.weekEnd;
+      });
+
+      const weeklyProgress = r1(
+        weekActivities.reduce((sum, activity) => sum + activity.kilometers, 0)
+      );
+
+      return {
+        username: user.username,
+        isCompleted,
+        weeklyGoal,
+        weeklyProgress,
+      };
+    });
+
+    // Sum up the goals and progress
+    const totalGoal = r1(weekGoals.reduce((sum, u) => sum + u.weeklyGoal, 0));
+    const totalProgress = r1(weekGoals.reduce((sum, u) => sum + u.weeklyProgress, 0));
+
+    // Calculate achievement rate with new personal goals logic
+    const achievementRate = totalGoal > 0 ? (totalProgress / totalGoal) : 1;
+
+    return {
+      ...week,
+      personalGoalSet: totalGoal, // New field to store personal goal total
+      personalAchieved: totalProgress, // New field for progress with personal goals
+      personalAchievementRate: achievementRate, // New field for achievement rate
+    };
+  });
+
+  // Only count completed weeks for success rate using the new personal goals logic
+  const successfulWeeksCount = completedWeeks.filter((w, i) => {
+    const recalcWeek = recalculatedWeeks.find(rw => rw.weekKey === w.weekKey);
+    return recalcWeek && recalcWeek.personalAchievementRate >= 1;
+  }).length;
+
   const averageAchievementRate = completedWeeks.length
-    ? completedWeeks.reduce((acc, w) => acc + w.achievementRate, 0) / completedWeeks.length
+    ? completedWeeks.reduce((acc, w) => {
+      const recalcWeek = recalculatedWeeks.find(rw => rw.weekKey === w.weekKey);
+      return acc + (recalcWeek ? recalcWeek.personalAchievementRate : 0);
+    }, 0) / completedWeeks.length
     : 0;
 
+  // Get the best week based on the new personal goals
   const bestWeek = completedWeeks.length
-    ? completedWeeks.reduce((best, w) => (w.achievementRate > best.achievementRate ? w : best), completedWeeks[0])
+    ? completedWeeks.reduce((best, w) => {
+      const recalcCurrent = recalculatedWeeks.find(rw => rw.weekKey === w.weekKey);
+      const recalcBest = recalculatedWeeks.find(rw => rw.weekKey === best.weekKey);
+
+      if (!recalcCurrent || !recalcBest) return best;
+
+      return (recalcCurrent.personalAchievementRate > recalcBest.personalAchievementRate)
+        ? w : best;
+    }, completedWeeks[0])
     : null;
 
   const cumulativeProgress =
@@ -151,13 +236,15 @@ const WeeklyProgressBar = () => {
   const totalDistance = challengeParams.totalDistance;
 
   // Filter to only show completed + current weeks
-  const visibleWeeks = allWeeksData.filter(week => week.isCompleted || week.isCurrent);
+  const visibleWeeks = recalculatedWeeks.filter(week =>
+    week.isCompleted || week.isCurrent
+  );
 
   const TrendIcon =
     performanceTrend === "improving" ? TrendingUp : performanceTrend === "declining" ? TrendingDown : Info;
 
   // Calculate average goal per active user
-  const avgGoalPerUser = activeUsersCount > 0 
+  const avgGoalPerUser = activeUsersCount > 0
     ? r1(totalWeeklyGoal / activeUsersCount)
     : 0;
 
@@ -170,16 +257,6 @@ const WeeklyProgressBar = () => {
             <h2 className="text-base font-medium text-slate-800">
               Viikkotavoite
             </h2>
-            <motion.button
-              onClick={() => setShowDetails(!showDetails)}
-              className="p-1 hover:bg-yellow-50 rounded-full transition-colors"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              aria-expanded={showDetails}
-              aria-label="Näytä lisätiedot"
-            >
-              <Info className="w-4 h-4 text-slate-500" />
-            </motion.button>
           </div>
         </div>
 
@@ -205,13 +282,12 @@ const WeeklyProgressBar = () => {
           aria-valuemax={100}
         >
           <motion.div
-            className={`h-3 rounded-full transition-all duration-500 relative ${
-              overallProgressPercentage >= 100
+            className={`h-3 rounded-full transition-all duration-500 relative ${overallProgressPercentage >= 100
                 ? "bg-gradient-to-r from-green-400 to-green-500"
                 : overallProgressPercentage >= 80
-                ? "bg-gradient-to-r from-yellow-300 to-yellow-500"
-                : "bg-gradient-to-r from-yellow-200 to-yellow-400"
-            }`}
+                  ? "bg-gradient-to-r from-yellow-300 to-yellow-500"
+                  : "bg-gradient-to-r from-yellow-200 to-yellow-400"
+              }`}
             style={{
               width: `${Math.min(overallProgressPercentage, 100)}%`,
             }}
@@ -260,7 +336,7 @@ const WeeklyProgressBar = () => {
 
       {/* Personal goals dropdown toggle */}
       <div className="border border-gray-200 rounded-lg mt-3">
-        <button 
+        <button
           onClick={() => setShowPersonalGoals(!showPersonalGoals)}
           className="w-full px-4 py-2 flex justify-between items-center hover:bg-gray-50 transition-colors rounded-lg"
         >
@@ -269,7 +345,7 @@ const WeeklyProgressBar = () => {
             {showPersonalGoals ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </span>
         </button>
-        
+
         {/* Dropdown content */}
         <AnimatePresence>
           {showPersonalGoals && (
@@ -282,17 +358,16 @@ const WeeklyProgressBar = () => {
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
                 {sortedPersonalGoals.map((user) => (
-                  <div 
+                  <div
                     key={user.username}
-                    className={`p-3 rounded border ${
-                      user.isCompleted
+                    className={`p-3 rounded border ${user.isCompleted
                         ? "bg-green-50 border-green-200"
                         : user.progressPercentage >= 100
-                        ? "bg-green-50 border-green-200"
-                        : user.progressPercentage >= 50
-                        ? "bg-yellow-50 border-yellow-200"
-                        : "bg-orange-50 border-orange-200"
-                    }`}
+                          ? "bg-green-50 border-green-200"
+                          : user.progressPercentage >= 50
+                            ? "bg-yellow-50 border-yellow-200"
+                            : "bg-orange-50 border-orange-200"
+                      }`}
                   >
                     <div className="flex justify-between items-center mb-1">
                       <div className="font-medium text-sm">{user.username}</div>
@@ -310,23 +385,22 @@ const WeeklyProgressBar = () => {
                         )}
                       </div>
                     </div>
-                    
+
                     {/* Progress bar */}
                     <div className="w-full bg-gray-200 rounded-full h-1.5">
-                      <div 
-                        className={`h-1.5 rounded-full ${
-                          user.isCompleted
+                      <div
+                        className={`h-1.5 rounded-full ${user.isCompleted
                             ? "bg-green-500"
                             : user.progressPercentage >= 100
-                            ? "bg-green-500"
-                            : user.progressPercentage >= 50
-                            ? "bg-yellow-500"
-                            : "bg-orange-500"
-                        }`}
+                              ? "bg-green-500"
+                              : user.progressPercentage >= 50
+                                ? "bg-yellow-500"
+                                : "bg-orange-500"
+                          }`}
                         style={{ width: `${user.isCompleted ? 100 : user.progressPercentage}%` }}
                       />
                     </div>
-                    
+
                     <div className="flex justify-between items-center text-xs text-slate-500 mt-1">
                       <span>
                         {user.isCompleted
@@ -345,228 +419,7 @@ const WeeklyProgressBar = () => {
 
       {/* Details panel - Rest of the details content */}
       <AnimatePresence>
-        {showDetails && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className="mt-4 pt-4 border-t border-slate-200"
-          >
-            <div className="space-y-4 text-sm">
-              {/* Current week detailed info */}
-              {currentWeek && (
-                <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-100">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-slate-600 text-xs flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      Viikko {currentWeek.weekNumber} (
-                      {currentWeek.weekStart.toLocaleDateString("fi-FI", { day: "numeric", month: "numeric" })} -{" "}
-                      {currentWeek.weekEnd.toLocaleDateString("fi-FI", { day: "numeric", month: "numeric" })})
-                    </span>
-                    <span className="text-xs font-medium text-yellow-700">
-                      {overallProgressPercentage >= 100 ? "🎯 Tavoite saavutettu!" : `🚴‍♂️ Päivä ${currentWeek.daysInWeek}/7`}
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <div className="text-sm font-medium text-slate-800">
-                        Edistyminen: {r1(totalWeeklyProgress)} km
-                      </div>
-                      <div className="text-xs text-slate-600">
-                        Tavoite: {r1(totalWeeklyGoal)} km
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-lg font-bold text-yellow-600">
-                        {r1(overallProgressPercentage)}%
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
 
-              {/* Previous week comparison */}
-              {previousWeek && (
-                <div
-                  className="p-3 rounded-lg border"
-                  style={{
-                    backgroundColor: previousWeek.achievementRate >= 1 ? "#f0fdf4" : "#fef2f2",
-                    borderColor: previousWeek.achievementRate >= 1 ? "#22c55e" : "#ef4444",
-                  }}
-                >
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-xs text-slate-600 flex items-center gap-1">
-                      <BarChart2 className="w-3 h-3" />
-                      Viime viikko (Viikko {previousWeek.weekNumber})
-                    </span>
-                    <span
-                      className={`text-xs font-medium ${
-                        previousWeek.achievementRate >= 1 ? "text-green-700" : "text-red-700"
-                      }`}
-                    >
-                      {previousWeek.achievementRate >= 1 ? "✅ Onnistui" : "❌ Ei täyttynyt"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm">
-                      <span className="font-medium text-slate-800">
-                        {r1(previousWeek.achieved)} km
-                      </span>
-                      <span className="text-slate-600"> / {r1(previousWeek.goalSet)} km</span>
-                    </div>
-                    <div
-                      className={`text-sm font-medium ${
-                        previousWeek.achievementRate >= 1 ? "text-green-600" : "text-red-600"
-                      }`}
-                    >
-                      {r1(previousWeek.achievementRate * 100)}%
-                    </div>
-                  </div>
-                  {/* Progress bar for previous week */}
-                  <div className="mt-2">
-                    <div className="w-full bg-gray-200 rounded-full h-1.5">
-                      <div
-                        className={`h-1.5 rounded-full ${
-                          previousWeek.achievementRate >= 1
-                            ? "bg-gradient-to-r from-green-400 to-green-500"
-                            : "bg-gradient-to-r from-red-400 to-red-500"
-                        }`}
-                        style={{ width: `${Math.min(previousWeek.achievementRate * 100, 100)}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Weekly history toggle - only show if there are completed weeks */}
-              {completedWeeks.length > 0 && (
-                <div className="text-center">
-                  <button
-                    onClick={() => setShowAllWeeks(!showAllWeeks)}
-                    className="text-sm text-blue-600 hover:text-blue-800 transition-colors underline"
-                  >
-                    {showAllWeeks ? "Piilota viikkohistoria" : `Näytä viikkohistoria (${visibleWeeks.length} viikkoa)`}
-                  </button>
-                </div>
-              )}
-
-              {/* Weeks history - only completed + current weeks */}
-              <AnimatePresence>
-                {showAllWeeks && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="space-y-2 max-h-64 overflow-y-auto"
-                  >
-                    <h4 className="font-medium text-slate-800 text-sm flex items-center gap-1">
-                      <Target className="w-4 h-4" />
-                      Suoritetut viikot + nykyinen viikko
-                    </h4>
-                    {visibleWeeks.map((week) => (
-                      <div
-                        key={week.weekKey}
-                        className={`p-2 rounded border text-xs ${
-                          week.isCurrent
-                            ? "bg-yellow-50 border-yellow-300"
-                            : week.achievementRate >= 1
-                            ? "bg-green-50 border-green-200"
-                            : "bg-red-50 border-red-200"
-                        }`}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">Viikko {week.weekNumber}</span>
-                            {week.isCurrent && <span className="text-yellow-600">• NYK</span>}
-                          </div>
-                          <div className="text-right">
-                            <span
-                              className={`font-medium ${
-                                week.isCurrent
-                                  ? "text-yellow-600"
-                                  : week.achievementRate >= 1
-                                  ? "text-green-600"
-                                  : "text-red-600"
-                              }`}
-                            >
-                              {r1(week.achieved)}/{r1(week.goalSet)} km
-                            </span>
-                            {week.isCompleted && (
-                              <span className="text-gray-500 ml-1">
-                                ({r1(week.achievementRate * 100)}%)
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Mini progress bar for each week */}
-                        <div className="mt-1">
-                          <div className="w-full bg-gray-200 rounded-full h-1">
-                            <div
-                              className={`h-1 rounded-full ${
-                                week.isCurrent
-                                  ? "bg-gradient-to-r from-yellow-300 to-yellow-500"
-                                  : week.achievementRate >= 1
-                                  ? "bg-gradient-to-r from-green-400 to-green-500"
-                                  : "bg-gradient-to-r from-red-400 to-red-500"
-                              }`}
-                              style={{ width: `${Math.min(week.achievementRate * 100, 100)}%` }}
-                            />
-                          </div>
-                        </div>
-
-                        <div className="text-gray-500 mt-1 text-[10px]">
-                          {week.weekStart.toLocaleDateString("fi-FI", { day: "numeric", month: "numeric" })} -{" "}
-                          {week.weekEnd.toLocaleDateString("fi-FI", { day: "numeric", month: "numeric" })}
-                          {week.isCurrent && <span className="ml-2">(Päivä {week.daysInWeek}/7)</span>}
-                        </div>
-                      </div>
-                    ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Summary stats */}
-              {visibleWeeks.length > 0 && (
-                <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                  <h4 className="font-medium text-slate-800 text-sm mb-2">Yhteenveto</h4>
-                  <div className="grid grid-cols-2 gap-4 text-xs">
-                    <div>
-                      <div style={{ color: "rgb(100, 116, 139)" }}>Viikkoja yhteensä</div>
-                      <div className="font-bold text-slate-800">{allWeeksData.length}</div>
-                    </div>
-                    <div>
-                      <div style={{ color: "rgb(100, 116, 139)" }}>Onnistuneita viikkoja</div>
-                      <div className="font-bold text-slate-800">
-                        {successfulWeeksCount} / {completedWeeks.length}
-                      </div>
-                    </div>
-                    <div>
-                      <div style={{ color: "rgb(100, 116, 139)" }}>Keskiarvo saavutus</div>
-                      <div className="font-bold text-slate-800">{r1(averageAchievementRate * 100)}%</div>
-                    </div>
-                    <div>
-                      <div style={{ color: "rgb(100, 116, 139)" }}>Kertyneet kilometrit</div>
-                      <div className="font-bold text-slate-800">
-                        {r1(cumulativeProgress)} / {r1(totalDistance)} km
-                      </div>
-                    </div>
-                    {bestWeek && (
-                      <div className="col-span-2">
-                        <div style={{ color: "rgb(100, 116, 139)" }}>Paras viikko</div>
-                        <div className="font-bold text-slate-800">
-                          Viikko {bestWeek.weekNumber}: {r1(bestWeek.achieved)} / {r1(bestWeek.goalSet)} km (
-                          {r1(bestWeek.achievementRate * 100)}%)
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
       </AnimatePresence>
     </div>
   );
