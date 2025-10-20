@@ -17,7 +17,7 @@ import WeeklyProgressBar from "./WeeklyProgressBar"; // Enhanced version
 
 import { fetchUsersAndTotalKm } from "../utils/utils";
 import { User } from "@/app/types/types";
-import StageCard from "./StageCard";
+// import StageCard from "./StageCard";
 import Quotes from "./Quotes";
 import PartyBanner from "./PartyBanner";
 
