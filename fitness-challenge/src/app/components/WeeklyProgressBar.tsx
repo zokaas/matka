@@ -1,7 +1,7 @@
-// components/WeeklyProgressBar.tsx - UPDATED: Only show completed + current weeks
+// components/WeeklyProgressBar.tsx - Dropdown for personal goals
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { TrendingUp, TrendingDown, Info, Calendar, Target, BarChart2 } from "lucide-react";
+import { TrendingUp, TrendingDown, Info, Calendar, Target, BarChart2, Users, ChevronDown, ChevronUp } from "lucide-react";
 import { useFetchUsers } from "@/app/hooks/useFetchUsers";
 import { useWeeklyGoal } from "@/app/hooks/useWeeklyGoal";
 import { useTheme } from "@/app/hooks/useTheme";
@@ -14,19 +14,8 @@ const WeeklyProgressBar = () => {
   const { users, loading, error } = useFetchUsers();
   const [showDetails, setShowDetails] = useState(false);
   const [showAllWeeks, setShowAllWeeks] = useState(false);
+  const [showPersonalGoals, setShowPersonalGoals] = useState(false);
   const weeklyGoalData = useWeeklyGoal(users);
-
-  const {
-    weeklyGoal,
-    weeklyProgress,
-    weeklyGoalPerUser,
-    remainingDistance,
-    progressPercentage,
-    goalAdjustment,
-    allWeeksData,
-    hasHistory,
-    performanceTrend
-  } = weeklyGoalData;
 
   if (loading) {
     return (
@@ -49,6 +38,99 @@ const WeeklyProgressBar = () => {
     );
   }
 
+  // Calculate personal goals
+  const personalTargetPerUser = challengeParams.totalDistance / Math.max(1, users.length);
+  const personalGoals = users.map(user => {
+    // Check if user has completed their personal goal
+    const isCompleted = user.totalKm >= personalTargetPerUser;
+    
+    if (isCompleted) {
+      return {
+        username: user.username,
+        isCompleted: true,
+        weeklyGoal: 0,
+        weeklyProgress: 0,
+        progressPercentage: 100,
+        totalProgress: user.totalKm,
+        overallPercentage: 100
+      };
+    }
+    
+    // Calculate remaining distance
+    const remainingPersonal = Math.max(0, personalTargetPerUser - user.totalKm);
+    
+    // Calculate remaining weeks
+    const today = new Date();
+    const challengeEnd = new Date(challengeParams.endDate);
+    const weeksRemaining = Math.max(1, Math.ceil(
+      (challengeEnd.getTime() - today.getTime()) / (7 * 24 * 60 * 60 * 1000)
+    ));
+    
+    // Calculate weekly goal
+    const weeklyGoal = r1(remainingPersonal / weeksRemaining);
+    
+    // Get activities for the current week
+    const weekStart = weeklyGoalData.weekStart;
+    const weeklyActivities = user.activities.filter(activity => {
+      const activityDate = new Date(activity.date);
+      return activityDate >= weekStart;
+    });
+    
+    // Calculate this week's progress
+    const weeklyProgress = r1(
+      weeklyActivities.reduce((sum, activity) => sum + activity.kilometers, 0)
+    );
+    
+    // Calculate percentage
+    const progressPercentage = weeklyGoal > 0 
+      ? r1((weeklyProgress / weeklyGoal) * 100)
+      : 100;
+      
+    // Calculate overall percentage
+    const overallPercentage = r1((user.totalKm / personalTargetPerUser) * 100);
+    
+    return {
+      username: user.username,
+      isCompleted,
+      weeklyGoal,
+      weeklyProgress,
+      progressPercentage: Math.min(100, progressPercentage),
+      totalProgress: user.totalKm,
+      overallPercentage: Math.min(100, overallPercentage)
+    };
+  });
+  
+  // Sort users by completion status first, then by weekly progress percentage
+  const sortedPersonalGoals = [...personalGoals].sort((a, b) => {
+    // Completed users first
+    if (a.isCompleted && !b.isCompleted) return -1;
+    if (!a.isCompleted && b.isCompleted) return 1;
+    
+    // Then by progress percentage for active users
+    return b.progressPercentage - a.progressPercentage;
+  });
+  
+  // Get counts
+  const completedUsersCount = personalGoals.filter(u => u.isCompleted).length;
+  const activeUsersCount = users.length - completedUsersCount;
+  
+  // Calculate cumulative weekly data
+  const totalWeeklyGoal = r1(personalGoals.reduce((sum, u) => sum + u.weeklyGoal, 0));
+  const totalWeeklyProgress = r1(personalGoals.reduce((sum, u) => sum + u.weeklyProgress, 0));
+  const overallProgressPercentage = totalWeeklyGoal > 0 
+    ? r1((totalWeeklyProgress / totalWeeklyGoal) * 100)
+    : 100;
+    
+  // Calculate remaining distance
+  const remainingDistance = Math.max(0, r1(totalWeeklyGoal - totalWeeklyProgress));
+
+  // Get original weekly data for history
+  const {
+    allWeeksData,
+    hasHistory,
+    performanceTrend
+  } = weeklyGoalData;
+  
   const currentWeek = allWeeksData.find((week) => week.isCurrent);
   const completedWeeks = allWeeksData.filter((week) => week.isCompleted);
   const previousWeek = completedWeeks[completedWeeks.length - 1];
@@ -74,6 +156,11 @@ const WeeklyProgressBar = () => {
   const TrendIcon =
     performanceTrend === "improving" ? TrendingUp : performanceTrend === "declining" ? TrendingDown : Info;
 
+  // Calculate average goal per active user
+  const avgGoalPerUser = activeUsersCount > 0 
+    ? r1(totalWeeklyGoal / activeUsersCount)
+    : 0;
+
   return (
     <div className="bg-white p-4 rounded-xl shadow-lg border border-yellow-200">
       {/* Header */}
@@ -81,7 +168,7 @@ const WeeklyProgressBar = () => {
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <h2 className="text-base font-medium text-slate-800">
-              {t.weeklyProgressBar?.weeklyGoal ?? "Viikkotavoite"}
+              Viikkotavoite
             </h2>
             <motion.button
               onClick={() => setShowDetails(!showDetails)}
@@ -98,14 +185,11 @@ const WeeklyProgressBar = () => {
 
         <div className="text-right">
           <div className="text-sm font-medium">
-            <span className="text-slate-800">{r1(weeklyProgress)}</span>
-            <span className="text-slate-600"> / {r1(weeklyGoal)} km</span>
+            <span className="text-slate-800">{r1(totalWeeklyProgress)}</span>
+            <span className="text-slate-600"> / {r1(totalWeeklyGoal)} km</span>
             <span className="text-xs text-slate-500 ml-1">
-              ({r1(progressPercentage)}%)
+              ({r1(overallProgressPercentage)}%)
             </span>
-          </div>
-          <div className="text-xs text-slate-500">
-            {Number(weeklyGoalPerUser).toFixed(1)} km/hlö
           </div>
         </div>
       </div>
@@ -116,26 +200,26 @@ const WeeklyProgressBar = () => {
           className="w-full bg-slate-200 rounded-full h-3 overflow-hidden shadow-inner"
           aria-label="Viikkopalkki"
           role="progressbar"
-          aria-valuenow={Math.min(progressPercentage, 100)}
+          aria-valuenow={Math.min(overallProgressPercentage, 100)}
           aria-valuemin={0}
           aria-valuemax={100}
         >
           <motion.div
             className={`h-3 rounded-full transition-all duration-500 relative ${
-              progressPercentage >= 100
+              overallProgressPercentage >= 100
                 ? "bg-gradient-to-r from-green-400 to-green-500"
-                : progressPercentage >= 80
+                : overallProgressPercentage >= 80
                 ? "bg-gradient-to-r from-yellow-300 to-yellow-500"
                 : "bg-gradient-to-r from-yellow-200 to-yellow-400"
             }`}
             style={{
-              width: `${Math.min(progressPercentage, 100)}%`,
+              width: `${Math.min(overallProgressPercentage, 100)}%`,
             }}
             initial={{ width: 0 }}
-            animate={{ width: `${Math.min(progressPercentage, 100)}%` }}
+            animate={{ width: `${Math.min(overallProgressPercentage, 100)}%` }}
             transition={{ duration: 1, ease: "easeOut" }}
           >
-            {progressPercentage >= 90 && (
+            {overallProgressPercentage >= 90 && (
               <motion.div
                 className="absolute inset-0 rounded-full opacity-30"
                 style={{ backgroundColor: "#facc15", filter: "blur(4px)" }}
@@ -148,9 +232,9 @@ const WeeklyProgressBar = () => {
         {/* Bicycle emoji positioned outside progress bar */}
         <motion.div
           className="absolute top-0 text-sm"
-          style={{ transform: "translateY(-4px) translateX(-8px) scaleX(-1)", opacity: progressPercentage > 5 ? 1 : 0 }}
+          style={{ transform: "translateY(-4px) translateX(-8px) scaleX(-1)", opacity: overallProgressPercentage > 5 ? 1 : 0 }}
           initial={{ left: "0%" }}
-          animate={{ left: `${Math.min(progressPercentage, 100)}%` }}
+          animate={{ left: `${Math.min(overallProgressPercentage, 100)}%` }}
           transition={{ duration: 1, ease: "easeOut" }}
           aria-hidden
         >
@@ -159,7 +243,7 @@ const WeeklyProgressBar = () => {
       </div>
 
       {/* Bottom info */}
-      <div className="flex justify-between items-center text-sm">
+      <div className="flex justify-between items-center text-sm mb-3">
         <div>
           {remainingDistance > 0 ? (
             <span className="text-slate-600">
@@ -174,7 +258,92 @@ const WeeklyProgressBar = () => {
         </div>
       </div>
 
-      {/* Details panel */}
+      {/* Personal goals dropdown toggle */}
+      <div className="border border-gray-200 rounded-lg mt-3">
+        <button 
+          onClick={() => setShowPersonalGoals(!showPersonalGoals)}
+          className="w-full px-4 py-2 flex justify-between items-center hover:bg-gray-50 transition-colors rounded-lg"
+        >
+          <span className="font-medium text-sm text-slate-800">Henkilökohtaiset tavoitteet</span>
+          <span className="flex items-center gap-2 text-slate-500">
+            {showPersonalGoals ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </span>
+        </button>
+        
+        {/* Dropdown content */}
+        <AnimatePresence>
+          {showPersonalGoals && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="px-4 pb-3"
+            >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                {sortedPersonalGoals.map((user) => (
+                  <div 
+                    key={user.username}
+                    className={`p-3 rounded border ${
+                      user.isCompleted
+                        ? "bg-green-50 border-green-200"
+                        : user.progressPercentage >= 100
+                        ? "bg-green-50 border-green-200"
+                        : user.progressPercentage >= 50
+                        ? "bg-yellow-50 border-yellow-200"
+                        : "bg-orange-50 border-orange-200"
+                    }`}
+                  >
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="font-medium text-sm">{user.username}</div>
+                      <div className="text-sm">
+                        {user.isCompleted ? (
+                          <span className="text-green-600">✓ Tavoite saavutettu</span>
+                        ) : (
+                          <span>
+                            <span className="font-medium">{user.weeklyProgress.toFixed(1)}</span>
+                            <span className="text-slate-600">/{user.weeklyGoal.toFixed(1)} km</span>
+                            <span className="ml-1 text-xs text-slate-500">
+                              ({user.progressPercentage.toFixed(0)}%)
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Progress bar */}
+                    <div className="w-full bg-gray-200 rounded-full h-1.5">
+                      <div 
+                        className={`h-1.5 rounded-full ${
+                          user.isCompleted
+                            ? "bg-green-500"
+                            : user.progressPercentage >= 100
+                            ? "bg-green-500"
+                            : user.progressPercentage >= 50
+                            ? "bg-yellow-500"
+                            : "bg-orange-500"
+                        }`}
+                        style={{ width: `${user.isCompleted ? 100 : user.progressPercentage}%` }}
+                      />
+                    </div>
+                    
+                    <div className="flex justify-between items-center text-xs text-slate-500 mt-1">
+                      <span>
+                        {user.isCompleted
+                          ? "Kokonaistavoite saavutettu, ei viikkotavoitetta"
+                          : ``
+                        }
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Details panel - Rest of the details content */}
       <AnimatePresence>
         {showDetails && (
           <motion.div
@@ -196,21 +365,21 @@ const WeeklyProgressBar = () => {
                       {currentWeek.weekEnd.toLocaleDateString("fi-FI", { day: "numeric", month: "numeric" })})
                     </span>
                     <span className="text-xs font-medium text-yellow-700">
-                      {progressPercentage >= 100 ? "🎯 Tavoite saavutettu!" : `🚴‍♂️ Päivä ${currentWeek.daysInWeek}/7`}
+                      {overallProgressPercentage >= 100 ? "🎯 Tavoite saavutettu!" : `🚴‍♂️ Päivä ${currentWeek.daysInWeek}/7`}
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <div className="text-sm font-medium text-slate-800">
-                        Edistyminen: {r1(currentWeek.achieved)} km
+                        Edistyminen: {r1(totalWeeklyProgress)} km
                       </div>
                       <div className="text-xs text-slate-600">
-                        Tavoite: {r1(currentWeek.goalSet)} km
+                        Tavoite: {r1(totalWeeklyGoal)} km
                       </div>
                     </div>
                     <div className="text-right">
                       <div className="text-lg font-bold text-yellow-600">
-                        {r1(currentWeek.achievementRate * 100)}%
+                        {r1(overallProgressPercentage)}%
                       </div>
                     </div>
                   </div>
