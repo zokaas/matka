@@ -31,22 +31,35 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
     error,
     errorClassNames,
     infoItems,
+    handleChange,
 }) => {
     const [popoverOpen, setPopoverOpen] = useState(false);
     const [entriesIndex, setEntriesIndex] = useState(0);
 
     /**
-     * Use map for easier iteration in component (keeping for display purposes)
+     * Use map for easier iteration in component
      */
     const [fieldsMap, setFieldsMap] = useState<Map<string, Array<T_BoFieldParams>>>(new Map());
 
-    /**
-     * Preserve immutability with this helper function
-     */
-    const updateMap = (key: string, value: Array<T_BoFieldParams>) => {
-        const tempMap = new Map(fieldsMap);
-        tempMap.set(key, value);
-        setFieldsMap(tempMap);
+    const convertMapToValue = (map: Map<string, Array<T_BoFieldParams>>): string => {
+        if (map.size === 0) return "";
+
+        const beneficialOwnersData = Array.from(map.values()).map((fields) => {
+            const dataObj: Record<string, string | string[]> = {};
+            for (const field of fields) {
+                dataObj[field.fieldname] = field.value;
+            }
+            return dataObj;
+        });
+
+        return JSON.stringify(beneficialOwnersData);
+    };
+
+
+    const updateFieldsMap = (newMap: Map<string, Array<T_BoFieldParams>>) => {
+        setFieldsMap(newMap);
+        const valueToSend = convertMapToValue(newMap);
+        handleChange(fieldName, valueToSend);
     };
 
     const handleAddBo = (
@@ -55,15 +68,16 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
         ownership: T_BoFieldParams,
         countries: T_BoFieldParams
     ) => {
-        const valueArray: Array<T_BoFieldParams> = [name, ssn, ownership, countries];
+        const newMap = new Map(fieldsMap);
+        newMap.set(`owner_${entriesIndex}`, [name, ssn, ownership, countries]);
         setEntriesIndex(entriesIndex + 1);
-        updateMap(`owner_${entriesIndex}`, valueArray);
+        updateFieldsMap(newMap);
     };
 
     const handleRemoveBo = (mapKey: string) => {
-        const tempMap = new Map(fieldsMap);
-        tempMap.delete(mapKey);
-        setFieldsMap(tempMap);
+        const newMap = new Map(fieldsMap);
+        newMap.delete(mapKey);
+        updateFieldsMap(newMap);
     };
 
     return (
@@ -107,7 +121,7 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
                 Array.from(fieldsMap.entries()).map(([key, fieldArray]) => {
                     return (
                         <Container key={`parent_${key}`} className={boResultAndButton}>
-                            <BeneficialOwnerResult key={key} fieldArray={fieldArray} />
+                            <BeneficialOwnerResult id={key} fieldArray={fieldArray} />
                             <Button
                                 type={"button"}
                                 className={removeBoFormButton}
@@ -117,7 +131,10 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
                         </Container>
                     );
                 })}
-            <ErrorMessage error={error} classNames={errorClassNames} />
+
+            {error && fieldsMap.size === 0 && (
+                <ErrorMessage error={error} classNames={errorClassNames} />
+            )}
         </Container>
     );
 };

@@ -1,17 +1,11 @@
-// app/utils/validation.ts
-import { T_AnswersMapValue } from "~/types";
+import { T_AnswersMapValue, T_ParsedFormData } from "~/types";
 import { 
     T_ErrorType, 
     T_ValidationRule, 
-    T_ValidationResult, 
-    T_FormValidationResult,
-    T_ValidationErrors,
+    T_ValidationResult,
     T_FieldValidationConfig
 } from "~/types/validation";
 
-/**
- * Extract validation value from error type
- */
 const getValidationValueFromErrorType = (errorType: T_ErrorType): number | undefined => {
     switch (errorType) {
         case "maxLength20":
@@ -27,14 +21,20 @@ const getValidationValueFromErrorType = (errorType: T_ErrorType): number | undef
     }
 };
 
-/**
- * Validates a single rule against a value
- */
+const isEmpty = (value: string): boolean => {
+    return value.trim().length === 0;
+};
+
 const validateSingleRule = (value: string, rule: T_ValidationRule): string | null => {
+    if (rule.type === "isRequired") {
+        return isEmpty(value) ? rule.message : null;
+    }
+    
+    if (isEmpty(value)) {
+        return null;
+    }
+    
     switch (rule.type) {
-        case "isRequired":
-            return value.length === 0 ? rule.message : null;
-            
         case "maxLength20":
         case "maxLength100":
         case "maxLength500":
@@ -46,31 +46,45 @@ const validateSingleRule = (value: string, rule: T_ValidationRule): string | nul
             return null;
         }
             
-        case "numeric": {
-            const numericRegex = /^\d*$/;
-            return !numericRegex.test(value) ? rule.message : null;
-        }
-            
         default:
             return null;
     }
 };
 
-/**
- * Validates a single field value against its validation rules
- */
+const valueToString = (value: T_AnswersMapValue): string => {
+    if (value === null || value === undefined) {
+        return '';
+    }
+    
+    if (Array.isArray(value)) {
+        return value.filter(v => v && String(v).trim()).join(',');
+    }
+    
+    if (typeof value === 'string' && value.trim().length > 0) {
+        try {
+            const parsed = JSON.parse(value);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                return 'has_data';
+            }
+            if (typeof parsed === 'object' && Object.keys(parsed).length > 0) {
+                return 'has_data';
+            }
+        } catch {
+            return String(value).trim();
+        }
+    }
+    
+    return String(value).trim();
+};
+
 export const validateField = (
     value: T_AnswersMapValue,
     config: T_FieldValidationConfig
 ): T_ValidationResult => {
     const { rules } = config;
+
+    const stringValue = valueToString(value);
     
-    // Convert value to string for validation
-    const stringValue = Array.isArray(value) 
-        ? value.join(',') 
-        : String(value || '').trim();
-    
-    // Check each rule in order of priority
     for (const rule of rules) {
         const error = validateSingleRule(stringValue, rule);
         if (error) {
@@ -84,16 +98,12 @@ export const validateField = (
     return { isValid: true };
 };
 
-/**
- * Creates validation configuration from backend error messages
- */
 export const createValidationConfig = (
     errorMessages?: Array<{ error: T_ErrorType; message: string }>,
     additionalRules?: T_ValidationRule[]
 ): T_FieldValidationConfig => {
     const rules: T_ValidationRule[] = [];
     
-    // Add rules from backend error messages
     if (errorMessages) {
         errorMessages.forEach(errorMsg => {
             rules.push({
@@ -104,12 +114,10 @@ export const createValidationConfig = (
         });
     }
     
-    // Add any additional rules
     if (additionalRules) {
         rules.push(...additionalRules);
     }
     
-    // Sort rules by priority (isRequired first, then others)
     rules.sort((a, b) => {
         if (a.type === 'isRequired') return -1;
         if (b.type === 'isRequired') return 1;
@@ -122,39 +130,6 @@ export const createValidationConfig = (
     };
 };
 
-/**
- * Validates multiple fields at once (for form submission)
- */
-export const validateForm = (
-    formValues: Map<string, T_AnswersMapValue>,
-    validationConfigs: Map<string, T_FieldValidationConfig>
-): T_FormValidationResult => {
-    const errors: T_ValidationErrors = new Map();
-    let firstErrorField: string | undefined;
-    
-    // Validate each field that has configuration
-    validationConfigs.forEach((config, fieldName) => {
-        const value = formValues.get(fieldName);
-        const result = validateField(value, config);
-        
-        if (!result.isValid && result.error) {
-            errors.set(fieldName, result.error);
-            if (!firstErrorField) {
-                firstErrorField = fieldName;
-            }
-        }
-    });
-    
-    return {
-        isValid: errors.size === 0,
-        errors,
-        firstErrorField
-    };
-};
-
-/**
- * Helper to normalize backend error messages structure
- */
 export const normalizeErrorMessages = (
     errorMessages?: Array<{ error: T_ErrorType; message: string }> | {
         data: Array<{
@@ -172,12 +147,10 @@ export const normalizeErrorMessages = (
         return [];
     }
     
-    // If it's already in the correct format
     if (Array.isArray(errorMessages)) {
         return errorMessages;
     }
     
-    // If it's in the nested format, extract the attributes
     if ('data' in errorMessages && Array.isArray(errorMessages.data)) {
         return errorMessages.data.map(item => ({
             error: item.attributes.error,
@@ -186,4 +159,32 @@ export const normalizeErrorMessages = (
     }
     
     return [];
+};
+
+
+export const isFieldVisible = (
+    fieldName: string,
+    formData: T_ParsedFormData,
+    formValues: Map<string, T_AnswersMapValue>
+): boolean => {
+    const parts = fieldName.split("::");
+    if (parts.length !== 2) {
+        return true;
+    }
+    
+    const [parentField, childField] = parts;
+    
+    for (const [, questions] of formData.steps) {
+        for (const question of questions) {
+            if (question.question.questionParameter === parentField) {
+                const depQuestion = question.question.dependentQuestion;
+                if (depQuestion && depQuestion.questionParameter === childField) {
+                    const parentValue = formValues.get(parentField);
+                    return String(depQuestion.conditionValue) === String(parentValue);
+                }
+            }
+        }
+    }
+    
+    return false;
 };

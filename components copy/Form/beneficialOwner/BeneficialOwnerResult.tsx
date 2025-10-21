@@ -10,11 +10,11 @@ import {
 } from "~/styles";
 
 export const BeneficialOwnerResult: React.FC<T_BeneficialOwnerResultProps> = ({
-    key,
+    id,
     fieldArray,
 }) => {
     return (
-        <Container key={key} className={boResultContainer}>
+        <Container key={id} className={boResultContainer}>
             {fieldArray.map((item, index) => (
                 <Container key={`${index}-${item.fieldname}`} className={boResultValuesContainer}>
                     <Text className={boResultValueLabelContainer}>{item.label}</Text>

@@ -22,7 +22,6 @@ export const Question: React.FC<T_QuestionProps> = ({
     question,
     countryList,
 }) => {
-    // TODO: Maybe some better logic than question?. or question!. many times?
     const getFieldError = (fieldName: string): string | undefined => {
         return questionProps.validationErrors.get(fieldName);
     };
@@ -171,7 +170,7 @@ export const Question: React.FC<T_QuestionProps> = ({
             },
         };
 
-                return (
+        return (
             <Container className={questionsStyle}>
                 <BeneficialOwner
                     beneficialOwnersMaxCount={
@@ -183,9 +182,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     label={boQuestion.questionLabel}
                     error={getFieldError(boQuestion.questionParameter)}
                     beneficialOwnerFieldsData={boData}
-                    handleChange={(fieldName: string, value: string) => {
-                        questionProps.onChange(fieldName, value);
-                    }}
+                    handleChange={questionProps.onChange}
                     countryList={questionProps.countryList || []}
                     infoItems={boQuestion.infoItems || null}
                 />

@@ -8,12 +8,14 @@ import {
 import { 
     validateField, 
     createValidationConfig,
-    normalizeErrorMessages 
+    normalizeErrorMessages,
+    isFieldVisible
 } from "~/utils/validation";
 
 export const useFormValidation = (formData: T_ParsedFormData) => {
     const [validationErrors, setValidationErrors] = useState<T_ValidationErrors>(new Map());
     
+    // Build validation configurations from form data
     const validationConfigs = useMemo(() => {
         const configs = new Map<string, T_FieldValidationConfig>();
         
@@ -21,10 +23,12 @@ export const useFormValidation = (formData: T_ParsedFormData) => {
             questions.forEach((question) => {
                 const { questionParameter, errorMessages } = question.question;
                 
+                // Create config for main question
                 const normalizedErrors = normalizeErrorMessages(errorMessages);
                 const config = createValidationConfig(normalizedErrors);
                 configs.set(questionParameter, config);
                 
+                // Create config for dependent question if it exists
                 if (question.question.dependentQuestion) {
                     const depQuestion = question.question.dependentQuestion;
                     const depNormalizedErrors = normalizeErrorMessages(depQuestion.errorMessages);
@@ -38,6 +42,13 @@ export const useFormValidation = (formData: T_ParsedFormData) => {
         return configs;
     }, [formData]);
     
+    /**
+     * Validate a single field
+     * @param fieldName - The field to validate
+     * @param value - The value to validate
+     * @param updateState - Whether to update the validation errors state (default: true)
+     * @returns boolean indicating if the field is valid
+     */
     const validateSingleField = useCallback((
         fieldName: string, 
         value: T_AnswersMapValue,
@@ -63,37 +74,20 @@ export const useFormValidation = (formData: T_ParsedFormData) => {
         return result.isValid;
     }, [validationConfigs]);
     
-
+    /**
+     * Validate the entire form
+     * Only validates fields that should be visible based on current form state
+     */
     const validateEntireForm = useCallback((
         formValues: Map<string, T_AnswersMapValue>
     ): T_FormValidationResult => {
         const errors: T_ValidationErrors = new Map();
         let firstErrorField: string | undefined;
         
-
-        const visibleFields = new Set<string>();
-        
-        formData.steps.forEach((questions) => {
-            questions.forEach((question) => {
-                const { questionParameter } = question.question;
-                visibleFields.add(questionParameter);
-                
-                // Check if dependent question should be visible
-                if (question.question.dependentQuestion) {
-                    const depQuestion = question.question.dependentQuestion;
-                    const parentValue = formValues.get(questionParameter);
-                    const shouldShow = String(depQuestion.conditionValue) === String(parentValue);
-                    
-                    if (shouldShow) {
-                        const depFieldName = `${questionParameter}::${depQuestion.questionParameter}`;
-                        visibleFields.add(depFieldName);
-                    }
-                }
-            });
-        });
-        
+        // Validate each field that has a config and is visible
         validationConfigs.forEach((config, fieldName) => {
-            if (visibleFields.has(fieldName)) {
+            // Check if field should be validated based on visibility
+            if (isFieldVisible(fieldName, formData, formValues)) {
                 const value = formValues.get(fieldName);
                 const result = validateField(value, config);
                 
@@ -113,8 +107,11 @@ export const useFormValidation = (formData: T_ParsedFormData) => {
             errors,
             firstErrorField
         };
-    }, [validationConfigs, formData, validateField]);
+    }, [validationConfigs, formData]);
 
+    /**
+     * Clear error for a specific field
+     */
     const clearFieldError = useCallback((fieldName: string) => {
         setValidationErrors(prev => {
             const newErrors = new Map(prev);
@@ -123,23 +120,41 @@ export const useFormValidation = (formData: T_ParsedFormData) => {
         });
     }, []);
     
-
+    /**
+     * Clear all validation errors
+     */
     const clearAllErrors = useCallback(() => {
         setValidationErrors(new Map());
     }, []);
     
-
+    /**
+     * Get error message for a specific field
+     */
     const getFieldError = useCallback((fieldName: string): string | undefined => {
         return validationErrors.get(fieldName);
     }, [validationErrors]);
     
-
+    /**
+     * Check if a field has an error
+     */
     const hasFieldError = useCallback((fieldName: string): boolean => {
         return validationErrors.has(fieldName);
     }, [validationErrors]);
     
+    /**
+     * Get count of current validation errors
+     */
     const errorCount = useMemo(() => validationErrors.size, [validationErrors]);
     
+    /**
+     * Check if a specific field is currently visible
+     */
+    const isVisible = useCallback((
+        fieldName: string, 
+        formValues: Map<string, T_AnswersMapValue>
+    ): boolean => {
+        return isFieldVisible(fieldName, formData, formValues);
+    }, [formData]);
     
     return {
         // State
@@ -155,6 +170,9 @@ export const useFormValidation = (formData: T_ParsedFormData) => {
         clearAllErrors,
         getFieldError,
         hasFieldError,
+        
+        // Utility
+        isVisible,
         
         // Validation configs (for debugging)
         validationConfigs
