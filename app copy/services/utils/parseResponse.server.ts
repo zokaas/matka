@@ -56,7 +56,7 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
             if (isDependentQuestion(currentField)) {
                 const depKey = `${answerFieldName}::${currentField.questionParameter}`;
                 answers.set(depKey, {
-                    questionId: String(currentField.id), // dependent question id from API
+                    questionId: String(currentField.id),
                     question: depKey,
                     answer: "",
                 });
