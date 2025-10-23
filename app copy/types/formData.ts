@@ -11,7 +11,13 @@ export type T_FormGlobalProperties = T_FormMainCommonProperties & T_FormGeneralF
 
 export type T_AnswersMapValue = string | Array<string> | number | boolean | undefined;
 
-export type T_Answers = Map<string, T_AnswersMapValue>;
+export type T_StoredAnswer = {
+  questionId: string;        // <-- backend question id (string)
+  question: string;          // <-- questionParameter (or compound key for dependent)
+  answer: T_AnswersMapValue; // <-- actual form value
+};
+
+export type T_Answers = Map<string, T_StoredAnswer>;
 
 export type T_ApiFormResponse = T_FormGlobalProperties & {
     questions: Array<T_QuestionTypeBasic>;

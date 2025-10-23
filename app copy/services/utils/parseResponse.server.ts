@@ -46,11 +46,20 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
         const stepKeyName = stepKeyNames[item.question.step - 1] as T_FormStepsKeys;
 
         const answerFieldName = item.question.questionParameter;
-        answers.set(answerFieldName, "");
+        answers.set(answerFieldName, {
+            questionId: String(item.id),
+            question: answerFieldName,
+            answer: "",
+        });
 
         item.question.dynamicField?.forEach((currentField) => {
             if (isDependentQuestion(currentField)) {
-                answers.set(`${answerFieldName}::${currentField.questionParameter}`, "");
+                const depKey = `${answerFieldName}::${currentField.questionParameter}`;
+                answers.set(depKey, {
+                    questionId: String(currentField.id), // dependent question id from API
+                    question: depKey,
+                    answer: "",
+                });
             }
         });
 
