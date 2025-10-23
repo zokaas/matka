@@ -52,7 +52,7 @@ export const loader = async ({
 
         loaderData.formData = await getAndParseFormData(productId, kycType, sessionId);
         loaderData.pageData = {
-            companyName: decodeURIComponent(companyName),
+            companyName,
             kycType,
             orgNumber,
             productId,

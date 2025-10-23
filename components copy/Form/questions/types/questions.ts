@@ -1,6 +1,5 @@
 import { T_DropDownOptionValue } from "@ui/dropdown";
 import { T_Answers, T_CountryArray, T_FormStepsWithQuestions } from "~/types";
-import { T_ValidationErrors } from "~/types/validation";
 
 export type T_QuestionsProps = {
     activeStep: number;
@@ -10,7 +9,8 @@ export type T_QuestionsProps = {
     onChange: (fieldName: string, value: T_DropDownOptionValue) => void;
     onBlur: (fieldName: string) => void;
     countryList?: T_CountryArray;
-    validationErrors: T_ValidationErrors;
+    // TODO: Remove any
+    validationErrors: any;
 };
 
 export enum E_ComponentTypes {

@@ -1,3 +1,4 @@
+// components copy/Form/questions/Question.tsx
 import React from "react";
 import { Container } from "@ui/container";
 import { DropDown, MultiSelect, T_DropDownOptionValue } from "@ui/dropdown";
@@ -22,11 +23,8 @@ export const Question: React.FC<T_QuestionProps> = ({
     question,
     countryList,
 }) => {
-    const getFieldError = (fieldName: string): string | undefined => {
-        return questionProps.validationErrors.get(fieldName);
-    };
-
-    if (questionType === E_ComponentTypes.SELECT) {
+    // TODO: Maybe some better logic than question?. or question!. many times?
+    if (questionType === E_ComponentTypes.SELECT)
         return (
             <Container className={questionsStyle}>
                 <DropDown
@@ -40,13 +38,12 @@ export const Question: React.FC<T_QuestionProps> = ({
                         questionProps.onChange(question!.questionParameter, e);
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
-                    error={getFieldError(question!.questionParameter)}
+                    error={questionProps.validationErrors[question!.questionParameter]}
                 />
             </Container>
         );
-    }
 
-    if (questionType === E_ComponentTypes.MULTISELECT) {
+    if (questionType === E_ComponentTypes.MULTISELECT)
         return (
             <Container className={questionsStyle}>
                 <MultiSelect
@@ -59,32 +56,30 @@ export const Question: React.FC<T_QuestionProps> = ({
                         questionProps.onChange(question!.questionParameter, selectedArray);
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
-                    error={getFieldError(question!.questionParameter)}
+                    error={questionProps.validationErrors[question!.questionParameter]}
                     infoItems={question?.infoItems || null}
                 />
             </Container>
         );
-    }
 
-    if (questionType === E_ComponentTypes.TEXTAREA) {
+    if (questionType === E_ComponentTypes.TEXTAREA)
         return (
             <Container className={questionsStyle}>
                 <Textarea
                     label={question?.questionLabel || ""}
                     fieldName={question!.questionParameter}
-                    placeholder={question?.placeholder ?? undefined}
+                    placeholder={question?.placeholder ? question.placeholder : undefined}
                     onChange={(e) => {
                         questionProps.onChange(question!.questionParameter, e);
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
-                    error={getFieldError(question!.questionParameter)}
+                    error={questionProps.validationErrors[question!.questionParameter]}
                     infoItems={question?.infoItems || null}
                 />
             </Container>
         );
-    }
 
-    if (questionType === E_ComponentTypes.RADIOGROUP) {
+    if (questionType === E_ComponentTypes.RADIOGROUP)
         return (
             <Container className={questionsStyle}>
                 <Radiogroup
@@ -106,9 +101,8 @@ export const Question: React.FC<T_QuestionProps> = ({
                 />
             </Container>
         );
-    }
 
-    if (questionType === E_ComponentTypes.TEXT) {
+    if (questionType === E_ComponentTypes.TEXT)
         return (
             <Container className={questionsStyle}>
                 <InputText
@@ -119,14 +113,13 @@ export const Question: React.FC<T_QuestionProps> = ({
                         questionProps.onChange(question!.questionParameter, e);
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
-                    error={getFieldError(question!.questionParameter) || ""}
+                    error={questionProps.validationErrors[question!.questionParameter]}
                     infoItems={question?.infoItems || null}
                 />
             </Container>
         );
-    }
 
-    if (questionType === E_ComponentTypes.NUMBER) {
+    if (questionType === E_ComponentTypes.NUMBER)
         return (
             <Container className={questionsStyle}>
                 <InputNumber
@@ -137,19 +130,20 @@ export const Question: React.FC<T_QuestionProps> = ({
                         questionProps.onChange(question!.questionParameter, e);
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
-                    error={getFieldError(question!.questionParameter) || ""}
+                    error={questionProps.validationErrors[question!.questionParameter]}
                     infoItems={question?.infoItems || null}
                 />
             </Container>
         );
-    }
 
     if (questionType === E_ComponentTypes.BENEFICIALOWNER) {
         // At this point we know for sure that question can't be dependant question type
+        // and we tell it to TS
         const boQuestion = question as T_QuestionData;
 
         const boData: T_BeneficialOwnerCardProps = {
             addButton: boQuestion.addBObutton || EMPTY_STRING,
+
             fieldName: {
                 beneficialOwnerName: boQuestion.nameParameter || EMPTY_STRING,
                 beneficialOwnerSsn: boQuestion.ssnParameter || EMPTY_STRING,
@@ -180,9 +174,11 @@ export const Question: React.FC<T_QuestionProps> = ({
                     }
                     fieldName={boQuestion.questionParameter}
                     label={boQuestion.questionLabel}
-                    error={getFieldError(boQuestion.questionParameter)}
+                    error={questionProps.validationErrors[boQuestion.questionParameter]}
                     beneficialOwnerFieldsData={boData}
-                    handleChange={questionProps.onChange}
+                    handleChange={function (): void {
+                        throw new Error("Function not implemented.");
+                    }}
                     countryList={questionProps.countryList || []}
                     infoItems={boQuestion.infoItems || null}
                 />

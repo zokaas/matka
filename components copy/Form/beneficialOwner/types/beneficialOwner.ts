@@ -11,7 +11,7 @@ export type T_BeneficialOwnerProps = {
     label: string;
     fieldName: string;
     beneficialOwnersMaxCount: number;
-    handleChange: (fieldName: string, value: string) => void;
+    handleChange: () => void;
     countryList: T_CountryArray;
     errorClassNames?: T_ErrorClassNamesProps;
     classNames?: T_BeneficialOwnerClassNames;
