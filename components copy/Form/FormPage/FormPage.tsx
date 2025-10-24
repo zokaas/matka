@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Form } from "react-router";
+import { Form, useNavigate, useSubmit } from "react-router";
 
 import { Steps } from "@ui/steps";
 import { T_FormPageProps /* , T_StepInfo */ } from "./types";
@@ -23,32 +23,33 @@ import { Icon } from "@ui/icon";
 import { Questions } from "../questions/Questions";
 import { Footer } from "@ui/footer";
 import { T_AnswersMapValue } from "~/types";
+import { useSession } from "~/context/SessionContext";
 
 export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
-    const { formData /* , generalData */ } = props;
-
-    /* const [stepInfo, setCurrentStepIndex] = useState<T_StepInfo>({
-        currentStepIndex: 0,
-        totalSteps: formData.steps.size,
-    }); */
-
-    /* const [isSubmitted, setIsSubmitted] = useState<boolean>(false); */
+    const { formData, generalData } = props;
+    const { session } = useSession();
+    const navigate = useNavigate();
+    const submit = useSubmit();
 
     const [formValues, setFormValues] = useState(formData.answers);
     // TODO: validationErrors could be map (same as fromValues). It will be easier later to check if map.size is > 0
-    const [validationErrors, setValidationError] = useState({});
-
+    const [validationErrors, setValidationError] = useState<Record<string, string>>({});
     const [activeStep, setActiveStep] = useState(1);
 
     const handleChange = (field: string, value: T_AnswersMapValue) => {
-        setFormValues(
-            (prev) => {
-                const updated = new Map(prev);
-                updated.set(field, value);
-                return updated;
+        setFormValues((prev) => {
+            const updated = new Map(prev);
+            const current = updated.get(field);
+            
+            if (current) {
+                updated.set(field, {
+                    ...current,
+                    answer: value ||""
+                });
             }
-            //formValues.set(field, value)
-        );
+            
+            return updated;
+        });
     };
 
     const handleOnBlur = (field: string) => {
@@ -60,39 +61,44 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
         }
     };
 
-    const handleSubmit = () => {
-        /*             
-            if (!validateAndCollectStepValues()) {
-                return;
-            }
-                */
-        /*         if (currentStepIndex < totalSteps - 1) {
-            setCurrentStepIndex((prev) => prev + 1);
+    const nextStep = () => {
+        if (activeStep < formData.generalFormData.steps.length) {
+            setActiveStep(activeStep + 1);
         } else {
-            const formData = appendFormData(formValues);
-            submit(formData, { method: "post" });
-            setIsSubmitted(true);
-        } */
-        console.log("handle submit");
+            handleSubmit();
+        }
+    };
+
+    const prevStep = () => {
+        if (activeStep > 1) {
+            setActiveStep(activeStep - 1);
+        }
+    };
+
+    const handleSubmit = () => {
+        // Create a FormData object
+        const formData = new FormData();
+        
+        // Add the form values as JSON
+        formData.append('formValues', JSON.stringify(Array.from(formValues.entries())));
+        formData.append('sessionId', session.sessionId || '');
+        formData.append('productId', generalData.productId);
+        formData.append('applicationId', generalData.applicationId || '');
+        formData.append('kycType', generalData.kycType);
+        formData.append('userId', generalData.productId || '');
+        
+        // Submit the form
+        submit(formData, { 
+            method: "post",
+            action: `/${generalData.productId}/${generalData.kycType}/submit`
+        });
+        
+        // Navigate to thank you page after successful submission
+        navigate("/thank-you");
     };
 
     const getCurrentStepName = (activeStepIndex: number): string =>
         formData.generalFormData.steps[activeStepIndex].stepName;
-
-    /*     console.log(formData);
-    console.log(generalData); */
-
-    /** MOCK */
-    /* Mock starts */
-
-    const nextStep = () => {
-        console.log(formValues);
-        setActiveStep(activeStep + 1);
-    };
-
-    const prevStep = () => {
-        setActiveStep(activeStep - 1);
-    };
 
     return (
         <main className={mainContentStyle}>
@@ -134,51 +140,44 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                     {activeStep === 1 && (
                         <CompanyInfo
                             companyName={formData.generalFormData.companyBlock.companyName}
-                            companyNameLabel="Company name label"
+                            companyNameLabel={formData.generalFormData.companyBlock.companyNameLabel}
                             orgNumber={formData.generalFormData.companyBlock.orgNumber}
-                            orgNumberLabel="Org number label"
+                            orgNumberLabel={formData.generalFormData.companyBlock.orgNumberLabel}
                         />
                     )}
                     <Container className={formQuestionsContainer}>
                         <Questions
                             questions={formData.steps}
                             formValues={formValues}
-                            onChange={(fieldName: string, value: T_AnswersMapValue) =>
-                                handleChange(fieldName, value)
-                            }
-                            onBlur={(fieldName: string) => handleOnBlur(fieldName)}
+                            onChange={handleChange}
+                            onBlur={handleOnBlur}
                             validationErrors={validationErrors}
                             activeStep={activeStep}
                             countryList={formData.countryList}
                             activeStepName={getCurrentStepName(activeStep - 1)}
                         />
                     </Container>
-                    {/* mock buttons moved inside the form */}
-                    <div
-                        style={{
-                            marginTop: "50px",
-                            display: "flex",
-                            justifyContent: "space-around",
-                        }}>
+                    <div className="mt-12 flex justify-between">
                         <Button
                             label={[
                                 <Icon iconName="chevron-left" iconPrefix="far" key="arrow-1" />,
                                 ` ${formData.generalFormData.button.back}`,
                             ]}
-                            onClick={() => prevStep()}
+                            onClick={prevStep}
                             type="button"
-                            className=""
                             disabled={activeStep === 1}
                         />
                         <Button
-                            label={[
-                                `${formData.generalFormData.button.next} `,
-                                <Icon iconName="chevron-right" iconPrefix="far" key="arrow-2" />,
-                            ]}
-                            onClick={() => nextStep()}
+                            label={
+                                activeStep === formData.generalFormData.steps.length
+                                ? formData.generalFormData.button.submit
+                                : [
+                                    `${formData.generalFormData.button.next} `,
+                                    <Icon iconName="chevron-right" iconPrefix="far" key="arrow-2" />,
+                                ]
+                            }
+                            onClick={nextStep}
                             type="button"
-                            className=""
-                            disabled={activeStep === formData.generalFormData.steps.length}
                         />
                     </div>
                 </Form>

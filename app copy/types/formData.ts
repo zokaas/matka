@@ -14,7 +14,7 @@ export type T_AnswersMapValue = string | Array<string> | number | boolean | unde
 export type T_AnswerObject = {
     questionId: string;
     question: string;
-    answer: string | Array<string> | number | boolean | "";
+    answer: string | Array<string> | number | boolean;
 };
 
 export type T_Answers = Map<string, T_AnswerObject>;
