@@ -22,7 +22,7 @@ import { Button } from "@ui/button";
 import { Icon } from "@ui/icon";
 import { Questions } from "../questions/Questions";
 import { Footer } from "@ui/footer";
-import { T_AnswersMapValue, T_StoredAnswer } from "~/types";
+import { T_AnswersMapValue } from "~/types";
 
 export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
     const { formData /* , generalData */ } = props;
@@ -40,37 +40,16 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
 
     const [activeStep, setActiveStep] = useState(1);
 
-const handleChange = (field: string, value: T_AnswersMapValue) => {
-    setFormValues(
-        (prev) => {
-            const updated = new Map(prev);
-            
-            // Get the existing StoredAnswer or create a default one if it doesn't exist
-            const existingAnswer = prev.get(field);
-            
-            if (existingAnswer) {
-                // Update the existing answer with the new value
-                const updatedAnswer: T_StoredAnswer = {
-                    ...existingAnswer,
-                    answer: value
-                };
-                updated.set(field, updatedAnswer);
-            } else {
-                // Create a new StoredAnswer if one doesn't exist
-                // This is a fallback that should rarely happen since answers should be initialized in formData
-                console.warn(`No existing answer found for field: ${field}. Creating new entry.`);
-                const newAnswer: T_StoredAnswer = {
-                    questionId: "", // We don't have this info, so default to empty
-                    question: field,
-                    answer: value
-                };
-                updated.set(field, newAnswer);
+    const handleChange = (field: string, value: T_AnswersMapValue) => {
+        setFormValues(
+            (prev) => {
+                const updated = new Map(prev);
+                updated.set(field, value);
+                return updated;
             }
-            
-            return updated;
-        }
-    );
-};
+            //formValues.set(field, value)
+        );
+    };
 
     const handleOnBlur = (field: string) => {
         if (!formValues.get(field)) {
