@@ -14,15 +14,11 @@ export const Questions: React.FC<T_QuestionsProps> = (props: T_QuestionsProps) =
     ) => {
         if (!dependantQuestion) return false;
 
-        const currentQuestionAnswer = formValues.get(currentQuestion.questionParameter);
-        
+        const currentQuestionValue = formValues.get(currentQuestion.questionParameter);
 
-        const answerStr = String(currentQuestionAnswer?.answer);
-        const conditionStr = String(dependantQuestion.conditionValue);
-        
-        const isVisible = answerStr === conditionStr;
+        if (`${dependantQuestion.conditionValue}` === `${currentQuestionValue?.answer}`) return true;
 
-        return isVisible;
+        return false;
     };
 
     /* 
@@ -32,30 +28,24 @@ export const Questions: React.FC<T_QuestionsProps> = (props: T_QuestionsProps) =
     const questionArray: ReactNode = currentSteps?.map((item) => {
         const includeCountryListProperty = isCountryListUsed(item);
 
-        const hasDependentQuestion = !!item.question.dependentQuestion;
-        const showDependentQuestion = hasDependentQuestion 
-            ? isDependantQuestionVisible(item.question.dependentQuestion, item.question)
-            : false;
-
         return (
             <React.Fragment key={item.id}>
                 <Question
                     questionType={item.question.componentType as E_ComponentTypes}
                     questionProps={props}
                     question={item.question}
-                    key={item.id}
                     countryList={includeCountryListProperty ? countryList : undefined}
                 />
-                {showDependentQuestion && item.question.dependentQuestion && (
+                {isDependantQuestionVisible(item.question.dependentQuestion, item.question) && (
                     <Question
                         questionType={
-                            item.question.dependentQuestion.componentType as E_ComponentTypes
+                            item.question.dependentQuestion?.componentType as E_ComponentTypes
                         }
                         questionProps={props}
                         question={item.question.dependentQuestion}
-                        key={`dependent-${item.question.dependentQuestion.id}`}
+                        key={item.question.dependentQuestion?.id}
                         countryList={
-                            item.question.dependentQuestion.useCountryList
+                            item.question.dependentQuestion?.useCountryList
                                 ? countryList
                                 : undefined
                         }

@@ -10,7 +10,7 @@ import { getCountryList } from "./get-country-list.server";
 export const getAndParseFormData = async (
     productId: string,
     kycType: string,
-    sessionId: string,
+    sessionId: string
 ): Promise<T_ParsedFormData> => {
     const envData: T_EnvVariables = getEnvVariables();
     const url: string = `${envData.completeBaseUrl}/form/${productId}/${kycType}`;

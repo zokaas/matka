@@ -29,6 +29,7 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
         if (isDependentQuestion(dynamicField)) {
             const parentParameter = item.question.questionParameter;
             const dependentParameter = dynamicField.questionParameter;
+            //TODO:from in strapi
             const compositeKey = `${parentParameter}::${dependentParameter}`;
             
             result.dependentQuestion = {
@@ -40,7 +41,7 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
                 options: dynamicField.options,
                 questionDescription: dynamicField.questionDescription,
                 questionLabel: dynamicField.questionLabel,
-                questionParameter: compositeKey,  // Use composite key here!
+                questionParameter: compositeKey,
                 useCountryList: dynamicField.useCountryList,
                 placeholder: dynamicField.placeholder,
                 errorMessages: Array.isArray(dynamicField.errorMessages)

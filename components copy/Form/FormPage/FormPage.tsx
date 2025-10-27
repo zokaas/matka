@@ -60,9 +60,8 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
     const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
-        const answersArray = Array.from(formValues.entries()).map(([key, value]) => {
+        const answersArray = Array.from(formValues.entries()).map(([, value]) => {
             return {
-                fieldName: key,
                 questionId: value.questionId,
                 question: value.question,
                 answer: value.answer,
@@ -71,13 +70,8 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
 
         try {
             const formDataToSubmit = new FormData();
-            const answersJson = JSON.stringify(answersArray);
-
-            formDataToSubmit.append("answers", answersJson);
-            formDataToSubmit.append("productId", generalData.productId);
-            formDataToSubmit.append("kycType", generalData.kycType);
-            formDataToSubmit.append("applicationId", formData.applicationId);
-            formDataToSubmit.append("questionSetId", formData.questionSetId);
+            formDataToSubmit.append("answers", JSON.stringify(answersArray));
+            formDataToSubmit.append("questionSetId", String(formData.id));
 
             submit(formDataToSubmit, { method: "post" });
         } catch (error) {
@@ -119,7 +113,7 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                     titleClassName={titleStyle}
                     subtitleClassName={subtitleStyle}
                 />
-                    {/* Progress Steps */}
+                {/* Progress Steps */}
                 <Form method="post" className="max-w-2xl mx-auto" onSubmit={handleFormSubmit}>
                     <div className="mb-12">
                         <Steps

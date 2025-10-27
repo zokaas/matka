@@ -23,14 +23,7 @@ export type T_AnswerObject = {
   answer: T_AnswerValue;
 };
 
-export type T_Answer = {
-  questionId: string;
-  question: string;
-  answer: T_AnswerValue;
-};
-
 export type T_AnswerEntry = {
-  fieldName: string;
   questionId: string;
   question: string;
   answer: T_AnswerValue;
@@ -43,7 +36,7 @@ export type T_Payload = {
   applicationId: string;
   productId: string;
   questionSetId: string;
-  answers: T_Answer[];
+  answers: T_AnswerObject[];
 };
 
 export type T_ApiFormResponse = T_FormGlobalProperties & {
@@ -102,6 +95,6 @@ export type T_ParseDynamicFieldsResult = Omit<T_QuestionData, T_PropertiesToOmit
 };
 
 export type T_SendFormDataResponse = {
-    status: number;
+    status: string;
     message: string;
 };

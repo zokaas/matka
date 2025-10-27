@@ -25,7 +25,6 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
         formHeader,
         sessionModal,
         questions,
-        questionSetId
     } = apiResponse;
 
     const parsedSteps: Array<T_ParsedStep> = [];
@@ -46,17 +45,17 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
     questions.forEach((item) => {
         const stepKeyName = stepKeyNames[item.question.step - 1] as T_FormStepsKeys;
 
-        const field = item.question.questionParameter;
+        const answerFieldName = item.question.questionParameter;
 
-        answers.set(field, {
+        answers.set(answerFieldName, {
             questionId: String(item.id),
-            question: field,
+            question: answerFieldName,
             answer: "",
         });
 
         item.question.dynamicField?.forEach((currentField) => {
             if (isDependentQuestion(currentField)) {
-                const depField = `${field}::${currentField.questionParameter}`;
+                const depField = `${answerFieldName}::${currentField.questionParameter}`;
                 answers.set(depField, {
                     questionId: String(currentField.id),
                     question: depField,
@@ -100,7 +99,7 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
         sessionModal,
         useCountryList,
     };
-    console.log(answers);
+
     return {
         id,
         product,
@@ -108,6 +107,5 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
         generalFormData,
         steps: parsedQuestionsByStep,
         answers,
-        questionSetId
     };
 };

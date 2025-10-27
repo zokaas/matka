@@ -1,12 +1,12 @@
 import React from "react";
-import { ActionFunctionArgs, Navigate, useLoaderData } from "react-router";
+import { ActionFunctionArgs, Navigate, redirect, useLoaderData } from "react-router";
 import { verifySession } from "~/services/sessionProvider.server";
 import { getOrganizationFromSession, getSession } from "~/services/sessionStorage.server";
 
 import { getAndParseFormData } from "~/services/api/get-form-data.server";
 import { T_ProductIdLoaderData, T_ProductIdPageData } from "./types/productIdPage";
 import { FormPage } from "../../components/Form";
-import { T_ParsedFormData } from "~/types";
+import { T_ParsedFormData, T_AnswerEntry } from "~/types";
 import { Route } from "apps/kyc/.react-router/types/app/+types/root";
 
 import { Header } from "@ui/header";
@@ -14,6 +14,7 @@ import { Container } from "@ui/container";
 import { pageContentStyle } from "~/styles/pageContentStyle.css";
 import { SessionModalManager } from "apps/kyc/components";
 import { sendFormData } from "~/services/api/api-kyc.server";
+import { mapDataForPayload } from "~/services/utils/mapDataForPayload.server";
 
 export const loader = async ({
     request,
@@ -80,40 +81,52 @@ export const loader = async ({
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
     const { kycType, productId } = params;
-    
-    const session = await getSession(request.headers?.get("Cookie"));
-    const applicationId = session.get("applicationId");
 
+    if (!kycType || !productId) {
+        return { success: false, message: "Missing route parameters" };
+    }
 
     try {
+        const session = await getSession(request.headers?.get("Cookie"));
+        const applicationId = session.get("applicationId");
+        const kcUserId = session.get("kcUserId");
         const { sessionId } = await getOrganizationFromSession(request);
 
         const formData = await request.formData();
         const answersJson = formData.get("answers");
+        const questionSetId = formData.get("questionSetId");
 
-        if (!answersJson || !productId || !kycType || !applicationId) {
+        if (!answersJson || !applicationId || !questionSetId || !kcUserId) {
             console.error("Missing required data");
             return {
                 success: false,
                 message: "Missing required data",
-                error: { answersJson, applicationId, productId, kycType },
+                error: {
+                    hasAnswers: !!answersJson,
+                    hasAppId: !!applicationId,
+                    hasQSetId: !!questionSetId,
+                    hasUserId: !!kcUserId,
+                },
             };
         }
 
-        const answers = JSON.parse(answersJson as string);
-        const kcUserId = session.get("kcUserId");
+        const answerEntries = JSON.parse(answersJson as string) as T_AnswerEntry[];
 
-        const payload = {
-            userId: kcUserId,
-            applicationId: applicationId,
-            productId: productId,
-            questionSetId: id,
-            answers: answers,
-        };
+        const payload = mapDataForPayload(
+            answerEntries,
+            kcUserId,
+            applicationId,
+            productId,
+            questionSetId as string
+        );
 
         const result = await sendFormData(payload, productId, kycType, applicationId, sessionId);
 
         console.log("Backend result:", result);
+
+        if (result.status === "ok") {
+            return redirect("/thank-you");
+        }
 
         return {
             success: true,
