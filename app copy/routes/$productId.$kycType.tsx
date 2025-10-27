@@ -61,7 +61,7 @@ export const loader = async ({
             orgNumber,
             productId,
             ttl,
-            applicationId: applicationId || "",
+            applicationId,
         };
 
         if (!sessionId)
@@ -83,35 +83,17 @@ export const loader = async ({
 };
 
 export const action = async ({ request, params }: ActionFunctionArgs) => {
-    console.log("=== ACTION CALLED ===");
-    
-    // Get kycType and productId from params
     const { kycType, productId } = params;
     
-    // Get applicationId from session - SAME PATTERN
     const session = await getSession(request.headers?.get("Cookie"));
     const applicationId = session.get("applicationId");
 
-    console.log("Params:", { kycType, productId, applicationId });
 
     try {
         const { sessionId } = await getOrganizationFromSession(request);
-        console.log("Session ID:", sessionId);
 
         const formData = await request.formData();
-        console.log("FormData entries:");
-        for (const [key, value] of formData.entries()) {
-            console.log(`  ${key}:`, value);
-        }
-
         const answersJson = formData.get("answers");
-
-        console.log("Extracted data:", {
-            answersJson: answersJson ? "present" : "missing",
-            applicationId,
-            productId,
-            kycType,
-        });
 
         if (!answersJson || !productId || !kycType || !applicationId) {
             console.error("Missing required data");
@@ -123,24 +105,9 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         }
 
         const answers = JSON.parse(answersJson as string);
-        console.log("Parsed answers:", answers);
-        console.log(
-            "Answers with values:",
-            answers.filter((a: any) => a.answer !== "")
-        );
-
         const kcUserId = session.get("kcUserId");
         const questionSetId = "1";
 
-        console.log("Building payload with:", {
-            userId: kcUserId,
-            applicationId,
-            productId,
-            questionSetId,
-            answersCount: answers.length,
-        });
-
-        // Use applicationId SAME WAY as productId and kycType
         const payload = {
             userId: kcUserId,
             applicationId: applicationId,
@@ -149,8 +116,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             answers: answers,
         };
 
-        console.log("Calling sendFormData with payload:", payload);
-        const result = await sendFormData(payload, productId, kycType, applicationId || "", sessionId);
+        const result = await sendFormData(payload, productId, kycType, applicationId, sessionId);
 
         console.log("Backend result:", result);
 

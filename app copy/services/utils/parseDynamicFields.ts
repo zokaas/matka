@@ -2,7 +2,6 @@ import { T_Info, T_ParseDynamicFieldsResult } from "~/types";
 import { T_QuestionTypeBasic } from "~/types/questionType";
 import { isBeneficialOwnerQuestion, isDependentQuestion, isInfo } from "~/utils";
 
-
 export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFieldsResult => {
     let result: T_ParseDynamicFieldsResult = {
         addBObutton: null,

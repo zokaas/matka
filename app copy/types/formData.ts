@@ -9,9 +9,6 @@ import { T_QuestionTypeBasic } from "./questionType";
 
 export type T_FormGlobalProperties = T_FormMainCommonProperties & T_FormGeneralFormProperties;
 
-/**
- * Core answer value type - supports all form input types
- */
 export type T_AnswerValue = 
   | string 
   | number 
@@ -21,33 +18,11 @@ export type T_AnswerValue =
   | ""
   | undefined;
 
-/**
- * Dropdown component value type (from UI library)
- */
-export type T_DropDownOptionValue = string | number | string[];
-
-/**
- * Utility type to normalize dropdown values to internal answer values
- */
-export function normalizeDropdownValue(value: T_DropDownOptionValue): T_AnswerValue {
-  if (Array.isArray(value)) {
-    return value; // string[]
-  }
-  if (typeof value === "number") {
-    return value;
-  }
-  return value; // string
-}
-
-/**
- * Answer object stored in the form values Map
- */
 export type T_AnswerObject = {
   questionId: string;
   question: string;
   answer: T_AnswerValue;
 };
-
 
 export type T_Answer = {
   questionId: string;
@@ -55,7 +30,22 @@ export type T_Answer = {
   answer: T_AnswerValue;
 };
 
+export type T_AnswerEntry = {
+  fieldName: string;
+  questionId: string;
+  question: string;
+  answer: T_AnswerValue;
+};
+
 export type T_Answers = Map<string, T_AnswerObject>;
+
+export type T_Payload = {
+  userId: string;
+  applicationId: string;
+  productId: string;
+  questionSetId: string;
+  answers: T_Answer[];
+};
 
 export type T_ApiFormResponse = T_FormGlobalProperties & {
     questions: Array<T_QuestionTypeBasic>;
@@ -78,14 +68,6 @@ export type T_ParsedFormData = T_FormMainCommonProperties & {
     answers: T_Answers;
     questionSetId: string;
     applicationId: string;
-};
-
-export type T_Payload = {
-    userId: string;
-    applicationId: string;
-    productId: string;
-    questionSetId: string;
-    answers: T_Answers[];
 };
 
 type T_PropertiesToOmit =

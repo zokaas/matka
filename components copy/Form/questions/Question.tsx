@@ -1,7 +1,6 @@
-// components copy/Form/questions/Question.tsx
 import React from "react";
 import { Container } from "@ui/container";
-import { DropDown, MultiSelect, T_DropDownOptionValue } from "@ui/dropdown";
+import { DropDown, MultiSelect } from "@ui/dropdown";
 import { Textarea } from "@ui/textarea";
 import { Radiogroup } from "@ui/radiogroup";
 import { E_ComponentTypes, T_QuestionProps } from "./types";
@@ -15,7 +14,7 @@ import {
 import { InputNumber, InputText } from "@ui/inputField";
 import { BeneficialOwner, T_BeneficialOwnerCardProps } from "../beneficialOwner";
 import { BO_MAX_COUNT, EMPTY_STRING } from "./questions.constants";
-import { T_QuestionData } from "~/types";
+import { T_AnswerValue, T_QuestionData } from "~/types";
 
 export const Question: React.FC<T_QuestionProps> = ({
     questionType,
@@ -52,7 +51,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     placeholder={question?.placeholder || ""}
                     options={(question?.useCountryList ? countryList : question?.options) || []}
                     searchEnabled={true}
-                    onChange={(selectedArray: T_DropDownOptionValue) => {
+                    onChange={(selectedArray: T_AnswerValue) => {
                         questionProps.onChange(question!.questionParameter, selectedArray);
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
