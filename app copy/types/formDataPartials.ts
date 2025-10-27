@@ -4,7 +4,6 @@ export type T_FormMainCommonProperties = {
     id: number;
     product: string;
     formType: string;
-    applicationId: string;
     questionSetId: string;
 };
 

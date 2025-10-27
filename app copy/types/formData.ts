@@ -15,7 +15,6 @@ export type T_AnswerValue =
   | boolean 
   | string[] 
   | Record<string, string>[]
-  | ""
   | undefined;
 
 export type T_AnswerObject = {
@@ -66,8 +65,6 @@ export type T_ParsedFormData = T_FormMainCommonProperties & {
     steps: T_FormStepsWithQuestions;
     countryList?: T_CountryArray;
     answers: T_Answers;
-    questionSetId: string;
-    applicationId: string;
 };
 
 type T_PropertiesToOmit =
@@ -102,4 +99,9 @@ export type T_DependentQuestion =
 
 export type T_ParseDynamicFieldsResult = Omit<T_QuestionData, T_PropertiesToOmit> & {
     dependentQuestion: T_DependentQuestion;
+};
+
+export type T_SendFormDataResponse = {
+    status: number;
+    message: string;
 };

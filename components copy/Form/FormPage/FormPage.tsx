@@ -76,7 +76,7 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
             formDataToSubmit.append("answers", answersJson);
             formDataToSubmit.append("productId", generalData.productId);
             formDataToSubmit.append("kycType", generalData.kycType);
-            formDataToSubmit.append("applicationId", generalData.applicationId);
+            formDataToSubmit.append("applicationId", formData.applicationId);
             formDataToSubmit.append("questionSetId", formData.questionSetId);
 
             submit(formDataToSubmit, { method: "post" });

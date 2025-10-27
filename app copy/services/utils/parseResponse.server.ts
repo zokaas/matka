@@ -25,8 +25,7 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
         formHeader,
         sessionModal,
         questions,
-        applicationId,
-        questionSetId,
+        questionSetId
     } = apiResponse;
 
     const parsedSteps: Array<T_ParsedStep> = [];
@@ -109,7 +108,6 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
         generalFormData,
         steps: parsedQuestionsByStep,
         answers,
-        applicationId,
-        questionSetId,
+        questionSetId
     };
 };

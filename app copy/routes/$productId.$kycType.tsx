@@ -37,9 +37,6 @@ export const loader = async ({
         };
 
     const { sessionId, companyName, orgNumber } = await getOrganizationFromSession(request);
-    
-    const session = await getSession(request.headers?.get("Cookie"));
-    const applicationId = session.get("applicationId");
 
     try {
         const { status, ttl } = await verifySession(productId, sessionId);
@@ -61,7 +58,6 @@ export const loader = async ({
             orgNumber,
             productId,
             ttl,
-            applicationId,
         };
 
         if (!sessionId)
@@ -106,13 +102,12 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
 
         const answers = JSON.parse(answersJson as string);
         const kcUserId = session.get("kcUserId");
-        const questionSetId = "1";
 
         const payload = {
             userId: kcUserId,
             applicationId: applicationId,
             productId: productId,
-            questionSetId: questionSetId,
+            questionSetId: id,
             answers: answers,
         };
 

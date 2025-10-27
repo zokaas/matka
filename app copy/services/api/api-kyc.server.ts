@@ -1,6 +1,6 @@
 import { getEnv } from "~/environment";
 import { postRequest } from "../utils/apiHelpers.server";
-import { T_Payload } from "~/types/formData";
+import { T_Payload, T_SendFormDataResponse } from "~/types/formData";
 
 export async function sendFormData(
     data: T_Payload,
