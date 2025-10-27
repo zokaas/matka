@@ -638,16 +638,16 @@ const personalBests = useMemo(() => {
 <div>
   <label className="block text-sm font-medium mb-2 text-gray-700">
     Päivämäärä
-    <span className="text-xs text-gray-500 block font-normal">
+{/* <span className="text-xs text-gray-500 block font-normal">
       (Voit lisätä suorituksia enintään 7 päivää menneisyyteen)
-    </span>
+    </span> */}
   </label>
   <div className="relative">
     <input
       type="date"
       value={date}
       onChange={(e) => setDate(e.target.value)}
-      min={getMinDate()}
+      min={} {/* getMinDate() */}
       className={`${controlWithChevron} [color-scheme:light]`}
       required
     />
