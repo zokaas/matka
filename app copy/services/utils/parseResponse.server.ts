@@ -45,25 +45,15 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
     questions.forEach((item) => {
         const stepKeyName = stepKeyNames[item.question.step - 1] as T_FormStepsKeys;
 
-        const field = item.question.questionParameter;
+        const answerFieldName = item.question.questionParameter;
+        answers.set(answerFieldName, "");
 
-        answers.set(field, {
-            questionId: String(item.id), // backend questionId
-            question: field, // question parameter
-            answer: "", // default empty
-        });
-
-        // Seed dependent questions (if any)
         item.question.dynamicField?.forEach((currentField) => {
             if (isDependentQuestion(currentField)) {
-                const depField = `${field}::${currentField.questionParameter}`;
-                answers.set(depField, {
-                    questionId: String(currentField.id), // use dependent id from API
-                    question: depField,
-                    answer: "",
-                });
+                answers.set(`${answerFieldName}::${currentField.questionParameter}`, "");
             }
         });
+
         const question: T_QuestionData = {
             componentType: item.question.componentType as T_ComponentType,
             step: item.question.step,
@@ -99,7 +89,7 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
         sessionModal,
         useCountryList,
     };
-    console.log(answers);
+
     return {
         id,
         product,

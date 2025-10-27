@@ -1,56 +1,34 @@
-import { T_Answers } from "~/types";
+/* import { T_FormValues } from "components/types/formLayout";
+import { T_Payload } from "~/types"; */
 
-export type T_AnswerPayload = {
-  questionId: string;
-  question: string;
-  answer: string | string[] | number | boolean;
-};
+//TODO: mapDataForPayload() and createAnswersArray()
 
-export type T_Payload = {
-  userId: string;
-  applicationId: string;
-  productId: string;
-  questionSetId: string;
-  answers: T_AnswerPayload[];
-};
-
-export const mapDataForPayload = (
-  formValues: T_Answers,
-  userId: string,
-  applicationId: string,
-  productId: string,
-  questionSetId: string = "1"
+export const mapDataForPayload = () => {};
+/* export const mapDataForPayload = (
+    formData: T_FormValues,
+    userId: string,
+    applicationId: string,
 ): T_Payload => {
-  const answers = createAnswersArray(formValues);
+    console.log("DataMapper", formData);
+    const productId: string = "sweden-b2b-application"; // coming from API
+    const questionSetId: string = "1"; // coming from API
+    const answers = createAnswersArray(formData);
 
-  return {
-    userId,
-    applicationId,
-    productId,
-    questionSetId,
-    answers,
-  };
-};
-/**
- * Converts form values map to an array of answer objects for API submission
- */
-export const createAnswersArray = (formValues: T_Answers) => {
-  return Array.from(formValues.values())
-    .filter(item => {
-      // Filter out empty values
-      const answer = item.answer;
-      if (answer === undefined || answer === null || answer === "") {
-        return false;
-      }
-      // For arrays, filter out empty arrays
-      if (Array.isArray(answer) && answer.length === 0) {
-        return false;
-      }
-      return true;
-    })
-    .map(item => ({
-      questionId: item.questionId,
-      question: item.question,
-      answer: typeof item.answer === 'object' ? JSON.stringify(item.answer) : String(item.answer)
+    return {
+        userId,
+        applicationId,
+        productId,
+        questionSetId,
+        answers,
+    };
+}; */
+
+export const createAnswersArray = () => {};
+
+/* export const createAnswersArray = (formData: T_FormValues) => {
+    return Object.entries(formData).map(([key, value]) => ({
+        questionId: "1", //coming from API
+        question: key,
+        answer: JSON.stringify(value),
     }));
-};
+}; */
