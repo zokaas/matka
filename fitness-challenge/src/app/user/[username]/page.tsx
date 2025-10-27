@@ -643,14 +643,14 @@ const personalBests = useMemo(() => {
     </span> */}
   </label>
   <div className="relative">
-    <input
-      type="date"
-      value={date}
-      onChange={(e) => setDate(e.target.value)}
-      min={} {/* getMinDate() */}
-      className={`${controlWithChevron} [color-scheme:light]`}
-      required
-    />
+<input
+  type="date"
+  value={date}
+  onChange={(e) => setDate(e.target.value)}
+  // min={getMinDate()}  // temporarily disabled
+  className={`${controlWithChevron} [color-scheme:light]`}
+  required
+/>
     <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
       <ChevronDown className="w-4 h-4 text-gray-500" />
     </span>
