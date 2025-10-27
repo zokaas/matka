@@ -7,7 +7,7 @@ const USER_WEEKLY_HOURS: { [key: string]: number } = {
   Zoka: 4,
   Linda: 4,
   Oskari: 4,
-  Leksa: 6,
+  Leksa: 4,
   Santeri: 4,
 };
 
