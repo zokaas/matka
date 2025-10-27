@@ -66,58 +66,58 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
         setFieldsMap(tempMap);
     };
 
-    return (
-        <Container className={boComponentContainer}>
-            <Container className={boQuestionContainer}>
-                <Container className={boLabelButtonRow}>
-                    <Container className={boLabelContainer}>
-                        <Label
-                            htmlFor={fieldName}
-                            labelClassName={classNames?.beneficialOwnerLabel}
-                            infoItems={infoItems}>
-                            {label}
-                        </Label>
-                    </Container>
-
-                    {fieldsMap.size < beneficialOwnersMaxCount && (
-                        <Container className={boButtonContainer}>
-                            <Popover
-                                popoverOpen={popoverOpen}
-                                setPopoverOpen={setPopoverOpen}
-                                classNames={{
-                                    popoverButton: boPopoverButton,
-                                    popoverCloseIcon: boCloseIcon,
-                                }}>
-                                <BeneficialOwnerForm
-                                    classNames={{ fromButton: addBoFormButton }}
-                                    formData={beneficialOwnerFieldsData}
-                                    onButtonClick={(name, ssn, ownership, countries) => {
-                                        handleAddBo(name, ssn, ownership, countries);
-                                        setPopoverOpen(false);
-                                    }}
-                                    countryList={countryList}
-                                />
-                            </Popover>
-                        </Container>
-                    )}
+return (
+    <Container className={boComponentContainer}>
+        <Container className={boQuestionContainer}>
+            <Container className={boLabelButtonRow}>
+                <Container className={boLabelContainer}>
+                    <Label
+                        htmlFor={fieldName}
+                        labelClassName={classNames?.beneficialOwnerLabel}
+                        infoItems={infoItems}>
+                        {label}
+                    </Label>
                 </Container>
-            </Container>
 
-            {fieldsMap.size > 0 &&
-                Array.from(fieldsMap.entries()).map(([key, fieldArray]) => {
-                    return (
-                        <Container key={`parent_${key}`} className={boResultAndButton}>
-                            <BeneficialOwnerResult key={key} fieldArray={fieldArray} />
-                            <Button
-                                type={"button"}
-                                className={removeBoFormButton}
-                                label={<Icon iconName="trash" iconPrefix="fas" />}
-                                onClick={() => handleRemoveBo(key)}
+                {fieldsMap.size < beneficialOwnersMaxCount && (
+                    <Container className={boButtonContainer}>
+                        <Popover
+                            popoverOpen={popoverOpen}
+                            setPopoverOpen={setPopoverOpen}
+                            classNames={{
+                                popoverButton: boPopoverButton,
+                                popoverCloseIcon: boCloseIcon,
+                            }}>
+                            <BeneficialOwnerForm
+                                classNames={{ fromButton: addBoFormButton }}
+                                formData={beneficialOwnerFieldsData}
+                                onButtonClick={(name, ssn, ownership, countries) => {
+                                    handleAddBo(name, ssn, ownership, countries);
+                                    setPopoverOpen(false);
+                                }}
+                                countryList={countryList}
                             />
-                        </Container>
-                    );
-                })}
-            <ErrorMessage error={error} classNames={errorClassNames} />
+                        </Popover>
+                    </Container>
+                )}
+            </Container>
         </Container>
-    );
-};
+
+        {fieldsMap.size > 0 &&
+            Array.from(fieldsMap.entries()).map(([key, fieldArray]) => {
+                return (
+                    <Container key={`parent_${key}`} className={boResultAndButton}>
+                        <BeneficialOwnerResult resultKey={key} fieldArray={fieldArray} />
+                        <Button
+                            type={"button"}
+                            className={removeBoFormButton}
+                            label={<Icon iconName="trash" iconPrefix="fas" />}
+                            onClick={() => handleRemoveBo(key)}
+                        />
+                    </Container>
+                );
+            })}
+        <ErrorMessage error={error} classNames={errorClassNames} />
+    </Container>
+);
+}

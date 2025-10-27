@@ -9,9 +9,15 @@ import { T_QuestionTypeBasic } from "./questionType";
 
 export type T_FormGlobalProperties = T_FormMainCommonProperties & T_FormGeneralFormProperties;
 
-export type T_AnswersMapValue = string | Array<string> | number | boolean | undefined;
+export type T_AnswerObject = {
+    questionId: string;
+    question: string;
+    answer: T_AnswersMapValue;
+};
 
-export type T_Answers = Map<string, T_AnswersMapValue>;
+export type T_AnswersMapValue = string | Array<string> | number | boolean;
+
+export type T_Answers = Map<string, T_AnswerObject>;
 
 export type T_ApiFormResponse = T_FormGlobalProperties & {
     questions: Array<T_QuestionTypeBasic>;
@@ -32,6 +38,8 @@ export type T_ParsedFormData = T_FormMainCommonProperties & {
     steps: T_FormStepsWithQuestions;
     countryList?: T_CountryArray;
     answers: T_Answers;
+    questionSetId?: string; // Add this
+    applicationId: string;
 };
 
 type T_PropertiesToOmit =

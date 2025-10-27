@@ -6,6 +6,7 @@ export type T_ProductIdPageData = {
     ttl: number;
     productId: string;
     kycType: string;
+    applicationId: string;
 };
 
 export type T_Error = {

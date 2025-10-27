@@ -2,6 +2,7 @@ import { T_Info, T_ParseDynamicFieldsResult } from "~/types";
 import { T_QuestionTypeBasic } from "~/types/questionType";
 import { isBeneficialOwnerQuestion, isDependentQuestion, isInfo } from "~/utils";
 
+
 export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFieldsResult => {
     let result: T_ParseDynamicFieldsResult = {
         addBObutton: null,
@@ -27,6 +28,10 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
     const infoItems: T_Info[] = [];
     item.question.dynamicField.forEach((dynamicField) => {
         if (isDependentQuestion(dynamicField)) {
+            const parentParameter = item.question.questionParameter;
+            const dependentParameter = dynamicField.questionParameter;
+            const compositeKey = `${parentParameter}::${dependentParameter}`;
+            
             result.dependentQuestion = {
                 __component: "kyc.dependent-question",
                 componentType: dynamicField.componentType,
@@ -36,7 +41,7 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
                 options: dynamicField.options,
                 questionDescription: dynamicField.questionDescription,
                 questionLabel: dynamicField.questionLabel,
-                questionParameter: dynamicField.questionParameter,
+                questionParameter: compositeKey,  // Use composite key here!
                 useCountryList: dynamicField.useCountryList,
                 placeholder: dynamicField.placeholder,
                 errorMessages: Array.isArray(dynamicField.errorMessages)

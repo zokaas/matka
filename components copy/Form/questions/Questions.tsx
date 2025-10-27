@@ -12,13 +12,32 @@ export const Questions: React.FC<T_QuestionsProps> = (props: T_QuestionsProps) =
         dependantQuestion: T_DependentQuestion,
         currentQuestion: T_QuestionData
     ) => {
-        if (!dependantQuestion) return false;
+        if (!dependantQuestion) {
+            return false;
+        }
 
-        const currentQuestionValue = formValues.get(currentQuestion.questionParameter);
+        const currentQuestionAnswer = formValues.get(currentQuestion.questionParameter);
+        
+        console.log("=== CHECKING DEPENDENT QUESTION VISIBILITY ===");
+        console.log("Parent question:", currentQuestion.questionParameter);
+        console.log("Parent answer:", currentQuestionAnswer);
+        console.log("Condition value:", dependantQuestion.conditionValue);
+        console.log("Condition type:", typeof dependantQuestion.conditionValue);
+        console.log("Answer type:", typeof currentQuestionAnswer?.answer);
 
-        if (`${dependantQuestion.conditionValue}` === currentQuestionValue) return true;
+        if (!currentQuestionAnswer?.answer) {
+            console.log("No answer yet, hiding dependent question");
+            return false;
+        }
 
-        return false;
+        // Convert both to strings for comparison to handle number/string mismatches
+        const answerStr = String(currentQuestionAnswer.answer);
+        const conditionStr = String(dependantQuestion.conditionValue);
+        
+        const isVisible = answerStr === conditionStr;
+        console.log(`Comparing: "${answerStr}" === "${conditionStr}" = ${isVisible}`);
+
+        return isVisible;
     };
 
     /* 
@@ -27,6 +46,11 @@ export const Questions: React.FC<T_QuestionsProps> = (props: T_QuestionsProps) =
     */
     const questionArray: ReactNode = currentSteps?.map((item) => {
         const includeCountryListProperty = isCountryListUsed(item);
+
+        const hasDependentQuestion = !!item.question.dependentQuestion;
+        const showDependentQuestion = hasDependentQuestion 
+            ? isDependantQuestionVisible(item.question.dependentQuestion, item.question)
+            : false;
 
         return (
             <React.Fragment key={item.id}>
@@ -37,16 +61,16 @@ export const Questions: React.FC<T_QuestionsProps> = (props: T_QuestionsProps) =
                     key={item.id}
                     countryList={includeCountryListProperty ? countryList : undefined}
                 />
-                {isDependantQuestionVisible(item.question.dependentQuestion, item.question) && (
+                {showDependentQuestion && item.question.dependentQuestion && (
                     <Question
                         questionType={
-                            item.question.dependentQuestion?.componentType as E_ComponentTypes
+                            item.question.dependentQuestion.componentType as E_ComponentTypes
                         }
                         questionProps={props}
                         question={item.question.dependentQuestion}
-                        key={item.question.dependentQuestion?.id}
+                        key={`dependent-${item.question.dependentQuestion.id}`}
                         countryList={
-                            item.question.dependentQuestion?.useCountryList
+                            item.question.dependentQuestion.useCountryList
                                 ? countryList
                                 : undefined
                         }

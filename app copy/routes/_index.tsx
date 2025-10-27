@@ -13,19 +13,23 @@ export const loader: LoaderFunction = async ({ request }) => {
         name: companyName,
         orgNumber,
     } = searchParams;
+    
     if (sessionId && productId) {
         const { status, ttl } = await verifySession(productId, sessionId);
         if (status && ttl) {
             const sessionData = await getSessionFromBff(sessionId, productId);
             console.log("sessionData", sessionData);
+            
             let maxSessionRefresh = 1;
             let sessionRefreshCount = 0;
             let kcUserId = "";
+            
             if (sessionData) {
                 maxSessionRefresh = sessionData.maxSessionRefresh;
                 sessionRefreshCount = sessionData.sessionRefreshCount;
-                kcUserId = sessionData.userInfo.sub;
+                kcUserId = sessionData.userInfo.sub; // This is the Keycloak user ID
             }
+            
             // Save session data in the session and redirect to dynamic route
             const dataToStore = {
                 sessionId,
@@ -37,8 +41,9 @@ export const loader: LoaderFunction = async ({ request }) => {
                 orgNumber,
                 maxSessionRefresh,
                 sessionRefreshCount,
-                kcUserId,
+                kcUserId, // Make sure this is saved!
             };
+            
             const sessionCookie = await saveSession(dataToStore);
 
             return redirect(`/${productId}/${kycType}`, {
@@ -50,7 +55,7 @@ export const loader: LoaderFunction = async ({ request }) => {
             // Redirect to error page if session validation fails
             return redirect("/error", {
                 headers: {
-                    "Set-Cookie": await saveSession({}), // Clear session cookie if necessary
+                    "Set-Cookie": await saveSession({}),
                 },
             });
         }
