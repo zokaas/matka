@@ -9,12 +9,50 @@ import { T_QuestionTypeBasic } from "./questionType";
 
 export type T_FormGlobalProperties = T_FormMainCommonProperties & T_FormGeneralFormProperties;
 
-export type T_AnswerValue = string | number | boolean | string[] | Record<string, string>[];
+/**
+ * Core answer value type - supports all form input types
+ */
+export type T_AnswerValue = 
+  | string 
+  | number 
+  | boolean 
+  | string[] 
+  | Record<string, string>[]
+  | ""
+  | undefined;
 
+/**
+ * Dropdown component value type (from UI library)
+ */
+export type T_DropDownOptionValue = string | number | string[];
+
+/**
+ * Utility type to normalize dropdown values to internal answer values
+ */
+export function normalizeDropdownValue(value: T_DropDownOptionValue): T_AnswerValue {
+  if (Array.isArray(value)) {
+    return value; // string[]
+  }
+  if (typeof value === "number") {
+    return value;
+  }
+  return value; // string
+}
+
+/**
+ * Answer object stored in the form values Map
+ */
 export type T_AnswerObject = {
-    questionId: string;
-    question: string;
-    answer: T_AnswerValue;
+  questionId: string;
+  question: string;
+  answer: T_AnswerValue;
+};
+
+
+export type T_Answer = {
+  questionId: string;
+  question: string;
+  answer: T_AnswerValue;
 };
 
 export type T_Answers = Map<string, T_AnswerObject>;

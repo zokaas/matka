@@ -30,7 +30,7 @@ export const USER_WEEKLY_HOURS: Record<string, number> = {
   Linda: 4,
   Oskari: 4,
   Leksa: 6,
-  Santeri: 6,
+  Santeri: 4,
 };
 
 export const ACTIVITY_WEIGHTS: Record<string, number> = {

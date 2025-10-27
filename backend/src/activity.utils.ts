@@ -8,7 +8,7 @@ const USER_WEEKLY_HOURS: { [key: string]: number } = {
   Linda: 4,
   Oskari: 4,
   Leksa: 6,
-  Santeri: 6,
+  Santeri: 4,
 };
 
 // FIXED: Calculate one-time multipliers based on challenge totals

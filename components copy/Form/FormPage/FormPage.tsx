@@ -23,6 +23,7 @@ import { Icon } from "@ui/icon";
 import { Questions } from "../questions/Questions";
 import { Footer } from "@ui/footer";
 import { T_AnswerValue, T_FormStepsKeys } from "~/types";
+import { normalizeDropdownValue } from "../questions/types/answerTypes";
 
 export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
     const { formData, generalData } = props;
@@ -48,15 +49,19 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
 
     const handleChange = (field: string, value: T_AnswerValue) => {
         console.log(`Field changed: ${field} = ${JSON.stringify(value)}`);
+
+        // Normalize value (handles undefined, arrays, objects, primitives)
+        const normalizedValue = normalizeDropdownValue(value);
+
         setFormValues((prev) => {
             const updated = new Map(prev);
             const existingEntry = updated.get(field);
-            
+
             if (existingEntry) {
                 // Update only the answer, keep questionId and question
                 updated.set(field, {
                     ...existingEntry,
-                    answer: value,
+                    answer: normalizedValue,
                 });
                 console.log(`Updated ${field}:`, updated.get(field));
             } else {
@@ -84,40 +89,72 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
         }
     };
 
-const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log("=== FORM SUBMIT TRIGGERED ===");
-    
-    // Convert Map to array format for submission
-    const answersArray = Array.from(formValues.values()).map((entry) => ({
-        questionId: entry.questionId,
-        question: entry.question,
-        answer: entry.answer,
-    }));
 
-    console.log("=== SUBMITTING ANSWERS ===");
-    console.log(`Total answers: ${answersArray.length}`);
-    console.log("Answers with values:", answersArray.filter(a => a.answer !== ""));
-    console.log("Full answers array:", JSON.stringify(answersArray, null, 2));
-
-    // Create form data for submission
-    const formDataToSubmit = new FormData();
-    formDataToSubmit.append("answers", JSON.stringify(answersArray));
-    formDataToSubmit.append("productId", generalData.productId);
-    formDataToSubmit.append("kycType", generalData.kycType);
-    formDataToSubmit.append("applicationId", formData.applicationId || "");
-    formDataToSubmit.append("questionSetId", formData.questionSetId || "1"); // Add this
-
-    console.log("FormData prepared:", {
-        productId: generalData.productId,
-        kycType: generalData.kycType,
-        applicationId: generalData.applicationId,
-        questionSetId: formData.questionSetId || "1",
-        answersCount: answersArray.length,
+    // Log the raw formValues Map
+    console.log("Raw formValues Map:");
+    formValues.forEach((value, key) => {
+        console.log(`  ${key}:`, value);
     });
 
-    // Submit the form
-    submit(formDataToSubmit, { method: "post" });
+    // Convert Map to array of entries for transmission to server
+    const answersArray = Array.from(formValues.entries()).map(([key, value]) => {
+        console.log(`Processing field: ${key}`);
+        console.log(`  questionId: ${value.questionId}`);
+        console.log(`  question: ${value.question}`);
+        console.log(`  answer type: ${typeof value.answer}`);
+        console.log(`  answer value:`, value.answer);
+        console.log(`  answer is array: ${Array.isArray(value.answer)}`);
+        
+        return {
+            fieldName: key,
+            questionId: value.questionId,
+            question: value.question,
+            answer: value.answer,
+        };
+    });
+
+    console.log("=== SUBMITTING TO SERVER ===");
+    console.log(`Total answers: ${answersArray.length}`);
+    console.log("All answers:", answersArray);
+    
+    // Check specifically for beneficial owner data
+    const beneficialOwnerAnswer = answersArray.find(
+        a => a.question === "beneficialOwners" || a.fieldName.includes("beneficial")
+    );
+    console.log("=== BENEFICIAL OWNER DATA ===");
+    console.log("Found beneficial owner?", !!beneficialOwnerAnswer);
+    if (beneficialOwnerAnswer) {
+        console.log("Beneficial owner answer:", beneficialOwnerAnswer);
+        console.log("Beneficial owner answer type:", typeof beneficialOwnerAnswer.answer);
+        console.log("Is array?", Array.isArray(beneficialOwnerAnswer.answer));
+        console.log("Stringified:", JSON.stringify(beneficialOwnerAnswer.answer, null, 2));
+    }
+
+    console.log("Full answers array:", JSON.stringify(answersArray, null, 2));
+
+    try {
+        // Convert to FormData and submit
+        const formDataToSubmit = new FormData();
+        const answersJson = JSON.stringify(answersArray);
+        
+        console.log("=== FINAL JSON BEING SENT ===");
+        console.log("Length:", answersJson.length);
+        console.log("Content:", answersJson);
+        
+        formDataToSubmit.append("answers", answersJson);
+        formDataToSubmit.append("productId", generalData.productId);
+        formDataToSubmit.append("kycType", generalData.kycType);
+        formDataToSubmit.append("applicationId", generalData.applicationId || "");
+        formDataToSubmit.append("questionSetId", formData.questionSetId || "1");
+        
+        submit(formDataToSubmit, { method: "post" });
+        console.log("Form data sent successfully");
+    } catch (error) {
+        console.error("Error submitting form:", error);
+    }
 };
 
     const getCurrentStepName = (activeStepIndex: number): string =>
@@ -126,13 +163,13 @@ const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     const nextStep = () => {
         console.log("=== NEXT STEP CLICKED ===");
         console.log(`Current step: ${activeStep} of ${formData.generalFormData.steps.length}`);
-        
+
         // Log current values before moving
         const currentValues = Array.from(formValues.entries())
             .filter(([, val]) => val.answer !== "")
             .map(([key, val]) => ({ key, answer: val.answer }));
         console.log("Filled values before next:", currentValues);
-        
+
         // Check if we're on the last step
         if (activeStep === formData.generalFormData.steps.length) {
             console.log("Last step reached, submitting form...");
@@ -165,25 +202,30 @@ const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     }, [actionData]);
 
     useEffect(() => {
-    console.log("=== STEP INFORMATION ===");
-    console.log("Active step:", activeStep);
-    console.log("Total steps:", formData.generalFormData.steps.length);
-    console.log("Steps:", formData.generalFormData.steps);
-    console.log("Current step name:", getCurrentStepName(activeStep - 1));
-    console.log("Questions for current step:", formData.steps.get(getCurrentStepName(activeStep - 1) as any));
-}, [activeStep, formData]);
+        console.log("=== STEP INFORMATION ===");
+        console.log("Active step:", activeStep);
+        console.log("Total steps:", formData.generalFormData.steps.length);
+        console.log("Steps:", formData.generalFormData.steps);
+        console.log("Current step name:", getCurrentStepName(activeStep - 1));
+        console.log(
+            "Questions for current step:",
+            formData.steps.get(getCurrentStepName(activeStep - 1) as any)
+        );
+    }, [activeStep, formData]);
 
-useEffect(() => {
-    console.log("=== ALL STEPS AND QUESTIONS ===");
-    formData.generalFormData.steps.forEach((step, index) => {
-        const stepKey = step.stepName as T_FormStepsKeys;
-        const questionsForStep = formData.steps.get(stepKey);
-        console.log(`Step ${index + 1} (${step.stepName}): ${questionsForStep?.length || 0} questions`);
-        questionsForStep?.forEach(q => {
-            console.log(`  - ${q.question.questionParameter} (API step: ${q.question.step})`);
+    useEffect(() => {
+        console.log("=== ALL STEPS AND QUESTIONS ===");
+        formData.generalFormData.steps.forEach((step, index) => {
+            const stepKey = step.stepName as T_FormStepsKeys;
+            const questionsForStep = formData.steps.get(stepKey);
+            console.log(
+                `Step ${index + 1} (${step.stepName}): ${questionsForStep?.length || 0} questions`
+            );
+            questionsForStep?.forEach((q) => {
+                console.log(`  - ${q.question.questionParameter} (API step: ${q.question.step})`);
+            });
         });
-    });
-}, [formData]);
+    }, [formData]);
 
     return (
         <main className={mainContentStyle}>
@@ -196,21 +238,22 @@ useEffect(() => {
                     titleClassName={titleStyle}
                     subtitleClassName={subtitleStyle}
                 />
-                
+
                 {/* Show submission status */}
                 {isSubmitting && (
                     <div style={{ padding: "1rem", background: "#f0f0f0", marginBottom: "1rem" }}>
                         Submitting form...
                     </div>
                 )}
-                
+
                 {actionData && (
-                    <div style={{ 
-                        padding: "1rem", 
-                        background: actionData.success ? "#d4edda" : "#f8d7da",
-                        marginBottom: "1rem",
-                        borderRadius: "4px"
-                    }}>
+                    <div
+                        style={{
+                            padding: "1rem",
+                            background: actionData.success ? "#d4edda" : "#f8d7da",
+                            marginBottom: "1rem",
+                            borderRadius: "4px",
+                        }}>
                         <strong>{actionData.success ? "Success!" : "Error!"}</strong>
                         <p>{actionData.message}</p>
                         {!actionData.success && actionData.error && (

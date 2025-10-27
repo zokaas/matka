@@ -176,9 +176,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     label={boQuestion.questionLabel}
                     error={questionProps.validationErrors[boQuestion.questionParameter]}
                     beneficialOwnerFieldsData={boData}
-                    handleChange={function (): void {
-                        throw new Error("Function not implemented.");
-                    }}
+                    onChange={questionProps.onChange}
                     countryList={questionProps.countryList || []}
                     infoItems={boQuestion.infoItems || null}
                 />

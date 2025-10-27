@@ -1,12 +1,11 @@
-import { T_DropDownOptionValue } from "@ui/dropdown";
-import { T_Answers, T_CountryArray, T_FormStepsWithQuestions } from "~/types";
+import { T_Answers, T_CountryArray, T_FormStepsWithQuestions, T_AnswerValue } from "~/types";
 
 export type T_QuestionsProps = {
     activeStep: number;
     activeStepName: string;
     questions: T_FormStepsWithQuestions;
     formValues: T_Answers;
-    onChange: (fieldName: string, value: T_DropDownOptionValue) => void;
+    onChange: (fieldName: string, value: T_AnswerValue) => void;
     onBlur: (fieldName: string) => void;
     countryList?: T_CountryArray;
     // TODO: Remove any

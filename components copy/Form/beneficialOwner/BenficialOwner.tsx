@@ -31,6 +31,7 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
     error,
     errorClassNames,
     infoItems,
+    onChange,
 }) => {
     const [popoverOpen, setPopoverOpen] = useState(false);
     const [entriesIndex, setEntriesIndex] = useState(0);
@@ -40,43 +41,81 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
      */
     const [fieldsMap, setFieldsMap] = useState<Map<string, Array<T_BoFieldParams>>>(new Map());
 
-
-    const ownersValue = React.useMemo(() => {
-        const owners = Array.from(fieldsMap.values()).map((arr) => {
+    /**
+     * Helper to convert fieldsMap to array of objects
+     */
+    const convertMapToOwnersArray = (map: Map<string, Array<T_BoFieldParams>>) => {
+        return Array.from(map.values()).map((arr) => {
             const obj: Record<string, string> = {};
             arr.forEach((f) => {
                 if (f?.fieldname) obj[f.fieldname] = String(f.value ?? "");
             });
             return obj;
         });
+    };
+
+    /**
+     * Compute JSON string for hidden input
+     */
+    const ownersValue = React.useMemo(() => {
+        const owners = convertMapToOwnersArray(fieldsMap);
         return JSON.stringify(owners);
     }, [fieldsMap]);
 
     /**
      * Preserve immutability with this helper function
+     * Also notifies parent component of changes
      */
     const updateMap = (key: string, value: Array<T_BoFieldParams>) => {
         const tempMap = new Map(fieldsMap);
         tempMap.set(key, value);
         setFieldsMap(tempMap);
+        
+        // Call onChange to notify parent (FormPage)
+        const owners = convertMapToOwnersArray(tempMap);
+        console.log("🔔 BeneficialOwner: Calling onChange after add");
+        console.log("  Owners array:", owners);
+        console.log("  Field name:", fieldName);
+        
+        if (onChange) {
+            onChange(fieldName, owners);
+        }
     };
 
+    /**
+     * Add beneficial owner handler
+     */
     const handleAddBo = (
         name: T_BoFieldParams,
         ssn: T_BoFieldParams,
         ownership: T_BoFieldParams,
         countries: T_BoFieldParams
     ) => {
+        console.log("➕ Adding beneficial owner");
         const valueArray: Array<T_BoFieldParams> = [name, ssn, ownership, countries];
         const nextIndex = entriesIndex + 1;
         setEntriesIndex(nextIndex);
         updateMap(`owner_${nextIndex}`, valueArray);
     };
 
+    /**
+     * Remove beneficial owner handler
+     */
     const handleRemoveBo = (mapKey: string) => {
+        console.log("➖ Removing beneficial owner:", mapKey);
         const tempMap = new Map(fieldsMap);
         tempMap.delete(mapKey);
         setFieldsMap(tempMap);
+        
+        // Call onChange to notify parent (FormPage)
+        const owners = convertMapToOwnersArray(tempMap);
+        console.log("🔔 BeneficialOwner: Calling onChange after remove");
+        console.log("  Owners array:", owners);
+        console.log("  Field name:", fieldName);
+        
+        if (onChange) {
+            onChange(fieldName, owners);
+        }
     };
 
     return (

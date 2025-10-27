@@ -38,7 +38,6 @@ export const loader = async ({
 
     const { sessionId, companyName, orgNumber } = await getOrganizationFromSession(request);
     
-    // Get applicationId from session - SAME WAY as kycType and productId are retrieved
     const session = await getSession(request.headers?.get("Cookie"));
     const applicationId = session.get("applicationId");
 
@@ -55,10 +54,7 @@ export const loader = async ({
             };
         }
 
-        // Pass applicationId SAME WAY as productId and kycType
         loaderData.formData = await getAndParseFormData(productId, kycType, sessionId);
-        
-        // Include applicationId SAME WAY as productId and kycType
         loaderData.pageData = {
             companyName,
             kycType,
