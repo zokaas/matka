@@ -2,7 +2,7 @@ const USER_WEEKLY_HOURS: { [key: string]: number } = {
   Tyyni: 3,
   Tuure: 3.5,
   Tuulia: 3.5,
-  Kasper: 3.5,
+  Kasper: 3,
   Tiia: 4,
   Zoka: 4,
   Linda: 4,
