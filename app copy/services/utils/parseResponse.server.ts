@@ -143,5 +143,7 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
         generalFormData,
         steps: parsedQuestionsByStep,
         answers,
+        applicationId:"",
+        questionSetId: "",
     };
 };

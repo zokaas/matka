@@ -1,4 +1,3 @@
-// components copy/Form/FormPage/FormPage.tsx
 import React, { useState, useEffect } from "react";
 import { Form, useSubmit, useActionData, useNavigation } from "react-router";
 
@@ -23,7 +22,7 @@ import { Button } from "@ui/button";
 import { Icon } from "@ui/icon";
 import { Questions } from "../questions/Questions";
 import { Footer } from "@ui/footer";
-import { T_AnswersMapValue, T_FormStepsKeys } from "~/types";
+import { T_AnswerValue, T_FormStepsKeys } from "~/types";
 
 export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
     const { formData, generalData } = props;
@@ -47,7 +46,7 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
         console.log("Form values:", entries);
     }, [formValues]);
 
-    const handleChange = (field: string, value: T_AnswersMapValue) => {
+    const handleChange = (field: string, value: T_AnswerValue) => {
         console.log(`Field changed: ${field} = ${JSON.stringify(value)}`);
         setFormValues((prev) => {
             const updated = new Map(prev);
@@ -238,7 +237,8 @@ useEffect(() => {
                             }}
                         />
                     </div>
-                    {/* Divider component could be created in the future */}
+                    {/* Divider */}
+                    {/* TODO: Divider should / could be own component (div perhaps). E.g. div -> Divider */}
                     <hr className="border-base-300 mb-6" />
                     {/* Company info */}
                     {activeStep === 1 && (
@@ -253,7 +253,7 @@ useEffect(() => {
                         <Questions
                             questions={formData.steps}
                             formValues={formValues}
-                            onChange={(fieldName: string, value: T_AnswersMapValue) =>
+                            onChange={(fieldName: string, value: T_AnswerValue) =>
                                 handleChange(fieldName, value)
                             }
                             onBlur={(fieldName: string) => handleOnBlur(fieldName)}
@@ -263,7 +263,7 @@ useEffect(() => {
                             activeStepName={getCurrentStepName(activeStep - 1)}
                         />
                     </Container>
-                    {/* Navigation buttons */}
+                    {/* mock buttons moved inside the form */}
                     <div
                         style={{
                             marginTop: "50px",

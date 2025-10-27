@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Container } from "@ui/container";
 import { T_BeneficialOwnerFormProps, T_BoFieldParams } from "./types";
 import { InputText } from "@ui/inputField";
@@ -36,6 +36,10 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
         }
     };
 
+    useEffect(() => {
+        setAddButtonDisabled(!(name.value && ssn.value && ownership.value && country.value));
+    }, [name.value, ssn.value, ownership.value, country.value]);
+    
     return (
         <Container>
             <InputText

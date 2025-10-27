@@ -1,4 +1,3 @@
-// app copy/routes/$productId.$kycType.tsx
 import React from "react";
 import { ActionFunctionArgs, Navigate, useLoaderData } from "react-router";
 import { verifySession } from "~/services/sessionProvider.server";
@@ -38,6 +37,10 @@ export const loader = async ({
         };
 
     const { sessionId, companyName, orgNumber } = await getOrganizationFromSession(request);
+    
+    // Get applicationId from session - SAME WAY as kycType and productId are retrieved
+    const session = await getSession(request.headers?.get("Cookie"));
+    const applicationId = session.get("applicationId");
 
     try {
         const { status, ttl } = await verifySession(productId, sessionId);
@@ -52,13 +55,17 @@ export const loader = async ({
             };
         }
 
+        // Pass applicationId SAME WAY as productId and kycType
         loaderData.formData = await getAndParseFormData(productId, kycType, sessionId);
+        
+        // Include applicationId SAME WAY as productId and kycType
         loaderData.pageData = {
             companyName,
             kycType,
             orgNumber,
             productId,
             ttl,
+            applicationId: applicationId || "",
         };
 
         if (!sessionId)
@@ -79,12 +86,17 @@ export const loader = async ({
     }
 };
 
-// app copy/routes/$productId.$kycType.tsx
 export const action = async ({ request, params }: ActionFunctionArgs) => {
     console.log("=== ACTION CALLED ===");
+    
+    // Get kycType and productId from params
     const { kycType, productId } = params;
+    
+    // Get applicationId from session - SAME PATTERN
+    const session = await getSession(request.headers?.get("Cookie"));
+    const applicationId = session.get("applicationId");
 
-    console.log("Params:", { kycType, productId });
+    console.log("Params:", { kycType, productId, applicationId });
 
     try {
         const { sessionId } = await getOrganizationFromSession(request);
@@ -97,7 +109,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         }
 
         const answersJson = formData.get("answers");
-        const applicationId = formData.get("applicationId") as string;
 
         console.log("Extracted data:", {
             answersJson: answersJson ? "present" : "missing",
@@ -122,13 +133,8 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             answers.filter((a: any) => a.answer !== "")
         );
 
-        // Get additional required data from session
-        const session = await getSession(request.headers?.get("Cookie"));
-        const kcUserId = session.get("kcUserId"); // Keycloak user ID from session
-
-        // Get questionSetId from the form metadata
-        // You might need to pass this from the loader or get it from the API
-        const questionSetId = "1"; // TODO: Get this from somewhere proper
+        const kcUserId = session.get("kcUserId");
+        const questionSetId = "1";
 
         console.log("Building payload with:", {
             userId: kcUserId,
@@ -138,18 +144,17 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             answersCount: answers.length,
         });
 
-        // Build the payload according to backend requirements
+        // Use applicationId SAME WAY as productId and kycType
         const payload = {
             userId: kcUserId,
             applicationId: applicationId,
             productId: productId,
-            questionSetId: questionSetId, // Use the one from form
+            questionSetId: questionSetId,
             answers: answers,
         };
 
-        // Send to backend
         console.log("Calling sendFormData with payload:", payload);
-        const result = await sendFormData(payload, productId, kycType, applicationId, sessionId);
+        const result = await sendFormData(payload, productId, kycType, applicationId || "", sessionId);
 
         console.log("Backend result:", result);
 
@@ -161,7 +166,6 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
     } catch (error) {
         console.error("Error submitting form:", error);
 
-        // Extract error details
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         const errorStack = error instanceof Error ? error.stack : undefined;
 
@@ -176,6 +180,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         };
     }
 };
+
 export default function KycFormPage(): JSX.Element {
     const loaderData = useLoaderData<T_ProductIdLoaderData>();
 
