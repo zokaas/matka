@@ -3,7 +3,8 @@ import { vars } from "@ui/themes";
 
 export const boComponentContainer = style({
     padding: "5px",
-    border: "1px solid #ccc",
+    border: "1px solid",
+    borderColor: "oklch(95% 0 0)",
 });
 
 export const boQuestionContainer = style({

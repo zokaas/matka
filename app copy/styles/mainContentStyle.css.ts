@@ -23,4 +23,7 @@ export const mainContainerStyle = style({
 export const formQuestionsContainer = style({
     marginTop: vars.spacing.basicPadding,
     minHeight: "300px",
+    maxWidth: vars.width.container_2xl,
+    marginLeft: "auto",
+    marginRight: "auto",
 });

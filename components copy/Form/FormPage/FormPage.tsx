@@ -14,6 +14,10 @@ import {
     progressLineActiveStyle,
     subtitleStyle,
     titleStyle,
+    stepsWrapperStyle,
+    dividerStyle,
+    buttonContainerStyle,
+    singleButtonContainerStyle
 } from "~/styles";
 import { Title } from "@ui/title";
 import { CompanyInfo } from "../../companyInfo";
@@ -25,7 +29,7 @@ import { Footer } from "@ui/footer";
 import { T_AnswerValue } from "~/types";
 
 export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
-    const { formData, generalData } = props;
+    const { formData /* , generalData */ } = props;
     const submit = useSubmit();
     const navigation = useNavigation();
     const isSubmitting = navigation.state === "submitting";
@@ -101,6 +105,7 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
     };
 
     const isLastStep = activeStep === formData.generalFormData.steps.length;
+    const isFirstStep = activeStep === 1;
 
     return (
         <main className={mainContentStyle}>
@@ -113,9 +118,9 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                     titleClassName={titleStyle}
                     subtitleClassName={subtitleStyle}
                 />
-                {/* Progress Steps */}
-                <Form method="post" className="max-w-2xl mx-auto" onSubmit={handleFormSubmit}>
-                    <div className="mb-12">
+                <Form method="post" onSubmit={handleFormSubmit}>
+                    {/* Progress Steps */}
+                    <Container className={stepsWrapperStyle}>
                         <Steps
                             steps={formData.generalFormData.steps}
                             activeStep={activeStep}
@@ -128,10 +133,10 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                                 },
                             }}
                         />
-                    </div>
+                    </Container>
                     {/* Divider */}
                     {/* TODO: Divider should / could be own component (div perhaps). E.g. div -> Divider */}
-                    <hr className="border-base-300 mb-6" />
+                    <hr className={dividerStyle} />
                     {/* Company info */}
                     {activeStep === 1 && (
                         <CompanyInfo
@@ -156,22 +161,20 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                         />
                     </Container>
 
-                    <div
-                        style={{
-                            marginTop: "50px",
-                            display: "flex",
-                            justifyContent: "space-around",
-                        }}>
-                        <Button
-                            label={[
-                                <Icon iconName="chevron-left" iconPrefix="far" key="arrow-1" />,
-                                ` ${formData.generalFormData.button.back}`,
-                            ]}
-                            onClick={() => prevStep()}
-                            type="button"
-                            className=""
-                            disabled={activeStep === 1 || isSubmitting}
-                        />
+                    <Container
+                        className={isFirstStep ? singleButtonContainerStyle : buttonContainerStyle}>
+                        {!isFirstStep && (
+                            <Button
+                                label={[
+                                    <Icon iconName="chevron-left" iconPrefix="far" key="arrow-1" />,
+                                    ` ${formData.generalFormData.button.back}`,
+                                ]}
+                                onClick={() => prevStep()}
+                                type="button"
+                                className=""
+                                disabled={isSubmitting}
+                            />
+                        )}
                         <Button
                             label={[
                                 `${isLastStep ? formData.generalFormData.button.submit : formData.generalFormData.button.next} `,
@@ -182,7 +185,7 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                             className=""
                             disabled={isSubmitting}
                         />
-                    </div>
+                    </Container>
                 </Form>
             </Container>
             <Footer footer={formData.generalFormData.footer} />

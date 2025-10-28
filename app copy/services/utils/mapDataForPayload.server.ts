@@ -1,6 +1,6 @@
-import { T_Answer, T_AnswerEntry, T_AnswerValue, T_Payload } from "~/types";
+import { T_AnswerObject, T_AnswerEntry, T_AnswerValue, T_Payload } from "~/types";
 
-export function createAnswersArray(answersEntries: T_AnswerEntry[]): T_Answer[] {
+export function createAnswersArray(answersEntries: T_AnswerEntry[]): T_AnswerObject[] {
   return answersEntries.map((entry) => ({
     questionId: entry.questionId,
     question: entry.question,

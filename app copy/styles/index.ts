@@ -6,3 +6,4 @@ export * from "./companyInfoStyle.css";
 export * from "./questionsStyle.css";
 export * from "./radiogroupStyle.css";
 export * from "./beneficialOwnerStyle.css";
+export * from "./formPageStyles.css"
