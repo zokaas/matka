@@ -16,7 +16,8 @@ export const Questions: React.FC<T_QuestionsProps> = (props: T_QuestionsProps) =
 
         const currentQuestionValue = formValues.get(currentQuestion.questionParameter);
 
-        if (`${dependantQuestion.conditionValue}` === `${currentQuestionValue?.answer}`) return true;
+        if (`${dependantQuestion.conditionValue}` === `${currentQuestionValue?.answer}`)
+            return true;
 
         return false;
     };

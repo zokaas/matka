@@ -1,1 +1,1 @@
-export * from "./boMapToArray"
+export * from "./boMapToArray";

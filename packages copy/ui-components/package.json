@@ -1,0 +1,21 @@
+{
+    "private": true,
+    "name": "ui-components",
+    "version": "1.0.0",
+    "description": "",
+    "scripts": {
+        "build": "rm -rf dist && tsc",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@awesome.me/kit-60ea292f8c": "^1.0.7",
+        "@fortawesome/react-fontawesome": "^0.2.2",
+        "react": "19.1.1"
+    },
+    "devDependencies": {
+        "typescript": "^5.1.6"
+    }
+}

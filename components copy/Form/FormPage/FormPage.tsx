@@ -17,7 +17,7 @@ import {
     stepsWrapperStyle,
     dividerStyle,
     buttonContainerStyle,
-    singleButtonContainerStyle
+    singleButtonContainerStyle,
 } from "~/styles";
 import { Title } from "@ui/title";
 import { CompanyInfo } from "../../companyInfo";
@@ -27,6 +27,7 @@ import { Icon } from "@ui/icon";
 import { Questions } from "../questions/Questions";
 import { Footer } from "@ui/footer";
 import { T_AnswerValue } from "~/types";
+import { submitFormAnswers } from "~/services/utils/submitFormAnswers";
 
 export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
     const { formData /* , generalData */ } = props;
@@ -37,6 +38,7 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
     const [formValues, setFormValues] = useState(formData.answers);
     const [validationErrors, setValidationError] = useState({});
     const [activeStep, setActiveStep] = useState(1);
+    const formRef = React.useRef<HTMLFormElement>(null);
 
     const handleChange = (field: string, value: T_AnswerValue) => {
         setFormValues((prev) => {
@@ -60,42 +62,17 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
             console.info("Value missing, validation should fail!!!");
         }
     };
-
-    const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-
-        const answersArray = Array.from(formValues.entries()).map(([, value]) => {
-            return {
-                questionId: value.questionId,
-                question: value.question,
-                answer: value.answer,
-            };
-        });
-
-        try {
-            const formDataToSubmit = new FormData();
-            formDataToSubmit.append("answers", JSON.stringify(answersArray));
-            formDataToSubmit.append("questionSetId", String(formData.id));
-
-            submit(formDataToSubmit, { method: "post" });
-        } catch (error) {
-            console.error("Error submitting form:", error);
-        }
+        submitFormAnswers(formValues, String(formData.id), submit);
     };
 
     const getCurrentStepName = (activeStepIndex: number): string =>
         formData.generalFormData.steps[activeStepIndex].stepName;
 
     const nextStep = () => {
-        if (activeStep === formData.generalFormData.steps.length) {
-            const formElement = document.querySelector("form");
-            if (formElement) {
-                console.log("Form element found, requesting submit");
-                formElement.requestSubmit();
-            } else {
-                console.error("Form element not found!");
-            }
-        } else {
+        if (isLastStep) formRef.current?.requestSubmit();
+        else {
             setActiveStep(activeStep + 1);
         }
     };
@@ -118,7 +95,7 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                     titleClassName={titleStyle}
                     subtitleClassName={subtitleStyle}
                 />
-                <Form method="post" onSubmit={handleFormSubmit}>
+                <Form ref={formRef} method="post" onSubmit={handleFormSubmit}>
                     {/* Progress Steps */}
                     <Container className={stepsWrapperStyle}>
                         <Steps
@@ -171,7 +148,6 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                                 ]}
                                 onClick={() => prevStep()}
                                 type="button"
-                                className=""
                                 disabled={isSubmitting}
                             />
                         )}
@@ -182,7 +158,6 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                             ]}
                             onClick={() => nextStep()}
                             type="button"
-                            className=""
                             disabled={isSubmitting}
                         />
                     </Container>

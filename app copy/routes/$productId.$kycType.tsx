@@ -6,7 +6,7 @@ import { getOrganizationFromSession, getSession } from "~/services/sessionStorag
 import { getAndParseFormData } from "~/services/api/get-form-data.server";
 import { T_ProductIdLoaderData, T_ProductIdPageData } from "./types/productIdPage";
 import { FormPage } from "../../components/Form";
-import { T_ParsedFormData, T_AnswerEntry } from "~/types";
+import { T_ParsedFormData, T_AnswerObject } from "~/types";
 import { Route } from "apps/kyc/.react-router/types/app/+types/root";
 
 import { Header } from "@ui/header";
@@ -90,7 +90,7 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
         const session = await getSession(request.headers?.get("Cookie"));
         const applicationId = session.get("applicationId");
         const kcUserId = session.get("kcUserId");
-        const { sessionId } = await getOrganizationFromSession(request);
+        const { sessionId, companyName, orgNumber } = await getOrganizationFromSession(request);
 
         const formData = await request.formData();
         const answersJson = formData.get("answers");
@@ -110,16 +110,18 @@ export const action = async ({ request, params }: ActionFunctionArgs) => {
             };
         }
 
-        const answerEntries = JSON.parse(answersJson as string) as T_AnswerEntry[];
+        const answerEntries = JSON.parse(answersJson as string) as Array<T_AnswerObject>;
 
         const payload = mapDataForPayload(
             answerEntries,
             kcUserId,
             applicationId,
             productId,
-            questionSetId as string
+            questionSetId as string,
+            companyName,
+            orgNumber
         );
-
+        console.log("payload", payload);
         const result = await sendFormData(payload, productId, kycType, applicationId, sessionId);
 
         console.log("Backend result:", result);

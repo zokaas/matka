@@ -39,7 +39,7 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
     useEffect(() => {
         setAddButtonDisabled(!(name.value && ssn.value && ownership.value && country.value));
     }, [name.value, ssn.value, ownership.value, country.value]);
-    
+
     return (
         <Container>
             <InputText

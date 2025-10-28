@@ -9,9 +9,7 @@ import {
     boResultValuesContainer,
 } from "~/styles";
 
-export const BeneficialOwnerResult: React.FC<T_BeneficialOwnerResultProps> = ({
-    fieldArray,
-}) => {
+export const BeneficialOwnerResult: React.FC<T_BeneficialOwnerResultProps> = ({ fieldArray }) => {
     return (
         <Container className={boResultContainer}>
             {fieldArray.map((item, index) => (

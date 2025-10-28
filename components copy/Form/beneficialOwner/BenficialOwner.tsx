@@ -36,8 +36,15 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
 }) => {
     const [popoverOpen, setPopoverOpen] = useState(false);
     const [entriesIndex, setEntriesIndex] = useState(0);
+
+    /**
+     * Use map for easier iteration in component
+     */
     const [fieldsMap, setFieldsMap] = useState<Map<string, Array<T_BoFieldParams>>>(new Map());
 
+    /**
+     * Preserve immutability with this helper function
+     */
     const updateMap = (key: string, value: Array<T_BoFieldParams>) => {
         const tempMap = new Map(fieldsMap);
         tempMap.set(key, value);

@@ -31,7 +31,7 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
             const dependentParameter = dynamicField.questionParameter;
             //TODO:from in strapi
             const compositeKey = `${parentParameter}::${dependentParameter}`;
-            
+
             result.dependentQuestion = {
                 __component: "kyc.dependent-question",
                 componentType: dynamicField.componentType,
