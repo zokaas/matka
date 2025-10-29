@@ -58,11 +58,11 @@
   },
   "strapi": {
     "kind": "plugin",
-    "name": "y",
-    "displayName": "KYC QUESTION BUILDER",
-    "description": ""
+    "name": "kyc-question-builder",
+    "displayName": "KYC Question Builder",
+    "description": "Visual builder for creating and managing KYC questions"
   },
-  "name": "y",
+  "name": "kyc-question-builder",
   "description": "",
   "license": " ",
   "repository": {

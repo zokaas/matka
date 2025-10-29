@@ -1,1 +1,1 @@
-export const PLUGIN_ID = 'y';
+export const PLUGIN_ID = 'kyc-question-builder';
