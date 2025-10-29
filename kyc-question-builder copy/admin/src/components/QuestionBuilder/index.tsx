@@ -1,17 +1,9 @@
 import React, { useState } from 'react';
 import {
-  ModalLayout,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
   Box,
+  Button,
+  Flex,
   Typography,
-  Tabs,
-  Tab,
-  TabGroup,
-  TabPanels,
-  TabPanel,
 } from '@strapi/design-system';
 import { useNotification } from '@strapi/strapi/admin';
 import QuestionForm from './QuestionForm';
@@ -40,6 +32,7 @@ const QuestionBuilder: React.FC<QuestionBuilderProps> = ({
   });
   const [isSaving, setIsSaving] = useState(false);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
+  const [activeTab, setActiveTab] = useState('form');
   const { toggleNotification } = useNotification();
 
   const handleSave = async () => {
@@ -74,74 +67,124 @@ const QuestionBuilder: React.FC<QuestionBuilderProps> = ({
   };
 
   return (
-    <ModalLayout onClose={onClose} labelledBy="question-builder-title">
-      <ModalHeader>
-        <Typography id="question-builder-title" variant="beta">
-          {question ? 'Edit Question' : 'Create New Question'}
-        </Typography>
-      </ModalHeader>
+    <Box
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        zIndex: 9999,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+      }}
+      onClick={onClose}
+    >
+      <Box
+        background="neutral0"
+        hasRadius
+        shadow="tableShadow"
+        style={{
+          width: '100%',
+          maxWidth: '900px',
+          maxHeight: '90vh',
+          overflow: 'auto',
+        }}
+        onClick={(e: any) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <Box
+          padding={4}
+          borderColor="neutral200"
+          style={{ borderBottom: '1px solid #eaeaea' }}
+        >
+          <Flex justifyContent="space-between" alignItems="center">
+            <Typography variant="beta">
+              {question ? 'Edit Question' : 'Create New Question'}
+            </Typography>
+            <Button variant="tertiary" onClick={onClose}>
+              ✕
+            </Button>
+          </Flex>
+        </Box>
 
-      <ModalBody>
-        <TabGroup label="Question Builder Tabs" id="question-tabs">
-          <Tabs>
-            <Tab>Form</Tab>
-            <Tab>Preview</Tab>
-          </Tabs>
-          <TabPanels>
-            <TabPanel>
-              <Box padding={4}>
-                {validationErrors.length > 0 && (
-                  <Box
-                    padding={4}
-                    marginBottom={4}
-                    background="danger100"
-                    borderColor="danger600"
-                    hasRadius
-                  >
-                    <Typography variant="omega" textColor="danger700">
-                      Validation Errors:
-                    </Typography>
-                    <ul>
-                      {validationErrors.map((error, index) => (
-                        <li key={index}>
-                          <Typography variant="omega" textColor="danger700">
-                            {error}
-                          </Typography>
-                        </li>
-                      ))}
-                    </ul>
-                  </Box>
-                )}
-                
-                <QuestionForm
-                  data={formData}
-                  onChange={setFormData}
-                  locale={locale}
-                />
-              </Box>
-            </TabPanel>
-            <TabPanel>
-              <Box padding={4}>
-                <LivePreview question={formData} />
-              </Box>
-            </TabPanel>
-          </TabPanels>
-        </TabGroup>
-      </ModalBody>
+        {/* Tab Navigation */}
+        <Box padding={4} borderColor="neutral200" style={{ borderBottom: '1px solid #eaeaea' }}>
+          <Flex gap={2}>
+            <Button
+              variant={activeTab === 'form' ? 'default' : 'tertiary'}
+              onClick={() => setActiveTab('form')}
+            >
+              Form
+            </Button>
+            <Button
+              variant={activeTab === 'preview' ? 'default' : 'tertiary'}
+              onClick={() => setActiveTab('preview')}
+            >
+              Preview
+            </Button>
+          </Flex>
+        </Box>
 
-      <ModalFooter
-        startActions={
-          <Button onClick={onClose} variant="tertiary">
-            Cancel
-          </Button>
-        }
-        endActions={
-          <Button onClick={handleSave} loading={isSaving}>
-            {question ? 'Update' : 'Create'}
-          </Button>
-        }
-      />
-    </ModalLayout>
+        {/* Content */}
+        <Box padding={4} style={{ minHeight: '400px', maxHeight: 'calc(90vh - 200px)', overflow: 'auto' }}>
+          {activeTab === 'form' && (
+            <>
+              {validationErrors.length > 0 && (
+                <Box
+                  padding={4}
+                  marginBottom={4}
+                  background="danger100"
+                  hasRadius
+                >
+                  <Typography variant="omega" textColor="danger700" fontWeight="bold">
+                    Validation Errors:
+                  </Typography>
+                  <ul style={{ marginTop: '8px', paddingLeft: '20px' }}>
+                    {validationErrors.map((error, index) => (
+                      <li key={index}>
+                        <Typography variant="omega" textColor="danger700">
+                          {error}
+                        </Typography>
+                      </li>
+                    ))}
+                  </ul>
+                </Box>
+              )}
+              
+              <QuestionForm
+                data={formData}
+                onChange={setFormData}
+                locale={locale}
+              />
+            </>
+          )}
+
+          {activeTab === 'preview' && (
+            <LivePreview question={formData} />
+          )}
+        </Box>
+
+        {/* Footer */}
+        <Box
+          padding={4}
+          borderColor="neutral200"
+          style={{ borderTop: '1px solid #eaeaea' }}
+        >
+          <Flex justifyContent="space-between">
+            <Button onClick={onClose} variant="tertiary">
+              Cancel
+            </Button>
+            <Button onClick={handleSave} loading={isSaving}>
+              {question ? 'Update' : 'Create'}
+            </Button>
+          </Flex>
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

@@ -2,14 +2,11 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
-  Layout,
-  Main,
-  HeaderLayout,
-  ContentLayout,
   Flex,
   Typography,
 } from '@strapi/design-system';
-import { SingleSelect, SingleSelectOption } from '@strapi/design-system';  // Updated import
+import { Page } from '@strapi/strapi/admin';
+import { SingleSelect, SingleSelectOption } from '@strapi/design-system';
 import { Plus } from '@strapi/icons';
 import { useNotification } from '@strapi/strapi/admin';
 import QuestionList from '../components/QuestionList';
@@ -60,59 +57,63 @@ const HomePage = () => {
   };
 
   return (
-    <Layout>
-      <Main>
-        <HeaderLayout
-          title="KYC Question Builder"
-          subtitle="Create and manage KYC questions with validation"
-          primaryAction={
+    <Page.Main>
+      <Page.Title>KYC Question Builder</Page.Title>
+      
+      <Box padding={8}>
+        <Flex direction="column" gap={6}>
+          {/* Header Section */}
+          <Flex justifyContent="space-between" alignItems="center">
+            <Box>
+              <Typography variant="alpha">KYC Question Builder</Typography>
+              <Typography variant="omega" textColor="neutral600">
+                Create and manage KYC questions with validation
+              </Typography>
+            </Box>
             <Button
               startIcon={<Plus />}
               onClick={handleCreate}
             >
               Create New Question
             </Button>
-          }
-        />
-        <ContentLayout>
-          <Box padding={8}>
-            <Flex direction="column" gap={4}>
-              <Box>
-                <SingleSelect
-                  label="Locale"
-                  value={locale}
-                  onChange={setLocale}
-                >
-                  <SingleSelectOption value="se">Swedish (SE)</SingleSelectOption>
-                  <SingleSelectOption value="fi">Finnish (FI)</SingleSelectOption>
-                </SingleSelect>
-              </Box>
-              
-              {isLoading ? (
-                <Box padding={8} style={{ textAlign: 'center' }}>
-                  <Typography>Loading...</Typography>
-                </Box>
-              ) : (
-                <QuestionList
-                  questions={questions}
-                  onEdit={handleEdit}
-                  onRefresh={loadQuestions}
-                  locale={locale}
-                />
-              )}
-            </Flex>
-          </Box>
+          </Flex>
 
-          {isBuilderOpen && (
-            <QuestionBuilder
-              question={editingQuestion}
+          {/* Locale Selector */}
+          <Box style={{ maxWidth: '300px' }}>
+            <SingleSelect
+              label="Locale"
+              value={locale}
+              onChange={setLocale}
+            >
+              <SingleSelectOption value="se">Swedish (SE)</SingleSelectOption>
+              <SingleSelectOption value="fi">Finnish (FI)</SingleSelectOption>
+            </SingleSelect>
+          </Box>
+          
+          {/* Questions List */}
+          {isLoading ? (
+            <Box padding={8} style={{ textAlign: 'center' }}>
+              <Typography>Loading...</Typography>
+            </Box>
+          ) : (
+            <QuestionList
+              questions={questions}
+              onEdit={handleEdit}
+              onRefresh={loadQuestions}
               locale={locale}
-              onClose={handleClose}
             />
           )}
-        </ContentLayout>
-      </Main>
-    </Layout>
+        </Flex>
+      </Box>
+
+      {isBuilderOpen && (
+        <QuestionBuilder
+          question={editingQuestion}
+          locale={locale}
+          onClose={handleClose}
+        />
+      )}
+    </Page.Main>
   );
 };
 

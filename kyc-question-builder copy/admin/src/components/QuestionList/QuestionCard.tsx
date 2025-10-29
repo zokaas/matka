@@ -5,13 +5,6 @@ import {
   Typography,
   IconButton,
   Badge,
-  Card,
-  CardBody,
-  CardContent,
-  CardBadge,
-  CardAsset,
-  CardHeader,
-  CardAction,
 } from '@strapi/design-system';
 import { Pencil, Trash } from '@strapi/icons';
 

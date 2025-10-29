@@ -21,7 +21,7 @@ const QuestionTypeSelector: React.FC<QuestionTypeSelectorProps> = ({
   onChange,
 }) => {
   return (
-    <Field name="componentType" required>
+    <Field name="componentType">
       <SingleSelect
         label="Question Type"
         placeholder="Select a question type"

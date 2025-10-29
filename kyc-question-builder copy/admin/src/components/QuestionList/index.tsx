@@ -1,6 +1,5 @@
 import React from 'react';
-import { Box, Flex, Typography, IconButton, EmptyStateLayout } from '@strapi/design-system';
-import { Pencil, Trash } from '@strapi/icons';
+import { Box, Flex, Typography, EmptyStateLayout } from '@strapi/design-system';
 import { useNotification } from '@strapi/strapi/admin';
 import QuestionCard from './QuestionCard';
 import { deleteQuestion } from '../../api/questions';
@@ -42,11 +41,11 @@ const QuestionList: React.FC<QuestionListProps> = ({
 
   if (!questions || questions.length === 0) {
     return (
-      <EmptyStateLayout
-        icon={null}
-        content="No questions yet"
-        action={null}
-      />
+      <Box padding={8} style={{ textAlign: 'center' }}>
+        <Typography variant="omega" textColor="neutral600">
+          No questions yet. Click "Create New Question" to add one.
+        </Typography>
+      </Box>
     );
   }
 

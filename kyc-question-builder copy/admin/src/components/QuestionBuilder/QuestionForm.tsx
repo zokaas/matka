@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  TextInput,
-  Textarea,
-  Field,
-  Flex,
-  Button,
-  Typography,
-  Grid,
-  GridItem,
-} from '@strapi/design-system';
+import { Box, TextInput, Textarea, Field, Flex, Button, Typography } from '@strapi/design-system';
 import {
   MultiSelect,
   MultiSelectOption,
@@ -29,8 +19,8 @@ interface QuestionFormProps {
 }
 
 const QuestionForm: React.FC<QuestionFormProps> = ({ data, onChange, locale }) => {
-  const [errorMessages, setErrorMessages] = useState([]);
-  const [templates, setTemplates] = useState([]);
+  const [errorMessages, setErrorMessages] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<any[]>([]);
   const [showTemplates, setShowTemplates] = useState(false);
 
   useEffect(() => {
@@ -166,50 +156,49 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ data, onChange, locale }) =
           {showTemplates ? 'Hide Templates' : 'Use Template'}
         </Button>
 
-        {showTemplates && (
+        {showTemplates && templates.length > 0 && (
           <Box marginTop={2} padding={4} background="neutral100" hasRadius>
-            <Grid gap={2}>
+            <Flex direction="column" gap={2}>
               {templates.map((template: any) => (
-                <GridItem key={template.id} col={6}>
-                  <Box
-                    padding={3}
-                    background="neutral0"
-                    hasRadius
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => handleApplyTemplate(template)}
-                  >
-                    <Typography variant="omega" fontWeight="bold">
-                      {template.name}
-                    </Typography>
-                    <Typography variant="pi" textColor="neutral600">
-                      {template.category}
-                    </Typography>
-                  </Box>
-                </GridItem>
+                <Box
+                  key={template.id}
+                  padding={3}
+                  background="neutral0"
+                  hasRadius
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => handleApplyTemplate(template)}
+                >
+                  <Typography variant="omega" fontWeight="bold">
+                    {template.name}
+                  </Typography>
+                  <Typography variant="pi" textColor="neutral600">
+                    {template.category}
+                  </Typography>
+                </Box>
               ))}
-            </Grid>
+            </Flex>
           </Box>
         )}
       </Box>
 
       <QuestionTypeSelector value={data.componentType} onChange={handleTypeChange} />
 
-      <Field name="questionParameter" required>
+      <Field name="questionParameter">
         <TextInput
           label="Question Parameter"
           placeholder="e.g., businessPlan, loanPurpose"
-          value={data.questionParameter}
+          value={data.questionParameter || ''}
           onChange={(e: any) => handleFieldChange('questionParameter', e.target.value)}
           hint="Unique identifier for this question (camelCase)"
           required
         />
       </Field>
 
-      <Field name="questionLabel" required>
+      <Field name="questionLabel">
         <Textarea
           label="Question Label"
           placeholder="Enter the question text"
-          value={data.questionLabel}
+          value={data.questionLabel || ''}
           onChange={(e: any) => handleFieldChange('questionLabel', e.target.value)}
           required
         />
@@ -229,16 +218,18 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ data, onChange, locale }) =
       {shouldShowField('options') && (
         <OptionsBuilder
           options={data.options || []}
-          onChange={(options) => handleFieldChange('options', options)}
+          onChange={(options: Array<{ text: string; value: number }>) =>
+            handleFieldChange('options', options)
+          }
         />
       )}
 
-      <Field name="errorMessages" required>
+      <Field name="errorMessages">
         <MultiSelect
           label="Error Messages"
           placeholder="Select error messages"
           value={data.errorMessages?.map((msg: any) => msg.documentId || msg.id) || []}
-          onChange={(value: any) => {
+          onChange={(value: string[]) => {
             const selected = errorMessages.filter((msg: any) =>
               value.includes(msg.documentId || msg.id)
             );
@@ -262,7 +253,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ data, onChange, locale }) =
 
         <InfoBuilder
           info={data.dynamicField?.find((f: any) => f.__component === 'kyc.info')}
-          onChange={(info) => {
+          onChange={(info: any) => {
             const filtered =
               data.dynamicField?.filter((f: any) => f.__component !== 'kyc.info') || [];
             if (info) {
@@ -317,7 +308,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ data, onChange, locale }) =
               (f: any) => f.__component === 'kyc.dependent-question'
             )}
             parentOptions={data.options || []}
-            onChange={(dependent) => {
+            onChange={(dependent: any) => {
               const filtered =
                 data.dynamicField?.filter((f: any) => f.__component !== 'kyc.dependent-question') ||
                 [];
