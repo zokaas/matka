@@ -16,6 +16,8 @@ import policies from './policies';
 import routes from './routes';
 import services from './services';
 
+// Export types
+
 export default {
   register,
   bootstrap,

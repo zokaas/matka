@@ -1,8 +1,16 @@
 import type { Core } from '@strapi/strapi';
 
-interface ValidationResult {
+export interface ValidationResult {
   valid: boolean;
   errors: string[];
+}
+
+export interface FieldVisibility {
+  placeholder: boolean;
+  options: boolean;
+  dynamicField: {
+    [key: string]: boolean;
+  };
 }
 
 const validationService = ({ strapi }: { strapi: Core.Strapi }) => ({
@@ -33,11 +41,9 @@ const validationService = ({ strapi }: { strapi: Core.Strapi }) => ({
         if (!data.errorMessages || data.errorMessages.length === 0) {
           errors.push(`errorMessages is required for ${componentType}`);
         }
-        // These types should NOT have options
         if (data.options && data.options.length > 0) {
           errors.push(`${componentType} cannot have options`);
         }
-        // Can only have info in dynamicField
         if (data.dynamicField && data.dynamicField.length > 0) {
           const invalidComponents = data.dynamicField.filter(
             (field: any) => field.__component !== 'kyc.info'
@@ -55,7 +61,6 @@ const validationService = ({ strapi }: { strapi: Core.Strapi }) => ({
         if (!data.errorMessages || data.errorMessages.length === 0) {
           errors.push('errorMessages is required for RadioGroup');
         }
-        // Check if options are Yes(1)/No(0 or 2) for dependent questions
         if (data.dynamicField && data.dynamicField.length > 0) {
           const hasDependent = data.dynamicField.some(
             (field: any) => field.__component === 'kyc.dependent-question'
@@ -68,7 +73,6 @@ const validationService = ({ strapi }: { strapi: Core.Strapi }) => ({
               errors.push('RadioGroup with dependent questions must have Yes(1)/No(0 or 2) options');
             }
             
-            // Validate dependent question doesn't have its own dependent
             const dependentQuestions = data.dynamicField.filter(
               (field: any) => field.__component === 'kyc.dependent-question'
             );
@@ -80,7 +84,6 @@ const validationService = ({ strapi }: { strapi: Core.Strapi }) => ({
             });
           }
         }
-        // Placeholder should not exist
         if (data.placeholder) {
           errors.push('RadioGroup cannot have placeholder');
         }
@@ -95,7 +98,6 @@ const validationService = ({ strapi }: { strapi: Core.Strapi }) => ({
           errors.push(`errorMessages is required for ${componentType}`);
         }
         
-        // Must have either options OR country-options
         const hasOptions = data.options && data.options.length > 0;
         const hasCountryOptions = data.dynamicField?.some(
           (field: any) => field.__component === 'kyc.country-options'
@@ -108,7 +110,6 @@ const validationService = ({ strapi }: { strapi: Core.Strapi }) => ({
           errors.push(`${componentType} cannot have both options and country-options`);
         }
         
-        // Cannot have dependent questions
         const hasDependent = data.dynamicField?.some(
           (field: any) => field.__component === 'kyc.dependent-question'
         );
@@ -118,7 +119,6 @@ const validationService = ({ strapi }: { strapi: Core.Strapi }) => ({
         break;
         
       case 'BeneficialOwner':
-        // Must have beneficial-owner component
         const hasBOComponent = data.dynamicField?.some(
           (field: any) => field.__component === 'kyc.beneficial-owner'
         );
@@ -126,7 +126,6 @@ const validationService = ({ strapi }: { strapi: Core.Strapi }) => ({
           errors.push('BeneficialOwner must have kyc.beneficial-owner component in dynamicField');
         }
         
-        // Should not have placeholder, options, or dependent questions
         if (data.placeholder) {
           errors.push('BeneficialOwner cannot have placeholder');
         }
@@ -148,8 +147,8 @@ const validationService = ({ strapi }: { strapi: Core.Strapi }) => ({
     };
   },
   
-  getFieldVisibility(componentType: string) {
-    const visibility: any = {
+  getFieldVisibility(componentType: string): FieldVisibility {
+    const visibility: FieldVisibility = {
       placeholder: false,
       options: false,
       dynamicField: {
