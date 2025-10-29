@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_fo_components_generic_tables",
+  "info": {
+    "displayName": "Generic Table",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "paginatorShow": {
+      "type": "string"
+    },
+    "nodata": {
+      "type": "string"
+    }
+  }
+}

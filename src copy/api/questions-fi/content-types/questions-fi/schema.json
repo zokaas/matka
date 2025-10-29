@@ -1,0 +1,70 @@
+{
+  "kind": "collectionType",
+  "collectionName": "questions_fis",
+  "info": {
+    "singularName": "questions-fi",
+    "pluralName": "questions-fis",
+    "displayName": "Questions FI",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "questionParameter": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "questionLabel": {
+      "type": "text",
+      "required": true
+    },
+    "componentType": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "Text",
+        "Textarea",
+        "Number",
+        "RadioGroup",
+        "Select",
+        "MultiSelectDropdown",
+        "BeneficialOwner"
+      ]
+    },
+    "errorMessages": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::error-message.error-message"
+    },
+    "placeholder": {
+      "type": "text"
+    },
+    "options": {
+      "type": "component",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "componentType"
+            },
+            "RadioGroup"
+          ]
+        }
+      },
+      "component": "kyc.option-item",
+      "repeatable": true
+    },
+    "dynamicField": {
+      "type": "dynamiczone",
+      "components": [
+        "kyc.dependent-question",
+        "kyc.info",
+        "kyc.country-options",
+        "kyc.beneficial-owner"
+      ]
+    }
+  }
+}

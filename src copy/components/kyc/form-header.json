@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_kyc_form_headers",
+  "info": {
+    "displayName": "formHeader",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "subtitle": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

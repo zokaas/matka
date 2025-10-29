@@ -1,0 +1,34 @@
+{
+  "collectionName": "components_everyday_components_faq_pages",
+  "info": {
+    "displayName": "FAQ Page",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "FAQ": {
+      "displayName": "FAQ item",
+      "type": "component",
+      "repeatable": true,
+      "component": "everyday-components.faq-item"
+    },
+    "pageTitle": {
+      "type": "string"
+    },
+    "noticeBlockTitle": {
+      "type": "string"
+    },
+    "generalBlockTitle": {
+      "type": "string"
+    },
+    "paybackBlockTitle": {
+      "type": "string"
+    },
+    "helpBlockTitle": {
+      "type": "string"
+    },
+    "helpBlockText": {
+      "type": "string"
+    }
+  }
+}

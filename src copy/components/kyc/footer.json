@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_kyc_footers",
+  "info": {
+    "displayName": "Footer"
+  },
+  "options": {},
+  "attributes": {
+    "customerServiceLabel": {
+      "type": "string"
+    },
+    "customerServiceText": {
+      "type": "text"
+    },
+    "contactInfoLabel": {
+      "type": "string"
+    },
+    "contactInfoText": {
+      "type": "text"
+    },
+    "addressLabel": {
+      "type": "string"
+    },
+    "addressText": {
+      "type": "text"
+    }
+  }
+}

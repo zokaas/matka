@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_component_headers",
+  "info": {
+    "displayName": "Header",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "helpText": {
+      "type": "string"
+    },
+    "loginText": {
+      "type": "string"
+    },
+    "logoutText": {
+      "type": "string"
+    }
+  }
+}

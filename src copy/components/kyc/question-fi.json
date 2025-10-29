@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_kyc_question_fis",
+  "info": {
+    "displayName": "question-fi",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "questions_fi": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::questions-fi.questions-fi"
+    },
+    "step": {
+      "type": "integer",
+      "max": 3,
+      "min": 1,
+      "required": true
+    }
+  }
+}

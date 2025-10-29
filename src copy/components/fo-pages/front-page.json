@@ -1,0 +1,37 @@
+{
+  "collectionName": "components_fo_pages_front_pages",
+  "info": {
+    "displayName": "Front page",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "frontPageAccountDetailBlock": {
+      "displayName": "AccountDetailBlock",
+      "type": "component",
+      "repeatable": false,
+      "component": "fo-components.account-detail-block"
+    },
+    "frontPageNewsBlock": {
+      "displayName": "News Block",
+      "type": "component",
+      "repeatable": false,
+      "component": "fo-components.news-block"
+    },
+    "frontPageWithdrawBlock": {
+      "displayName": "Withdraw Block",
+      "type": "component",
+      "repeatable": false,
+      "component": "fo-components.withdraw-block"
+    },
+    "frontPageCollection": {
+      "displayName": "Front Page Collection",
+      "type": "component",
+      "repeatable": false,
+      "component": "fo-components.front-page-collection"
+    },
+    "pageTitle": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_global_company_addresses",
+  "info": {
+    "displayName": "companyAddress"
+  },
+  "options": {},
+  "attributes": {
+    "line": {
+      "type": "string"
+    }
+  }
+}

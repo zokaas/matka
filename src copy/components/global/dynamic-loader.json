@@ -1,0 +1,18 @@
+{
+  "collectionName": "components_global_dynamic_loaders",
+  "info": {
+    "displayName": "dynamicLoader"
+  },
+  "options": {},
+  "attributes": {
+    "loaderText1": {
+      "type": "text"
+    },
+    "loaderText2": {
+      "type": "text"
+    },
+    "loaderText3": {
+      "type": "text"
+    }
+  }
+}

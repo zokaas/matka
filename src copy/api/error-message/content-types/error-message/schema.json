@@ -1,0 +1,24 @@
+{
+  "kind": "collectionType",
+  "collectionName": "error_messages",
+  "info": {
+    "singularName": "error-message",
+    "pluralName": "error-messages",
+    "displayName": "ErrorMessage",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "error": {
+      "type": "string",
+      "required": true
+    },
+    "message": {
+      "type": "text",
+      "required": true
+    }
+  }
+}

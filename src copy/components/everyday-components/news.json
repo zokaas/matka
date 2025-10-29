@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_everyday_components_news",
+  "info": {
+    "displayName": "News",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "publishedOn": {
+      "type": "date"
+    },
+    "news": {
+      "type": "richtext"
+    }
+  }
+}

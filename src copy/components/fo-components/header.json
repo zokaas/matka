@@ -1,0 +1,34 @@
+{
+  "collectionName": "components_fo_components_header",
+  "info": {
+    "displayName": "Header",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "frontPage": {
+      "type": "string"
+    },
+    "loanInformation": {
+      "type": "string"
+    },
+    "topup": {
+      "type": "string"
+    },
+    "ownInfo": {
+      "type": "string"
+    },
+    "customerService": {
+      "type": "string"
+    },
+    "loginText": {
+      "type": "string"
+    },
+    "logoutText": {
+      "type": "string"
+    },
+    "mobileNavMore": {
+      "type": "string"
+    }
+  }
+}

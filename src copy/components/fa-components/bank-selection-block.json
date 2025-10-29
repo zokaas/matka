@@ -1,0 +1,40 @@
+{
+  "collectionName": "components_fa_components_bank_selection_blocks",
+  "info": {
+    "displayName": "bankSelectionBlock",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "subtitle2": {
+      "type": "string"
+    },
+    "subtitle3": {
+      "type": "string"
+    },
+    "tooltipInfo": {
+      "type": "text"
+    },
+    "showMoreBanks": {
+      "type": "string"
+    },
+    "showLessBanks": {
+      "type": "string"
+    },
+    "loginBank": {
+      "type": "string"
+    },
+    "consentRichText": {
+      "type": "richtext"
+    },
+    "subtitle1": {
+      "type": "richtext"
+    },
+    "backStepButton": {
+      "type": "string"
+    }
+  }
+}

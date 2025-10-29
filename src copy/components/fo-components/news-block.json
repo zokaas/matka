@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_fo_components_news_blocks",
+  "info": {
+    "displayName": "News Block"
+  },
+  "options": {},
+  "attributes": {
+    "blockTitle": {
+      "type": "string"
+    },
+    "readMoreText": {
+      "type": "string"
+    }
+  }
+}

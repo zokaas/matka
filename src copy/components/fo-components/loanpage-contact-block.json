@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_fo_components_loanpage_contact_blocks",
+  "info": {
+    "displayName": "loanpageContactBlock",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "blockHeading": {
+      "type": "string"
+    },
+    "requestBalanceText": {
+      "type": "string"
+    },
+    "customerServiceOpeningHrsText": {
+      "type": "string"
+    }
+  }
+}

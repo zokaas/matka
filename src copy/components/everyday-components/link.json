@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_everyday_components_links",
+  "info": {
+    "displayName": "link"
+  },
+  "options": {},
+  "attributes": {
+    "linkText": {
+      "type": "string"
+    },
+    "linkUrl": {
+      "type": "string"
+    }
+  }
+}

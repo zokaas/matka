@@ -1,0 +1,28 @@
+{
+  "collectionName": "components_global_session_modal_windows",
+  "info": {
+    "displayName": "SessionModalWindow",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "title_end": {
+      "type": "string"
+    },
+    "body": {
+      "type": "string"
+    },
+    "button_continue": {
+      "type": "string"
+    },
+    "button_logout": {
+      "type": "string"
+    },
+    "button_ok": {
+      "type": "string"
+    }
+  }
+}

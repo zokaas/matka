@@ -1,0 +1,21 @@
+{
+  "collectionName": "components_fo_pages_logged_out_pages",
+  "info": {
+    "displayName": "Logged Out Page",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "pageTitle": {
+      "type": "string"
+    },
+    "returnToWebText": {
+      "type": "string"
+    },
+    "gotoWebLink": {
+      "type": "component",
+      "repeatable": false,
+      "component": "global.link"
+    }
+  }
+}

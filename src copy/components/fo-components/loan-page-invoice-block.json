@@ -1,0 +1,37 @@
+{
+  "collectionName": "components_fo_components_loan_page_invoice_blocks",
+  "info": {
+    "displayName": "Loan Page Invoice Block",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "blockHeading": {
+      "type": "string"
+    },
+    "tableHeadInvoiceNumber": {
+      "type": "string"
+    },
+    "tableHeadInvoiceTypeText": {
+      "type": "string"
+    },
+    "tableHeadStatusText": {
+      "type": "string"
+    },
+    "tableHeadDueDateText": {
+      "type": "string"
+    },
+    "tableHeadSumText": {
+      "type": "string"
+    },
+    "invoicePaid": {
+      "type": "string"
+    },
+    "invoiceOpen": {
+      "type": "string"
+    },
+    "invoiceOverdue": {
+      "type": "string"
+    }
+  }
+}

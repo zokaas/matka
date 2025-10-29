@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_notice_notices",
+  "info": {
+    "displayName": "Notice",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "notice": {
+      "type": "string"
+    },
+    "label": {
+      "type": "enumeration",
+      "enum": [
+        "None",
+        "Alert",
+        "Critical"
+      ]
+    },
+    "active": {
+      "type": "boolean"
+    }
+  }
+}

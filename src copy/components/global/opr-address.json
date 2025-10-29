@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_global_opr_addresses",
+  "info": {
+    "displayName": "oprAddress",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "value": {
+      "type": "string"
+    }
+  }
+}

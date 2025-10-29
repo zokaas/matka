@@ -1,5 +1,0 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-export const Footer = ({ footer }) => {
-    const { customerServiceLabel, customerServiceText, contactInfoLabel, contactInfoText, addressLabel, addressText, } = footer;
-    return (_jsx("footer", { className: "w-full bg-neutral text-neutral-content py-10 mt-auto", children: _jsx("div", { className: "max-w-6xl mx-auto px-6", children: _jsxs("div", { className: "flex flex-col md:flex-row justify-between gap-8 text-left", children: [_jsxs("div", { className: "flex-1 min-w-[200px]", children: [_jsx("h2", { className: "text-lg font-bold mb-3", children: customerServiceLabel }), _jsx("p", { className: "text-sm opacity-80", children: customerServiceText })] }), _jsxs("div", { className: "flex-1 min-w-[200px]", children: [_jsx("h2", { className: "text-lg font-bold mb-3", children: contactInfoLabel }), _jsx("p", { className: "text-sm opacity-80", children: contactInfoText })] }), _jsxs("div", { className: "flex-1 min-w-[200px]", children: [_jsx("h2", { className: "text-lg font-bold mb-3", children: addressLabel }), _jsx("p", { className: "text-sm opacity-80", children: addressText })] })] }) }) }));
-};

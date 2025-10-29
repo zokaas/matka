@@ -1,0 +1,31 @@
+{
+  "collectionName": "components_fo_components_front_page_collections",
+  "info": {
+    "displayName": "Front Page Collection",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string"
+    },
+    "bodyText": {
+      "type": "string"
+    },
+    "collectionEmailLink": {
+      "type": "string"
+    },
+    "collectionPhone": {
+      "type": "string"
+    },
+    "loanInfoSubHeading": {
+      "type": "string"
+    },
+    "documentBtnText": {
+      "type": "string"
+    },
+    "collectionEmailAddress": {
+      "type": "string"
+    }
+  }
+}

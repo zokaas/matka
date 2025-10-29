@@ -1,0 +1,28 @@
+{
+  "collectionName": "components_fo_components_start_pages",
+  "info": {
+    "displayName": "Start Page",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "pageTitle": {
+      "type": "string"
+    },
+    "loginHeading": {
+      "type": "string"
+    },
+    "applyHeading": {
+      "type": "string"
+    },
+    "LoginToFlexOnlineText": {
+      "type": "string"
+    },
+    "loginText": {
+      "type": "string"
+    },
+    "applyText": {
+      "type": "string"
+    }
+  }
+}
