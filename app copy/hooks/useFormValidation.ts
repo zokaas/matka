@@ -33,8 +33,8 @@ export const useFormValidation = (formData: T_ParsedFormData) => {
                     const depQuestion = question.question.dependentQuestion;
                     const depNormalizedErrors = normalizeErrorMessages(depQuestion.errorMessages);
                     const depConfig = createValidationConfig(depNormalizedErrors);
-                    const depFieldName = `${questionParameter}::${depQuestion.questionParameter}`;
-                    configs.set(depFieldName, depConfig);
+                    // ✅ The questionParameter on dependent question already includes the composite key
+                    configs.set(depQuestion.questionParameter, depConfig);
                 }
             });
         });
@@ -55,9 +55,16 @@ export const useFormValidation = (formData: T_ParsedFormData) => {
         updateState = true
     ): boolean => {
         const config = validationConfigs.get(fieldName);
-        if (!config) return true;
+        if (!config) {
+            console.warn(`⚠️ No validation config found for field: ${fieldName}`);
+            return true;
+        }
+        
+        console.log(`🔍 Validating field: ${fieldName}`, { value, config });
         
         const result = validateField(value, config);
+        
+        console.log(`✅ Validation result for ${fieldName}:`, result);
         
         if (updateState) {
             setValidationErrors(prev => {
@@ -81,26 +88,41 @@ export const useFormValidation = (formData: T_ParsedFormData) => {
     const validateEntireForm = useCallback((
         formValues: Map<string, T_AnswerValue>
     ): T_FormValidationResult => {
+        console.log("🔍 Starting full form validation...");
+        
         const errors: T_ValidationErrors = new Map();
         let firstErrorField: string | undefined;
         
         // Validate each field that has a config and is visible
         validationConfigs.forEach((config, fieldName) => {
             // Check if field should be validated based on visibility
-            if (isFieldVisible(fieldName, formData, formValues)) {
+            const visible = isFieldVisible(fieldName, formData, formValues);
+            
+            console.log(`Field ${fieldName}: visible=${visible}`);
+            
+            if (visible) {
                 const value = formValues.get(fieldName);
+                console.log(`Validating ${fieldName} with value:`, value);
+                
                 const result = validateField(value, config);
                 
                 if (!result.isValid && result.error) {
+                    console.log(`❌ ${fieldName} failed validation:`, result.error);
                     errors.set(fieldName, result.error);
                     if (!firstErrorField) {
                         firstErrorField = fieldName;
                     }
+                } else {
+                    console.log(`✅ ${fieldName} passed validation`);
                 }
+            } else {
+                console.log(`⏭️ Skipping ${fieldName} (not visible)`);
             }
         });
         
         setValidationErrors(errors);
+        
+        console.log(`Form validation complete. Total errors: ${errors.size}`);
         
         return {
             isValid: errors.size === 0,

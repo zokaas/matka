@@ -21,10 +21,21 @@ export const Question: React.FC<T_QuestionProps> = ({
     questionProps,
     question,
     countryList,
+    currentValue, // ✅ Receive current value
 }) => {
     const getFieldError = (fieldName: string): string | undefined => {
         return questionProps.validationErrors.get(fieldName);
     };
+
+    // Helper to convert value to string for text inputs
+    const valueAsString = (val: T_AnswerValue): string => {
+        if (val === undefined || val === null) return "";
+        if (typeof val === "string") return val;
+        if (typeof val === "number") return String(val);
+        if (typeof val === "boolean") return String(val);
+        return "";
+    };
+
     if (questionType === E_ComponentTypes.SELECT) {
         return (
             <Container className={questionsStyle}>
@@ -71,6 +82,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     label={question?.questionLabel || ""}
                     fieldName={question!.questionParameter}
                     placeholder={question?.placeholder ? question.placeholder : undefined}
+                    value={valueAsString(currentValue)} // ✅ Pass value
                     onChange={(e) => {
                         questionProps.onChange(question!.questionParameter, e);
                     }}
@@ -92,7 +104,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     options={question?.options ? question.options : []}
-                    defaultValue={EMPTY_STRING}
+                    defaultValue={valueAsString(currentValue) || EMPTY_STRING} // ✅ Pass value as defaultValue
                     error={getFieldError(question!.questionParameter) || ""}
                     classNames={{
                         radioRoot: b2bRadiogroupRootStyle,
@@ -113,6 +125,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     label={question?.questionLabel || ""}
                     fieldName={question!.questionParameter}
                     placeholder={question?.placeholder ? question.placeholder : undefined}
+                    value={valueAsString(currentValue)} // ✅ Pass value
                     onChange={(e) => {
                         questionProps.onChange(question!.questionParameter, e);
                     }}
@@ -130,6 +143,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     label={question?.questionLabel || ""}
                     fieldName={question!.questionParameter}
                     placeholder={question?.placeholder ? question.placeholder : undefined}
+                    value={valueAsString(currentValue)} // ✅ Pass value
                     onChange={(e) => {
                         questionProps.onChange(question!.questionParameter, e);
                     }}
@@ -141,8 +155,6 @@ export const Question: React.FC<T_QuestionProps> = ({
         );
 
     if (questionType === E_ComponentTypes.BENEFICIALOWNER) {
-        // At this point we know for sure that question can't be dependant question type
-        // and we tell it to TS
         const boQuestion = question as T_QuestionData;
 
         const boData: T_BeneficialOwnerCardProps = {

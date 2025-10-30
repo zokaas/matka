@@ -36,14 +36,12 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
     const navigation = useNavigation();
     const isSubmitting = navigation.state === "submitting";
 
-    // ✅ State persists across step changes
     const [formValues, setFormValues] = useState(formData.answers);
     const [activeStep, setActiveStep] = useState(1);
     const formRef = React.useRef<HTMLFormElement>(null);
 
-    // ✅ Use the validation hook - manages validation errors as a Map
     const {
-        validationErrors, // Map<string, string>
+        validationErrors,
         validateSingleField,
         validateEntireForm,
         clearFieldError,
@@ -51,7 +49,6 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
     } = useFormValidation(formData);
 
     const handleChange = (field: string, value: T_AnswerValue) => {
-        // Update form values (state persists)
         setFormValues((prev) => {
             const updated = new Map(prev);
             const existingEntry = updated.get(field);
@@ -64,20 +61,25 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
             return updated;
         });
 
-        // Clear error when user starts typing
         clearFieldError(field);
     };
 
     const handleOnBlur = (field: string) => {
-        // Validate field on blur
         const currentValue = formValues.get(field);
-        validateSingleField(field, currentValue?.answer);
+        
+        // Only validate if field is visible
+        const formValuesMap = new Map(
+            Array.from(formValues.entries()).map(([k, v]) => [k, v.answer])
+        );
+        
+        if (isVisible(field, formValuesMap)) {
+            validateSingleField(field, currentValue?.answer);
+        }
     };
 
     const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         
-        // Validate entire form before submission
         const validationResult = validateEntireForm(
             new Map(Array.from(formValues.entries()).map(([key, obj]) => [key, obj.answer]))
         );
@@ -85,7 +87,6 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
         if (!validationResult.isValid) {
             console.warn(`Form has ${validationResult.errors.size} validation errors`);
             
-            // Optionally scroll to first error
             if (validationResult.firstErrorField) {
                 const errorElement = document.querySelector(
                     `[name="${validationResult.firstErrorField}"]`
@@ -95,7 +96,6 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
             return;
         }
 
-        // Submit if valid
         submitFormAnswers(formValues, String(formData.id), submit);
     };
 
@@ -103,20 +103,21 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
         formData.generalFormData.steps[activeStepIndex].stepName;
 
     const validateCurrentStep = (): boolean => {
-        // Get current step's field names
         const currentStepName = getCurrentStepName(activeStep - 1);
         const currentStepQuestions = formData.steps.get(currentStepName);
         
         if (!currentStepQuestions) return true;
 
         let hasErrors = false;
+        const formValuesMap = new Map(
+            Array.from(formValues.entries()).map(([k, v]) => [k, v.answer])
+        );
 
-        // Validate each field in current step
         currentStepQuestions.forEach((questionItem) => {
             const fieldName = questionItem.question.questionParameter;
             
-            // Only validate if field is visible
-            if (isVisible(fieldName, new Map(Array.from(formValues.entries()).map(([k, v]) => [k, v.answer])))) {
+            // Only validate if visible
+            if (isVisible(fieldName, formValuesMap)) {
                 const currentValue = formValues.get(fieldName);
                 const isValid = validateSingleField(fieldName, currentValue?.answer);
                 
@@ -125,11 +126,13 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                 }
             }
 
-            // Also validate dependent questions if they exist
+            // Validate dependent questions
+            // ✅ dependentQuestion.questionParameter already has composite key
             if (questionItem.question.dependentQuestion) {
-                const depFieldName = `${fieldName}::${questionItem.question.dependentQuestion.questionParameter}`;
+                const depFieldName = questionItem.question.dependentQuestion.questionParameter;
                 
-                if (isVisible(depFieldName, new Map(Array.from(formValues.entries()).map(([k, v]) => [k, v.answer])))) {
+                // Only validate if the dependent field is visible
+                if (isVisible(depFieldName, formValuesMap)) {
                     const depValue = formValues.get(depFieldName);
                     const isValid = validateSingleField(depFieldName, depValue?.answer);
                     
@@ -145,10 +148,8 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
 
     const nextStep = () => {
         if (isLastStep) {
-            // On final step, validate entire form and submit
             formRef.current?.requestSubmit();
         } else {
-            // Validate current step before moving forward
             const isStepValid = validateCurrentStep();
             
             if (isStepValid) {
@@ -160,7 +161,6 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
     };
 
     const prevStep = () => {
-        // No validation when going back
         setActiveStep(activeStep - 1);
     };
 
@@ -170,7 +170,6 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
     return (
         <main className={mainContentStyle}>
             <Container className={mainContainerStyle}>
-                {/* Header */}
                 <Title
                     title={formData.generalFormData.formHeader.title}
                     subtitle={formData.generalFormData.formHeader.subtitle}
@@ -179,7 +178,6 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                     subtitleClassName={subtitleStyle}
                 />
                 <Form ref={formRef} method="post" onSubmit={handleFormSubmit}>
-                    {/* Progress Steps */}
                     <Container className={stepsWrapperStyle}>
                         <Steps
                             steps={formData.generalFormData.steps}
@@ -197,7 +195,6 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                     
                     <hr className={dividerStyle} />
                     
-                    {/* Company info */}
                     {activeStep === 1 && (
                         <CompanyInfo
                             companyName={formData.generalFormData.companyBlock.companyName}
@@ -215,7 +212,7 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                                 handleChange(fieldName, value)
                             }
                             onBlur={(fieldName: string) => handleOnBlur(fieldName)}
-                            validationErrors={validationErrors} // ✅ Now passing Map
+                            validationErrors={validationErrors}
                             activeStep={activeStep}
                             countryList={formData.countryList}
                             activeStepName={getCurrentStepName(activeStep - 1)}

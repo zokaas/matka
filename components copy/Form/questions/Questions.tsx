@@ -22,16 +22,17 @@ export const Questions: React.FC<T_QuestionsProps> = (props: T_QuestionsProps) =
         return false;
     };
 
-    /* 
-        next: we are going through questions and invoking question component 
-        This is due to dynamic fields to avoid iterating over array inside array
-    */
+    // Helper to get current value from formValues
+    const getCurrentValue = (fieldName: string) => {
+        const entry = formValues.get(fieldName);
+        return entry?.answer;
+    };
+
     const questionArray: ReactNode = currentSteps?.map((item) => {
         const includeCountryListProperty = isCountryListUsed(item);
 
-        const dependentFieldName = item.question.dependentQuestion 
-            ? `${item.question.questionParameter}::${item.question.dependentQuestion.questionParameter}`
-            : null;
+        // ✅ dependentQuestion.questionParameter already has the composite key
+        const dependentFieldName = item.question.dependentQuestion?.questionParameter || null;
 
         return (
             <React.Fragment key={item.id}>
@@ -40,6 +41,7 @@ export const Questions: React.FC<T_QuestionsProps> = (props: T_QuestionsProps) =
                     questionProps={props}
                     question={item.question}
                     countryList={includeCountryListProperty ? countryList : undefined}
+                    currentValue={getCurrentValue(item.question.questionParameter)}
                 />
                 {isDependantQuestionVisible(item.question.dependentQuestion, item.question) && 
                  item.question.dependentQuestion && dependentFieldName && (
@@ -48,16 +50,14 @@ export const Questions: React.FC<T_QuestionsProps> = (props: T_QuestionsProps) =
                             item.question.dependentQuestion.componentType as E_ComponentTypes
                         }
                         questionProps={props}
-                        question={{
-                            ...item.question.dependentQuestion,
-                            questionParameter: dependentFieldName
-                        }}
+                        question={item.question.dependentQuestion}
                         key={dependentFieldName}
                         countryList={
                             item.question.dependentQuestion.useCountryList
                                 ? countryList
                                 : undefined
                         }
+                        currentValue={getCurrentValue(dependentFieldName)}
                     />
                 )}
             </React.Fragment>
