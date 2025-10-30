@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { T_AnswersMapValue, T_ParsedFormData } from "~/types";
+import { T_AnswerValue, T_ParsedFormData } from "~/types";
 import { 
     T_ValidationErrors, 
     T_FieldValidationConfig,
@@ -51,7 +51,7 @@ export const useFormValidation = (formData: T_ParsedFormData) => {
      */
     const validateSingleField = useCallback((
         fieldName: string, 
-        value: T_AnswersMapValue,
+        value: T_AnswerValue,
         updateState = true
     ): boolean => {
         const config = validationConfigs.get(fieldName);
@@ -79,7 +79,7 @@ export const useFormValidation = (formData: T_ParsedFormData) => {
      * Only validates fields that should be visible based on current form state
      */
     const validateEntireForm = useCallback((
-        formValues: Map<string, T_AnswersMapValue>
+        formValues: Map<string, T_AnswerValue>
     ): T_FormValidationResult => {
         const errors: T_ValidationErrors = new Map();
         let firstErrorField: string | undefined;
@@ -151,7 +151,7 @@ export const useFormValidation = (formData: T_ParsedFormData) => {
      */
     const isVisible = useCallback((
         fieldName: string, 
-        formValues: Map<string, T_AnswersMapValue>
+        formValues: Map<string, T_AnswerValue>
     ): boolean => {
         return isFieldVisible(fieldName, formData, formValues);
     }, [formData]);

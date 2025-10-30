@@ -23,9 +23,8 @@ export const Question: React.FC<T_QuestionProps> = ({
     countryList,
 }) => {
     const getFieldError = (fieldName: string): string | undefined => {
-        return questionProps.validationErrors[fieldName];
+        return questionProps.validationErrors.get(fieldName);
     };
-
     if (questionType === E_ComponentTypes.SELECT) {
         return (
             <Container className={questionsStyle}>

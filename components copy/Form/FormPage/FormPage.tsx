@@ -28,19 +28,30 @@ import { Questions } from "../questions/Questions";
 import { Footer } from "@ui/footer";
 import { T_AnswerValue } from "~/types";
 import { submitFormAnswers } from "~/services/utils/submitFormAnswers";
+import { useFormValidation } from "~/hooks/useFormValidation";
 
 export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
-    const { formData /* , generalData */ } = props;
+    const { formData } = props;
     const submit = useSubmit();
     const navigation = useNavigation();
     const isSubmitting = navigation.state === "submitting";
 
+    // ✅ State persists across step changes
     const [formValues, setFormValues] = useState(formData.answers);
-    const [validationErrors, setValidationError] = useState({});
     const [activeStep, setActiveStep] = useState(1);
     const formRef = React.useRef<HTMLFormElement>(null);
 
+    // ✅ Use the validation hook - manages validation errors as a Map
+    const {
+        validationErrors, // Map<string, string>
+        validateSingleField,
+        validateEntireForm,
+        clearFieldError,
+        isVisible,
+    } = useFormValidation(formData);
+
     const handleChange = (field: string, value: T_AnswerValue) => {
+        // Update form values (state persists)
         setFormValues((prev) => {
             const updated = new Map(prev);
             const existingEntry = updated.get(field);
@@ -52,32 +63,104 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
             }
             return updated;
         });
+
+        // Clear error when user starts typing
+        clearFieldError(field);
     };
 
     const handleOnBlur = (field: string) => {
-        if (!formValues.get(field)) {
-            setValidationError({
-                [field]: "This field is required",
-            });
-            console.info("Value missing, validation should fail!!!");
-        }
+        // Validate field on blur
+        const currentValue = formValues.get(field);
+        validateSingleField(field, currentValue?.answer);
     };
+
     const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        
+        // Validate entire form before submission
+        const validationResult = validateEntireForm(
+            new Map(Array.from(formValues.entries()).map(([key, obj]) => [key, obj.answer]))
+        );
+
+        if (!validationResult.isValid) {
+            console.warn(`Form has ${validationResult.errors.size} validation errors`);
+            
+            // Optionally scroll to first error
+            if (validationResult.firstErrorField) {
+                const errorElement = document.querySelector(
+                    `[name="${validationResult.firstErrorField}"]`
+                );
+                errorElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+            return;
+        }
+
+        // Submit if valid
         submitFormAnswers(formValues, String(formData.id), submit);
     };
 
     const getCurrentStepName = (activeStepIndex: number): string =>
         formData.generalFormData.steps[activeStepIndex].stepName;
 
+    const validateCurrentStep = (): boolean => {
+        // Get current step's field names
+        const currentStepName = getCurrentStepName(activeStep - 1);
+        const currentStepQuestions = formData.steps.get(currentStepName);
+        
+        if (!currentStepQuestions) return true;
+
+        let hasErrors = false;
+
+        // Validate each field in current step
+        currentStepQuestions.forEach((questionItem) => {
+            const fieldName = questionItem.question.questionParameter;
+            
+            // Only validate if field is visible
+            if (isVisible(fieldName, new Map(Array.from(formValues.entries()).map(([k, v]) => [k, v.answer])))) {
+                const currentValue = formValues.get(fieldName);
+                const isValid = validateSingleField(fieldName, currentValue?.answer);
+                
+                if (!isValid) {
+                    hasErrors = true;
+                }
+            }
+
+            // Also validate dependent questions if they exist
+            if (questionItem.question.dependentQuestion) {
+                const depFieldName = `${fieldName}::${questionItem.question.dependentQuestion.questionParameter}`;
+                
+                if (isVisible(depFieldName, new Map(Array.from(formValues.entries()).map(([k, v]) => [k, v.answer])))) {
+                    const depValue = formValues.get(depFieldName);
+                    const isValid = validateSingleField(depFieldName, depValue?.answer);
+                    
+                    if (!isValid) {
+                        hasErrors = true;
+                    }
+                }
+            }
+        });
+
+        return !hasErrors;
+    };
+
     const nextStep = () => {
-        if (isLastStep) formRef.current?.requestSubmit();
-        else {
-            setActiveStep(activeStep + 1);
+        if (isLastStep) {
+            // On final step, validate entire form and submit
+            formRef.current?.requestSubmit();
+        } else {
+            // Validate current step before moving forward
+            const isStepValid = validateCurrentStep();
+            
+            if (isStepValid) {
+                setActiveStep(activeStep + 1);
+            } else {
+                console.warn("Please fix errors before proceeding");
+            }
         }
     };
 
     const prevStep = () => {
+        // No validation when going back
         setActiveStep(activeStep - 1);
     };
 
@@ -111,9 +194,9 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                             }}
                         />
                     </Container>
-                    {/* Divider */}
-                    {/* TODO: Divider should / could be own component (div perhaps). E.g. div -> Divider */}
+                    
                     <hr className={dividerStyle} />
+                    
                     {/* Company info */}
                     {activeStep === 1 && (
                         <CompanyInfo
@@ -123,6 +206,7 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                             orgNumberLabel="Org number label"
                         />
                     )}
+                    
                     <Container className={formQuestionsContainer}>
                         <Questions
                             questions={formData.steps}
@@ -131,7 +215,7 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                                 handleChange(fieldName, value)
                             }
                             onBlur={(fieldName: string) => handleOnBlur(fieldName)}
-                            validationErrors={validationErrors}
+                            validationErrors={validationErrors} // ✅ Now passing Map
                             activeStep={activeStep}
                             countryList={formData.countryList}
                             activeStepName={getCurrentStepName(activeStep - 1)}
