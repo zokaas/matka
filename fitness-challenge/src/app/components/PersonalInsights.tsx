@@ -164,7 +164,6 @@ const getWeeklyTargetForWeek = (
         totalKm: activitiesToUse.filter(a => a.activity === activity).reduce((sum, a) => sum + a.kilometers, 0)
       }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
 
     // Current streak calculation
     const sortedDates = activitiesToUse

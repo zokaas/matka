@@ -547,7 +547,6 @@ const calculateAnalytics = (userData: User[]) => {
 
     const topSports = Object.entries(sportCounts)
       .sort(([, a], [, b]) => b.count - a.count)
-      .slice(0, 5)
       .map(([name, data]) => ({ name, ...data }));
 
     // Find best team days
