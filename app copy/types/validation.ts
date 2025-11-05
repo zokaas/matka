@@ -1,3 +1,4 @@
+//This same list is used in strapi. So there can't be other error types.
 export type T_ErrorType = 
     | "isRequired" 
     | "maxLength500" 
@@ -20,7 +21,7 @@ export type T_ValidationRule = {
 export type T_ValidationErrors = Map<string, string>;
 
 export type T_FieldValidationConfig = {
-    rules: T_ValidationRule[];
+    rules: Array<T_ValidationRule>;
     isRequired?: boolean;
 };
 

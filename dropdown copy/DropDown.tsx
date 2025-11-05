@@ -35,6 +35,7 @@ export const DropDown: React.FC<T_DropDownProps> = ({
     infoItems,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [selectedValue, setSelectedValue] = useState<string>("");
     const [optionsArray, setOptionsArray] = useState(options || []);
 
     const selectContainer = classNames?.dropDownContainer || dropDownContainerStyle;
@@ -62,17 +63,22 @@ export const DropDown: React.FC<T_DropDownProps> = ({
 
         if (!searchText) setOptionsArray(options || []);
     };
+
+    const handleValueChange = (value: string) => {
+        setSelectedValue(value);
+        onChange(value);
+    };
+
     return (
         <Container className={selectContainer}>
             <Label htmlFor={fieldName} infoItems={infoItems}>
                 {label}
             </Label>
             <Select.Root
-                onValueChange={(e) => onChange(e)}
-                onOpenChange={(state) => {
-                    setIsOpen(state);
-                }}
-                defaultOpen={isOpen}
+                value={selectedValue}
+                onValueChange={handleValueChange}
+                open={isOpen}
+                onOpenChange={setIsOpen}
                 name={fieldName}>
                 <Select.Trigger
                     className={selectField}

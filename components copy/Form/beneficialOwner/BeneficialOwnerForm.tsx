@@ -109,6 +109,7 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
                 label={label.beneficialOwnerCountry}
                 fieldName={fieldName.beneficialOwnerCountry}
                 placeholder={placeholder.beneficialOwnerCountry}
+                value={country.value}
                 searchEnabled
                 options={countryList || null}
                 showSelectedItemIcon={true}

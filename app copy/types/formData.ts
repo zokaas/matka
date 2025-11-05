@@ -13,8 +13,8 @@ export type T_AnswerValue =
     | string
     | number
     | boolean
-    | string[]
-    | Record<string, string>[]
+    | Array<string>
+    | Array<Record<string, string>>
     | undefined;
 
 export type T_AnswerObject = {
@@ -32,7 +32,7 @@ export type T_Payload = {
     questionSetId: string;
     organizationName: string;
     organizationNumber: string;
-    answers: T_AnswerObject[];
+    answers: Array<T_AnswerObject>;
 };
 
 export type T_ApiFormResponse = T_FormGlobalProperties & {

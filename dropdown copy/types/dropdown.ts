@@ -33,6 +33,7 @@ export type T_DropDownClassNamesProps = {
 export type T_DropDownProps = {
     label: string;
     fieldName: string;
+    value?: string;
     options: Array<T_DropDownOption> | null;
     showSelectedItemIcon: boolean;
     onChange: (value: T_DropDownOptionValue) => void;

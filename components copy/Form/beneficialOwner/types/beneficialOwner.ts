@@ -18,6 +18,7 @@ export type T_BeneficialOwnerProps = {
     beneficialOwnerFieldsData: T_BeneficialOwnerCardProps;
     error?: string;
     infoItems?: T_LabelInfo[] | null;
+    currentValue?: T_AnswerValue;
 };
 
 export type T_BeneficialOwnerData = {

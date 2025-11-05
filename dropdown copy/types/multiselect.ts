@@ -7,7 +7,7 @@ export type T_MultiSelectProps = {
     fieldName: string;
     options: Array<T_DropDownOption> | null;
     onChange: (value: T_DropDownOptionValue) => void;
-    value: string;
+    value?: Array<string>;
     onBlur?: (value?: React.FocusEvent<HTMLButtonElement, Element>) => void;
     placeholder?: string | null;
     classNames?: T_MultiSelectClassNamesProps;

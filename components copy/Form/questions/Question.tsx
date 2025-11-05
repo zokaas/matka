@@ -15,25 +15,18 @@ import { InputNumber, InputText } from "@ui/inputField";
 import { BeneficialOwner, T_BeneficialOwnerCardProps } from "../beneficialOwner";
 import { BO_MAX_COUNT, EMPTY_STRING } from "./questions.constants";
 import { T_AnswerValue, T_QuestionData } from "~/types";
+import { valueAsString } from "~/utils/converters";
 
 export const Question: React.FC<T_QuestionProps> = ({
     questionType,
     questionProps,
     question,
     countryList,
-    currentValue, // ✅ Receive current value
+    currentValue
 }) => {
+    // TODO: Maybe some better logic than question?. or question!. many times?
     const getFieldError = (fieldName: string): string | undefined => {
         return questionProps.validationErrors.get(fieldName);
-    };
-
-    // Helper to convert value to string for text inputs
-    const valueAsString = (val: T_AnswerValue): string => {
-        if (val === undefined || val === null) return "";
-        if (typeof val === "string") return val;
-        if (typeof val === "number") return String(val);
-        if (typeof val === "boolean") return String(val);
-        return "";
     };
 
     if (questionType === E_ComponentTypes.SELECT) {
@@ -46,6 +39,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     placeholder={question?.placeholder || ""}
                     options={question?.options || []}
                     showSelectedItemIcon={true}
+                    value={typeof currentValue === "string" ? currentValue : undefined}
                     onChange={(e) => {
                         questionProps.onChange(question!.questionParameter, e);
                     }}
@@ -56,7 +50,11 @@ export const Question: React.FC<T_QuestionProps> = ({
         );
     }
 
-    if (questionType === E_ComponentTypes.MULTISELECT)
+    if (questionType === E_ComponentTypes.MULTISELECT) {
+        const multiselectValue = Array.isArray(currentValue) &&
+            currentValue.every(item => typeof item === 'string')
+            ? currentValue
+            : undefined;
         return (
             <Container className={questionsStyle}>
                 <MultiSelect
@@ -65,6 +63,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     placeholder={question?.placeholder || ""}
                     options={(question?.useCountryList ? countryList : question?.options) || []}
                     searchEnabled={true}
+                    value={multiselectValue}
                     onChange={(selectedArray: T_AnswerValue) => {
                         questionProps.onChange(question!.questionParameter, selectedArray);
                     }}
@@ -74,6 +73,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                 />
             </Container>
         );
+    }
 
     if (questionType === E_ComponentTypes.TEXTAREA)
         return (
@@ -82,7 +82,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     label={question?.questionLabel || ""}
                     fieldName={question!.questionParameter}
                     placeholder={question?.placeholder ? question.placeholder : undefined}
-                    value={valueAsString(currentValue)} // ✅ Pass value
+                    value={valueToString(currentValue)}
                     onChange={(e) => {
                         questionProps.onChange(question!.questionParameter, e);
                     }}
@@ -104,7 +104,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     options={question?.options ? question.options : []}
-                    defaultValue={valueAsString(currentValue) || EMPTY_STRING} // ✅ Pass value as defaultValue
+                    defaultValue={valueAsString(currentValue) || EMPTY_STRING}
                     error={getFieldError(question!.questionParameter) || ""}
                     classNames={{
                         radioRoot: b2bRadiogroupRootStyle,
@@ -125,7 +125,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     label={question?.questionLabel || ""}
                     fieldName={question!.questionParameter}
                     placeholder={question?.placeholder ? question.placeholder : undefined}
-                    value={valueAsString(currentValue)} // ✅ Pass value
+                    value={valueAsString(currentValue)}
                     onChange={(e) => {
                         questionProps.onChange(question!.questionParameter, e);
                     }}
@@ -143,7 +143,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     label={question?.questionLabel || ""}
                     fieldName={question!.questionParameter}
                     placeholder={question?.placeholder ? question.placeholder : undefined}
-                    value={valueAsString(currentValue)} // ✅ Pass value
+                    value={valueAsString(currentValue)}
                     onChange={(e) => {
                         questionProps.onChange(question!.questionParameter, e);
                     }}
@@ -155,6 +155,8 @@ export const Question: React.FC<T_QuestionProps> = ({
         );
 
     if (questionType === E_ComponentTypes.BENEFICIALOWNER) {
+        // At this point we know for sure that question can't be dependant question type
+        // and we tell it to TS
         const boQuestion = question as T_QuestionData;
 
         const boData: T_BeneficialOwnerCardProps = {
@@ -194,6 +196,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     onChange={questionProps.onChange}
                     countryList={questionProps.countryList || []}
                     infoItems={boQuestion.infoItems || null}
+                    currentValue={currentValue} 
                 />
             </Container>
         );

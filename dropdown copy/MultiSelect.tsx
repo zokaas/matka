@@ -41,8 +41,9 @@ export const MultiSelect: React.FC<T_MultiSelectProps> = ({
     infoItems,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedValues, setSelectedValues] = useState<Array<string>>([]);
     const [optionsArray, setOptionsArray] = useState(options || []);
+
+    const selectedValues: string[] = Array.isArray(value) ? value.map(String) : [];
 
     const selectContainer = classNames?.dropDownContainer || dropDownContainerStyle;
     const selectField = classNames?.dropDownField || dropDownStyle;
@@ -75,10 +76,7 @@ export const MultiSelect: React.FC<T_MultiSelectProps> = ({
         if (!searchText) setOptionsArray(options || []);
     };
 
-    const handleCheckChange = (
-        optionValue: string | number | boolean | Array<string>,
-        checked: boolean
-    ) => {
+    const handleCheckChange = (optionValue: string | number | boolean, checked: boolean) => {
         const stringValue = String(optionValue);
         let newValues: Array<string>;
 
@@ -87,23 +85,21 @@ export const MultiSelect: React.FC<T_MultiSelectProps> = ({
                 ? selectedValues
                 : [...selectedValues, stringValue];
         } else {
-            newValues = selectedValues.filter((v) => v !== stringValue);
+            newValues = selectedValues.filter((v: string) => v !== stringValue);
         }
 
-        setSelectedValues(newValues);
         onChange?.(newValues);
     };
 
-    const selectedItems = selectedValues.map((value) => {
-        const option = options?.find((opt) => String(opt.value) === value);
-        return { value, text: option?.text };
+    const selectedItems = selectedValues.map((val: string) => {
+        const option = options?.find((opt) => String(opt.value) === val);
+        return { value: val, text: option?.text ?? val };
     });
 
     const removeItem = (e: React.MouseEvent, valueToRemove: string) => {
         e.preventDefault();
         e.stopPropagation();
-        const newValues = selectedValues.filter((v) => v !== valueToRemove);
-        setSelectedValues(newValues);
+        const newValues = selectedValues.filter((v: string) => v !== valueToRemove);
         onChange?.(newValues);
     };
 
@@ -121,14 +117,18 @@ export const MultiSelect: React.FC<T_MultiSelectProps> = ({
                 className={selectOptionButton}
                 onClick={(e) => {
                     e.stopPropagation();
-                    if (!isNoResults) handleCheckChange(option.value!, !isChecked);
+                    if (!isNoResults)
+                        handleCheckChange(option.value as string | number | boolean, !isChecked);
                 }}
                 disabled={isNoResults}>
                 {!isNoResults && (
                     <Checkbox.Root
                         checked={isChecked}
                         onCheckedChange={(checked) => {
-                            handleCheckChange(option.value!, checked === true);
+                            handleCheckChange(
+                                option.value as string | number | boolean,
+                                checked === true
+                            );
                         }}
                         className={selectCheckbox}>
                         <Checkbox.Indicator>
@@ -147,7 +147,7 @@ export const MultiSelect: React.FC<T_MultiSelectProps> = ({
                 {label}
             </Label>
 
-            <Popover.Root onOpenChange={setIsOpen} defaultOpen={isOpen}>
+            <Popover.Root onOpenChange={setIsOpen} open={isOpen}>
                 <Container className={selectFieldContainer}>
                     <Popover.Trigger asChild>
                         <button
