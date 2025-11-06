@@ -1,5 +1,6 @@
 import { T_DependentQuestion } from "./formData";
-import { T_ComponentType, T_ErrorMessage, T_Info, T_Option } from "./questionProperties";
+import { T_ComponentType, T_Option, T_QuestionErrorMessage } from "./questionProperties";
+import { T_DynamicFieldInfo } from "./questionType";
 
 export type T_QuestionData = {
     componentType: T_ComponentType;
@@ -8,8 +9,8 @@ export type T_QuestionData = {
     questionLabel: string;
     placeholder: string | null;
     options: Array<T_Option> | null;
-    errorMessages?: Array<T_ErrorMessage>;
-    infoItems: T_Info[];
+    errorMessages?: Array<T_QuestionErrorMessage>;
+    infoItems: Array<T_DynamicFieldInfo>;
     dependentQuestion: T_DependentQuestion | null;
     useCountryList: boolean | null;
     addBObutton: string | null;

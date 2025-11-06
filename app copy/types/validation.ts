@@ -7,11 +7,6 @@ export type T_ErrorType =
     | "maxLength1000"
     | "numeric";
 
-export type T_ErrorMessage = {
-    error: T_ErrorType;
-    message: string;
-};
-
 export type T_ValidationRule = {
     type: T_ErrorType;
     value?: string | number;

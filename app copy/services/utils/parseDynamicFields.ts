@@ -1,5 +1,5 @@
-import { T_Info, T_ParseDynamicFieldsResult } from "~/types";
-import { T_QuestionTypeBasic } from "~/types/questionType";
+import { T_ParseDynamicFieldsResult } from "~/types";
+import { T_DynamicFieldInfo, T_QuestionTypeBasic } from "~/types/questionType";
 import { isBeneficialOwnerQuestion, isDependentQuestion, isInfo } from "~/utils";
 
 export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFieldsResult => {
@@ -24,7 +24,7 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
     };
     if (!item.question.dynamicField) return result;
 
-    const infoItems: T_Info[] = [];
+    const infoItems: Array<T_DynamicFieldInfo> = [];
     item.question.dynamicField.forEach((dynamicField) => {
         if (isDependentQuestion(dynamicField)) {
             const parentParameter = item.question.questionParameter;
@@ -56,8 +56,6 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
 
         if (isInfo(dynamicField)) {
             infoItems.push({
-                id: dynamicField.id,
-                __component: "kyc.info",
                 componentType: dynamicField.componentType,
                 infoHeader: dynamicField.infoHeader,
                 infoDescription: dynamicField.infoDescription,

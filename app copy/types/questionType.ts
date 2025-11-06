@@ -1,5 +1,7 @@
 //TODO: check questionType.ts for obsolete code
 
+import { T_ComponentType, T_ErrorMessageWithId, T_InfoComponentType, T_QuestionErrorMessage } from "./questionProperties";
+
 export type T_DynamicFieldComponent =
     | "kyc.country-options"
     | "kyc.dependent-question"
@@ -10,30 +12,6 @@ export type T_DynamicField<T = never> = {
     id: number;
     __component: T_DynamicFieldComponent;
 } & T;
-
-export type T_ComponentType =
-    | "Text"
-    | "Textarea"
-    | "RadioGroup"
-    | "Select"
-    | "Number"
-    | "BeneficialOwner"
-    | "MultiSelectDropdown";
-
-export type T_InfoComponentType = "subHeader" | "tooltip";
-export type T_ErrorType = "isRequired"; // TODO: Add more when known
-
-export type T_QuestionErrorMessage = {
-    error: T_ErrorType;
-    message: string;
-    createdAt?: string; // TODO: Not cleaned from all places, thus optional here to preserve compatibility
-    updatedAt?: string; // TODO: Not cleaned from all places, thus optional here to preserve compatibility
-};
-
-export type T_ErrorMessageWithId = {
-    id: number;
-    attributes: T_QuestionErrorMessage;
-};
 
 export type T_Option = {
     text: string;
