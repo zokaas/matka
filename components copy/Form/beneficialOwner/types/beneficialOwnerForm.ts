@@ -5,7 +5,7 @@ export type T_BeneficialOwnersFormClassnames = {
     formContainer?: string;
     formInputField?: string;
     formSelectField?: string;
-    fromButton?: string;
+    formButton?: string;
     formLabelFields?: string;
 };
 
@@ -25,7 +25,7 @@ export type T_BeneficialOwnerFormProps = {
 
 export type T_BoFieldParams = {
     fieldname: string;
-    value: string | Array<string>;
+    value: string;
     label: string;
 };
 

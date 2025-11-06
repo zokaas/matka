@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { T_AnswerValue, T_ParsedFormData } from "~/types";
 import { 
     T_ValidationErrors, 
@@ -35,14 +35,14 @@ export const useFormValidation = (formData: T_ParsedFormData) => {
         return configs;
     }, [formData.steps]);
     
-    const validateSingleField = (
+    const validateSingleField = useCallback((
         fieldName: string, 
         value: T_AnswerValue,
         updateState = true
     ): boolean => {
         const config = validationConfigs.get(fieldName);
         if (!config) {
-            console.warn(`⚠️ No validation config found for field: ${fieldName}`);
+            console.warn(`No validation config for field: ${fieldName}`);
             return true;
         }
         
@@ -61,9 +61,9 @@ export const useFormValidation = (formData: T_ParsedFormData) => {
         }
         
         return result.isValid;
-    };
+    }, [validationConfigs]);
     
-    const validateEntireForm = (
+    const validateEntireForm = useCallback((
         formValues: Map<string, T_AnswerValue>
     ): T_FormValidationResult => {
         const errors: T_ValidationErrors = new Map();
@@ -92,28 +92,28 @@ export const useFormValidation = (formData: T_ParsedFormData) => {
             errors,
             firstErrorField
         };
-    };
+    }, [validationConfigs, formData]);
 
-    const clearFieldError = (fieldName: string) => {
+    const clearFieldError = useCallback((fieldName: string) => {
         setValidationErrors(prev => {
             const newErrors = new Map(prev);
             newErrors.delete(fieldName);
             return newErrors;
         });
-    };
+    }, []);
     
-    const isVisible = (
+    const checkIsVisible = useCallback((
         fieldName: string, 
         formValues: Map<string, T_AnswerValue>
     ): boolean => {
         return isFieldVisible(fieldName, formData, formValues);
-    };
+    }, [formData]);
     
     return {
         validationErrors,
         validateSingleField,
         validateEntireForm,
         clearFieldError,
-        isVisible,
+        isVisible: checkIsVisible,
     };
 };

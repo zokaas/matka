@@ -2,56 +2,88 @@ import { ActionFunction } from "react-router";
 import { endSession } from "~/services/sessionProvider.server";
 import { endOwnSession, getSessionData } from "~/services/sessionStorage.server";
 
+type T_BackendInfo = {
+    status: number | null;
+    ok: boolean;
+    message?: string;
+};
+
+type T_EndSessionResponse = {
+    success: boolean;
+    message: string;
+    backend?: T_BackendInfo;
+    cookieCleared: boolean;
+};
+
 export const action: ActionFunction = async ({ request }) => {
     const sessionId = await getSessionData(request, "sessionId");
     const clientId = await getSessionData(request, "productId");
 
     if (!sessionId || !clientId) {
-        return new Response(JSON.stringify({ error: "Session or client ID not found" }), {
-            status: 400,
-            headers: { "Content-Type": "application/json" },
-        });
+        return jsonResponse(
+            {
+                success: false,
+                message: "Session or client ID not found",
+                cookieCleared: false,
+            } as T_EndSessionResponse,
+            400
+        );
     }
-    console.log("destroy session on bff");
 
     let backendStatus: number | null = null;
+    let backendOk = false;
+    let backendMessage: string | undefined;
 
     try {
         // destroy session on BFF
         const result = await endSession(sessionId, clientId);
         backendStatus = result?.status ?? null;
+        backendOk = backendStatus === 200 || backendStatus === 204;
+        backendMessage = "Backend logout completed";
         console.log("Backend logout result:", result);
-    } catch (error) {
-        console.error("Error calling backend logout:", error);
+    } catch (err) {
+        backendStatus = null;
+        backendOk = false;
+        backendMessage = String(err ?? "Unknown error calling backend logout");
+        console.error("Error calling backend logout:", err);
     }
-    if (backendStatus === 200 || backendStatus === 403 || backendStatus === null) {
-        // Destroy local cookie session
-        try {
-            const cookieHeader = await endOwnSession(request);
+    // attempt to clear local session cookie
+    let cookieHeader: string | null = null;
+    let cookieCleared = false;
 
-            return new Response(
-                JSON.stringify({ success: true, message: "Session ended successfully" }),
-                {
-                    status: 200,
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Set-Cookie": cookieHeader, // clears the _session cookie
-                    },
-                }
-            );
-        } catch (cookieError) {
-            console.error("Failed to clear local session cookie:", cookieError);
-            return new Response(
-                JSON.stringify({
-                    success: true,
-                    message: "Session ended, but cookie removal failed",
-                }),
-                { status: 200, headers: { "Content-Type": "application/json" } }
-            );
-        }
+    try {
+        cookieHeader = await endOwnSession(request); // should return Set-Cookie value that clears the cookie
+        cookieCleared = Boolean(cookieHeader);
+    } catch (cookieErr) {
+        console.error("Failed to clear local session cookie:", cookieErr);
+        cookieCleared = false;
     }
-    return new Response(JSON.stringify({ success: false, message: "Failed to end session" }), {
-        status: 500,
+
+    // Build the response body describing what happened
+    const body: T_EndSessionResponse = {
+        success: true,
+        message: cookieCleared
+            ? "Session ended locally."
+            : "Session endpoint hit. Local cookie clearing failed; you may still be signed in in this browser.",
+        cookieCleared,
+        backend: {
+            status: backendStatus,
+            ok: backendOk,
+            message: backendMessage,
+        },
+    };
+
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (cookieCleared && cookieHeader) {
+        headers["Set-Cookie"] = cookieHeader;
+    }
+
+    return new Response(JSON.stringify(body), { status: 200, headers });
+};
+
+function jsonResponse(payload: unknown, status = 200) {
+    return new Response(JSON.stringify(payload), {
+        status,
         headers: { "Content-Type": "application/json" },
     });
-};
+}

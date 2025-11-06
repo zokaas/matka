@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { T_RefreshResult } from "./types";
 import type { T_SessionModalPayload } from "apps/kyc/components/SessionModal/types";
-import { useNavigate } from "react-router";
 
 /**
  * Hook: manages the single timer that triggers warning/refresh logic.
@@ -13,6 +12,7 @@ export function useExpiryTimer({
     maxRefresh,
     onAttemptRefresh,
     onShowModal,
+    onFatal,
     now,
 }: {
     expiresAtMs: number;
@@ -21,9 +21,9 @@ export function useExpiryTimer({
     maxRefresh: number;
     onAttemptRefresh: () => Promise<T_RefreshResult | null>;
     onShowModal: (payload: T_SessionModalPayload) => void;
+    onFatal: (response: Response) => void;
     now: () => number;
 }) {
-    const navigate = useNavigate();
     const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // Only the timer created for this exp may act; others are stale
@@ -79,11 +79,23 @@ export function useExpiryTimer({
             if (isActiveRecently) {
                 try {
                     const res = await onAttemptRefresh();
-                    if (!res) navigate("/error");
+                    if (!res) {
+                        const resp = new Response("Session refresh failed", {
+                            status: 401,
+                            statusText: "Session refresh failed",
+                        });
+                        onFatal(resp);
+                        return;
+                    }
                     // On success, expiresAtMs will change, replacing activeExpRef and cancelling this timer
                 } catch (err) {
                     console.error("[useExpiryTimer] refresh error", err);
-                    navigate("/error");
+                    const message = err instanceof Error ? err.message : "Unknown refresh error";
+                    const resp = new Response(message, {
+                        status: 401,
+                        statusText: "Session refresh error",
+                    });
+                    onFatal(resp);
                 }
             } else {
                 const remainingMs = Math.max(5_000, expForThisTimer - now());
@@ -110,7 +122,7 @@ export function useExpiryTimer({
         getLastActivity,
         onAttemptRefresh,
         onShowModal,
+        onFatal,
         now,
-        navigate,
     ]);
 }

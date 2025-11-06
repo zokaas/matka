@@ -47,6 +47,14 @@ export const getOrganizationFromSession = async (
     };
 };
 
+export const getApplicationIdFromSession = async (request: Request): Promise<string> => {
+    const session = await getSession(request.headers.get("Cookie"));
+
+    const applicationId = session.get("applicationId");
+
+    return applicationId;
+};
+
 // Destroy the session (for logout or session expiry)
 export const endOwnSession = async (request: Request) => {
     const session = await getSession(request.headers.get("Cookie"));

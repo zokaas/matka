@@ -13,50 +13,56 @@ export const loader: LoaderFunction = async ({ request }) => {
         name: companyName,
         orgNumber,
     } = searchParams;
-    if (sessionId && productId) {
-        const { status, ttl } = await verifySession(productId, sessionId);
-        if (status && ttl) {
-            const sessionData = await getSessionFromBff(sessionId, productId);
-            console.log("sessionData", sessionData);
-            let maxSessionRefresh = 1;
-            let sessionRefreshCount = 0;
-            let kcUserId = "";
-            if (sessionData) {
-                maxSessionRefresh = sessionData.maxSessionRefresh;
-                sessionRefreshCount = sessionData.sessionRefreshCount;
-                kcUserId = sessionData.userInfo.sub;
-            }
-            // Save session data in the session and redirect to dynamic route
-            const dataToStore = {
-                sessionId,
-                productId,
-                kycType,
-                applicationId,
-                ttl,
-                companyName,
-                orgNumber,
-                maxSessionRefresh,
-                sessionRefreshCount,
-                kcUserId,
-            };
-            const sessionCookie = await saveSession(dataToStore);
 
-            return redirect(`/${productId}/${kycType}`, {
-                headers: {
-                    "Set-Cookie": sessionCookie,
-                },
-            });
-        } else {
-            // Redirect to error page if session validation fails
-            return redirect("/error", {
-                headers: {
-                    "Set-Cookie": await saveSession({}), // Clear session cookie if necessary
-                },
-            });
-        }
+    if (!sessionId || !productId) {
+        throw new Response("Missing required query parameters", {
+            status: 400,
+            statusText: "Bad Request",
+        });
     }
-    // Handle invalid URL params
-    return redirect("/error");
+
+    const { status, ttl } = await verifySession(productId, sessionId);
+    if (!status || !ttl) {
+        throw new Response("Invalid or expired session", {
+            status: 401,
+            statusText: "Unauthorized",
+        });
+    }
+
+    const sessionData = await getSessionFromBff(sessionId, productId);
+    if (!sessionData) {
+        throw new Response("Failed to fetch session data from BFF", {
+            status: 500,
+            statusText: "Internal Server Error",
+        });
+    }
+    console.log("sessionData", sessionData);
+    const {
+        maxSessionRefresh = 1,
+        sessionRefreshCount = 0,
+        userInfo: { sub: kcUserId = "" } = {},
+    } = sessionData || {};
+
+    // Save session data in the session cookie and redirect to dynamic route
+    const dataToStore = {
+        sessionId,
+        productId,
+        kycType,
+        applicationId,
+        ttl,
+        companyName,
+        orgNumber,
+        maxSessionRefresh,
+        sessionRefreshCount,
+        kcUserId,
+    };
+    const sessionCookie = await saveSession(dataToStore);
+
+    return redirect(`/${productId}/${kycType}`, {
+        headers: {
+            "Set-Cookie": sessionCookie,
+        },
+    });
 };
 
 export default function Index() {

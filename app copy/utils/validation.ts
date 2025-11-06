@@ -22,14 +22,32 @@ const getValidationValueFromErrorType = (errorType: T_ErrorType): number | undef
 };
 
 const isEmpty = (value: T_AnswerValue): boolean => {
-    if (value == null) return true;
+    if (value == null || value === undefined) return true;
     
     if (typeof value === "string") {
         return value.trim() === "";
     }
     
+    if (typeof value === "number") {
+        return false;
+    }
+    
+    if (typeof value === "boolean") {
+        return false;
+    }
+    
     if (Array.isArray(value)) {
-        return value.filter(v => v != null && String(v).trim()).length === 0;
+        if (value.length === 0) return true;
+        
+        return value.every(item => {
+            if (item == null) return true;
+            if (typeof item === "string") return item.trim() === "";
+            if (typeof item === "object") {
+                return Object.keys(item).length === 0 || 
+                       Object.values(item).every(v => !v || (typeof v === "string" && v.trim() === ""));
+            }
+            return false;
+        });
     }
 
     return false;
@@ -39,6 +57,7 @@ const valueAsString = (value: T_AnswerValue): string => {
     if (value == null) return "";
     if (typeof value === "string") return value;
     if (typeof value === "number" || typeof value === "boolean") return String(value);
+    if (Array.isArray(value)) return value.join(", ");
     return "";
 };
 
@@ -52,6 +71,14 @@ const validateSingleRule = (value: T_AnswerValue, rule: T_ValidationRule): strin
     }
 
     switch (rule.type) {
+        case "numeric": {
+            const stringValue = valueAsString(value);
+            if (!/^\d+$/.test(stringValue)) {
+                return rule.message;
+            }
+            return null;
+        }
+
         case "maxLength20":
         case "maxLength100":
         case "maxLength500":
@@ -65,6 +92,7 @@ const validateSingleRule = (value: T_AnswerValue, rule: T_ValidationRule): strin
         }
 
         default:
+            console.warn(`Unknown validation rule type: ${rule.type}`);
             return null;
     }
 };
@@ -126,6 +154,7 @@ export const isFieldVisible = (
     formValues: Map<string, T_AnswerValue>
 ): boolean => {
     const parts = fieldName.split("::");
+    
     if (parts.length !== 2) {
         return true;
     }

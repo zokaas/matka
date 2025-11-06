@@ -12,12 +12,12 @@ import {
     LoaderFunctionArgs,
     LoaderFunction,
 } from "react-router";
-import { SessionProvider } from "~/context/SessionContext";
-import Error from "../components/Error/Error";
+import { SessionProvider, useSession } from "~/context";
+import { ErrorHandler } from "../components";
 import tailwindStyles from "./global.css?url";
 import { bodyStyles, bodyStylesThemeClass } from "./styles.css";
 import { getSession } from "./services/sessionStorage.server";
-import { useSessionManager, useSessionSuppressed } from "./hooks";
+import { useSessionManager } from "./hooks";
 
 const DEFAULT_THEME = "sweden-b2b-application";
 const DEFAULT_BG_IMAGE = "var(--bg-image)";
@@ -92,16 +92,23 @@ function Document({
     );
 }
 
+// throws a Response during render
+function ThrowResponse({ response }: { response: Response }): never {
+    throw response;
+}
+
 function SessionManagerMount() {
-    // A component to mount the hook once
-    useSessionManager();
+    const fatalResponse = useSessionManager();
+    if (fatalResponse) {
+        return <ThrowResponse response={fatalResponse} />;
+    }
     return null;
 }
 
 function SessionManagerGate() {
-    // suppress timers on these routes
-    const suppressed = useSessionSuppressed(["/expired", "/logout"]);
-    return suppressed ? null : <SessionManagerMount />;
+    const { session } = useSession();
+    // only mount manager when session is active
+    return session.status === "active" ? <SessionManagerMount /> : null;
 }
 
 export default function App() {
@@ -119,15 +126,24 @@ export default function App() {
 
 export function ErrorBoundary() {
     const error = useRouteError();
-    const message = isRouteErrorResponse(error)
-        ? error.data
-        : "Something went wrong. Please try again later.";
+    let status = 500;
+    let message = "Unknown error";
+    let data: unknown = {};
+
+    if (isRouteErrorResponse(error)) {
+        status = error.status;
+        message = error.statusText || "Route Error response";
+        data = error.data;
+    } else if (error instanceof Error) {
+        message = error.message || "Application error";
+        data = { stack: error.stack };
+    } else {
+        data = { raw: error };
+    }
 
     return (
         <Document theme={DEFAULT_THEME}>
-            <Error title="An error occurred!">
-                <p className="text-xl my-5">{message}</p>
-            </Error>
+            <ErrorHandler status={status} message={message} data={data} />
         </Document>
     );
 }

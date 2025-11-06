@@ -1,2 +1,2 @@
 export * from "./Error";
-export * from "./errorTypes";
+export type { T_Error, T_ErrorView } from "./errorTypes";

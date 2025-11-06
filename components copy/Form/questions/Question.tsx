@@ -15,14 +15,13 @@ import { InputNumber, InputText } from "@ui/inputField";
 import { BeneficialOwner, T_BeneficialOwnerCardProps } from "../beneficialOwner";
 import { BO_MAX_COUNT, EMPTY_STRING } from "./questions.constants";
 import { T_AnswerValue, T_QuestionData } from "~/types";
-import { valueAsString } from "~/utils/converters";
 
 export const Question: React.FC<T_QuestionProps> = ({
     questionType,
     questionProps,
     question,
     countryList,
-    currentValue
+    currentValue,
 }) => {
     // TODO: Maybe some better logic than question?. or question!. many times?
     const getFieldError = (fieldName: string): string | undefined => {
@@ -39,7 +38,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     placeholder={question?.placeholder || ""}
                     options={question?.options || []}
                     showSelectedItemIcon={true}
-                    value={typeof currentValue === "string" ? currentValue : undefined}
+                    value={currentValue as string}
                     onChange={(e) => {
                         questionProps.onChange(question!.questionParameter, e);
                     }}
@@ -50,11 +49,7 @@ export const Question: React.FC<T_QuestionProps> = ({
         );
     }
 
-    if (questionType === E_ComponentTypes.MULTISELECT) {
-        const multiselectValue = Array.isArray(currentValue) &&
-            currentValue.every(item => typeof item === 'string')
-            ? currentValue
-            : undefined;
+    if (questionType === E_ComponentTypes.MULTISELECT)
         return (
             <Container className={questionsStyle}>
                 <MultiSelect
@@ -63,7 +58,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     placeholder={question?.placeholder || ""}
                     options={(question?.useCountryList ? countryList : question?.options) || []}
                     searchEnabled={true}
-                    value={multiselectValue}
+                    value={currentValue as Array<string>} 
                     onChange={(selectedArray: T_AnswerValue) => {
                         questionProps.onChange(question!.questionParameter, selectedArray);
                     }}
@@ -73,7 +68,6 @@ export const Question: React.FC<T_QuestionProps> = ({
                 />
             </Container>
         );
-    }
 
     if (questionType === E_ComponentTypes.TEXTAREA)
         return (
@@ -82,7 +76,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     label={question?.questionLabel || ""}
                     fieldName={question!.questionParameter}
                     placeholder={question?.placeholder ? question.placeholder : undefined}
-                    value={valueToString(currentValue)}
+                    value={currentValue as string}
                     onChange={(e) => {
                         questionProps.onChange(question!.questionParameter, e);
                     }}
@@ -104,7 +98,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     options={question?.options ? question.options : []}
-                    defaultValue={valueAsString(currentValue) || EMPTY_STRING}
+                    defaultValue={currentValue as string}
                     error={getFieldError(question!.questionParameter) || ""}
                     classNames={{
                         radioRoot: b2bRadiogroupRootStyle,
@@ -125,7 +119,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     label={question?.questionLabel || ""}
                     fieldName={question!.questionParameter}
                     placeholder={question?.placeholder ? question.placeholder : undefined}
-                    value={valueAsString(currentValue)}
+                    value={currentValue as string}
                     onChange={(e) => {
                         questionProps.onChange(question!.questionParameter, e);
                     }}
@@ -143,7 +137,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     label={question?.questionLabel || ""}
                     fieldName={question!.questionParameter}
                     placeholder={question?.placeholder ? question.placeholder : undefined}
-                    value={valueAsString(currentValue)}
+                    value={currentValue as string}
                     onChange={(e) => {
                         questionProps.onChange(question!.questionParameter, e);
                     }}
@@ -196,7 +190,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     onChange={questionProps.onChange}
                     countryList={questionProps.countryList || []}
                     infoItems={boQuestion.infoItems || null}
-                    currentValue={currentValue} 
+                    currentValue={currentValue}
                 />
             </Container>
         );

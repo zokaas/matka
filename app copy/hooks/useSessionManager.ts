@@ -5,11 +5,9 @@ import { T_RefreshResult } from "./types";
 import { useExternalRefreshListener } from "./useExternalRefreshListener";
 import { useExpiryTimer } from "./useExpiryTimer";
 import { T_SessionModalPayload } from "apps/kyc/components/SessionModal/types";
-import { useNavigate } from "react-router";
 import { useSession } from "~/context/SessionContext";
 
 export const useSessionManager = () => {
-    const navigate = useNavigate();
     const { session, refreshSession, updateSession } = useSession();
     const { now } = session;
 
@@ -17,6 +15,8 @@ export const useSessionManager = () => {
     const [refreshCount, setRefreshCount] = useState<number>(session.sessionRefreshCount ?? 0);
 
     const { getLastActivity } = useActivityTracker();
+
+    const [fatalResponse, setFatalResponse] = useState<Response | null>(null);
 
     // handle a successful refresh result (update local state)
     const handleRefreshResult = (res: T_RefreshResult | null) => {
@@ -34,17 +34,25 @@ export const useSessionManager = () => {
     );
 
     // function invoked by timer or modal to attempt refresh
-    const attemptRefresh = async () => {
-        const res = await refreshSession();
-        if (!res) {
-            navigate("/error");
+    const attemptRefresh = async (): Promise<T_RefreshResult | null> => {
+        try {
+            const res = await refreshSession();
+            if (!res) return null;
+            handleRefreshResult(res);
+            return res;
+        } catch (err) {
+            console.error("refresh error", err);
             return null;
         }
-        handleRefreshResult(res);
-        return res;
     };
 
     const onShowModal = (payload: T_SessionModalPayload) => showSessionModal(payload);
+
+    const onFatal = (response: Response) => {
+        // store the response so the mounting component can render a thrower during render
+        setFatalResponse(response);
+    };
+
     useExpiryTimer({
         expiresAtMs: expiresAt,
         getLastActivity,
@@ -52,8 +60,9 @@ export const useSessionManager = () => {
         maxRefresh: session.maxSessionRefresh ?? 1,
         onAttemptRefresh: attemptRefresh,
         onShowModal,
+        onFatal,
         now,
     });
 
-    return null;
+    return fatalResponse;
 };

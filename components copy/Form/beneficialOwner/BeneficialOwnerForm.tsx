@@ -130,7 +130,7 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
                 type={"button"}
                 label={addButton}
                 disabled={addButtonDisabled}
-                className={classNames.fromButton || ""}
+                className={classNames.formButton || ""}
                 onClick={() => onButtonClick(name, ssn, ownership, country)}
             />
         </Container>
