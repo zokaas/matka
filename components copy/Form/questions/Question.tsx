@@ -188,6 +188,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     error={getFieldError(boQuestion.questionParameter)}
                     beneficialOwnerFieldsData={boData}
                     onChange={questionProps.onChange}
+                    onBlur={() => questionProps.onBlur(boQuestion.questionParameter)}
                     countryList={questionProps.countryList || []}
                     infoItems={boQuestion.infoItems || null}
                     currentValue={currentValue}

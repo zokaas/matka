@@ -27,10 +27,11 @@ import { Icon } from "@ui/icon";
 import { Questions } from "../questions/Questions";
 import { T_AnswerValue, T_FormStepsKeys } from "~/types";
 import { submitFormAnswers } from "~/services/utils/submitFormAnswers";
+import { ErrorView } from "../../Error";
 import { useFormValidation } from "~/hooks/useFormValidation"; // ✅ ADD THIS
 
 export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
-    const { formData,generalData } = props;
+    const { formData, generalData, error } = props;
     const submit = useSubmit();
     const navigation = useNavigation();
     const isSubmitting = navigation.state === "submitting";

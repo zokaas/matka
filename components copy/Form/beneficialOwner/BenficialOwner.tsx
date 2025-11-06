@@ -33,6 +33,7 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
     errorClassNames,
     infoItems,
     onChange,
+    onBlur,
 }) => {
     const [popoverOpen, setPopoverOpen] = useState(false);
     const [entriesIndex, setEntriesIndex] = useState(0);
@@ -54,6 +55,10 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
 
         if (onChange) {
             onChange(fieldName, owners);
+        }
+
+        if (onBlur) {
+            onBlur(fieldName);
         }
     };
 
@@ -78,6 +83,10 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
 
         if (onChange) {
             onChange(fieldName, owners);
+        }
+
+        if (onBlur) {
+            onBlur(fieldName);
         }
     };
 

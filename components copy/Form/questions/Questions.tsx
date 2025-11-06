@@ -31,8 +31,7 @@ export const Questions: React.FC<T_QuestionsProps> = (props: T_QuestionsProps) =
     const questionArray: ReactNode = currentSteps?.map((item) => {
         const includeCountryListProperty = isCountryListUsed(item);
 
-        // ✅ dependentQuestion.questionParameter already has the composite key
-        const dependentFieldName = item.question.dependentQuestion?.questionParameter || null;
+        const dependentFieldName = item.question.dependentQuestion?.questionParameter;
 
         return (
             <React.Fragment key={item.id}>

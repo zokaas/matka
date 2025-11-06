@@ -12,6 +12,7 @@ export type T_BeneficialOwnerProps = {
     fieldName: string;
     beneficialOwnersMaxCount: number;
     onChange: (fieldName: string, value: T_AnswerValue) => void;
+    onBlur: (fieldName: string) => void;
     countryList: T_CountryArray;
     errorClassNames?: T_ErrorClassNamesProps;
     classNames?: T_BeneficialOwnerClassNames;
