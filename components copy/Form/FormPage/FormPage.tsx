@@ -28,7 +28,7 @@ import { Questions } from "../questions/Questions";
 import { T_AnswerValue, T_FormStepsKeys } from "~/types";
 import { submitFormAnswers } from "~/services/utils/submitFormAnswers";
 import { ErrorView } from "../../Error";
-import { useFormValidation } from "~/hooks/useFormValidation"; // ✅ ADD THIS
+import { useFormValidation } from "~/hooks/useFormValidation";
 
 export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
     const { formData, generalData, error } = props;
@@ -40,12 +40,12 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
     const [activeStep, setActiveStep] = useState(1);
     const formRef = React.useRef<HTMLFormElement>(null);
 
-    const { 
-        validationErrors, 
-        validateSingleField, 
-        validateEntireForm, 
+    const {
+        validationErrors,
+        validateSingleField,
+        validateEntireForm,
         clearFieldError,
-        isVisible 
+        isVisible,
     } = useFormValidation(formData);
 
     const formValuesMap = useMemo(() => {
@@ -82,7 +82,7 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
         const currentStepQuestions = formData.steps.get(
             getCurrentStepName(activeStep - 1) as T_FormStepsKeys
         );
-        
+
         if (!currentStepQuestions) return true;
 
         let hasErrors = false;
@@ -111,14 +111,15 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
 
     const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        
+
         const validationResult = validateEntireForm(formValuesMap);
 
         if (!validationResult.isValid) {
             console.warn(`Form has ${validationResult.errors.size} validation errors`);
-            
+
             if (validationResult.firstErrorField) {
-                document.querySelector(`[name="${validationResult.firstErrorField}"]`)
+                document
+                    .querySelector(`[name="${validationResult.firstErrorField}"]`)
                     ?.scrollIntoView({ behavior: "smooth", block: "center" });
             }
             return;

@@ -22,7 +22,6 @@ export const Questions: React.FC<T_QuestionsProps> = (props: T_QuestionsProps) =
         return false;
     };
 
-    // Helper to get current value from formValues
     const getCurrentValue = (fieldName: string) => {
         const entry = formValues.get(fieldName);
         return entry?.answer;
@@ -42,23 +41,24 @@ export const Questions: React.FC<T_QuestionsProps> = (props: T_QuestionsProps) =
                     countryList={includeCountryListProperty ? countryList : undefined}
                     currentValue={getCurrentValue(item.question.questionParameter)}
                 />
-                {isDependantQuestionVisible(item.question.dependentQuestion, item.question) && 
-                 item.question.dependentQuestion && dependentFieldName && (
-                    <Question
-                        questionType={
-                            item.question.dependentQuestion.componentType as E_ComponentTypes
-                        }
-                        questionProps={props}
-                        question={item.question.dependentQuestion}
-                        key={dependentFieldName}
-                        countryList={
-                            item.question.dependentQuestion.useCountryList
-                                ? countryList
-                                : undefined
-                        }
-                        currentValue={getCurrentValue(dependentFieldName)}
-                    />
-                )}
+                {isDependantQuestionVisible(item.question.dependentQuestion, item.question) &&
+                    item.question.dependentQuestion &&
+                    dependentFieldName && (
+                        <Question
+                            questionType={
+                                item.question.dependentQuestion.componentType as E_ComponentTypes
+                            }
+                            questionProps={props}
+                            question={item.question.dependentQuestion}
+                            key={dependentFieldName}
+                            countryList={
+                                item.question.dependentQuestion.useCountryList
+                                    ? countryList
+                                    : undefined
+                            }
+                            currentValue={getCurrentValue(dependentFieldName)}
+                        />
+                    )}
             </React.Fragment>
         );
     });

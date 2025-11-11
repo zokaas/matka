@@ -82,7 +82,6 @@ export type T_DependentQuestion =
           questionDescription: string | null;
           id: number;
           conditionValue: number | string;
-          countryNameLang: string | null;
       })
     | null;
 

@@ -1,12 +1,21 @@
 //TODO: check questionType.ts for obsolete code
 
-import { T_ComponentType, T_ErrorMessageWithId, T_InfoComponentType, T_QuestionErrorMessage } from "./questionProperties";
+import {
+    T_ComponentType,
+    T_ErrorMessageWithId,
+    T_InfoComponentType,
+    T_QuestionErrorMessage,
+} from "./questionProperties";
 
 export type T_DynamicFieldComponent =
     | "kyc.country-options"
     | "kyc.dependent-question"
     | "kyc.info"
-    | "kyc.beneficial-owner";
+    | T_DependentQuestionComponentUid;
+
+    export type T_DependentQuestionComponentUid =
+    | "kyc.dependent-question-fi"
+    | "kyc.dependent-question-se";
 
 export type T_DynamicField<T = never> = {
     id: number;
@@ -28,7 +37,6 @@ export type T_DynamicFieldDependentQuestion = {
     componentType: T_ComponentType;
     questionParameter: string;
     questionDescription: string | null;
-    countryNameLang: string | null;
     errorMessages: {
         data: Array<T_ErrorMessageWithId>;
     };

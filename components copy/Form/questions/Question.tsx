@@ -3,6 +3,7 @@ import { Container } from "@ui/container";
 import { DropDown, MultiSelect } from "@ui/dropdown";
 import { Textarea } from "@ui/textarea";
 import { Radiogroup } from "@ui/radiogroup";
+import { Checkbox } from "@ui/checkbox";
 import { E_ComponentTypes, T_QuestionProps } from "./types";
 import {
     b2bRadiogroupRootStyle,
@@ -58,7 +59,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     placeholder={question?.placeholder || ""}
                     options={(question?.useCountryList ? countryList : question?.options) || []}
                     searchEnabled={true}
-                    value={currentValue as Array<string>} 
+                    value={currentValue as Array<string>}
                     onChange={(selectedArray: T_AnswerValue) => {
                         questionProps.onChange(question!.questionParameter, selectedArray);
                     }}
@@ -147,6 +148,26 @@ export const Question: React.FC<T_QuestionProps> = ({
                 />
             </Container>
         );
+
+    if (questionType === E_ComponentTypes.CHECKBOX) {
+                console.log("Rendering checkbox with value:", currentValue);
+        return (
+            <Container className={questionsStyle}>
+                <Checkbox
+                    label={question?.questionLabel || ""}
+                    fieldName={question!.questionParameter}
+                    checked={currentValue as boolean}
+                    onChange={(checked) => {
+                        console.log("Checkbox changed:", checked); 
+                        questionProps.onChange(question!.questionParameter, checked);
+                    }}
+                    onBlur={() => questionProps.onBlur(question!.questionParameter)}
+                    error={getFieldError(question!.questionParameter)}
+                    infoItems={question?.infoItems || null}
+                />
+            </Container>
+        );
+    }
 
     if (questionType === E_ComponentTypes.BENEFICIALOWNER) {
         // At this point we know for sure that question can't be dependant question type

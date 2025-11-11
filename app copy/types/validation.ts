@@ -1,8 +1,8 @@
 //This same list is used in strapi. So there can't be other error types.
-export type T_ErrorType = 
-    | "isRequired" 
-    | "maxLength500" 
-    | "maxLength20" 
+export type T_ErrorType =
+    | "isRequired"
+    | "maxLength500"
+    | "maxLength20"
     | "maxLength100"
     | "maxLength1000"
     | "numeric";

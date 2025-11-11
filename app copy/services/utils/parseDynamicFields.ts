@@ -22,6 +22,7 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
         ssnQuestion: null,
         useCountryList: null,
     };
+
     if (!item.question.dynamicField) return result;
 
     const infoItems: Array<T_DynamicFieldInfo> = [];
@@ -29,14 +30,12 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
         if (isDependentQuestion(dynamicField)) {
             const parentParameter = item.question.questionParameter;
             const dependentParameter = dynamicField.questionParameter;
-            //TODO:from in strapi
             const compositeKey = `${parentParameter}::${dependentParameter}`;
 
             result.dependentQuestion = {
                 __component: "kyc.dependent-question",
                 componentType: dynamicField.componentType,
                 conditionValue: dynamicField.conditionValue,
-                countryNameLang: dynamicField.countryNameLang,
                 id: dynamicField.id,
                 options: dynamicField.options,
                 questionDescription: dynamicField.questionDescription,

@@ -1,3 +1,4 @@
+import { isNumber } from "@ui/inputField/utils";
 import { T_AnswerValue, T_ParsedFormData } from "~/types";
 import {
     T_ErrorType,
@@ -23,28 +24,32 @@ const getValidationValueFromErrorType = (errorType: T_ErrorType): number | undef
 
 const isEmpty = (value: T_AnswerValue): boolean => {
     if (value == null || value === undefined) return true;
-    
+
     if (typeof value === "string") {
         return value.trim() === "";
     }
-    
+
     if (typeof value === "number") {
         return false;
     }
-    
+
     if (typeof value === "boolean") {
         return false;
     }
-    
+
     if (Array.isArray(value)) {
         if (value.length === 0) return true;
-        
-        return value.every(item => {
+
+        return value.every((item) => {
             if (item == null) return true;
             if (typeof item === "string") return item.trim() === "";
             if (typeof item === "object") {
-                return Object.keys(item).length === 0 || 
-                       Object.values(item).every(v => !v || (typeof v === "string" && v.trim() === ""));
+                return (
+                    Object.keys(item).length === 0 ||
+                    Object.values(item).every(
+                        (v) => !v || (typeof v === "string" && v.trim() === "")
+                    )
+                );
             }
             return false;
         });
@@ -73,7 +78,7 @@ const validateSingleRule = (value: T_AnswerValue, rule: T_ValidationRule): strin
     switch (rule.type) {
         case "numeric": {
             const stringValue = valueAsString(value);
-            if (!/^\d+$/.test(stringValue)) {
+            if (!isNumber(stringValue)) {
                 return rule.message;
             }
             return null;
@@ -154,7 +159,7 @@ export const isFieldVisible = (
     formValues: Map<string, T_AnswerValue>
 ): boolean => {
     const parts = fieldName.split("::");
-    
+
     if (parts.length !== 2) {
         return true;
     }
