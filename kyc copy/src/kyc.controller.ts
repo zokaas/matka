@@ -6,10 +6,12 @@ import {
   Param,
   Post,
   UseGuards,
+  UseInterceptors,
 } from "@nestjs/common";
 import { KycService } from "./kyc.service";
 import { AuthenticationGuard } from "@opr-finance/authentication";
 import { OptionDto, KycFormDto, FormAnswersDto } from "./dtos";
+import { KycResponseTransformInterceptor } from "./interceptors";
 
 @Controller("kyc")
 export class KycController {
@@ -18,14 +20,15 @@ export class KycController {
 
   @Get("/form/:kcClientId/:kycType")
   @UseGuards(AuthenticationGuard)
+  @UseInterceptors(KycResponseTransformInterceptor)
   async getProductData(
     @Param("kcClientId") productId: string,
     @Param("kycType") kycType: string
-  ) {
+  ): Promise<KycFormDto> {
     this.logger.log(
       `\nname = getKycForm \nproductId = ${productId}; \nkycType = ${kycType}; \n`
     );
-    const productData: KycFormDto = await this.kycService.getProductData(
+    const productData = await this.kycService.getProductData(
       productId,
       kycType
     );

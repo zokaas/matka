@@ -2,7 +2,7 @@ import { IsNumber, IsString } from "class-validator";
 
 export class OptionDto {
   @IsNumber()
-  id: number;
+  id?: number;
 
   @IsString()
   value: string;

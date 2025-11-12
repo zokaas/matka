@@ -7,7 +7,7 @@ import {
   AuthenticationModule,
   SessionMiddleware,
 } from "@opr-finance/authentication";
-import { KycFormParser } from "./utils/kyc-form-parser";
+import { KycFormParser } from "./utils";
 
 @Module({
   imports: [LoggerModule, HttpModule, AuthenticationModule],

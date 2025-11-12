@@ -2,7 +2,8 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { KycService } from "./kyc.service";
 import { ConfigService } from "@nestjs/config";
 import { HttpService } from "@nestjs/axios";
-import { KycFormParser } from "./utils/kyc-form-parser";
+import { KycFormParser } from "./utils";
+
 
 describe("KycService", () => {
   let service: KycService;

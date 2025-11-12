@@ -4,7 +4,7 @@ import { ConfigService } from "@nestjs/config";
 import { AxiosRequestConfig, Method } from "axios";
 import { catchError, lastValueFrom, map } from "rxjs";
 import { ApiFormDto, KycFormDto, OptionDto } from "./dtos";
-import { KycFormParser } from "./utils/kyc-form-parser";
+import { KycFormParser } from "./utils";
 
 @Injectable()
 export class KycService {
