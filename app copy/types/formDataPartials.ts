@@ -60,5 +60,5 @@ export type T_SessionModal = {
     expiredDescription: string;
     loginButton: string;
     logoutButton: string;
-    productId: string;
+    productId: string; //TODO: not part of payload
 };

@@ -1,6 +1,6 @@
 import { T_ParseDynamicFieldsResult } from "~/types";
 import { T_DynamicFieldInfo, T_QuestionTypeBasic } from "~/types/questionType";
-import { isBeneficialOwnerQuestion, isDependentQuestion, isInfo } from "~/utils";
+import { isBeneficialOwnerQuestion, isDependentQuestion, isInfo, isCountryOptions } from "~/utils";
 
 export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFieldsResult => {
     let result: T_ParseDynamicFieldsResult = {
@@ -66,6 +66,10 @@ export const parseDynamicFields = (item: T_QuestionTypeBasic): T_ParseDynamicFie
                 ...result,
                 ...dynamicField,
             };
+        }
+
+        if (isCountryOptions(dynamicField)) {
+            result.useCountryList = dynamicField.useCountryList;
         }
     });
 

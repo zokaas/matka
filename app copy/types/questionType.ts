@@ -11,11 +11,13 @@ export type T_DynamicFieldComponent =
     | "kyc.country-options"
     | "kyc.dependent-question"
     | "kyc.info"
-    | T_DependentQuestionComponentUid;
+    | "kyc.beneficial-owner";
 
-    export type T_DependentQuestionComponentUid =
-    | "kyc.dependent-question-fi"
-    | "kyc.dependent-question-se";
+    export type T_DynamicFieldUnion =
+    | T_DynamicFieldDependentQuestion
+    | T_DynamicFieldInfo
+    | T_DynamicFieldBeneficialOwner
+    | T_DynamicFieldCountryOptions;
 
 export type T_DynamicField<T = never> = {
     id: number;
@@ -71,6 +73,11 @@ export type T_DynamicFieldBeneficialOwner = {
     };
 };
 
+// Component: "kyc.country-options"
+export type T_DynamicFieldCountryOptions = {
+    useCountryList: boolean;
+};
+
 export type T_QuestionData = {
     questionLabel: string;
     step: number;
@@ -79,11 +86,7 @@ export type T_QuestionData = {
     placeholder: string | null;
     questionParameter: string;
     errorMessages?: Array<T_QuestionErrorMessage>;
-    dynamicField?: Array<
-        T_DynamicField<
-            T_DynamicFieldDependentQuestion | T_DynamicFieldInfo | T_DynamicFieldBeneficialOwner
-        >
-    >;
+    dynamicField?: Array<T_DynamicField>;
 };
 
 //TODO: T_QuestionTypeBasic shouldn't be in use anymore
