@@ -1,5 +1,10 @@
 import { Type } from "class-transformer";
-import { IsArray, IsNumber, IsObject, IsString, ValidateNested } from "class-validator";
+import {
+  IsArray,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from "class-validator";
 import {
   ButtonDto,
   CompanyBlockDto,
@@ -22,10 +27,8 @@ export class ApiProductDto {
   @IsString()
   formType: string;
 
-  @IsObject()
-  redirectUrl: {
-    url: string;
-  };
+  @IsString()
+  redirectUrl: string;
 
   @ValidateNested()
   @Type(() => StepsDto)

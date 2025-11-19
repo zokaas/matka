@@ -50,4 +50,16 @@ export class BeneficialOwnerDto extends DynamicFieldDto {
   @IsOptional()
   @IsString()
   countryPlaceholder?: string;
+
+  @IsOptional()
+  @IsString()
+  pepParameter?: string;
+
+  @IsOptional()
+  @IsString()
+  pepQuestion?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  pepOptions?: boolean;
 }

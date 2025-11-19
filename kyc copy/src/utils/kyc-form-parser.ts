@@ -4,7 +4,6 @@ import {
   ApiQuestionComponentDto,
   QuestionDto,
   DynamicFieldUnion,
-  ErrorMessageDto,
   OptionDto,
   CountrylistAttributesDto,
   ApiFormDto,
@@ -60,8 +59,7 @@ export class KycFormParser {
         id: formData.id,
         product: productData.product,
         formType: formData.formType,
-        redirectUrl: productData.redirectUrl?.url,
-
+        redirectUrl: productData.redirectUrl,
         steps: {
           step1: productData.steps.step1,
           step2: productData.steps.step2,
