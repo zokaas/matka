@@ -19,7 +19,6 @@ export class KycController {
   constructor(private readonly kycService: KycService) {}
 
   @Get("/form/:kcClientId/:kycType")
-  // @UseGuards(AuthenticationGuard)
   @UseInterceptors(KycResponseTransformInterceptor)
   async getProductData(
     @Param("kcClientId") productId: string,
@@ -37,7 +36,6 @@ export class KycController {
   }
 
   @Get("/countrylist/:kcClientId")
-  // @UseGuards(AuthenticationGuard)
   async getCountryList(
     @Param("kcClientId") productId: string
   ): Promise<Array<OptionDto>> {
@@ -47,7 +45,6 @@ export class KycController {
   }
 
   @Post("/form/:kcClientId/:kycType/:applicationId")
-  // @UseGuards(AuthenticationGuard)
   async sendFormAnswers(@Body() payload: FormAnswersDto) {
     const apiPath = "answers";
     const response = await this.kycService.sendFormData(payload, apiPath);

@@ -7,27 +7,22 @@ import {
   OptionDto,
   CountrylistAttributesDto,
   ApiFormDto,
-  PepOptionsDto,
   ErrorMessageDto,
-  BeneficialOwnerDto,
-  DependentQuestionDto,
-  InfoDto,
-  CountryOptionsDto,
 } from "../dtos";
 
 @Injectable()
 export class KycFormParser {
   private readonly logger = new Logger(KycFormParser.name);
 
-  private static readonly productIdToLang: Record<string, "fi" | "se"> = {
-    "sweden-b2b-application": "se",
-    "finland-b2b-application": "fi",
-  };
-
   private getLang(productId: string): "fi" | "se" {
-    return KycFormParser.productIdToLang[productId] ?? "se";
+    const PRODUCT_LANG: Record<string, "fi" | "se"> = {
+      "sweden-b2b-application": "se",
+      "finland-b2b-application": "fi",
+    };
+
+    return PRODUCT_LANG[productId];
   }
-  
+
   parseCountryList(
     response: Array<string>,
     productId: string
@@ -40,13 +35,13 @@ export class KycFormParser {
         return {
           value: country.en,
           text: country[lang] || country.en,
-        } as OptionDto;
+        };
       } catch (error) {
         this.logger.error("Critical parsing error:", error);
         return {
           value: "[Invalid Country]",
           text: "[Invalid Country]",
-        } as OptionDto;
+        };
       }
     });
 
@@ -124,8 +119,11 @@ export class KycFormParser {
 
     for (const questionComponent of setOfQuestions) {
       try {
-        const attrs = this.getQuestionAttributes(questionComponent, lang);
-        if (!attrs) {
+        const questionAttributes = this.getQuestionAttributes(
+          questionComponent,
+          lang
+        );
+        if (!questionAttributes) {
           this.logger.warn(
             `No attributes found for question ${questionComponent.id} in language ${lang}`
           );
@@ -135,14 +133,18 @@ export class KycFormParser {
         questions.push({
           id: questionComponent.id,
           question: {
-            questionLabel: attrs.questionLabel,
-            componentType: attrs.componentType,
+            questionLabel: questionAttributes.questionLabel,
+            componentType: questionAttributes.componentType,
             step: questionComponent.step,
-            options: attrs.options,
-            placeholder: attrs.placeholder,
-            questionParameter: attrs.questionParameter,
-            errorMessages: this.cleanErrorMessages(attrs.errorMessages),
-            dynamicField: this.cleanDynamicFields(attrs.dynamicField),
+            options: questionAttributes.options,
+            placeholder: questionAttributes.placeholder,
+            questionParameter: questionAttributes.questionParameter,
+            errorMessages: this.cleanErrorMessages(
+              questionAttributes.errorMessages
+            ),
+            dynamicField: this.cleanDynamicFields(
+              questionAttributes.dynamicField
+            ),
           },
         });
       } catch (error) {
@@ -155,67 +157,43 @@ export class KycFormParser {
     return questions;
   }
 
-  private getQuestionAttributes(
-    q: ApiQuestionComponentDto,
-    lang: "fi" | "se"
-  ) {
+  private getQuestionAttributes(q: ApiQuestionComponentDto, lang: "fi" | "se") {
     return {
       se: q.questions_se,
       fi: q.questions_fi,
     }[lang];
   }
 
-  private cleanDynamicFields(fields?: DynamicFieldUnion[]): DynamicFieldUnion[] {
-    if (!Array.isArray(fields)) return [];
+private cleanDynamicFields(
+  fields?: DynamicFieldUnion[]
+): DynamicFieldUnion[] {
+  if (!Array.isArray(fields)) return [];
 
-    return fields.map((field) => {
-      if (!field || typeof field !== "object") return field;
+  return fields.map((field): DynamicFieldUnion => {
+    if (!field || typeof field !== "object") return field;
 
-      const fieldWithMetadata = field as ;
-      const { id, __component, errorMessages, pepOptions, ...rest } = fieldWithMetadata;
-
-      const cleanedField: Record<string, unknown> = {
-        ...rest,
-        __component: this.cleanComponentName(__component),
-      };
-
-      if (errorMessages) {
-        const cleaned = this.cleanErrorMessages(errorMessages);
-        if (cleaned) {
-          cleanedField.errorMessages = cleaned;
-        }
-      }
-
-      if (pepOptions) {
-        const cleaned = this.cleanPepOptions(pepOptions);
-        if (cleaned) {
-          cleanedField.pepOptions = cleaned;
-        }
-      }
-
-      return cleanedField as DynamicFieldUnion;
-    });
-  }
-
-  private cleanComponentName(component?: string): string {
-    return component && typeof component === "string" 
-      ? component.replace(/-(se|fi|nl)$/i, "") 
-      : (component ?? "");
-  }
-
-  private cleanErrorMessages(messages?: ErrorMessageDto[]): [] | undefined {
-    if (!Array.isArray(messages) || messages.length === 0) return undefined;
-    return messages.map(({ error, message }) => ({ error, message }));
-  }
-
-  private cleanPepOptions(pepOptions?: PepOptionsDto):  | undefined {
-    if (!pepOptions || typeof pepOptions !== "object") return undefined;
-
-    const { yes, no } = pepOptions;
+    const hasErrorMessages =
+      "errorMessages" in field && Array.isArray(field.errorMessages);
 
     return {
-      yes: yes ? { text: yes.text, value: yes.value } : undefined,
-      no: no ? { text: no.text, value: no.value } : undefined,
+      ...field,
+      __component: this.cleanComponentName(field.__component),
+      ...(hasErrorMessages && {
+        errorMessages: this.cleanErrorMessages(field.errorMessages),
+      }),
     };
+  });
+}
+
+
+  private cleanErrorMessages(
+    messages?: Array<ErrorMessageDto>
+  ): Array<ErrorMessageDto> {
+    if (!Array.isArray(messages) || messages.length === 0) return undefined;
+
+    return messages.map(({ error, message }) => ({
+      error,
+      message,
+    }));
   }
 }

@@ -11,3 +11,4 @@ export * from "./option.dto";
 export * from "./session-modal.dto";
 export * from "./pep-options.dto";
 export * from "./error-message.dto";
+export * from "./steps.dto";

@@ -3,7 +3,7 @@ import { HttpException, Injectable, Logger } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { AxiosRequestConfig, Method } from "axios";
 import { catchError, lastValueFrom, map } from "rxjs";
-import { ApiFormDto, KycFormDto, OptionDto } from "./dtos";
+import { ApiFormDto, OptionDto } from "./dtos";
 import { KycFormParser } from "./utils";
 
 @Injectable()

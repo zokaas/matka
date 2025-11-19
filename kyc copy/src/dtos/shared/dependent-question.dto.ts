@@ -25,7 +25,7 @@ export class DependentQuestionDto extends DynamicFieldDto {
 
   @IsOptional()
   @IsBoolean()
-  automaticAnalysis?: boolean;
+  automaticAnalysis: boolean;
 
   @IsOptional()
   @IsString()
