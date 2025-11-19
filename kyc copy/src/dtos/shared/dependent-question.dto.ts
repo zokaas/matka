@@ -7,8 +7,8 @@ import {
 } from "class-validator";
 import { DynamicFieldDto } from "./dynamic-field.dto";
 import { Type } from "class-transformer";
-import { ErrorMessageDto } from "./error-message.dto";
 import { OptionDto } from "./option.dto";
+import { ErrorMessageDto } from "./error-message.dto";
 
 export class DependentQuestionDto extends DynamicFieldDto {
   @IsString()
@@ -53,5 +53,5 @@ export class DependentQuestionDto extends DynamicFieldDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ErrorMessageDto)
-  errorMessages?: Array<ErrorMessageDto>;
+  errorMessages: Array<ErrorMessageDto>;
 }

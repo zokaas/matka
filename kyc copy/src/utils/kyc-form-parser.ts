@@ -15,23 +15,6 @@ import {
   CountryOptionsDto,
 } from "../dtos";
 
-interface CleanedErrorMessage {
-  error: string;
-  message: string;
-}
-
-interface CleanedPepOptions {
-  yes?: { text: string; value: number };
-  no?: { text: string; value: number };
-}
-
-type DynamicFieldWithMetadata = DynamicFieldUnion & {
-  id?: number | string;
-  __component?: string;
-  errorMessages?: ErrorMessageDto[];
-  pepOptions?: PepOptionsDto;
-};
-
 @Injectable()
 export class KycFormParser {
   private readonly logger = new Logger(KycFormParser.name);
@@ -188,7 +171,7 @@ export class KycFormParser {
     return fields.map((field) => {
       if (!field || typeof field !== "object") return field;
 
-      const fieldWithMetadata = field as DynamicFieldWithMetadata;
+      const fieldWithMetadata = field as ;
       const { id, __component, errorMessages, pepOptions, ...rest } = fieldWithMetadata;
 
       const cleanedField: Record<string, unknown> = {
@@ -220,12 +203,12 @@ export class KycFormParser {
       : (component ?? "");
   }
 
-  private cleanErrorMessages(messages?: ErrorMessageDto[]): CleanedErrorMessage[] | undefined {
+  private cleanErrorMessages(messages?: ErrorMessageDto[]): [] | undefined {
     if (!Array.isArray(messages) || messages.length === 0) return undefined;
     return messages.map(({ error, message }) => ({ error, message }));
   }
 
-  private cleanPepOptions(pepOptions?: PepOptionsDto): CleanedPepOptions | undefined {
+  private cleanPepOptions(pepOptions?: PepOptionsDto):  | undefined {
     if (!pepOptions || typeof pepOptions !== "object") return undefined;
 
     const { yes, no } = pepOptions;

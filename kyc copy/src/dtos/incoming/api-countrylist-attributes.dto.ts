@@ -5,9 +5,6 @@ export class CountrylistAttributesDto {
   fi: string;
 
   @IsString()
-  nl: string;
-
-  @IsString()
   en: string;
 
   @IsString()

@@ -1,8 +1,9 @@
-import { IsNumber, IsString } from "class-validator";
+import { IsNumber, IsOptional, IsString } from "class-validator";
 
 export class StepsDto {
   @IsNumber()
-  id: number;
+  @IsOptional()
+  id?: number;
 
   @IsString()
   step1: string;

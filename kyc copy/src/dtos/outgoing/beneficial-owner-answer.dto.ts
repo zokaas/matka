@@ -12,4 +12,7 @@ export class BeneficialOwnerAnswerDto {
 
   @IsString()
   boCountry: string;
+
+  @IsString()
+  boPep: string;
 }

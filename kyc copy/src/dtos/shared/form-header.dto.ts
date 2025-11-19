@@ -1,8 +1,9 @@
-import { IsNumber, IsString } from "class-validator";
+import { IsNumber, IsOptional, IsString } from "class-validator";
 
 export class FormHeaderDto {
   @IsNumber()
-  id: number;
+  @IsOptional()
+  id?: number;
 
   @IsString()
   title: string;

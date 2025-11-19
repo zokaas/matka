@@ -15,7 +15,7 @@ import {
   OptionDto,
 } from "../shared";
 import { Type } from "class-transformer";
-import { ErrorMessageAttributesDto } from "./error-message-attributes.dto";
+import { ErrorMessageDto } from "../shared/error-message.dto";
 
 export class QuestionAttributesDto {
   @IsString()
@@ -42,8 +42,8 @@ export class QuestionAttributesDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => ErrorMessageAttributesDto)
-  errorMessages: Array<ErrorMessageAttributesDto>;
+  @Type(() => ErrorMessageDto)
+  errorMessages: Array<ErrorMessageDto>;
 
   @IsArray()
   @ValidateNested({ each: true })

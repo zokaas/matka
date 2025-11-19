@@ -26,7 +26,7 @@ export class ApiQuestionDto {
   componentType: string;
 
   @IsBoolean()
-  automaticAnalysis?: boolean;
+  automaticAnalysis: boolean;
 
   @IsOptional()
   @IsString()
@@ -40,12 +40,12 @@ export class ApiQuestionDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => OptionDto)
-  options?: OptionDto[];
+  options?: Array<OptionDto>;
 
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ErrorMessageDto)
-  errorMessages: ErrorMessageDto[];
+  errorMessages: Array<ErrorMessageDto>;
 
   @IsArray()
   @ValidateNested({ each: true })

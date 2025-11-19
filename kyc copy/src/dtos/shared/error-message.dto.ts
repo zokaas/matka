@@ -1,11 +1,13 @@
-import { IsNumber, IsString } from "class-validator";
+import { IsNumber, IsOptional, IsString } from "class-validator";
 
 export class ErrorMessageDto {
   @IsNumber()
-  id: number;
+  @IsOptional()
+  id?: number;
 
   @IsString()
-  documentId: string;
+  @IsOptional()
+  documentId?: string;
 
   @IsString()
   error: string;
@@ -14,11 +16,14 @@ export class ErrorMessageDto {
   message: string;
 
   @IsString()
-  createdAt: string;
+  @IsOptional()
+  createdAt?: string;
 
   @IsString()
-  updatedAt: string;
+  @IsOptional()
+  updatedAt?: string; 
 
   @IsString()
-  publishedAt: string;
+  @IsOptional()
+  publishedAt?: string;
 }

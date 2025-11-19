@@ -1,10 +1,11 @@
-import { IsNumber, ValidateNested } from "class-validator";
+import { IsNumber, IsOptional, ValidateNested } from "class-validator";
 import { Type } from "class-transformer";
 import { OptionDto } from "./option.dto";
 
 export class PepOptionsDto {
+  @IsOptional()
   @IsNumber()
-  id: number;
+  id?: number;
 
   @ValidateNested()
   @Type(() => OptionDto)
