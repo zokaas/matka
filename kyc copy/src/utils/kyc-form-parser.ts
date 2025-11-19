@@ -7,7 +7,30 @@ import {
   OptionDto,
   CountrylistAttributesDto,
   ApiFormDto,
+  PepOptionsDto,
+  ErrorMessageDto,
+  BeneficialOwnerDto,
+  DependentQuestionDto,
+  InfoDto,
+  CountryOptionsDto,
 } from "../dtos";
+
+interface CleanedErrorMessage {
+  error: string;
+  message: string;
+}
+
+interface CleanedPepOptions {
+  yes?: { text: string; value: number };
+  no?: { text: string; value: number };
+}
+
+type DynamicFieldWithMetadata = DynamicFieldUnion & {
+  id?: number | string;
+  __component?: string;
+  errorMessages?: ErrorMessageDto[];
+  pepOptions?: PepOptionsDto;
+};
 
 @Injectable()
 export class KycFormParser {
@@ -21,6 +44,7 @@ export class KycFormParser {
   private getLang(productId: string): "fi" | "se" {
     return KycFormParser.productIdToLang[productId] ?? "se";
   }
+  
   parseCountryList(
     response: Array<string>,
     productId: string
@@ -95,7 +119,6 @@ export class KycFormParser {
           loginButton: productData.sessionModal.loginButton,
           logoutButton: productData.sessionModal.logoutButton,
         },
-
         setOfQuestions: this.parseQuestions(formData.setOfQuestions, productId),
       };
     } catch (error) {
@@ -126,14 +149,6 @@ export class KycFormParser {
           continue;
         }
 
-        const errorMessages = this.normalizeErrorMessages(
-          attrs.errorMessages ?? []
-        );
-
-        const dynamicField = this.normalizeDynamicFields(
-          attrs.dynamicField as DynamicFieldUnion[] | undefined
-        );
-
         questions.push({
           id: questionComponent.id,
           question: {
@@ -143,8 +158,8 @@ export class KycFormParser {
             options: attrs.options,
             placeholder: attrs.placeholder,
             questionParameter: attrs.questionParameter,
-            errorMessages: errorMessages.length ? errorMessages : undefined,
-            dynamicField,
+            errorMessages: this.cleanErrorMessages(attrs.errorMessages),
+            dynamicField: this.cleanDynamicFields(attrs.dynamicField),
           },
         });
       } catch (error) {
@@ -154,7 +169,6 @@ export class KycFormParser {
         );
       }
     }
-
     return questions;
   }
 
@@ -168,37 +182,57 @@ export class KycFormParser {
     }[lang];
   }
 
-  private normalizeDynamicFields(
-    fields?: DynamicFieldUnion[]
-  ): DynamicFieldUnion[] {
+  private cleanDynamicFields(fields?: DynamicFieldUnion[]): DynamicFieldUnion[] {
     if (!Array.isArray(fields)) return [];
 
     return fields.map((field) => {
       if (!field || typeof field !== "object") return field;
 
-      const df = field as any;
+      const fieldWithMetadata = field as DynamicFieldWithMetadata;
+      const { id, __component, errorMessages, pepOptions, ...rest } = fieldWithMetadata;
 
-      const cleanComp =
-        typeof df.__component === "string"
-          ? df.__component.replace(/-(se|fi|nl)$/i, "")
-          : df.__component;
-
-      const errorMessages = this.normalizeErrorMessages(
-        Array.isArray(df.errorMessages) ? df.errorMessages : []
-      );
-
-      return {
-        ...df,
-        ...(cleanComp ? { __component: cleanComp } : {}),
-        ...(errorMessages.length ? { errorMessages } : {}),
+      const cleanedField: Record<string, unknown> = {
+        ...rest,
+        __component: this.cleanComponentName(__component),
       };
+
+      if (errorMessages) {
+        const cleaned = this.cleanErrorMessages(errorMessages);
+        if (cleaned) {
+          cleanedField.errorMessages = cleaned;
+        }
+      }
+
+      if (pepOptions) {
+        const cleaned = this.cleanPepOptions(pepOptions);
+        if (cleaned) {
+          cleanedField.pepOptions = cleaned;
+        }
+      }
+
+      return cleanedField as DynamicFieldUnion;
     });
   }
 
-  private normalizeErrorMessages(
-    raw: Array<{ error: string; message: string }>
-  ): Array<{ error: string; message: string }> {
-    if (!Array.isArray(raw)) return [];
-    return raw.map((e) => ({ error: e.error, message: e.message }));
+  private cleanComponentName(component?: string): string {
+    return component && typeof component === "string" 
+      ? component.replace(/-(se|fi|nl)$/i, "") 
+      : (component ?? "");
+  }
+
+  private cleanErrorMessages(messages?: ErrorMessageDto[]): CleanedErrorMessage[] | undefined {
+    if (!Array.isArray(messages) || messages.length === 0) return undefined;
+    return messages.map(({ error, message }) => ({ error, message }));
+  }
+
+  private cleanPepOptions(pepOptions?: PepOptionsDto): CleanedPepOptions | undefined {
+    if (!pepOptions || typeof pepOptions !== "object") return undefined;
+
+    const { yes, no } = pepOptions;
+
+    return {
+      yes: yes ? { text: yes.text, value: yes.value } : undefined,
+      no: no ? { text: no.text, value: no.value } : undefined,
+    };
   }
 }

@@ -6,7 +6,7 @@ import { CountryOptionsDto } from "./country-options.dto";
 
 export class DynamicFieldDto {
   @IsString()
-  id: string;
+  id: number;
 
   @IsString()
   __component: string;

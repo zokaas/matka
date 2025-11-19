@@ -40,13 +40,11 @@ export class QuestionAttributesDto {
   @IsString()
   questionParameter: string;
 
-  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ErrorMessageAttributesDto)
-  errorMessages?: Array<ErrorMessageAttributesDto>;
+  errorMessages: Array<ErrorMessageAttributesDto>;
 
-  @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => DynamicFieldDto, {
@@ -61,5 +59,5 @@ export class QuestionAttributesDto {
     },
     keepDiscriminatorProperty: true,
   })
-  dynamicField: DynamicFieldUnion[];
+  dynamicField: Array<DynamicFieldUnion>;
 }

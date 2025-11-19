@@ -1,5 +1,7 @@
-import { IsBoolean, IsOptional, IsString } from "class-validator";
+import { IsBoolean, IsNumber, IsOptional, IsString, ValidateNested } from "class-validator";
+import { Type } from "class-transformer";
 import { DynamicFieldDto } from "./dynamic-field.dto";
+import { PepOptionsDto } from "./pep-options.dto";
 
 export class BeneficialOwnerDto extends DynamicFieldDto {
   @IsString()
@@ -35,6 +37,9 @@ export class BeneficialOwnerDto extends DynamicFieldDto {
   @IsString()
   addBObutton: string;
 
+  @IsNumber()
+  boMaxCount: number;
+
   @IsOptional()
   @IsString()
   namePlaceholder?: string;
@@ -47,19 +52,16 @@ export class BeneficialOwnerDto extends DynamicFieldDto {
   @IsString()
   ownershipPlaceholder?: string;
 
-  @IsOptional()
   @IsString()
   countryPlaceholder?: string;
 
-  @IsOptional()
   @IsString()
   pepParameter?: string;
 
-  @IsOptional()
   @IsString()
   pepQuestion?: string;
 
-  @IsOptional()
-  @IsBoolean()
-  pepOptions?: boolean;
+  @ValidateNested()
+  @Type(() => PepOptionsDto)
+  pepOptions?: PepOptionsDto;
 }

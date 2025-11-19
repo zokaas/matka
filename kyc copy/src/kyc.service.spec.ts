@@ -4,7 +4,6 @@ import { ConfigService } from "@nestjs/config";
 import { HttpService } from "@nestjs/axios";
 import { KycFormParser } from "./utils";
 
-
 describe("KycService", () => {
   let service: KycService;
 

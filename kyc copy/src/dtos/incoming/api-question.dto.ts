@@ -5,6 +5,7 @@ import {
   IsArray,
   ValidateNested,
   IsNumber,
+  IsBoolean,
 } from "class-validator";
 import { BeneficialOwnerDto, CountryOptionsDto, DependentQuestionDto, DynamicFieldDto, DynamicFieldUnion, ErrorMessageDto, InfoDto, OptionDto } from "../shared";
 
@@ -23,6 +24,13 @@ export class ApiQuestionDto {
 
   @IsString()
   componentType: string;
+
+  @IsBoolean()
+  automaticAnalysis?: boolean;
+
+  @IsOptional()
+  @IsString()
+  automaticAnalysisType?: string | null;
 
   @IsOptional()
   @IsString()

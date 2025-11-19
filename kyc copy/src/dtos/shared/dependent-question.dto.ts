@@ -24,6 +24,14 @@ export class DependentQuestionDto extends DynamicFieldDto {
   componentType: string;
 
   @IsOptional()
+  @IsBoolean()
+  automaticAnalysis?: boolean;
+
+  @IsOptional()
+  @IsString()
+  automaticAnalysisType?: string | null;
+
+  @IsOptional()
   @IsString()
   placeholder?: string;
 

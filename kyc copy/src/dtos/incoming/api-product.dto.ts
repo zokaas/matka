@@ -1,10 +1,5 @@
 import { Type } from "class-transformer";
-import {
-  IsArray,
-  IsNumber,
-  IsString,
-  ValidateNested,
-} from "class-validator";
+import { IsArray, IsNumber, IsString, ValidateNested } from "class-validator";
 import {
   ButtonDto,
   CompanyBlockDto,
@@ -26,6 +21,9 @@ export class ApiProductDto {
 
   @IsString()
   formType: string;
+
+  @IsString()
+  country: string;
 
   @IsString()
   redirectUrl: string;
