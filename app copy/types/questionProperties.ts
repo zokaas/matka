@@ -23,8 +23,3 @@ export type T_QuestionErrorMessage = {
     error: T_ErrorType;
     message: string;
 };
-
-export type T_ErrorMessageWithId = {
-    id: number;
-    attributes: T_QuestionErrorMessage;
-};

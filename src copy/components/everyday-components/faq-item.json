@@ -1,0 +1,25 @@
+{
+  "collectionName": "components_everyday_components_faq_items",
+  "info": {
+    "displayName": "FAQ item",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "question": {
+      "type": "string"
+    },
+    "answer": {
+      "type": "richtext"
+    },
+    "category": {
+      "type": "enumeration",
+      "enum": [
+        "others",
+        "general",
+        "payback"
+      ],
+      "required": true
+    }
+  }
+}

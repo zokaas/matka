@@ -1,0 +1,64 @@
+{
+  "collectionName": "components_fo_pages_user_pages",
+  "info": {
+    "displayName": "User Page",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "pageTitle": {
+      "type": "string"
+    },
+    "pageTopInfo": {
+      "type": "string"
+    },
+    "companyInfoHeading": {
+      "type": "string"
+    },
+    "companyNameLabel": {
+      "type": "string"
+    },
+    "accountNumberLabel": {
+      "type": "string"
+    },
+    "businessIdLabel": {
+      "type": "string"
+    },
+    "customerNumberLabel": {
+      "type": "string"
+    },
+    "guarantorInfoHeading": {
+      "type": "string"
+    },
+    "guarantorNameLabel": {
+      "type": "string"
+    },
+    "guarantorSSNLabel": {
+      "type": "string"
+    },
+    "email": {
+      "type": "component",
+      "repeatable": false,
+      "component": "global.field"
+    },
+    "address": {
+      "type": "component",
+      "repeatable": false,
+      "component": "global.field"
+    },
+    "PhoneNumber": {
+      "type": "component",
+      "repeatable": false,
+      "component": "global.field"
+    },
+    "editBtnText": {
+      "type": "string"
+    },
+    "saveBtnText": {
+      "type": "string"
+    },
+    "addressPlaceholders": {
+      "type": "json"
+    }
+  }
+}

@@ -12,12 +12,11 @@ import {
     LoaderFunctionArgs,
     LoaderFunction,
 } from "react-router";
-import { SessionProvider, useSession } from "~/context";
 import { ErrorHandler } from "../components";
 import tailwindStyles from "./global.css?url";
 import { bodyStyles, bodyStylesThemeClass } from "./styles.css";
-import { getSession } from "./services/sessionStorage.server";
 import { useSessionManager } from "./hooks";
+import { getSession } from "./services/session/cacheSession.server";
 
 const DEFAULT_THEME = "sweden-b2b-application";
 const DEFAULT_BG_IMAGE = "var(--bg-image)";
@@ -32,7 +31,6 @@ type LoaderData = {
     maxSessionRefresh: number;
     sessionRefreshCount: number;
     applicationId?: string;
-    serverNow: number; // epoch ms (server time)
 };
 
 export const links: LinksFunction = () => [{ rel: "stylesheet", href: tailwindStyles }];
@@ -40,29 +38,17 @@ export const links: LinksFunction = () => [{ rel: "stylesheet", href: tailwindSt
 export const loader: LoaderFunction = async ({ params, request }: LoaderFunctionArgs) => {
     const productId = params.productId ?? DEFAULT_THEME;
     const session = await getSession(request.headers?.get("Cookie"));
-
-    // Prefer absolute expiry from the session store if available
-    const expAbsFromStore = session.get("expiresAtMs"); // stored as absolute ms
-    const ttlSec = session.get("ttl"); // seconds remaining
-    const serverNow = Date.now();
-
-    let exp: number | undefined;
-    if (typeof expAbsFromStore === "number" && expAbsFromStore > 0) {
-        exp = expAbsFromStore;
-    } else if (typeof ttlSec === "number" && ttlSec > 0) {
-        exp = serverNow + ttlSec * 1000;
-    }
+    const exp = session.get("exp");
 
     return {
         theme: productId,
         backgroundImage: DEFAULT_BG_IMAGE,
         sessionId: session.get("sessionId") ?? undefined,
-        productId: session.get("productId") ?? undefined,
+        productId: session.get("productId") ?? productId,
         exp,
         maxSessionRefresh: session.get("maxSessionRefresh") ?? 1,
         sessionRefreshCount: session.get("sessionRefreshCount") ?? 0,
         applicationId: session.get("applicationId") ?? undefined,
-        serverNow,
     } satisfies LoaderData;
 };
 
@@ -106,9 +92,10 @@ function SessionManagerMount() {
 }
 
 function SessionManagerGate() {
-    const { session } = useSession();
-    // only mount manager when session is active
-    return session.status === "active" ? <SessionManagerMount /> : null;
+    const sessionData = useLoaderData<LoaderData>();
+    const hasSession = Boolean(sessionData?.sessionId);
+
+    return hasSession ? <SessionManagerMount /> : null;
 }
 
 export default function App() {
@@ -116,10 +103,8 @@ export default function App() {
 
     return (
         <Document theme={initialSession?.theme || DEFAULT_THEME}>
-            <SessionProvider initialSession={initialSession}>
-                <SessionManagerGate />
-                <Outlet />
-            </SessionProvider>
+            <SessionManagerGate />
+            <Outlet />
         </Document>
     );
 }

@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_fo_components_account_detail_blocks",
+  "info": {
+    "displayName": "AccountDetailBlock"
+  },
+  "options": {},
+  "attributes": {
+    "loanSummaryHeading": {
+      "type": "string"
+    },
+    "creditAvailableText": {
+      "type": "string"
+    },
+    "creditWithdrawnText": {
+      "type": "string"
+    },
+    "creditLimitText": {
+      "type": "string"
+    },
+    "creditInfoText": {
+      "type": "string"
+    }
+  }
+}

@@ -1,9 +1,7 @@
-//TODO: check questionType.ts for obsolete code
-
 import {
     T_ComponentType,
-    T_ErrorMessageWithId,
     T_InfoComponentType,
+    T_Option,
     T_QuestionErrorMessage,
 } from "./questionProperties";
 
@@ -13,25 +11,11 @@ export type T_DynamicFieldComponent =
     | "kyc.info"
     | "kyc.beneficial-owner";
 
-    export type T_DynamicFieldUnion =
-    | T_DynamicFieldDependentQuestion
-    | T_DynamicFieldInfo
-    | T_DynamicFieldBeneficialOwner
-    | T_DynamicFieldCountryOptions;
-
-export type T_DynamicField<T = never> = {
-    id: number;
-    __component: T_DynamicFieldComponent;
-} & T;
-
-export type T_Option = {
-    text: string;
-    value: number;
-};
-
 // Component: "kyc.dependent-question"
 export type T_DynamicFieldDependentQuestion = {
-    conditionValue: number;
+    conditionValue: number | string;
+    automaticAnalysis: string;
+    automaticAnalysisType: string;
     placeholder: string | null;
     options: Array<T_Option> | null;
     useCountryList: boolean | null;
@@ -39,9 +23,7 @@ export type T_DynamicFieldDependentQuestion = {
     componentType: T_ComponentType;
     questionParameter: string;
     questionDescription: string | null;
-    errorMessages: {
-        data: Array<T_ErrorMessageWithId>;
-    };
+    errorMessages: Array<T_QuestionErrorMessage>;
 };
 
 // Component: "kyc.info"
@@ -68,9 +50,7 @@ export type T_DynamicFieldBeneficialOwner = {
     countryParameter: string;
     countryQuestion: string;
     countryListLang: string;
-    errorMessages: {
-        data: Array<T_ErrorMessageWithId>;
-    };
+    errorMessages: Array<T_QuestionErrorMessage>;
 };
 
 // Component: "kyc.country-options"
@@ -78,10 +58,24 @@ export type T_DynamicFieldCountryOptions = {
     useCountryList: boolean;
 };
 
-export type T_QuestionData = {
+export type T_DynamicFieldUnion =
+    | T_DynamicFieldDependentQuestion
+    | T_DynamicFieldInfo
+    | T_DynamicFieldBeneficialOwner
+    | T_DynamicFieldCountryOptions;
+
+export type T_DynamicField<T = T_DynamicFieldUnion> = {
+    id: number;
+    __component: T_DynamicFieldComponent;
+} & T;
+
+// Raw API question data (before parsing)
+export type T_ApiQuestionData = {
     questionLabel: string;
     step: number;
     componentType: string;
+    automaticAnalysis: string;
+    automaticAnalysisType: string;
     options: Array<T_Option> | null;
     placeholder: string | null;
     questionParameter: string;
@@ -89,8 +83,7 @@ export type T_QuestionData = {
     dynamicField?: Array<T_DynamicField>;
 };
 
-//TODO: T_QuestionTypeBasic shouldn't be in use anymore
-export type T_QuestionTypeBasic = {
+export type T_ApiQuestion = {
     id: number;
-    question: T_QuestionData;
+    question: T_ApiQuestionData;
 };

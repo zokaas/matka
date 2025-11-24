@@ -1,0 +1,126 @@
+{
+  "collectionName": "components_fo_pages_topup_pages",
+  "info": {
+    "displayName": "Topup Page",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "pageTitle": {
+      "type": "string"
+    },
+    "pageSubHeading": {
+      "type": "string"
+    },
+    "pageLongInfoText": {
+      "type": "text"
+    },
+    "formInstructionText": {
+      "type": "string"
+    },
+    "loanInfoSubHeading": {
+      "type": "string"
+    },
+    "creditLimitLabel": {
+      "type": "string"
+    },
+    "newCreditLimit": {
+      "type": "component",
+      "repeatable": false,
+      "component": "global.field"
+    },
+    "acceptLowerLimitCheckBox": {
+      "type": "component",
+      "repeatable": false,
+      "component": "global.field"
+    },
+    "organizationInfoSubHead": {
+      "type": "string"
+    },
+    "organizationNameLabel": {
+      "type": "string"
+    },
+    "organizationNumberLabel": {
+      "type": "string"
+    },
+    "monthlyTurnover": {
+      "type": "component",
+      "repeatable": false,
+      "component": "global.field"
+    },
+    "companyEmailLabel": {
+      "type": "string"
+    },
+    "guarantorInfoSubHead": {
+      "type": "string"
+    },
+    "guarantorNameLabel": {
+      "type": "string"
+    },
+    "guarantorSSnLabel": {
+      "type": "string"
+    },
+    "phoneNumberText": {
+      "type": "string"
+    },
+    "campaignCode": {
+      "type": "component",
+      "repeatable": false,
+      "component": "global.field"
+    },
+    "creditCheck": {
+      "type": "component",
+      "repeatable": false,
+      "component": "global.field"
+    },
+    "PrivacyPolicy": {
+      "type": "component",
+      "repeatable": false,
+      "component": "global.field"
+    },
+    "sendApplicationBtnText": {
+      "type": "string"
+    },
+    "topupPageNotEligibleBlock": {
+      "displayName": "Topup Page Not Eligible Block",
+      "type": "component",
+      "repeatable": false,
+      "component": "fo-components.topup-page-not-eligible-block"
+    },
+    "backBtnText": {
+      "type": "string"
+    },
+    "ThankYouHeading": {
+      "type": "string"
+    },
+    "thankYouBodyText1": {
+      "type": "text"
+    },
+    "thankYouBodyText2": {
+      "type": "text"
+    },
+    "previewBtnText": {
+      "type": "string"
+    },
+    "fillInAllFieldsErrorText": {
+      "type": "string"
+    },
+    "thankyouBodyOrByPhoneText": {
+      "type": "string"
+    },
+    "dropdownChooseText": {
+      "type": "string"
+    },
+    "privacyPolicyLink": {
+      "type": "component",
+      "repeatable": false,
+      "component": "global.link"
+    },
+    "newCreditLimitText": {
+      "type": "string"
+    },
+    "monthlyTurnoverText": {
+      "type": "string"
+    }
+  }
+}

@@ -1,6 +1,9 @@
 import { ActionFunction } from "react-router";
-import { endSession } from "~/services/sessionProvider.server";
-import { endOwnSession, getSessionData } from "~/services/sessionStorage.server";
+import {
+    getSession as getCachedSession,
+    destroySession as destroyCachedSession,
+} from "~/services/session/cacheSession.server";
+import { endBffSession } from "~/services/session/sessionProvider.server";
 
 type T_BackendInfo = {
     status: number | null;
@@ -16,8 +19,21 @@ type T_EndSessionResponse = {
 };
 
 export const action: ActionFunction = async ({ request }) => {
-    const sessionId = await getSessionData(request, "sessionId");
-    const clientId = await getSessionData(request, "productId");
+    const cookie = request.headers.get("cookie") || "";
+    const session = await getCachedSession(cookie);
+    if (!session) {
+        return jsonResponse(
+            {
+                success: false,
+                message: "Session not found in Redis",
+                cookieCleared: false,
+            } as T_EndSessionResponse,
+            401
+        );
+    }
+
+    const sessionId = session.get("sessionId");
+    const clientId = session.get("clientId");
 
     if (!sessionId || !clientId) {
         return jsonResponse(
@@ -26,7 +42,7 @@ export const action: ActionFunction = async ({ request }) => {
                 message: "Session or client ID not found",
                 cookieCleared: false,
             } as T_EndSessionResponse,
-            400
+            401
         );
     }
 
@@ -36,8 +52,8 @@ export const action: ActionFunction = async ({ request }) => {
 
     try {
         // destroy session on BFF
-        const result = await endSession(sessionId, clientId);
-        backendStatus = result?.status ?? null;
+        const result = await endBffSession(sessionId, clientId);
+        backendStatus = result.status;
         backendOk = backendStatus === 200 || backendStatus === 204;
         backendMessage = "Backend logout completed";
         console.log("Backend logout result:", result);
@@ -47,12 +63,12 @@ export const action: ActionFunction = async ({ request }) => {
         backendMessage = String(err ?? "Unknown error calling backend logout");
         console.error("Error calling backend logout:", err);
     }
-    // attempt to clear local session cookie
+    // attempt to clear cached session and local session cookie
     let cookieHeader: string | null = null;
     let cookieCleared = false;
 
     try {
-        cookieHeader = await endOwnSession(request); // should return Set-Cookie value that clears the cookie
+        cookieHeader = await destroyCachedSession(session); // should return Set-Cookie value that clears the cookie
         cookieCleared = Boolean(cookieHeader);
     } catch (cookieErr) {
         console.error("Failed to clear local session cookie:", cookieErr);

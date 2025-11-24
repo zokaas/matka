@@ -1,0 +1,31 @@
+{
+  "collectionName": "components_everyday_components_front_pages",
+  "info": {
+    "displayName": "Front Page",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "noticeTitle": {
+      "type": "string"
+    },
+    "notice": {
+      "type": "text"
+    },
+    "customerServiceTitle": {
+      "type": "string"
+    },
+    "openingHeading": {
+      "type": "string"
+    },
+    "openingHrs": {
+      "type": "string"
+    },
+    "phoneOpeningHrsText": {
+      "type": "string"
+    },
+    "newsBlockTitle": {
+      "type": "string"
+    }
+  }
+}

@@ -418,9 +418,16 @@ const WeeklyProgressBar = () => {
       </div>
 
       {/* Details panel - Rest of the details content */}
-      <AnimatePresence>
-
-      </AnimatePresence>
+          <div className="flex items-center gap-2 mt-5">
+            <div className="w-4 h-4 rounded-full bg-purple-500 flex-shrink-0"></div>
+            <div>
+              <div className="font-medium text-gray-800">Joukkueen viikkotavoite</div>
+              <div className="text-xs text-gray-600">
+                Lasketaan jokaiselle erikseen jäljellä olevan yhteisen kokonaismatkan mukaan. 
+                Tavoite asetetaan viikon alussa ja pysyy samana koko viikon.
+              </div>
+            </div>
+          </div>
     </div>
   );
 };

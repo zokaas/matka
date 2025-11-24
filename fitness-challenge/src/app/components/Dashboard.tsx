@@ -20,6 +20,7 @@ import { User } from "@/app/types/types";
 // import StageCard from "./StageCard";
 import Quotes from "./Quotes";
 import PartyBanner from "./PartyBanner";
+import ImprovedWeeklyDisplay from "./ImprovedWeeklyDisplay";
 
 export default function Dashboard() {
   const { t, colors, theme } = useTheme();
@@ -34,7 +35,8 @@ export default function Dashboard() {
 
   const { currentStage } = useCurrentStage(stages, totalKm);
   const weeklyGoalData = useWeeklyGoal(users); // Dynamic weekly goal data
-
+  const currentWeek = weeklyGoalData.allWeeksData.find(w => w.isCurrent);
+  
   useEffect(() => {
     fetchUsersAndTotalKm(setUsers, setTotalKm, setLoading, setError);
   }, []);
@@ -93,8 +95,7 @@ export default function Dashboard() {
         </motion.header> */}
         {/* STAGE PROGRESS */}
         {/* <StageCard totalKm={totalKm} /> */}
-        <PartyBanner users={users} />
-
+        {/* <PartyBanner users={users} /> */}
 
         {/* ENHANCED WEEKLY PROGRESS BAR */}
         <WeeklyProgressBar />

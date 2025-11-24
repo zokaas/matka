@@ -2,7 +2,6 @@
 
 import { useState, useMemo, useEffect } from "react";
 import _ from "lodash";
-import { useTheme } from "@/app/hooks/useTheme";
 import { TrendingUp, Calendar, Clock, Activity, Award, BarChart3, TrendingDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";

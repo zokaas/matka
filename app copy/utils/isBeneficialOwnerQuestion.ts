@@ -1,4 +1,8 @@
-import { T_DynamicField, T_DynamicFieldBeneficialOwner, T_DynamicFieldUnion } from "~/types/questionType";
+import {
+    T_DynamicField,
+    T_DynamicFieldBeneficialOwner,
+    T_DynamicFieldUnion,
+} from "~/types/questionType";
 
 export const isBeneficialOwnerQuestion = (
     question: T_DynamicField<T_DynamicFieldUnion>

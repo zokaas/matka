@@ -1,0 +1,95 @@
+{
+  "kind": "collectionType",
+  "collectionName": "products",
+  "info": {
+    "singularName": "product",
+    "pluralName": "products",
+    "displayName": "Product",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "product": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "finland-flex-online",
+        "netherlands-flex-online",
+        "sweden-flex-online",
+        "finland-yritysluotto",
+        "sweden-b2b-application"
+      ]
+    },
+    "country": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "Finland",
+        "Sweden"
+      ]
+    },
+    "kyc_ses": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::kyc-se.kyc-se",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "country"
+            },
+            "Sweden"
+          ]
+        }
+      },
+      "mappedBy": "product"
+    },
+    "kyc_fis": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::kyc-fi.kyc-fi",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "country"
+            },
+            "Finland"
+          ]
+        }
+      },
+      "mappedBy": "product"
+    },
+    "redirectUrl": {
+      "type": "string"
+    },
+    "steps": {
+      "type": "component",
+      "component": "kyc.steps",
+      "repeatable": false
+    },
+    "button": {
+      "type": "component",
+      "component": "kyc.button",
+      "repeatable": false
+    },
+    "footer": {
+      "type": "component",
+      "component": "kyc.footer",
+      "repeatable": false
+    },
+    "companyBlock": {
+      "type": "component",
+      "component": "kyc.company-block",
+      "repeatable": false
+    },
+    "sessionModal": {
+      "type": "component",
+      "component": "kyc.session-modal",
+      "repeatable": false
+    }
+  }
+}

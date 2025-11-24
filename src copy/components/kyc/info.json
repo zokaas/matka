@@ -1,0 +1,23 @@
+{
+  "collectionName": "components_kyc_infos",
+  "info": {
+    "displayName": "info",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "infoHeader": {
+      "type": "text"
+    },
+    "infoDescription": {
+      "type": "text"
+    },
+    "componentType": {
+      "type": "enumeration",
+      "enum": [
+        "tooltip",
+        "subHeader"
+      ]
+    }
+  }
+}

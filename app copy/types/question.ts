@@ -7,6 +7,8 @@ export type T_QuestionData = {
     step: number;
     questionParameter: string;
     questionLabel: string;
+    automaticAnalysis: string;
+    automaticAnalysisType: string;
     placeholder: string | null;
     options: Array<T_Option> | null;
     errorMessages?: Array<T_QuestionErrorMessage>;

@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_kyc_steps",
+  "info": {
+    "displayName": "Steps"
+  },
+  "options": {},
+  "attributes": {
+    "step1": {
+      "type": "string",
+      "required": false
+    },
+    "step2": {
+      "type": "string"
+    },
+    "step3": {
+      "type": "string"
+    }
+  }
+}

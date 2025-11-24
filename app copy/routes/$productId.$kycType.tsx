@@ -1,22 +1,28 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
     ActionFunction,
     ActionFunctionArgs,
     isRouteErrorResponse,
     useActionData,
     useLoaderData,
-    useNavigate,
     useRouteError,
 } from "react-router";
-import { verifySession } from "~/services/sessionProvider.server";
-import {
-    endOwnSession,
-    getOrganizationFromSession,
-    getSession,
-} from "~/services/sessionStorage.server";
 
-import { getAndParseFormData } from "~/services/api/get-form-data.server";
-import { T_ProductIdLoaderData, T_ProductIdPageData } from "./types/productIdPage";
+import {
+    getSession as getCachedSession,
+    destroySession,
+    buildDestroySessionHeader,
+    commitSession,
+    getSessionProps,
+    getOrganizationFromSession,
+} from "~/services/session/cacheSession.server";
+import { verifyBffSession } from "~/services/session/sessionProvider.server";
+
+import {
+    T_ClientSessionData,
+    T_ProductIdLoaderData,
+    T_ProductIdPageData,
+} from "./types/productIdPage";
 import { FormPage } from "../../components/Form";
 import { T_ParsedFormData, T_AnswerObject } from "~/types";
 import { Route } from "apps/kyc/.react-router/types/app/+types/root";
@@ -24,12 +30,12 @@ import { Route } from "apps/kyc/.react-router/types/app/+types/root";
 import { Header } from "@ui/header";
 import { Container } from "@ui/container";
 import { pageContentStyle } from "~/styles/pageContentStyle.css";
-import { sendFormData } from "~/services/api/api-kyc.server";
-import { mapDataForPayload } from "~/services/utils/mapDataForPayload.server";
 import { SessionModalManager, ErrorHandler, T_ErrorView } from "apps/kyc/components";
 import { Footer } from "@ui/footer";
-import { useSession } from "~/context";
 import { T_ActionResponse } from "./types";
+import { getAndParseFormData } from "~/services/api/get-form-data.server";
+import { mapDataForPayload } from "~/services/utils/mapDataForPayload.server";
+import { sendFormData } from "~/services/api/api-kyc.server";
 
 export const loader = async ({
     request,
@@ -48,8 +54,10 @@ export const loader = async ({
         pageData: {},
         formData: {},
         answers: new Map(),
+        sessionData: {},
     };
 
+    const session = await getCachedSession(request.headers?.get("Cookie"));
     const { sessionId, organizationName, organizationNumber } =
         await getOrganizationFromSession(request);
 
@@ -58,30 +66,49 @@ export const loader = async ({
     }
 
     try {
-        const { status, ttl } = await verifySession(productId, sessionId);
+        const { status, ttl } = await verifyBffSession(productId, sessionId);
 
         if (!status || !ttl) {
+            const headers = await buildDestroySessionHeader(request);
             // treat as unauthorized / session invalid
-            throw new Response("Invalid session", { status: 401, statusText: "Unauthorized" });
+            throw new Response("Invalid session", {
+                status: 401,
+                statusText: "Unauthorized",
+                headers,
+            });
         }
 
-        loaderData.formData = await getAndParseFormData(productId, kycType, sessionId);
+        const parsedFormData = await getAndParseFormData(productId, kycType, sessionId);
+
+        loaderData.formData = parsedFormData;
         loaderData.pageData = {
-            organizationName: encodeURIComponent(organizationName),
+            organizationName,
             kycType,
             organizationNumber,
             productId,
-            ttl,
         };
+        loaderData.sessionData = {
+            applicationId: session.get("applicationId") ?? "",
+            productId: session.get("clientId") ?? "",
+            sessionRefreshCount: session.get("sessionRefreshCount") ?? 0,
+            maxSessionRefresh: session.get("maxSessionRefresh") ?? 1,
+            exp: session.get("exp") ?? Date.now(),
+        };
+
+        const { redirectUrl } = parsedFormData;
+        session.set("redirectUrl", redirectUrl);
+        await commitSession(session);
 
         return {
             ...loaderData,
         };
     } catch (error) {
         console.error("Error fetching data:", error);
+        const headers = await buildDestroySessionHeader(request);
         throw new Response("Error fetching data", {
             status: 500,
             statusText: "Internal Server Error",
+            headers,
         });
     }
 };
@@ -94,7 +121,7 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
     }
 
     try {
-        const session = await getSession(request.headers?.get("Cookie"));
+        const session = await getCachedSession(request.headers?.get("Cookie"));
         const applicationId = session.get("applicationId");
         const kcUserId = session.get("kcUserId");
         const { sessionId, organizationName, organizationNumber } =
@@ -134,10 +161,12 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
 
         console.log("Backend result:", result);
 
+        const { redirectUrl } = await getSessionProps(request, "redirectUrl");
+
         if (result.status === "ok") {
             // Attempt to clear server-side session cookie and return it with the redirect
             try {
-                const cookieHeader = await endOwnSession(request); // returns Set-Cookie value
+                const cookieHeader = await destroySession(session); // returns Set-Cookie value
                 const headers: Record<string, string> = {};
                 if (cookieHeader) {
                     headers["Set-Cookie"] = cookieHeader;
@@ -147,7 +176,7 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
                     status: 303,
                     headers: {
                         ...headers,
-                        Location: "/thank-you",
+                        Location: redirectUrl,
                     },
                 });
             } catch (err) {
@@ -155,7 +184,7 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
                 // Still redirect even if cookie clearing failed — still PRG
                 return new Response(null, {
                     status: 303,
-                    headers: { Location: "/thank-you" },
+                    headers: { Location: redirectUrl },
                 });
             }
         }
@@ -185,33 +214,33 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
 
 export default function KycFormPage(): JSX.Element {
     const actionData = useActionData<T_ActionResponse | undefined>();
+    const loaderData = useLoaderData<T_ProductIdLoaderData>();
 
     const error = React.useMemo<T_ErrorView | undefined>(() => {
-        if (!actionData) return undefined;
+        if (!actionData || !loaderData) return undefined;
         return actionData.success === false ? { message: actionData.message } : undefined;
-    }, [actionData]);
+    }, [actionData, loaderData]);
 
-    const { session } = useSession();
-    const navigate = useNavigate();
-    // If no active session, navigate away (prevents showing form after logout)
-    React.useEffect(() => {
-        if (session.status !== "active") {
-            // Replace history so back doesn't bring user back to the form
-            navigate("/", { replace: true });
-        }
-    }, [session.status, navigate]);
-
-    const loaderData = useLoaderData<T_ProductIdLoaderData>();
     const formData = loaderData.formData as T_ParsedFormData;
     const pageData = loaderData.pageData as T_ProductIdPageData;
-    const { productId } = pageData;
+    const sessionData = loaderData.sessionData as T_ClientSessionData;
+    // save application id for the case when session is not valid
+    const { applicationId } = sessionData;
+    useEffect(() => {
+        if (applicationId) {
+            localStorage.setItem("applicationId", applicationId);
+        }
+    }, [applicationId]);
 
     return (
         <Container className={pageContentStyle}>
             <Header logoSrc="/logos/t.svg" title={formData.generalFormData.formHeader.title} />
             <FormPage generalData={pageData} formData={formData} error={error} />
             <Footer footer={formData.generalFormData.footer} />
-            <SessionModalManager {...formData.generalFormData.sessionModal} productId={productId} />
+            <SessionModalManager
+                {...formData.generalFormData.sessionModal}
+                sessionData={sessionData}
+            />
         </Container>
     );
 }

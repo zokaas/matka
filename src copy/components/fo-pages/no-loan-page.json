@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_fo_pages_no_loan_pages",
+  "info": {
+    "displayName": "No Loan Page",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "pageTitle": {
+      "type": "string"
+    },
+    "pageHeading": {
+      "type": "string"
+    },
+    "bodyText": {
+      "type": "string"
+    },
+    "applicationLink": {
+      "type": "component",
+      "repeatable": false,
+      "component": "global.link"
+    }
+  }
+}

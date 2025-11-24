@@ -18,14 +18,20 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
         id,
         product,
         formType,
+        redirectUrl,
         steps,
         button,
         footer,
         companyBlock,
         formHeader,
         sessionModal,
-        questions,
+        setOfQuestions,
     } = apiResponse;
+
+    if (!setOfQuestions || !Array.isArray(setOfQuestions)) {
+        console.error("Invalid API response - questions is missing or not an array:", apiResponse);
+        throw new Error("Invalid API response: questions array is missing");
+    }
 
     const parsedSteps: Array<T_ParsedStep> = [];
 
@@ -42,7 +48,7 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
     const parsedQuestionsByStep: T_FormStepsWithQuestions = new Map();
     const answers: T_Answers = new Map();
 
-    questions.forEach((item) => {
+    setOfQuestions.forEach((item) => {
         const stepKeyName = stepKeyNames[item.question.step - 1] as T_FormStepsKeys;
 
         const answerFieldName = item.question.questionParameter;
@@ -50,6 +56,8 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
         answers.set(answerFieldName, {
             questionId: String(item.id),
             question: answerFieldName,
+            automaticAnalysis: item.question.automaticAnalysis,
+            type: item.question.automaticAnalysisType,
             answer: "",
         });
 
@@ -59,6 +67,8 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
                 answers.set(depField, {
                     questionId: String(currentField.id),
                     question: depField,
+                    automaticAnalysis: currentField.automaticAnalysis,
+                    type: currentField.automaticAnalysisType,
                     answer: "",
                 });
             }
@@ -104,6 +114,7 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
         id,
         product,
         formType,
+        redirectUrl,
         generalFormData,
         steps: parsedQuestionsByStep,
         answers,

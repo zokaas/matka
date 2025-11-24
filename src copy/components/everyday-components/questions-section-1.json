@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_everyday_components_questions_section_1s",
+  "info": {
+    "displayName": "QuestionsBlock",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "question": {
+      "type": "string"
+    },
+    "answer": {
+      "type": "text"
+    }
+  }
+}

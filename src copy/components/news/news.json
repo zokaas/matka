@@ -1,0 +1,22 @@
+{
+  "collectionName": "components_news_news",
+  "info": {
+    "displayName": "News",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "newsHeading": {
+      "type": "string"
+    },
+    "news": {
+      "type": "text"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "publishedOn": {
+      "type": "date"
+    }
+  }
+}

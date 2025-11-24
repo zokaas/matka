@@ -14,7 +14,6 @@ export type T_QuestionsProps = {
 
 export enum E_ComponentTypes {
     BENEFICIALOWNER = "BeneficialOwner",
-    CHECKBOX = "Checkbox",
     MULTISELECT = "MultiSelectDropdown",
     NUMBER = "Number",
     RADIOGROUP = "RadioGroup",

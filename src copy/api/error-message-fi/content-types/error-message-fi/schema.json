@@ -1,0 +1,28 @@
+{
+  "kind": "collectionType",
+  "collectionName": "error_message_fis",
+  "info": {
+    "singularName": "error-message-fi",
+    "pluralName": "error-message-fis",
+    "displayName": "Error Message FI"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "error": {
+      "type": "enumeration",
+      "enum": [
+        "isRequired",
+        "maxLength100",
+        "maxLength500",
+        "maxLength1000",
+        "numeric"
+      ]
+    },
+    "message": {
+      "type": "text"
+    }
+  }
+}

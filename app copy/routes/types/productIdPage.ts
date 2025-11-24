@@ -3,7 +3,6 @@ import { T_Answers, T_CountryArray, T_ParsedFormData } from "~/types";
 export type T_ProductIdPageData = {
     organizationName: string;
     organizationNumber: string;
-    ttl: number;
     productId: string;
     kycType: string;
 };
@@ -11,6 +10,14 @@ export type T_ProductIdPageData = {
 export type T_Error = {
     message?: string;
     type?: string;
+};
+
+export type T_ClientSessionData = {
+    applicationId: string;
+    productId: string;
+    exp: number;
+    maxSessionRefresh: number;
+    sessionRefreshCount: number;
 };
 
 /**
@@ -25,4 +32,5 @@ export type T_ProductIdLoaderData = {
     answers: T_Answers;
     countryList?: T_CountryArray;
     error?: T_Error;
+    sessionData: T_ClientSessionData | Record<string, never>;
 };

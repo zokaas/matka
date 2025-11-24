@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_fo_pages_expired_pages",
+  "info": {
+    "displayName": "Expired Page",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "pageTitle": {
+      "type": "string"
+    },
+    "heading": {
+      "type": "string"
+    },
+    "bodyText": {
+      "type": "string"
+    },
+    "loginLink": {
+      "type": "component",
+      "repeatable": false,
+      "component": "global.link"
+    }
+  }
+}

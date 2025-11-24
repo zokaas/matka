@@ -1,0 +1,55 @@
+{
+  "collectionName": "components_fo_components_withdraw_blocks",
+  "info": {
+    "displayName": "Withdraw Block",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "withdrawTitle": {
+      "type": "string"
+    },
+    "withdrawInputLabel": {
+      "type": "string"
+    },
+    "withdrawInputPlaceholder": {
+      "type": "string"
+    },
+    "withdrawButtonText": {
+      "type": "string"
+    },
+    "withdrawButtonInfoText": {
+      "type": "string"
+    },
+    "withdrawSentMessage": {
+      "type": "string"
+    },
+    "withdrawAlertAmountTooBig": {
+      "type": "string"
+    },
+    "withdrawAlertAmountTooSmall": {
+      "type": "string"
+    },
+    "withdrawCurrencySign": {
+      "type": "string"
+    },
+    "withdrawNotEligibleText": {
+      "type": "string"
+    },
+    "withdwrawInfoBullets": {
+      "type": "json"
+    },
+    "withdrawOverdueInvoice": {
+      "type": "string"
+    },
+    "withdrawAvailableCreditTooSmall": {
+      "type": "string"
+    },
+    "withdrawNotAbleToMakeWithdrawal": {
+      "type": "string"
+    },
+    "withdrawNoIbanNumber": {
+      "type": "string"
+    }
+  }
+}

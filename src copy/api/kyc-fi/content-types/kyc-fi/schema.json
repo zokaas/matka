@@ -1,0 +1,46 @@
+{
+  "kind": "collectionType",
+  "collectionName": "kyc_fis",
+  "info": {
+    "singularName": "kyc-fi",
+    "pluralName": "kyc-fis",
+    "displayName": "KYC-FI",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "formName": {
+      "type": "string",
+      "required": true
+    },
+    "formType": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "onboarding",
+        "update"
+      ]
+    },
+    "product": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::product.product",
+      "inversedBy": "kyc_fis"
+    },
+    "formHeader": {
+      "type": "component",
+      "component": "kyc.form-header",
+      "repeatable": false
+    },
+    "setOfQuestions": {
+      "type": "dynamiczone",
+      "components": [
+        "kyc.question-fi"
+      ],
+      "required": true
+    }
+  }
+}

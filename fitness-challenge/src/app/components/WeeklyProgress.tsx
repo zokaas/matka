@@ -1,4 +1,4 @@
-// components/WeeklyProgress.tsx - Showing both goals with personal focus
+// components/WeeklyProgress.tsx - CORRECTED VERSION
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -27,12 +27,29 @@ interface WeeklyInsight {
   personalWeeklyPercentage: number;
   dailyTarget: number;
   rank: number;
+  isPersonalGoalCompleted: boolean; // NEW: Track if user completed their goal
 }
+
+// FIXED: Personal targets should match backend USER_KM_MULTIPLIERS calculation
+// Each person's target = (weeklyHours * totalWeeks) * multiplier
+// From backend: INDIVIDUAL_TARGET_KM = 3338.8 / 10 = 333.88 km per person
+const PERSONAL_TARGETS: { [key: string]: number } = {
+  Tyyni: 333.88,
+  Tuure: 333.88,
+  Tuulia: 333.88,
+  Kasper: 333.88,
+  Tiia: 333.88,
+  Zoka: 333.88,
+  Linda: 333.88,
+  Oskari: 333.88,
+  Leksa: 333.88,
+  Santeri: 333.88,
+};
 
 const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
   const { t } = useTheme();
   const [weeklyInsights, setWeeklyInsights] = useState<WeeklyInsight[]>([]);
-  const [sortMode, setSortMode] = useState<'team' | 'personal'>('team');
+  const [sortMode, setSortMode] = useState<'team' | 'personal'>('personal'); // Changed default to personal
 
   // weekly data from hook
   const weeklyGoalData = useWeeklyGoal(users);
@@ -44,6 +61,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
 
     const insights = users
       .map((user) => {
+        // Get this week's activities
         const weekActivities = user.activities.filter((activity) => {
           const activityDate = new Date(activity.date);
           return activityDate >= weekStart && activityDate <= weekEnd;
@@ -53,32 +71,46 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
           weekActivities.reduce((sum, activity) => sum + activity.kilometers, 0)
         );
 
-        // Team goal: Everyone shares the same goal, working together
+        // TEAM GOAL: Everyone shares the same goal, working together
         const teamWeeklyGoal = r1(weeklyGoalPerUser);
         const teamWeeklyPercentage = r1(
           teamWeeklyGoal > 0 ? (weeklyProgress / teamWeeklyGoal) * 100 : 0
         );
 
-        // Personal goal: Each person has their own individual goal
-        // Calculate remaining individual distance to total challenge
-        const personalTotalTarget = r1(challengeParams.totalDistance / users.length);
-        const remainingPersonal = Math.max(0, personalTotalTarget - user.totalKm);
+        // PERSONAL GOAL: Calculate based on individual target and progress
+        // Get user's personal target (should be same for all, 333.88 km)
+        const personalTotalTarget = PERSONAL_TARGETS[user.username] || (challengeParams.totalDistance / users.length);
         
-        // Calculate personal weekly goal based on remaining weeks
-        const today = new Date();
-        const challengeEnd = new Date(challengeParams.endDate);
-        const weeksRemaining = Math.max(1, Math.ceil(
-          (challengeEnd.getTime() - today.getTime()) / (7 * 24 * 60 * 60 * 1000)
-        ));
+        // FIXED: Check if user has already completed their personal goal
+        const isPersonalGoalCompleted = user.totalKm >= personalTotalTarget;
         
-        const personalWeeklyGoal = r1(remainingPersonal / weeksRemaining);
-        const personalWeeklyPercentage = r1(
-          personalWeeklyGoal > 0 ? (weeklyProgress / personalWeeklyGoal) * 100 : 0
-        );
+        let personalWeeklyGoal = 0;
+        let personalWeeklyPercentage = 100; // Default to 100% if completed
+        let dailyTarget = 0;
 
-        // Daily target calculation based on personal goal
-        const remainingKmPersonal = Math.max(0, r1(personalWeeklyGoal - weeklyProgress));
-        const dailyTarget = daysRemaining > 0 ? r1(remainingKmPersonal / daysRemaining) : 0;
+        if (!isPersonalGoalCompleted) {
+          // Calculate remaining personal distance
+          const remainingPersonal = Math.max(0, personalTotalTarget - user.totalKm);
+          
+          // FIXED: Calculate remaining weeks from START OF CURRENT WEEK (not today)
+          // This makes the goal stable for the entire week
+          const challengeEnd = new Date(challengeParams.endDate);
+          const weeksRemainingFromWeekStart = Math.max(1, Math.ceil(
+            (challengeEnd.getTime() - weekStart.getTime()) / (7 * 24 * 60 * 60 * 1000)
+          ));
+          
+          // Personal weekly goal for this week
+          personalWeeklyGoal = r1(remainingPersonal / weeksRemainingFromWeekStart);
+          
+          // Calculate percentage
+          personalWeeklyPercentage = personalWeeklyGoal > 0
+            ? r1((weeklyProgress / personalWeeklyGoal) * 100)
+            : 100;
+
+          // Daily target based on personal goal
+          const remainingKmThisWeek = Math.max(0, r1(personalWeeklyGoal - weeklyProgress));
+          dailyTarget = daysRemaining > 0 ? r1(remainingKmThisWeek / daysRemaining) : 0;
+        }
 
         return {
           username: user.username,
@@ -92,12 +124,26 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
           personalWeeklyPercentage: Math.min(200, personalWeeklyPercentage),
           dailyTarget,
           rank: 0,
+          isPersonalGoalCompleted,
         };
       })
       .sort((a, b) => {
-        return sortMode === 'team'
-          ? b.teamWeeklyPercentage - a.teamWeeklyPercentage
-          : b.personalWeeklyPercentage - a.personalWeeklyPercentage;
+        // FIXED: Completed users should appear first in personal mode
+        if (sortMode === 'personal') {
+          // Completed users first
+          if (a.isPersonalGoalCompleted && !b.isPersonalGoalCompleted) return -1;
+          if (!a.isPersonalGoalCompleted && b.isPersonalGoalCompleted) return 1;
+          
+          // Among completed users, sort by how much they exceeded
+          if (a.isPersonalGoalCompleted && b.isPersonalGoalCompleted) {
+            return b.personalWeeklyProgress - a.personalWeeklyProgress;
+          }
+          
+          // Among active users, sort by percentage
+          return b.personalWeeklyPercentage - a.personalWeeklyPercentage;
+        } else {
+          return b.teamWeeklyPercentage - a.teamWeeklyPercentage;
+        }
       })
       .map((insight, index) => ({ ...insight, rank: index + 1 }));
 
@@ -109,7 +155,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
     weeklyGoalData.daysRemaining,
     weeklyGoalData.weekStart,
     weeklyGoalData.weekEnd,
-    sortMode, // re-sort when sort mode changes
+    sortMode,
   ]);
 
   const getUserActivityStatus = (username: string) => {
@@ -132,12 +178,16 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
     return null;
   };
 
-  // Group users by their achievement of personal goals
-  const champions = weeklyInsights.filter((i) => i.personalWeeklyPercentage >= 100);
-  const inProgress = weeklyInsights.filter(
-    (i) => i.personalWeeklyPercentage > 0 && i.personalWeeklyPercentage < 100
+  // FIXED: Group users correctly - completed goal users should be champions
+  const champions = weeklyInsights.filter((i) => 
+    i.isPersonalGoalCompleted || i.personalWeeklyPercentage >= 100
   );
-  const needsMotivation = weeklyInsights.filter((i) => i.personalWeeklyPercentage === 0);
+  const inProgress = weeklyInsights.filter(
+    (i) => !i.isPersonalGoalCompleted && i.personalWeeklyPercentage > 0 && i.personalWeeklyPercentage < 100
+  );
+  const needsMotivation = weeklyInsights.filter(
+    (i) => !i.isPersonalGoalCompleted && i.personalWeeklyPercentage === 0
+  );
 
   return (
     <section className="px-4">
@@ -146,7 +196,6 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
           📊 Viikon tilanne
         </h2>
         
-        
         {/* Explanation */}
         <div className="p-3 bg-white rounded-lg shadow-sm border border-gray-200 text-sm max-w-xl w-full">
           <div className="flex items-center gap-2">
@@ -154,7 +203,8 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
             <div>
               <div className="font-medium text-gray-800">Henkilökohtainen viikkotavoite</div>
               <div className="text-xs text-gray-600">
-                Lasketaan jokaiselle erikseen jäljellä olevan henkilökohtaisen matkan mukaan. Jos noudatat kyseistä viikkorytmiä, niin pääset pikkujouluihin!
+                Lasketaan jokaiselle erikseen jäljellä olevan henkilökohtaisen matkan (333.9 km) mukaan. 
+                Tavoite asetetaan viikon alussa ja pysyy samana koko viikon.
               </div>
             </div>
           </div>
@@ -165,12 +215,13 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
       {champions.length > 0 && (
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-green-700 mb-3">
-            🏆 Tavoitteen saavuttaneet
+            🏆 Tavoitteen saavuttaneet ({champions.length})
           </h3>
           <div className="space-y-3">
             {champions.map((insight) => {
               const user = users.find((u) => u.username === insight.username);
               const activityStatus = getUserActivityStatus(insight.username);
+              const personalTarget = PERSONAL_TARGETS[insight.username] || 333.88;
 
               return (
                 <Link key={insight.username} href={`/user/${insight.username}`} className="block">
@@ -202,7 +253,11 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                             {insight.username}
                           </h4>
                           <div className="text-sm text-green-600">
-                            🥇 {insight.personalWeeklyPercentage.toFixed(1)}% saavutettu!
+                            {insight.isPersonalGoalCompleted ? (
+                              <>🎉 Henkilökohtainen tavoite saavutettu! ({user?.totalKm.toFixed(1)}/{personalTarget.toFixed(1)} km)</>
+                            ) : (
+                              <>🥇 {insight.personalWeeklyPercentage.toFixed(1)}% tämän viikon tavoitteesta!</>
+                            )}
                             {activityStatus && <span className="ml-2">{activityStatus.emoji}</span>}
                           </div>
                         </div>
@@ -212,7 +267,11 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                           {insight.personalWeeklyProgress.toFixed(1)} km
                         </div>
                         <div className="text-sm text-green-600">
-                          Tavoite: {insight.personalWeeklyGoal.toFixed(1)} km
+                          {insight.isPersonalGoalCompleted ? (
+                            "Tavoite täytetty! ✓"
+                          ) : (
+                            `Tavoite: ${insight.personalWeeklyGoal.toFixed(1)} km`
+                          )}
                         </div>
                         {activityStatus && (
                           <div className="text-xs text-orange-600 mt-1">
@@ -222,20 +281,22 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                       </div>
                     </div>
                     
-                    {/* Progress bar - only personal */}
-                    <div className="mt-3">
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
-                        <motion.div
-                          className="h-2.5 rounded-full bg-purple-500"
-                          initial={{ width: 0 }}
-                          animate={{ width: `${Math.min(100, insight.personalWeeklyPercentage)}%` }}
-                          transition={{ duration: 1 }}
-                        />
+                    {/* Progress bar */}
+                    {!insight.isPersonalGoalCompleted && (
+                      <div className="mt-3">
+                        <div className="w-full bg-gray-200 rounded-full h-2.5">
+                          <motion.div
+                            className="h-2.5 rounded-full bg-purple-500"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${Math.min(100, insight.personalWeeklyPercentage)}%` }}
+                            transition={{ duration: 1 }}
+                          />
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1 text-center">
+                          Viikkotavoite ylitetty {(insight.personalWeeklyProgress - insight.personalWeeklyGoal).toFixed(1)} kilometrillä
+                        </div>
                       </div>
-                      <div className="text-xs text-gray-500 mt-1 text-center">
-                        Viikkotavoite ylitetty {(insight.personalWeeklyProgress - insight.personalWeeklyGoal).toFixed(1)} kilometrillä
-                      </div>
-                    </div>
+                    )}
                   </motion.div>
                 </Link>
               );
@@ -244,11 +305,11 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
         </div>
       )}
 
-      {/* In Progress */}
+      {/* In Progress - rest of the component stays the same */}
       {inProgress.length > 0 && (
         <div className="mb-6">
           <h3 className="text-lg font-semibold text-yellow-400 mb-3">
-            🚴‍♂️ Matkalla tavoitteeseen
+            🚴‍♂️ Matkalla tavoitteeseen ({inProgress.length})
           </h3>
           <div className="space-y-3">
             {inProgress.map((insight) => {
@@ -314,10 +375,8 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                       </div>
                     </div>
 
-                    {/* Progress bar - only personal */}
+                    {/* Progress bar */}
                     <div>
-                      <div className="flex justify-between text-xs text-gray-600 mb-1">
-                      </div>
                       <div className="relative">
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div
@@ -326,7 +385,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                                 ? "bg-gradient-to-r from-orange-400 to-red-500"
                                 : "bg-gradient-to-r from-purple-400 to-purple-500"
                             }`}
-                            style={{ width: `${insight.personalWeeklyPercentage}%` }}
+                            style={{ width: `${Math.min(100, insight.personalWeeklyPercentage)}%` }}
                           >
                             {insight.personalWeeklyPercentage > 5 && (
                               <div
@@ -348,7 +407,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                         </span>
                       ) : (
                         <span className="text-yellow-800">
-                          Tarvitaan vielä {r1(insight.personalWeeklyGoal - insight.personalWeeklyProgress)} km tällä viikolla
+                          Tarvitaan vielä {r1(insight.personalWeeklyGoal - insight.personalWeeklyProgress)} km • {insight.dailyTarget.toFixed(1)} km/päivä
                         </span>
                       )}
                     </div>
@@ -364,7 +423,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
       {needsMotivation.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold text-red-600 mb-3">
-            🆘 Tarvitsee motivaatiota
+            🆘 Tarvitsee motivaatiota ({needsMotivation.length})
           </h3>
           <div className="grid grid-cols-1 gap-2">
             {needsMotivation.map((insight) => {
@@ -402,7 +461,7 @@ const WeeklyProgress = ({ users }: WeeklyProgressProps) => {
                           <div className="flex flex-col">
                             <span className="text-xs text-red-600">0 km tällä viikolla</span>
                             <span className="text-xs text-gray-600">
-                              Henkilökohtainen tavoite: {insight.personalWeeklyGoal.toFixed(1)} km
+                              Tavoite: {insight.personalWeeklyGoal.toFixed(1)} km
                             </span>
                           </div>
                         </div>

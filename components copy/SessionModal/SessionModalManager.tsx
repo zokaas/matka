@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ModalDialog } from "@ui/modal";
 import { T_SessionModalPayload } from "./types";
-import { useRedirectToLogin } from "~/hooks";
-import { useSession } from "~/context/SessionContext";
 import { T_SessionModal } from "~/types";
-import { redirectToMarketingPage } from "~/utils/navigation";
+import { redirectToLogin, redirectToMarketingPage } from "~/utils";
+import { callEndSession } from "~/services";
 
 /**
  * Fire a global event to show the session modal.
@@ -38,8 +37,9 @@ export const SessionModalManager: React.FC<T_SessionModal> = ({
     expiredDescription,
     loginButton,
     logoutButton,
-    productId,
+    sessionData,
 }) => {
+    const { applicationId, productId } = sessionData;
     const [isOpen, setIsOpen] = useState(false);
     const [modalType, setModalType] = useState<string | undefined>(undefined);
     const [isLoading, setIsLoading] = useState(false);
@@ -50,8 +50,11 @@ export const SessionModalManager: React.FC<T_SessionModal> = ({
     const [fatal, setFatal] = useState<Error | Response | null>(null);
     const autoLogoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    const { session, refreshSession } = useSession();
-    const redirectToLogin = useRedirectToLogin(session.applicationId ?? "");
+    const handleRedirectToLogin = () => {
+        const id = applicationId ?? localStorage.getItem("applicationId");
+        // call end-session then redirect to login
+        void doEndSession(() => redirectToLogin(id));
+    };
 
     const refreshModalContent = {
         title: refreshTitle,
@@ -88,11 +91,7 @@ export const SessionModalManager: React.FC<T_SessionModal> = ({
             const ms = Math.max(5_000, typeof d.remainingMs === "number" ? d.remainingMs : 60_000);
             clearAutoLogoutTimer();
             autoLogoutTimerRef.current = setTimeout(() => {
-                const response = new Response("Session expired", {
-                    status: 440, // 440 = Login Timeout
-                    statusText: "Session Expired",
-                });
-                setFatal(response);
+                return handleRedirectToLogin();
             }, ms);
         };
 
@@ -101,12 +100,31 @@ export const SessionModalManager: React.FC<T_SessionModal> = ({
             window.removeEventListener("session:modal:show", onShow as EventListener);
             clearAutoLogoutTimer();
         };
-    }, [session.applicationId]);
+    }, [applicationId]);
 
+    const doEndSession = async (redirectFn: () => void) => {
+        if (isLoading) return;
+        clearAutoLogoutTimer();
+        setIsLoading(true);
+
+        try {
+            await callEndSession();
+        } catch (err) {
+            console.error("Logout request failed:", err);
+        } finally {
+            // Close modal and navigate regardless of outcome (mirror original behavior)
+            try {
+                setIsOpen(false);
+                redirectFn();
+            } finally {
+                setIsLoading(false);
+            }
+        }
+    };
     /**
      * Handle "Continue" button:
      * - If expired modal: redirect to login.
-     * - Otherwise attempt an in-place refresh via refreshSession().
+     * - Otherwise request a refresh (dispatch) and wait for a response.
      *   If refresh fails (res falsy), trigger the ErrorBoundary by setting fatalError.
      */
     const handleContinue = async () => {
@@ -114,82 +132,80 @@ export const SessionModalManager: React.FC<T_SessionModal> = ({
 
         if (modalType === "expired") {
             console.log("Expired, redirect to login page", "start/");
-            return redirectToLogin();
+            return handleRedirectToLogin();
         }
 
         setIsLoading(true);
-        console.log("Continue session");
+        console.log("Continue session (UI requests manager to refresh)");
 
-        try {
-            const res = await refreshSession();
-            if (!res) {
-                const response = new Response("Session refresh failed", {
-                    status: 401,
-                    statusText: "Unauthorized",
-                });
-                setFatal(response);
-                return;
-            }
-            setIsOpen(false);
-        } catch (err) {
-            const message = err instanceof Error ? err.message : "Unknown session refresh error";
-            const response = new Response(message, {
-                status: 500,
-                statusText: "Session Refresh Error",
+        // Helper: wait for a single 'session:refresh-response' event or timeout
+        const waitForRefreshResponse = (timeoutMs = 15000) =>
+            new Promise<{ success: boolean; response?: Response }>((resolve) => {
+                let timer: ReturnType<typeof setTimeout> | null = null;
+
+                const onResponse = (ev: Event) => {
+                    if (timer) {
+                        clearTimeout(timer);
+                        timer = null;
+                    }
+                    const detail = (ev as CustomEvent).detail ?? {};
+                    window.removeEventListener(
+                        "session:refresh-response",
+                        onResponse as EventListener
+                    );
+                    resolve(detail);
+                };
+
+                // one-time handler
+                window.addEventListener("session:refresh-response", onResponse as EventListener);
+
+                // safety timeout — resolve with failure if manager doesn't answer
+                timer = setTimeout(() => {
+                    window.removeEventListener(
+                        "session:refresh-response",
+                        onResponse as EventListener
+                    );
+                    resolve({
+                        success: false,
+                        response: new Response("Session refresh timeout", {
+                            status: 504,
+                            statusText: "Gateway Timeout",
+                        }),
+                    });
+                }, timeoutMs);
+
+                // dispatch request (manager will perform the actual refresh)
+                window.dispatchEvent(new CustomEvent("session:refresh-request"));
             });
 
-            throw response;
+        try {
+            const { success, response } = await waitForRefreshResponse(15000);
+
+            if (!success) {
+                // Manager reported failure (or timed out) — render ErrorBoundary via fatal
+                const resp =
+                    response instanceof Response
+                        ? response
+                        : new Response("Session refresh failed", {
+                              status: 401,
+                              statusText: "Unauthorized",
+                          });
+                setFatal(resp);
+                return;
+            }
+
+            setIsOpen(false);
+        } catch (err) {
+            console.error("handleContinue unexpected error", err);
+            const message = err instanceof Error ? err.message : "Unknown error during refresh";
+            setFatal(new Response(message, { status: 500, statusText: "Session Refresh Error" }));
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleLogout = async () => {
-        clearAutoLogoutTimer();
-        setIsLoading(true);
-
-        try {
-            const res = await fetch("/end-session", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "same-origin",
-            });
-
-            let payload: {
-                success?: boolean;
-                cookieCleared?: boolean;
-                backend?: { ok?: boolean; status?: number; message?: string };
-            } | null = null;
-
-            try {
-                payload = await res.json();
-            } catch {
-                // non-JSON response, ignore
-            }
-
-            if (!res.ok) {
-                console.warn("end-session responded with error status:", res.status, payload);
-            }
-
-            // Log any backend issues but don’t block user logout
-            if (payload?.backend && !payload.backend.ok) {
-                console.warn("Backend logout failed:", payload.backend);
-            }
-
-            if (payload?.cookieCleared === false) {
-                console.warn("Local session cookie may not have been cleared.");
-            }
-
-            // Close modal and navigate away (to opr.se?)
-            setIsOpen(false);
-            redirectToMarketingPage(productId);
-        } catch (err) {
-            console.error("Logout request failed:", err);
-            setIsOpen(false);
-            redirectToMarketingPage(productId);
-        } finally {
-            setIsLoading(false);
-        }
+        void doEndSession(() => redirectToMarketingPage(productId));
     };
 
     if (fatal) {

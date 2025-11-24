@@ -1,0 +1,19 @@
+{
+  "collectionName": "components_global_bullet_lists",
+  "info": {
+    "displayName": "bulletList",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "bulletPoint1": {
+      "type": "richtext"
+    },
+    "bulletPoint2": {
+      "type": "richtext"
+    },
+    "bulletPoint3": {
+      "type": "richtext"
+    }
+  }
+}

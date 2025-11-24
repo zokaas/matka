@@ -9,18 +9,14 @@ import {
     statusPageContainer,
     statusPageHeader,
 } from "~/styles";
-import { useRedirectToLogin } from "~/hooks";
-import { useSessionSafe } from "~/context";
 import { Button } from "@ui/button";
+import { redirectToLogin } from "~/utils";
 
 export const ErrorHandler = ({ status, message, data }: T_Error) => {
     /**
      * Error handler
      * - send error data for debugging
-     * - redirect to login page page
-     * !NOTE in case the route is outside the SessionProvider (i.e., an unknown route),
-     * the session context is not available, so applicationId will be undefined.
-     * Login in pipeline will fall to front page.
+     * - redirect to login page
      */
     //TODO: send to logger service if needed
     console.log("ErrorHandler", status, message, data);
@@ -52,10 +48,11 @@ export const ErrorHandler = ({ status, message, data }: T_Error) => {
     const translatedMessage: string =
         t.errors[String(status) as keyof typeof t.errors].message || message;
     const buttonLabel: string = t.errors[String(status) as keyof typeof t.errors].label;
-    const ctx = useSessionSafe();
-    const applicationId = ctx?.session?.applicationId ?? "";
-    console.log("ErrorHandler applicationId", applicationId);
-    const redirectToLogin = useRedirectToLogin(applicationId);
+
+    const handleRedirectToLogin = () => {
+        const id = localStorage.getItem("applicationId") || null;
+        redirectToLogin(id);
+    };
 
     const actionButton = (() => {
         const commonProps = {
@@ -63,7 +60,7 @@ export const ErrorHandler = ({ status, message, data }: T_Error) => {
             className: statusPageButton,
             label: buttonLabel,
         };
-        return <Button {...commonProps} onClick={redirectToLogin} />;
+        return <Button {...commonProps} onClick={handleRedirectToLogin} />;
     })();
 
     return (

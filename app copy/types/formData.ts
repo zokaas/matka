@@ -5,7 +5,7 @@ import {
 } from "./formDataPartials";
 import { T_QuestionData } from "./question";
 import { T_CountryArray } from "./questionProperties";
-import { T_QuestionTypeBasic } from "./questionType";
+import { T_ApiQuestion } from "./questionType";
 
 export type T_FormGlobalProperties = T_FormMainCommonProperties & T_FormGeneralFormProperties;
 
@@ -20,6 +20,8 @@ export type T_AnswerValue =
 export type T_AnswerObject = {
     questionId: string;
     question: string;
+    automaticAnalysis: string;
+    type: string;
     answer: T_AnswerValue;
 };
 
@@ -36,7 +38,7 @@ export type T_Payload = {
 };
 
 export type T_ApiFormResponse = T_FormGlobalProperties & {
-    questions: Array<T_QuestionTypeBasic>;
+    setOfQuestions: Array<T_ApiQuestion>;
 };
 
 export type T_ParsedStep = {

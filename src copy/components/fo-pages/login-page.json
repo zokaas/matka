@@ -1,0 +1,12 @@
+{
+  "collectionName": "components_fo_pages_login_pages",
+  "info": {
+    "displayName": "Login Page"
+  },
+  "options": {},
+  "attributes": {
+    "loadingPageWait": {
+      "type": "string"
+    }
+  }
+}

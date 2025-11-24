@@ -1,30 +1,65 @@
-// app/routes/refresh-session.ts
-import type { LoaderFunctionArgs } from "react-router";
-import { refreshSession } from "~/services/api/refresh-session.server";
+import type { ActionFunction } from "react-router";
+import {
+    buildDestroySessionHeader,
+    commitSession,
+    getSession,
+} from "~/services/session/cacheSession.server";
+import { refreshBffSession } from "~/services/session/sessionProvider.server";
 
-export async function loader({ request }: LoaderFunctionArgs) {
-    const url = new URL(request.url);
-    const sessionId = url.searchParams.get("sessionId");
-    const clientId = url.searchParams.get("clientId");
+export const action: ActionFunction = async ({ request }) => {
+    // read server session (cookie)
+    const cookieHeader = request.headers.get("cookie") ?? "";
+    const session = await getSession(cookieHeader);
+
+    const sessionId = session.get("sessionId");
+    const clientId = session.get("clientId");
 
     if (!sessionId || !clientId) {
-        return new Response(JSON.stringify({ error: "Missing parameters" }), {
-            status: 400,
+        return new Response(JSON.stringify({ error: "Missing session" }), {
+            status: 401,
             headers: { "Content-Type": "application/json" },
         });
     }
 
     try {
-        const result = await refreshSession(sessionId, clientId);
+        const result = await refreshBffSession(sessionId, clientId);
+        if (!result || !result.sessionId || !result.exp) {
+            const destroyHeaders = await buildDestroySessionHeader(request);
+            return new Response(JSON.stringify({ error: "Session refresh failed" }), {
+                status: 401,
+                headers: {
+                    ...destroyHeaders,
+                    "Content-Type": "application/json",
+                },
+            });
+        }
+
+        // normalize exp to ms on server if needed
+        let exp = result.exp;
+        if (typeof exp === "number" && exp < 1e12) exp = exp * 1000;
+
+        // update server session values and commit cookie
+        session.set("exp", exp);
+        session.set("sessionRefreshCount", result.sessionRefreshCount ?? 0);
+        session.set("sessionId", result.sessionId);
+        const setCookie = await commitSession(session);
+
         return new Response(JSON.stringify(result), {
             status: 200,
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Set-Cookie": setCookie,
+                "Content-Type": "application/json",
+            },
         });
-    } catch (e) {
-        console.error("Failed to refresh session:", e);
+    } catch (err) {
+        console.error("refresh action error", err);
+        const destroyHeaders = await buildDestroySessionHeader(request);
         return new Response(JSON.stringify({ error: "Failed refreshing session" }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                ...destroyHeaders,
+                "Content-Type": "application/json",
+            },
         });
     }
-}
+};

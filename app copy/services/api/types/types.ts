@@ -1,3 +1,5 @@
+import { SessionData } from "react-router";
+
 export type T_CompanyDataFromSession = {
     sessionId: string;
     organizationName: string;
@@ -9,3 +11,22 @@ export type T_RefreshSessionResponse = {
     exp: number;
     sessionRefreshCount: number;
 };
+
+export type T_SessionData = SessionData & {
+    sessionId: string;
+    clientId: string;
+    applicationId: string;
+    kcUserId: string;
+    exp?: number;
+    sessionRefreshCount?: number;
+    maxSessionRefresh?: number;
+    companyName: string;
+    orgNumber: string;
+    redirectUrl: string;
+};
+
+export type T_BffSessionPostResponse = {
+    redisKey?: string;
+};
+
+export type T_BffSessionGetResponse = T_SessionData & T_BffSessionPostResponse;

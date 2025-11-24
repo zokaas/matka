@@ -1,9 +1,11 @@
+import { T_ClientSessionData } from "~/routes/types";
 import { T_Question } from "./question";
 
 export type T_FormMainCommonProperties = {
     id: number;
     product: string;
     formType: string;
+    redirectUrl: string;
 };
 
 export type T_FormGeneralFormProperties = {
@@ -60,5 +62,5 @@ export type T_SessionModal = {
     expiredDescription: string;
     loginButton: string;
     logoutButton: string;
-    productId: string; //TODO: not part of payload
+    sessionData: T_ClientSessionData;
 };

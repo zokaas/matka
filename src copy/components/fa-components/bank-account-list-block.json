@@ -1,0 +1,24 @@
+{
+  "collectionName": "components_fa_components_bank_account_list_blocks",
+  "info": {
+    "displayName": "bankAccountListBlock"
+  },
+  "options": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "subtitle1": {
+      "type": "text"
+    },
+    "subtitle2": {
+      "type": "text"
+    },
+    "addAnotherAccountButton": {
+      "type": "string"
+    },
+    "resultsButton": {
+      "type": "string"
+    }
+  }
+}

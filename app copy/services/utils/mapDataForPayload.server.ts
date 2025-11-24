@@ -24,6 +24,8 @@ export function createAnswersArray(answersEntries: Array<T_AnswerObject>) {
     return answersEntries.map((entry) => ({
         questionId: entry.questionId,
         question: entry.question,
+        automaticAnalysis: entry.automaticAnalysis,
+        type: entry.type,
         answer: normalizeAnswerValue(entry.answer),
     }));
 }

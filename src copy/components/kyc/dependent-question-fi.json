@@ -1,0 +1,80 @@
+{
+  "collectionName": "components_kyc_dependent_question_fis",
+  "info": {
+    "displayName": "dependentQuestionFI",
+    "icon": "chartPie",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "conditionValue": {
+      "type": "integer",
+      "required": true,
+      "default": 1
+    },
+    "questionLabel": {
+      "type": "text",
+      "required": true
+    },
+    "questionParameter": {
+      "type": "string",
+      "required": true,
+      "unique": false
+    },
+    "componentType": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "Text",
+        "Textarea",
+        "Number",
+        "RadioGroup",
+        "Select",
+        "MultiSelectDropdown",
+        "BeneficialOwner",
+        "Checkbox"
+      ]
+    },
+    "automaticAnalysis": {
+      "type": "boolean",
+      "required": true
+    },
+    "automaticAnalysisType": {
+      "type": "enumeration",
+      "conditions": {
+        "visible": {
+          "==": [
+            {
+              "var": "automaticAnalysis"
+            },
+            true
+          ]
+        }
+      },
+      "enum": [
+        "String",
+        "Number",
+        "True/False"
+      ]
+    },
+    "placeholder": {
+      "type": "string"
+    },
+    "questionDescription": {
+      "type": "text"
+    },
+    "options": {
+      "type": "component",
+      "component": "kyc.option-item",
+      "repeatable": true
+    },
+    "useCountryList": {
+      "type": "boolean"
+    },
+    "errorMessages": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::error-message-fi.error-message-fi"
+    }
+  }
+}

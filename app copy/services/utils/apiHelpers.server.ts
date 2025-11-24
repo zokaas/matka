@@ -57,3 +57,24 @@ export const postRequest = async <T, B>(url: string, authToken: string, data: B)
         throw new Error("API request failed");
     }
 };
+
+export const deleteRequest = async <T>(url: string, authToken: string): Promise<T> => {
+    const method = "DELETE";
+    const headers = new Headers({
+        "Content-Type": "application/json",
+        authorization: authToken,
+    });
+
+    const options: RequestInit = {
+        method,
+        headers,
+    };
+
+    try {
+        const response = await fetch(url, options);
+        return await handleFetchResponse(response);
+    } catch (error) {
+        console.error(`Error with request to ${url}:`, error);
+        throw new Error("API request failed");
+    }
+};

@@ -1,0 +1,28 @@
+{
+  "collectionName": "components_fo_components_loan_page_transactions_blocks",
+  "info": {
+    "displayName": "Loan Page Transactions Block",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "blockHeading": {
+      "type": "string"
+    },
+    "tableHeadDateText": {
+      "type": "string"
+    },
+    "tableHeadTransactionTypeText": {
+      "type": "string"
+    },
+    "tableHeadAmountText": {
+      "type": "string"
+    },
+    "makeWithdrawlBtnText": {
+      "type": "string"
+    },
+    "transactionStatus": {
+      "type": "json"
+    }
+  }
+}

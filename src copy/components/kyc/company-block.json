@@ -1,0 +1,16 @@
+{
+  "collectionName": "components_kyc_company_blocks",
+  "info": {
+    "displayName": "CompanyBlock",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "companyName": {
+      "type": "string"
+    },
+    "orgNumber": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "collectionName": "components_everyday_components_loan_pages",
+  "info": {
+    "displayName": "Loan Page",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "takaisinmaksuTitle": {
+      "type": "string"
+    },
+    "takaisinmaksuContent": {
+      "type": "richtext"
+    },
+    "lainaehdotTitle": {
+      "type": "string"
+    },
+    "lainaehdotContent": {
+      "type": "richtext"
+    },
+    "privacyLink": {
+      "type": "component",
+      "repeatable": false,
+      "component": "everyday-components.link"
+    }
+  }
+}
