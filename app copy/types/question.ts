@@ -7,8 +7,6 @@ export type T_QuestionData = {
     step: number;
     questionParameter: string;
     questionLabel: string;
-    automaticAnalysis: string;
-    automaticAnalysisType: string;
     placeholder: string | null;
     options: Array<T_Option> | null;
     errorMessages?: Array<T_QuestionErrorMessage>;
@@ -29,6 +27,11 @@ export type T_QuestionData = {
     countryPlaceholder: string | null;
     countryParameter: string | null;
     countryQuestion: string | null;
+    pepParameter: string | null;
+    pepQuestion: string | null; 
+    pepOptions: Array<T_Option> | null; 
+    automaticAnalysis: boolean | null;
+    automaticAnalysisType: "Boolean" | "Int" | "String" | null;
 };
 
 export type T_Question = {

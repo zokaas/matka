@@ -17,7 +17,8 @@ export type T_BeneficialOwnerFormProps = {
         name: T_BoFieldParams,
         ssn: T_BoFieldParams,
         ownership: T_BoFieldParams,
-        countries: T_BoFieldParams
+        countries: T_BoFieldParams,
+        pep: T_BoFieldParams
     ) => void;
     countryList?: T_CountryArray;
     classNames: T_BeneficialOwnersFormClassnames;

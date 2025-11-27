@@ -4,6 +4,13 @@ import { T_BeneficialOwnerFormProps, T_BoFieldParams } from "./types";
 import { InputText } from "@ui/inputField";
 import { Button } from "@ui/button";
 import { DropDown } from "@ui/dropdown";
+import { Radiogroup } from "@ui/radiogroup";
+import {
+    b2bRadiogroupRootStyle,
+    b2bRadioIndicatorStyle,
+    b2bRadioItemLabelStyle,
+    b2bRadioItemStyle,
+} from "~/styles";
 
 export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
     formData,
@@ -11,7 +18,7 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
     countryList,
     classNames,
 }) => {
-    const { addButton, fieldName, label, placeholder } = formData;
+    const { addButton, fields } = formData;
 
     const [name, setName] = useState<T_BoFieldParams>({ fieldname: "", value: "", label: "" });
     const [ssn, setSsn] = useState<T_BoFieldParams>({ fieldname: "", value: "", label: "" });
@@ -25,113 +32,122 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
         value: "",
         label: "",
     });
+    const [pep, setPep] = useState<T_BoFieldParams>({
+        fieldname: "",
+        value: "",
+        label: "",
+    });
 
     const [addButtonDisabled, setAddButtonDisabled] = useState(true);
 
-    const enableButton = () => {
-        if (!name.value || !ssn.value || !ownership.value || !country.value) {
-            setAddButtonDisabled(true);
-        } else {
-            setAddButtonDisabled(false);
-        }
-    };
-
     useEffect(() => {
-        setAddButtonDisabled(!(name.value && ssn.value && ownership.value && country.value));
-    }, [name.value, ssn.value, ownership.value, country.value]);
+        setAddButtonDisabled(
+            !(name.value && ssn.value && ownership.value && country.value && pep.value)
+        );
+    }, [name.value, ssn.value, ownership.value, country.value, pep.value]);
 
     return (
         <Container>
             <InputText
-                label={label.beneficialOwnerName}
-                fieldName={fieldName.beneficialOwnerName}
-                placeholder={placeholder.beneficialOwnerName}
+                label={fields.name.label}
+                fieldName={fields.name.parameter}
+                placeholder={fields.name.placeholder}
                 classNames={{
                     fieldClassName: classNames.formInputField || "",
                     labelClassName: classNames.formLabelFields || "",
                 }}
                 onChange={(value) => {
                     setName({
-                        fieldname: fieldName.beneficialOwnerName,
-                        label: label.beneficialOwnerName,
+                        fieldname: fields.name.parameter,
+                        label: fields.name.label,
                         value: value.trim(),
                     });
-                    enableButton();
                 }}
-                onBlur={() => {
-                    enableButton();
-                }}
-                error={""}
+                onBlur={() => {}}
+                error=""
             />
             <InputText
-                fieldName={fieldName.beneficialOwnerSsn}
-                label={label.beneficialOwnerSsn}
-                placeholder={placeholder.beneficialOwnerSsn}
+                fieldName={fields.ssn.parameter}
+                label={fields.ssn.label}
+                placeholder={fields.ssn.placeholder}
                 classNames={{
                     fieldClassName: classNames.formInputField || "",
                     labelClassName: classNames.formLabelFields || "",
                 }}
                 onChange={(value) => {
                     setSsn({
-                        fieldname: fieldName.beneficialOwnerSsn,
-                        label: label.beneficialOwnerSsn,
+                        fieldname: fields.ssn.parameter,
+                        label: fields.ssn.label,
                         value: value.trim(),
                     });
-                    enableButton();
                 }}
-                onBlur={() => {
-                    enableButton();
-                }}
-                error={""}
+                onBlur={() => {}}
+                error=""
             />
             <InputText
-                label={label.beneficialOwnerOwnership}
-                fieldName={fieldName.beneficialOwnerOwnership}
-                placeholder={placeholder.beneficialOwnerOwnership}
+                label={fields.ownership.label}
+                fieldName={fields.ownership.parameter}
+                placeholder={fields.ownership.placeholder}
                 classNames={{
                     fieldClassName: classNames.formInputField || "",
                     labelClassName: classNames.formLabelFields || "",
                 }}
                 onChange={(value) => {
                     setOwnership({
-                        fieldname: fieldName.beneficialOwnerOwnership,
-                        label: label.beneficialOwnerOwnership,
+                        fieldname: fields.ownership.parameter,
+                        label: fields.ownership.label,
                         value: value.trim(),
                     });
-                    enableButton();
                 }}
-                onBlur={() => {
-                    enableButton();
-                }}
-                error={""}
+                onBlur={() => {}}
+                error=""
             />
             <DropDown
-                label={label.beneficialOwnerCountry}
-                fieldName={fieldName.beneficialOwnerCountry}
-                placeholder={placeholder.beneficialOwnerCountry}
+                label={fields.country.label}
+                fieldName={fields.country.parameter}
+                placeholder={fields.country.placeholder}
                 value={country.value}
                 searchEnabled
                 options={countryList || null}
                 showSelectedItemIcon={true}
                 onChange={(country) => {
                     setCountry({
-                        fieldname: fieldName.beneficialOwnerCountry,
-                        label: label.beneficialOwnerCountry,
+                        fieldname: fields.country.parameter,
+                        label: fields.country.label,
                         value: `${country}`,
                     });
-                    enableButton();
                 }}
-                onBlur={() => {
-                    enableButton();
+                onBlur={() => {}}
+                error=""
+            />
+            <Radiogroup
+                fieldName={fields.pep.parameter}
+                label={fields.pep.label}
+                onChange={(value) => {
+                    setPep({
+                        fieldname: fields.pep.parameter,
+                        label: fields.pep.label,
+                        value: value,
+                    });
                 }}
-                error={""}
+                onBlur={() => {}}
+                options={fields.pep.options || []}
+                defaultValue={pep.value}
+                error=""
+                classNames={{
+                    radioRoot: b2bRadiogroupRootStyle,
+                    radioItemContainer: b2bRadiogroupRootStyle,
+                    radioItem: b2bRadioItemStyle,
+                    radioIndicator: b2bRadioIndicatorStyle,
+                    radioLabel: b2bRadioItemLabelStyle,
+                }}
             />
             <Button
-                type={"button"}
+                type="button"
                 label={addButton}
                 disabled={addButtonDisabled}
                 className={classNames.formButton || ""}
-                onClick={() => onButtonClick(name, ssn, ownership, country)}
+                onClick={() => onButtonClick(name, ssn, ownership, country, pep)}
             />
         </Container>
     );

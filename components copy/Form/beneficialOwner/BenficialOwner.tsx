@@ -66,9 +66,10 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
         name: T_BoFieldParams,
         ssn: T_BoFieldParams,
         ownership: T_BoFieldParams,
-        countries: T_BoFieldParams
+        countries: T_BoFieldParams,
+        pep: T_BoFieldParams
     ) => {
-        const valueArray: Array<T_BoFieldParams> = [name, ssn, ownership, countries];
+        const valueArray: Array<T_BoFieldParams> = [name, ssn, ownership, countries, pep];
         const nextIndex = entriesIndex + 1;
         setEntriesIndex(nextIndex);
         updateMap(`owner_${nextIndex}`, valueArray);
@@ -115,8 +116,8 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
                                 <BeneficialOwnerForm
                                     classNames={{ formButton: addBoFormButton }}
                                     formData={beneficialOwnerFieldsData}
-                                    onButtonClick={(name, ssn, ownership, countries) => {
-                                        handleAddBo(name, ssn, ownership, countries);
+                                    onButtonClick={(name, ssn, ownership, countries, pep) => {
+                                        handleAddBo(name, ssn, ownership, countries, pep);
                                         setPopoverOpen(false);
                                     }}
                                     countryList={countryList}

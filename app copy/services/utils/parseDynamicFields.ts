@@ -20,7 +20,12 @@ export const parseDynamicFields = (item: T_ApiQuestion): T_ParseDynamicFieldsRes
         ssnParameter: null,
         ssnPlaceholder: null,
         ssnQuestion: null,
+        pepParameter: null,
+        pepQuestion: null,
+        pepOptions: null,
         useCountryList: null,
+        automaticAnalysis: null,
+        automaticAnalysisType: null,
     };
 
     if (!item.question.dynamicField) return result;
@@ -42,6 +47,8 @@ export const parseDynamicFields = (item: T_ApiQuestion): T_ParseDynamicFieldsRes
                 questionLabel: dynamicField.questionLabel,
                 questionParameter: compositeKey,
                 useCountryList: dynamicField.useCountryList,
+                automaticAnalysis: dynamicField.automaticAnalysis,
+                automaticAnalysisType: dynamicField.automaticAnalysisType,
                 placeholder: dynamicField.placeholder,
                 errorMessages: Array.isArray(dynamicField.errorMessages)
                     ? dynamicField.errorMessages.map((item) => ({
@@ -62,9 +69,22 @@ export const parseDynamicFields = (item: T_ApiQuestion): T_ParseDynamicFieldsRes
         }
 
         if (isBeneficialOwnerQuestion(dynamicField)) {
+                        const pepOptionsArray = dynamicField.pepOptions
+                ? [
+                      {
+                          text: dynamicField.pepOptions.yes.text,
+                          value: dynamicField.pepOptions.yes.value,
+                      },
+                      {
+                          text: dynamicField.pepOptions.no.text,
+                          value: dynamicField.pepOptions.no.value,
+                      },
+                  ]
+                : null;
             result = {
                 ...result,
                 ...dynamicField,
+                pepOptions: pepOptionsArray,  
             };
         }
 

@@ -1,13 +1,19 @@
-export type T_BeneficialOwnerFieldProps = {
-    beneficialOwnerName: string;
-    beneficialOwnerSsn: string;
-    beneficialOwnerOwnership: string;
-    beneficialOwnerCountry: string;
+import { T_Option } from "~/types";
+
+type T_FieldConfig = {
+    parameter: string;
+    label: string;
+    placeholder: string;
+    options?: Array<T_Option>;
 };
 
 export type T_BeneficialOwnerCardProps = {
-    placeholder: T_BeneficialOwnerFieldProps;
-    fieldName: T_BeneficialOwnerFieldProps;
-    label: T_BeneficialOwnerFieldProps;
     addButton: string;
+    fields: {
+        name: T_FieldConfig;
+        ssn: T_FieldConfig;
+        ownership: T_FieldConfig;
+        country: T_FieldConfig;
+        pep: T_FieldConfig;
+    };
 };

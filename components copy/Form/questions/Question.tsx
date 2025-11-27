@@ -155,23 +155,33 @@ export const Question: React.FC<T_QuestionProps> = ({
 
         const boData: T_BeneficialOwnerCardProps = {
             addButton: boQuestion.addBObutton || EMPTY_STRING,
-            fieldName: {
-                beneficialOwnerName: boQuestion.nameParameter || EMPTY_STRING,
-                beneficialOwnerSsn: boQuestion.ssnParameter || EMPTY_STRING,
-                beneficialOwnerOwnership: boQuestion.ownershipParameter || EMPTY_STRING,
-                beneficialOwnerCountry: boQuestion.countryParameter || EMPTY_STRING,
-            },
-            placeholder: {
-                beneficialOwnerName: boQuestion.namePlaceholder || EMPTY_STRING,
-                beneficialOwnerSsn: boQuestion.ssnPlaceholder || EMPTY_STRING,
-                beneficialOwnerOwnership: boQuestion.ownershipPlaceholder || EMPTY_STRING,
-                beneficialOwnerCountry: boQuestion.countryPlaceholder || EMPTY_STRING,
-            },
-            label: {
-                beneficialOwnerName: boQuestion.nameQuestion || EMPTY_STRING,
-                beneficialOwnerSsn: boQuestion.ssnQuestion || EMPTY_STRING,
-                beneficialOwnerOwnership: boQuestion.ownershipQuestion || EMPTY_STRING,
-                beneficialOwnerCountry: boQuestion.countryQuestion || EMPTY_STRING,
+            fields: {
+                name: {
+                    parameter: boQuestion.nameParameter || EMPTY_STRING,
+                    label: boQuestion.nameQuestion || EMPTY_STRING,
+                    placeholder: boQuestion.namePlaceholder || EMPTY_STRING,
+                },
+                ssn: {
+                    parameter: boQuestion.ssnParameter || EMPTY_STRING,
+                    label: boQuestion.ssnQuestion || EMPTY_STRING,
+                    placeholder: boQuestion.ssnPlaceholder || EMPTY_STRING,
+                },
+                ownership: {
+                    parameter: boQuestion.ownershipParameter || EMPTY_STRING,
+                    label: boQuestion.ownershipQuestion || EMPTY_STRING,
+                    placeholder: boQuestion.ownershipPlaceholder || EMPTY_STRING,
+                },
+                country: {
+                    parameter: boQuestion.countryParameter || EMPTY_STRING,
+                    label: boQuestion.countryQuestion || EMPTY_STRING,
+                    placeholder: boQuestion.countryPlaceholder || EMPTY_STRING,
+                },
+                pep: {
+                    parameter: boQuestion.pepParameter || EMPTY_STRING,
+                    label: boQuestion.pepQuestion || EMPTY_STRING,
+                    placeholder: EMPTY_STRING,
+                    options: boQuestion.pepOptions || [],
+                },
             },
         };
 

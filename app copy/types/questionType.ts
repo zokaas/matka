@@ -14,8 +14,8 @@ export type T_DynamicFieldComponent =
 // Component: "kyc.dependent-question"
 export type T_DynamicFieldDependentQuestion = {
     conditionValue: number | string;
-    automaticAnalysis: string;
-    automaticAnalysisType: string;
+    automaticAnalysis: boolean | null;
+    automaticAnalysisType: "Boolean" | "Int" | "String" | null;
     placeholder: string | null;
     options: Array<T_Option> | null;
     useCountryList: boolean | null;
@@ -49,7 +49,9 @@ export type T_DynamicFieldBeneficialOwner = {
     ownershipQuestion: string;
     countryParameter: string;
     countryQuestion: string;
-    countryListLang: string;
+    pepPlaceholder: string;
+    pepQuestion: string;
+    pepOptions: { yes: T_Option; no: T_Option };
     errorMessages: Array<T_QuestionErrorMessage>;
 };
 
@@ -69,13 +71,12 @@ export type T_DynamicField<T = T_DynamicFieldUnion> = {
     __component: T_DynamicFieldComponent;
 } & T;
 
-// Raw API question data (before parsing)
 export type T_ApiQuestionData = {
     questionLabel: string;
     step: number;
     componentType: string;
-    automaticAnalysis: string;
-    automaticAnalysisType: string;
+    automaticAnalysis: boolean;
+    automaticAnalysisType: "Boolean" | "Int" | "String" | null;
     options: Array<T_Option> | null;
     placeholder: string | null;
     questionParameter: string;

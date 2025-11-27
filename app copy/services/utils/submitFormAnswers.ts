@@ -10,6 +10,8 @@ export const submitFormAnswers = async (
         questionId: value.questionId,
         question: value.question,
         answer: value.answer,
+        automaticAnalysis: value.automaticAnalysis,
+        type: value.type,
     }));
 
     const formDataToSubmit = new FormData();

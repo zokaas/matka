@@ -20,8 +20,8 @@ export type T_AnswerValue =
 export type T_AnswerObject = {
     questionId: string;
     question: string;
-    automaticAnalysis: string;
-    type: string;
+    automaticAnalysis: boolean | null;
+    type: "Boolean" | "Int" | "String" | null;
     answer: T_AnswerValue;
 };
 
@@ -76,7 +76,9 @@ type T_DependentQuestionPropertiesToPick =
     | "useCountryList"
     | "errorMessages"
     | "placeholder"
-    | "infoItems";
+    | "infoItems"
+    | "automaticAnalysis"
+    | "automaticAnalysisType";
 
 export type T_DependentQuestion =
     | (Pick<T_QuestionData, T_DependentQuestionPropertiesToPick> & {
