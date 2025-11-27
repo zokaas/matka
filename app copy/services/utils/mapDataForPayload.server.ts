@@ -21,13 +21,24 @@ export function mapDataForPayload(
 }
 
 export function createAnswersArray(answersEntries: Array<T_AnswerObject>) {
-    return answersEntries.map((entry) => ({
-        questionId: entry.questionId,
-        question: entry.question,
-        automaticAnalysis: entry.automaticAnalysis,
-        type: entry.type,
-        answer: normalizeAnswerValue(entry.answer),
-    }));
+    return answersEntries.map((entry) => {
+        const baseAnswer = {
+            questionId: entry.questionId,
+            question: entry.question,
+            automaticAnalysis: entry.automaticAnalysis ?? false,
+            type: entry.automaticAnalysis === true ? entry.type : null,
+            answer: normalizeAnswerValue(entry.answer),
+        };
+
+        if (entry.beneficialOwners === true) {
+            return {
+                ...baseAnswer,
+                beneficialOwners: true,
+            };
+        }
+
+        return baseAnswer;
+    });
 }
 
 function normalizeAnswerValue(value: T_AnswerValue): T_AnswerValue {

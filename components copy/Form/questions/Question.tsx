@@ -149,8 +149,6 @@ export const Question: React.FC<T_QuestionProps> = ({
         );
 
     if (questionType === E_ComponentTypes.BENEFICIALOWNER) {
-        // At this point we know for sure that question can't be dependant question type
-        // and we tell it to TS
         const boQuestion = question as T_QuestionData;
 
         const boData: T_BeneficialOwnerCardProps = {

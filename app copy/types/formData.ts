@@ -20,8 +20,9 @@ export type T_AnswerValue =
 export type T_AnswerObject = {
     questionId: string;
     question: string;
-    automaticAnalysis: boolean | null;
+    automaticAnalysis: boolean;
     type: "Boolean" | "Int" | "String" | null;
+    beneficialOwners?: boolean; //only used for beneficial owner answer -> if is bo answer = true
     answer: T_AnswerValue;
 };
 
