@@ -1,6 +1,7 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { KycController } from "./kyc.controller";
 import { KycService } from "./kyc.service";
+import { KycFormParser } from "./utils";
 
 describe("KycController", () => {
   let controller: KycController;
@@ -16,6 +17,7 @@ describe("KycController", () => {
             sendFormData: jest.fn(),
           },
         },
+        KycFormParser,
       ],
     }).compile();
 

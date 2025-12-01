@@ -69,7 +69,7 @@ export const parseDynamicFields = (item: T_ApiQuestion): T_ParseDynamicFieldsRes
         }
 
         if (isBeneficialOwnerQuestion(dynamicField)) {
-                        const pepOptionsArray = dynamicField.pepOptions
+            const pepOptionsArray = dynamicField.pepOptions
                 ? [
                       {
                           text: dynamicField.pepOptions.yes.text,
@@ -84,7 +84,7 @@ export const parseDynamicFields = (item: T_ApiQuestion): T_ParseDynamicFieldsRes
             result = {
                 ...result,
                 ...dynamicField,
-                pepOptions: pepOptionsArray,  
+                pepOptions: pepOptionsArray,
             };
         }
 

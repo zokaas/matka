@@ -5,6 +5,7 @@ export const boComponentContainer = style({
     padding: "5px",
     border: "1px solid",
     borderColor: "oklch(95% 0 0)",
+    zIndex: 10000,
 });
 
 export const boQuestionContainer = style({

@@ -69,7 +69,6 @@ export class KycService {
       apiPath,
       requestConfig
     );
-    console.log("response parsed",response)
     return response;
   }
 

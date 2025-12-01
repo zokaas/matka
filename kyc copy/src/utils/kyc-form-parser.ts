@@ -8,19 +8,27 @@ import {
   CountrylistAttributesDto,
   ApiFormDto,
   ErrorMessageDto,
+  DynamicFieldDto,
 } from "../dtos";
+
+type Language = "fi" | "se";
 
 @Injectable()
 export class KycFormParser {
   private readonly logger = new Logger(KycFormParser.name);
 
-  private getLang(productId: string): "fi" | "se" {
-    const PRODUCT_LANG: Record<string, "fi" | "se"> = {
-      "sweden-b2b-application": "se",
-      "finland-b2b-application": "fi",
-    };
+  private static readonly LANG_SWEDISH: Language = "se";
+  private static readonly LANG_FINNISH: Language = "fi";
 
-    return PRODUCT_LANG[productId];
+  private static readonly productIdToLang: Record<string, Language> = {
+    "sweden-b2b-application": KycFormParser.LANG_SWEDISH,
+    "finland-b2b-application": KycFormParser.LANG_FINNISH,
+  };
+
+  private getLang(productId: string): Language {
+    return (
+      KycFormParser.productIdToLang[productId] ?? KycFormParser.LANG_SWEDISH
+    );
   }
 
   parseCountryList(
@@ -61,7 +69,8 @@ export class KycFormParser {
         id: formData.id,
         product: productData.product,
         formType: formData.formType,
-        redirectUrl: productData.redirectUrl,
+        loginUrl: productData.loginUrl,
+        kycDoneUrl: productData.kycDoneUrl,
         steps: {
           step1: productData.steps.step1,
           step2: productData.steps.step2,
@@ -123,6 +132,7 @@ export class KycFormParser {
           questionComponent,
           lang
         );
+
         if (!questionAttributes) {
           this.logger.warn(
             `No attributes found for question ${questionComponent.id} in language ${lang}`
@@ -136,6 +146,10 @@ export class KycFormParser {
             questionLabel: questionAttributes.questionLabel,
             componentType: questionAttributes.componentType,
             step: questionComponent.step,
+            automaticAnalysis: questionAttributes.automaticAnalysis,
+            automaticAnalysisType: this.convertAnalysisType(
+              questionAttributes.automaticAnalysisType
+            ),
             options: questionAttributes.options,
             placeholder: questionAttributes.placeholder,
             questionParameter: questionAttributes.questionParameter,
@@ -154,46 +168,80 @@ export class KycFormParser {
         );
       }
     }
+
     return questions;
   }
 
-  private getQuestionAttributes(q: ApiQuestionComponentDto, lang: "fi" | "se") {
+  private getQuestionAttributes(q: ApiQuestionComponentDto, lang: Language) {
     return {
-      se: q.questions_se,
-      fi: q.questions_fi,
+      [KycFormParser.LANG_SWEDISH]: q.questions_se,
+      [KycFormParser.LANG_FINNISH]: q.questions_fi,
     }[lang];
   }
 
-private cleanDynamicFields(
-  fields?: DynamicFieldUnion[]
-): DynamicFieldUnion[] {
-  if (!Array.isArray(fields)) return [];
+  private cleanDynamicFields(
+    fields?: Array<DynamicFieldDto>
+  ): Array<DynamicFieldUnion> {
+    if (!Array.isArray(fields)) return [];
 
-  return fields.map((field): DynamicFieldUnion => {
-    if (!field || typeof field !== "object") return field;
+    return fields.map((field): DynamicFieldUnion => {
+      if (!field || typeof field !== "object") {
+        return field as unknown as DynamicFieldUnion;
+      }
 
-    const hasErrorMessages =
-      "errorMessages" in field && Array.isArray(field.errorMessages);
+      const cleanedComponent = this.cleanComponentName(field.__component);
+      const hasErrorMessages =
+        "errorMessages" in field && Array.isArray(field.errorMessages);
 
-    return {
-      ...field,
-      __component: this.cleanComponentName(field.__component),
-      ...(hasErrorMessages && {
-        errorMessages: this.cleanErrorMessages(field.errorMessages),
-      }),
-    };
-  });
-}
+      const cleaned = {
+        ...field,
+        __component: cleanedComponent,
+        ...(hasErrorMessages && {
+          errorMessages: this.cleanErrorMessages(
+            field.errorMessages as Array<ErrorMessageDto>
+          ),
+        }),
+      };
 
+      return cleaned as unknown as DynamicFieldUnion;
+    });
+  }
 
+  // clean out kyc.xxx-se or kyc.xxx-fi to kyc.xxx
+  private cleanComponentName(component?: string): string {
+    if (!component || typeof component !== "string") return "";
+    return component.replace(/-(se|fi)$/i, "");
+  }
+
+  // clean out metadata for error messages
   private cleanErrorMessages(
     messages?: Array<ErrorMessageDto>
   ): Array<ErrorMessageDto> {
-    if (!Array.isArray(messages) || messages.length === 0) return undefined;
+    if (!Array.isArray(messages) || messages.length === 0) return [];
 
     return messages.map(({ error, message }) => ({
       error,
       message,
     }));
+  }
+
+  // convert analysis type to match risk analysis tool (cm1)
+  private convertAnalysisType(analysisType: string | undefined): string {
+    if (!analysisType || typeof analysisType !== "string") {
+      return analysisType;
+    }
+
+    const normalized = analysisType.trim();
+
+    switch (normalized) {
+      case "True/False":
+        return "Boolean";
+      case "Number":
+        return "Int";
+      case "String":
+        return "String";
+      default:
+        return analysisType;
+    }
   }
 }

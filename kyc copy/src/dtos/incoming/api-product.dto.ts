@@ -26,7 +26,10 @@ export class ApiProductDto {
   country: string;
 
   @IsString()
-  redirectUrl: string;
+  loginUrl: string;
+
+  @IsString()
+  kycDoneUrl: string;
 
   @ValidateNested()
   @Type(() => StepsDto)

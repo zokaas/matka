@@ -12,6 +12,7 @@ export const submitFormAnswers = async (
         answer: value.answer,
         automaticAnalysis: value.automaticAnalysis,
         type: value.type,
+        beneficialOwners: value.beneficialOwners,
     }));
 
     const formDataToSubmit = new FormData();

@@ -28,8 +28,8 @@ export type T_QuestionData = {
     countryParameter: string | null;
     countryQuestion: string | null;
     pepParameter: string | null;
-    pepQuestion: string | null; 
-    pepOptions: Array<T_Option> | null; 
+    pepQuestion: string | null;
+    pepOptions: Array<T_Option> | null;
     automaticAnalysis: boolean | null;
     automaticAnalysisType: "Boolean" | "Int" | "String" | null;
 };

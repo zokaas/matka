@@ -20,8 +20,16 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
 }) => {
     const { addButton, fields } = formData;
 
-    const [name, setName] = useState<T_BoFieldParams>({ fieldname: "", value: "", label: "" });
-    const [ssn, setSsn] = useState<T_BoFieldParams>({ fieldname: "", value: "", label: "" });
+    const [name, setName] = useState<T_BoFieldParams>({
+        fieldname: "",
+        value: "",
+        label: "",
+    });
+    const [ssn, setSsn] = useState<T_BoFieldParams>({
+        fieldname: "",
+        value: "",
+        label: "",
+    });
     const [ownership, setOwnership] = useState<T_BoFieldParams>({
         fieldname: "",
         value: "",
@@ -110,15 +118,14 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
                 searchEnabled
                 options={countryList || null}
                 showSelectedItemIcon={true}
-                onChange={(country) => {
+                onChange={(selectedCountry) => {
                     setCountry({
                         fieldname: fields.country.parameter,
                         label: fields.country.label,
-                        value: `${country}`,
+                        value: `${selectedCountry}`,
                     });
                 }}
                 onBlur={() => {}}
-                error=""
             />
             <Radiogroup
                 fieldName={fields.pep.parameter}

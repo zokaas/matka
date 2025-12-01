@@ -4,6 +4,7 @@ import {
   IsArray,
   IsNumber,
   ValidateNested,
+  IsBoolean,
 } from "class-validator";
 import {
   BeneficialOwnerDto,
@@ -40,6 +41,12 @@ export class QuestionAttributesDto {
   @IsString()
   questionParameter: string;
 
+  @IsBoolean()
+  automaticAnalysis: boolean;
+
+  @IsString()
+  automaticAnalysisType: string | null;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ErrorMessageDto)
@@ -57,7 +64,6 @@ export class QuestionAttributesDto {
         { value: CountryOptionsDto, name: "kyc.country-options" },
       ],
     },
-    keepDiscriminatorProperty: true,
   })
   dynamicField: Array<DynamicFieldUnion>;
 }

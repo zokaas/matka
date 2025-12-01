@@ -19,7 +19,10 @@ export class KycFormDto {
   formType: string;
 
   @IsString()
-  redirectUrl: string;
+  loginUrl: string;
+
+  @IsString()
+  kycDoneUrl: string;
 
   @IsObject()
   steps: {

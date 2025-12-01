@@ -51,29 +51,34 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
     setOfQuestions.forEach((item) => {
         const stepKeyName = stepKeyNames[item.question.step - 1] as T_FormStepsKeys;
         const answerFieldName = item.question.questionParameter;
-        
-        // ✅ Simple check: is componentType "BeneficialOwner"?
+
         const isBeneficialOwner = item.question.componentType === "BeneficialOwner";
 
         answers.set(answerFieldName, {
             questionId: String(item.id),
             question: answerFieldName,
             automaticAnalysis: item.question.automaticAnalysis ?? false,
-            type: item.question.automaticAnalysis === true ? item.question.automaticAnalysisType : null,
-            beneficialOwners: isBeneficialOwner ? true : undefined,  // ✅ Simple!
+            type:
+                item.question.automaticAnalysis === true
+                    ? item.question.automaticAnalysisType
+                    : null,
+            beneficialOwners: isBeneficialOwner ? true : undefined, // ✅ Simple!
             answer: "",
         });
 
         item.question.dynamicField?.forEach((currentField) => {
             if (isDependentQuestion(currentField)) {
                 const depField = `${answerFieldName}::${currentField.questionParameter}`;
-                
+
                 answers.set(depField, {
                     questionId: String(currentField.id),
                     question: depField,
                     automaticAnalysis: currentField.automaticAnalysis ?? false,
-                    type: currentField.automaticAnalysis === true ? currentField.automaticAnalysisType : null,
-                    beneficialOwners: undefined, // Dependent questions are never BO
+                    type:
+                        currentField.automaticAnalysis === true
+                            ? currentField.automaticAnalysisType
+                            : null,
+                    beneficialOwners: undefined,
                     answer: "",
                 });
             }

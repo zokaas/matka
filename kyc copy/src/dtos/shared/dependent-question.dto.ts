@@ -1,6 +1,7 @@
 import {
   IsArray,
   IsBoolean,
+  IsNumber,
   IsOptional,
   IsString,
   ValidateNested,
@@ -14,8 +15,8 @@ export class DependentQuestionDto extends DynamicFieldDto {
   @IsString()
   __component: "kyc.dependent-question";
 
-  @IsString()
-  conditionValue: string;
+  @IsNumber()
+  conditionValue: number;
 
   @IsString()
   questionLabel: string;

@@ -21,7 +21,7 @@ export class ErrorMessageDto {
 
   @IsString()
   @IsOptional()
-  updatedAt?: string; 
+  updatedAt?: string;
 
   @IsString()
   @IsOptional()

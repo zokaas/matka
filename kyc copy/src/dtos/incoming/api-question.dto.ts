@@ -7,7 +7,7 @@ import {
   IsNumber,
   IsBoolean,
 } from "class-validator";
-import { BeneficialOwnerDto, CountryOptionsDto, DependentQuestionDto, DynamicFieldDto, DynamicFieldUnion, ErrorMessageDto, InfoDto, OptionDto } from "../shared";
+import { DynamicFieldDto, ErrorMessageDto, OptionDto } from "../shared";
 
 export class ApiQuestionDto {
   @IsNumber()
@@ -49,19 +49,8 @@ export class ApiQuestionDto {
 
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(() => DynamicFieldDto, {
-    discriminator: {
-      property: "__component",
-      subTypes: [
-        { value: DependentQuestionDto, name: "kyc.dependent-question" },
-        { value: InfoDto,             name: "kyc.info" },
-        { value: BeneficialOwnerDto,  name: "kyc.beneficial-owner" },
-        { value: CountryOptionsDto,   name: "kyc.country-options" },
-      ],
-    },
-    keepDiscriminatorProperty: true,
-  })
-  dynamicField: Array<DynamicFieldUnion>;
+  @Type(() => DynamicFieldDto)
+  dynamicField: Array<DynamicFieldDto>;
 
   @IsString()
   createdAt: string;

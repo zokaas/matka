@@ -3,6 +3,8 @@ import { vars } from "@ui/themes";
 
 export const stepsWrapperStyle = style({
     marginBottom: "3rem",
+    position: "relative",
+    paddingBottom: "3rem",
 });
 
 export const dividerStyle = style({
