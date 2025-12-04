@@ -16,6 +16,7 @@ export const boQuestionContainer = style({
 });
 
 export const boLabelButtonRow = style({
+    all: "unset",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
@@ -30,6 +31,7 @@ export const boLabelContainer = style({
 });
 
 export const boButtonContainer = style({
+    all: "unset",
     flexShrink: 0,
     width: "40px",
     height: "40px",
@@ -43,15 +45,15 @@ export const boButtonContainer = style({
 export const boPopoverButton = style({
     all: "unset",
     borderRadius: "100%",
-    width: vars.size.size_xl,
-    height: vars.size.size_xl,
+    width: vars.size.xl,
+    height: vars.size.xl,
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
     color: vars.color.baseWhite100,
     backgroundColor: vars.color.baseGreen500,
     ":hover": {
-        backgroundImage: vars.color.baseGreen420,
+        backgroundColor: vars.color.baseGreen420,
     },
 });
 
@@ -59,11 +61,12 @@ export const boCloseIcon = style({
     all: "unset",
     display: "inline-flex",
     position: "absolute",
-    top: vars.size.size_xs,
-    right: vars.size.size_xs,
+    top: vars.size.xs,
+    right: vars.size.xs,
 });
 
 export const addBoFormButton = style({
+    all: "unset",
     marginTop: vars.spacing.smallPadding,
     marginLeft: "auto",
     marginRight: 0,
@@ -86,8 +89,9 @@ export const addBoFormButton = style({
 });
 
 export const boResultAndButton = style({
+    all: "unset",
     display: "flex",
-    borderTop: `1px solid ${vars.color.baseGray500}`,
+    borderTop: `1px solid ${vars.color.baseGray100}`,
     marginTop: vars.spacing.tinyPadding,
     alignItems: "center",
     justifyContent: "space-between",
@@ -97,13 +101,12 @@ export const boResultAndButton = style({
 export const removeBoFormButton = style({
     flexShrink: 0,
     all: "unset",
-    width: vars.size.size_xl,
-    height: vars.size.size_huge,
+    width: vars.size.xl,
+    height: vars.size.huge,
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
     color: vars.color.baseContent,
-    //backgroundColor: vars.color.baseGreen500,
     ":hover": {
         color: vars.color.blackAlpha20,
     },
@@ -127,7 +130,7 @@ export const boResultValuesContainer = style({
 export const boResultValueLabelContainer = style({
     padding: vars.spacing.defaultPadding,
     backgroundColor: vars.color.baseWhite400,
-    fontWeight: vars.font.fontWeightSemiBold,
+    fontWeight: vars.fontWeight.semiBold,
 });
 
 export const boResultValueContainer = style({

@@ -1,16 +1,16 @@
 import { style } from "@vanilla-extract/css";
-import { vars } from "@ui/themes";
+import { vars, } from "@ui/themes";
 
 export const stepsWrapperStyle = style({
     marginBottom: "3rem",
     position: "relative",
-    paddingBottom: "3rem",
+    paddingBottom: "1rem",
 });
 
 export const dividerStyle = style({
-    borderTopWidth: "1px",
-    borderColor: vars.color.baseNeutral350,
-    marginBottom: vars.spacing.basicPadding,
+  border: 0,
+  borderTop: `1px solid ${vars.color.baseGray100}`,
+  margin: "1.5rem 0",
 });
 
 export const buttonContainerStyle = style({

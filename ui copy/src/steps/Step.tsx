@@ -59,7 +59,7 @@ export const Step: React.FC<T_StepProps> = ({
                             styling?.badge?.stepCounterDoneStyles,
                             undefined
                         )}
-                        label="L"
+                        label="✓"
                     />
                 ) : (
                     <StepLabel

@@ -1,5 +1,4 @@
 // app copy/root.tsx
-
 import React from "react";
 import {
     isRouteErrorResponse,
@@ -10,25 +9,30 @@ import {
     ScrollRestoration,
     useLoaderData,
     useRouteError,
-    LinksFunction,
-    LoaderFunctionArgs,
     LoaderFunction,
+    LoaderFunctionArgs,
 } from "react-router";
 import { ErrorHandler } from "../components";
-import tailwindStyles from "./global.css?url";
-import { bodyStyles, bodyStylesThemeClass } from "./styles.css";
+import { bodyStyles } from "./styles.css";
 import { useSessionManager } from "./hooks";
 import { getSession } from "./services/session/cacheSession.server";
 import { T_StatusMessagesData } from "./services";
 import { getStatusMessages } from "./services/api/get-status-messages.server";
 
-const DEFAULT_THEME = "sweden-b2b-application";
-const DEFAULT_BG_IMAGE = "var(--bg-image)";
+// Import from UI package
+import { 
+    getThemeMetadata, 
+    getThemeClass,
+    swedenB2BTheme 
+} from "@ui/themes";
 
-// Define the loader data type
+const DEFAULT_THEME = "sweden-b2b-application";
+
 type LoaderData = {
     theme: string;
-    backgroundImage: string;
+    themeClassName: string;
+    fontUrl?: string;
+    logoUrl: string;
     sessionId?: string;
     productId?: string;
     exp?: number;
@@ -41,13 +45,19 @@ type LoaderData = {
 export const loader: LoaderFunction = async ({ params, request }: LoaderFunctionArgs) => {
     const productId = params.productId ?? DEFAULT_THEME;
     const session = await getSession(request.headers?.get("Cookie"));
+    
+    // Get theme metadata and class
+    const themeMetadata = getThemeMetadata(productId);
+    const themeClassName = getThemeClass(productId);
 
-    // Load status messages - no auth needed
+    // Load status messages
     const statusMessages = await getStatusMessages("en");
 
     return {
         theme: productId,
-        backgroundImage: DEFAULT_BG_IMAGE,
+        themeClassName,
+        fontUrl: themeMetadata.fontUrl,
+        logoUrl: themeMetadata.logoUrl,
         sessionId: session.get("sessionId") ?? undefined,
         productId: session.get("productId") ?? productId,
         exp: session.get("exp"),
@@ -60,20 +70,29 @@ export const loader: LoaderFunction = async ({ params, request }: LoaderFunction
 
 function Document({
     children,
-    theme = DEFAULT_THEME,
+    themeClassName,
+    fontUrl,
 }: Readonly<{
     children: React.ReactNode;
-    theme?: string;
+    themeClassName: string;
+    fontUrl?: string;
 }>) {
     return (
-        <html lang="en" data-theme={theme}>
+        <html lang="en">
             <head>
                 <meta charSet="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
+                {fontUrl && (
+                    <>
+                        <link rel="preconnect" href="https://fonts.googleapis.com" />
+                        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+                        <link href={fontUrl} rel="stylesheet" />
+                    </>
+                )}
                 <Meta />
                 <Links />
             </head>
-            <body className={`${bodyStylesThemeClass} ${bodyStyles}`}>
+            <body className={`${themeClassName} ${bodyStyles}`}>
                 {children}
                 <ScrollRestoration />
                 <Scripts />
@@ -102,15 +121,19 @@ function SessionManagerGate() {
 }
 
 export default function App() {
-    const initialSession = useLoaderData<LoaderData>();
+    const loaderData = useLoaderData<LoaderData>();
 
     return (
-        <Document theme={initialSession?.theme || DEFAULT_THEME}>
+        <Document 
+            themeClassName={loaderData.themeClassName}
+            fontUrl={loaderData.fontUrl}
+        >
             <SessionManagerGate />
             <Outlet />
         </Document>
     );
 }
+
 export function ErrorBoundary() {
     const error = useRouteError();
     const rootData = useLoaderData<LoaderData>();
@@ -125,8 +148,11 @@ export function ErrorBoundary() {
         message = error.message;
     }
 
+    const themeClassName = rootData?.themeClassName || swedenB2BTheme;
+    const fontUrl = rootData?.fontUrl;
+
     return (
-        <Document theme={DEFAULT_THEME}>
+        <Document themeClassName={themeClassName} fontUrl={fontUrl}>
             <ErrorHandler
                 status={status}
                 message={message}

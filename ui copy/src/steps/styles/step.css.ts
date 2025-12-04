@@ -37,9 +37,6 @@ export const stepDoneStyle = style({
     fontSize: "20px",
     fontWeight: "600",
     color: "#ffffff",
-    transform: "scaleX(-1) rotate(-46deg)",
-    marginTop: "-5px",
-    marginRight: "-3px",
 });
 
 // Step Label styles

@@ -1,3 +1,4 @@
+// app copy/styles/statusLayoutStyle.css.ts
 import { buttonStyles } from "@ui/button";
 import { vars } from "@ui/themes";
 import { style } from "@vanilla-extract/css";
@@ -10,16 +11,16 @@ export const statusPageContainer = style({
 });
 
 export const statusPageHeader = style({
-    fontSize: vars.font.size.xxxlFontSize,
-    lineHeight: vars.size.size_l,
-    fontWeight: vars.font.fontWeightBold,
+    fontSize: vars.fontSize.xxxl,       // ❌ Was vars.font.size.xxxlFontSize
+    lineHeight: vars.size.l,
+    fontWeight: vars.fontWeight.bold,   // ❌ Was vars.font.fontWeightBold
     color: vars.color.baseContent,
 });
 
 export const statusPageBodyText = style({
-    fontSize: vars.font.size.xxlFontSize,
-    lineHeight: vars.size.size_xl,
-    fontWeight: vars.font.fontWeightMedium,
+    fontSize: vars.fontSize.xxl,        // ❌ Was vars.font.size.xxlFontSize
+    lineHeight: vars.size.xl,
+    fontWeight: vars.fontWeight.medium, // ❌ Was vars.font.fontWeightMedium
     color: vars.color.baseContent,
     marginTop: vars.spacing.basicPadding,
     alignItems: "center",

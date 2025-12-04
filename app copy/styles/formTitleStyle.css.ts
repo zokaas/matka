@@ -1,3 +1,4 @@
+// app copy/styles/formTitleStyle.css.ts
 import { vars } from "@ui/themes";
 import { style } from "@vanilla-extract/css";
 
@@ -8,10 +9,10 @@ export const formTitleStyle = style({
 
 export const titleStyle = style({
     color: vars.color.baseContent,
-    fontWeight: vars.font.fontWeightBold,
+    fontWeight: vars.fontWeight.bold,     // ❌ Was vars.font.fontWeightBold
     marginBottom: vars.spacing.tinyPadding,
-    fontSize: vars.font.size.xxxlFontSize,
-    lineHeight: vars.font.lineHeight.xxxlLineHeight,
+    fontSize: vars.fontSize.xxxl,         // ❌ Was vars.font.size.xxxlFontSize
+    lineHeight: vars.lineHeight.tight,    // ❌ Was vars.font.lineHeight.xxxlLineHeight
 });
 
 export const subtitleStyle = style({

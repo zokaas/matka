@@ -78,7 +78,7 @@ export const modalButtonStyles = style({
     padding: "0.75rem 0.5rem",
     margin: "0 0.5rem",
     boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.5)",
-    backgroundImage: "linear-gradient(to top, #c7c7c7, #fff)",
+    background: "linear-gradient(to top, #c7c7c7, #fff)",
     border: "none",
     borderRadius: "0",
     fontSize: "1rem",
@@ -95,7 +95,7 @@ export const modalButtonStyles = style({
     justifyContent: "center",
 
     ":hover": {
-        backgroundImage: "linear-gradient(to top, #bbb, #eee)",
+        background: "linear-gradient(to top, #bbb, #eee)",
     },
 
     ":disabled": {

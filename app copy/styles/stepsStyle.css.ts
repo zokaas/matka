@@ -1,10 +1,10 @@
+// app copy/styles/stepsStyle.css.ts
 import { vars } from "@ui/themes";
 import { style } from "@vanilla-extract/css";
 
 export const badgeActiveStyle = style({
-    /* Other Css styles can also be added */
-    backgroundColor: vars.steps.badge.backgroudColor,
-    borderColor: vars.steps.badge.borderColor,
+    backgroundColor: vars.steps.badgeBackgroundColor,  // ❌ Was badge.backgroudColor (typo)
+    borderColor: vars.steps.badgeBorderColor,          // ❌ Was badge.borderColor
     width: "2.5rem",
     height: "2.5rem",
     borderRadius: "50%",
@@ -16,7 +16,7 @@ export const badgeActiveStyle = style({
 });
 
 export const progressLineActiveStyle = style({
-    backgroundColor: vars.steps.progressLine.backgroundColor,
+    backgroundColor: vars.steps.progressLineBackgroundColor, // ❌ Was progressLine.backgroundColor
     content: "",
     position: "absolute",
     height: "0.25rem",
@@ -28,11 +28,11 @@ export const progressLineActiveStyle = style({
 });
 
 export const labelStyle = style({
-    color: vars.steps.label.color,
-    fontSize: vars.steps.label.fontSize,
-    marginTop: vars.steps.label.marginTop,
+    color: vars.steps.labelColor,       // ❌ Was label.color
+    fontSize: vars.steps.labelFontSize, // ❌ Was label.fontSize
+    marginTop: vars.steps.labelMarginTop, // ❌ Was label.marginTop
 });
 
 export const labelActiveStyle = style({
-    color: vars.steps.label.activeColor,
+    color: vars.steps.labelActiveColor, // ❌ Was label.activeColor
 });

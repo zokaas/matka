@@ -1,10 +1,11 @@
+// app copy/styles/radiogroupStyle.css.ts
 import { style } from "@vanilla-extract/css";
 import { vars } from "@ui/themes";
 
 export const b2bRadioLabelStyle = style({
     color: vars.color.baseContent,
-    fontSize: vars.font.size.baseFontSize,
-    lineHeight: vars.font.lineHeight.baseLineHeight,
+    fontSize: vars.fontSize.base,       // ❌ Was vars.font.size.baseFontSize
+    lineHeight: vars.lineHeight.normal, // ❌ Was vars.font.lineHeight.baseLineHeight
     paddingLeft: vars.spacing.smallPadding,
 });
 
@@ -46,6 +47,6 @@ export const b2bRadioIndicatorStyle = style({
 
 export const b2bRadioItemLabelStyle = style({
     color: vars.color.baseContent,
-    fontSize: vars.font.size.baseFontSize,
-    lineHeight: vars.font.lineHeight.baseLineHeight,
+    fontSize: vars.fontSize.base,       // ❌ Was vars.font.size.baseFontSize
+    lineHeight: vars.lineHeight.normal, // ❌ Was vars.font.lineHeight.baseLineHeight
 });

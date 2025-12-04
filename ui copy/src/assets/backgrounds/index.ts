@@ -1,0 +1,1 @@
+export * from "./sweden-b2b-background.svg";
