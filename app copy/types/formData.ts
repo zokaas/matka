@@ -5,7 +5,7 @@ import {
 } from "./formDataPartials";
 import { T_QuestionData } from "./question";
 import { T_CountryArray } from "./questionProperties";
-import { T_ApiQuestion } from "./questionType";
+import { T_AnalysisType, T_ApiQuestion } from "./questionType";
 
 export type T_FormGlobalProperties = T_FormMainCommonProperties & T_FormGeneralFormProperties;
 
@@ -21,7 +21,7 @@ export type T_AnswerObject = {
     questionId: string;
     question: string;
     automaticAnalysis: boolean;
-    type: "Boolean" | "Int" | "String" | null;
+    type: T_AnalysisType;
     beneficialOwners?: boolean; //only used for beneficial owner answer -> if is bo answer = true
     answer: T_AnswerValue;
 };

@@ -36,6 +36,7 @@ import { T_ActionResponse } from "./types";
 import { getAndParseFormData } from "~/services/api/get-form-data.server";
 import { mapDataForPayload } from "~/services/utils/mapDataForPayload.server";
 import { sendFormData } from "~/services/api/api-kyc.server";
+import { computeMaxAgeFromExp } from "~/utils/expiryUtils.server";
 
 export const loader = async ({
     request,
@@ -60,6 +61,7 @@ export const loader = async ({
     const session = await getCachedSession(request.headers?.get("Cookie"));
     const { sessionId, organizationName, organizationNumber } =
         await getOrganizationFromSession(request);
+    const exp = session.get("exp") ?? Date.now();
 
     if (!sessionId) {
         throw new Response("Session not found", { status: 401, statusText: "Unauthorized" });
@@ -80,6 +82,7 @@ export const loader = async ({
 
         const parsedFormData = await getAndParseFormData(productId, kycType, sessionId);
 
+        const { loginUrl, kycDoneUrl } = parsedFormData;
         loaderData.formData = parsedFormData;
         loaderData.pageData = {
             organizationName,
@@ -92,12 +95,14 @@ export const loader = async ({
             productId: session.get("clientId") ?? "",
             sessionRefreshCount: session.get("sessionRefreshCount") ?? 0,
             maxSessionRefresh: session.get("maxSessionRefresh") ?? 1,
-            exp: session.get("exp") ?? Date.now(),
+            exp,
+            loginUrl: loginUrl ?? "",
         };
 
-        const { redirectUrl } = parsedFormData;
-        session.set("redirectUrl", redirectUrl);
-        await commitSession(session);
+        const maxAge = computeMaxAgeFromExp(exp / 1000);
+        session.set("loginUrl", loginUrl);
+        session.set("kycDoneUrl", kycDoneUrl);
+        await commitSession(session, { maxAge });
 
         return {
             ...loaderData,
@@ -156,12 +161,11 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
             organizationName,
             organizationNumber
         );
-        console.log("payload", payload);
         const result = await sendFormData(payload, productId, kycType, applicationId, sessionId);
 
         console.log("Backend result:", result);
 
-        const { redirectUrl } = await getSessionProps(request, "redirectUrl");
+        const { kycDoneUrl } = await getSessionProps(request, "kycDoneUrl");
 
         if (result.status === "ok") {
             // Attempt to clear server-side session cookie and return it with the redirect
@@ -176,7 +180,7 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
                     status: 303,
                     headers: {
                         ...headers,
-                        Location: redirectUrl,
+                        Location: kycDoneUrl,
                     },
                 });
             } catch (err) {
@@ -184,7 +188,7 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
                 // Still redirect even if cookie clearing failed — still PRG
                 return new Response(null, {
                     status: 303,
-                    headers: { Location: redirectUrl },
+                    headers: { Location: kycDoneUrl },
                 });
             }
         }
@@ -225,12 +229,13 @@ export default function KycFormPage(): JSX.Element {
     const pageData = loaderData.pageData as T_ProductIdPageData;
     const sessionData = loaderData.sessionData as T_ClientSessionData;
     // save application id for the case when session is not valid
-    const { applicationId } = sessionData;
+    const { applicationId, loginUrl } = sessionData;
     useEffect(() => {
         if (applicationId) {
             localStorage.setItem("applicationId", applicationId);
         }
-    }, [applicationId]);
+        if (loginUrl) localStorage.setItem("loginUrl", loginUrl);
+    }, [applicationId, loginUrl]);
 
     return (
         <Container className={pageContentStyle}>

@@ -1,9 +1,8 @@
-@import "tailwindcss";
-@source "../../../";
+/* app copy/global.css */
 
 @import "../themes/sweden-b2b-application.theme.css";
 
-
+@source "../../../";
 
 @theme {
   /* Colors */
@@ -33,12 +32,22 @@
   --radius-card: var(--radius-box);
 }
 
-/* Your existing body styles */
+/* Set fonts globally */
+* {
+  font-family: 'Open Sans', sans-serif;
+}
+
 body {
   background-color: var(--bg-color, white);
   background-image: var(--bg-image, none);
   background-size: cover;
   background-repeat: no-repeat;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: oklch(21% 0.006 285.885);
+  margin: 0;
+  padding: 0;
 }
 
 img[src*="/logos/"] {
@@ -46,7 +55,6 @@ img[src*="/logos/"] {
   width: auto !important;
   max-width: 100%;
 }
-
 
 /* Your gradient classes */
 .bg-blue-gradient {

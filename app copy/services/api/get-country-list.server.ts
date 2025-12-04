@@ -1,13 +1,13 @@
 import { T_CountryArray } from "~/types";
-import { getEnvVariables, T_EnvVariables } from "../utils";
 import { getRequest } from "../utils/apiHelpers.server";
+import { appConfig } from "~/config";
 
 export const getCountryList = async (
     productId: string,
     sessionId: string
 ): Promise<T_CountryArray> => {
-    const envData: T_EnvVariables = getEnvVariables();
-    const url: string = `${envData.completeBaseUrl}/countrylist/${productId}`;
+    const { apiBaseUrl } = appConfig;
+    const url: string = `${apiBaseUrl}/countrylist/${productId}`;
 
     const response = await getRequest<T_CountryArray>(url, sessionId);
 

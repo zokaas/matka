@@ -8,6 +8,7 @@ import {
     getBffSession as getSessionFromBff,
     verifyBffSession,
 } from "~/services/session/sessionProvider.server";
+import { computeMaxAgeFromExp } from "~/utils/expiryUtils.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
     const url = new URL(request.url);
@@ -56,7 +57,7 @@ export const loader: LoaderFunction = async ({ request }) => {
     // create a session object and commit via SessionStorage
     console.log("start cache-session FLOW");
     const exp = sessionData.exp;
-    const maxAge = exp ? exp - Math.floor(Date.now() / 1000) : 300;
+    const maxAge = computeMaxAgeFromExp(exp);
     const expMS = exp * 1000; // exp from authentication/sessionInfo is in sec
     const session = await getCachedSession(request.headers.get("cookie"));
     const sessionValues = {

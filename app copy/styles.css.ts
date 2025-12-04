@@ -9,6 +9,10 @@ export const bodyStyles = style({
     backgroundPosition: "center",
     backgroundAttachment: "fixed",
     minHeight: "100vh",
+    fontFamily: vars.font.family,
+    fontSize: vars.font.size.baseFontSize,
+    lineHeight: vars.font.lineHeight.baseLineHeight,
+    color: vars.color.baseContent,
 });
 
 export const bodyStylesThemeClass = themeClass;

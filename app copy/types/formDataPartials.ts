@@ -5,7 +5,8 @@ export type T_FormMainCommonProperties = {
     id: number;
     product: string;
     formType: string;
-    redirectUrl: string;
+    kycDoneUrl: string;
+    loginUrl: string;
 };
 
 export type T_FormGeneralFormProperties = {

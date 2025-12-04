@@ -18,6 +18,7 @@ export type T_ClientSessionData = {
     exp: number;
     maxSessionRefresh: number;
     sessionRefreshCount: number;
+    loginUrl: string;
 };
 
 /**

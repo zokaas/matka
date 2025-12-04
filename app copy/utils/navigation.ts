@@ -1,20 +1,16 @@
 import { MARKETING_URLS } from "../../config";
-import { getPublicEnv } from "~/environment";
-
-function getLoginRedirectUrl(applicationId: string | null) {
-    const base = (getPublicEnv(import.meta.env).PUBLIC_APP_BASE_URL || "").replace(/\/$/, "");
-    return `${base}/start/${encodeURIComponent(applicationId ?? "")}`;
-}
 
 function clearLocalSession() {
     if (typeof window !== "undefined" && window.localStorage) {
-        window.localStorage.removeItem("applicationId");
+        window.localStorage.clear();
     }
 }
 
-export function redirectToLogin(applicationId: string | null): void {
+export function redirectToLogin(applicationId: string | null) {
+    const loginbaseUrl = localStorage.getItem("loginUrl") ?? "";
+    const loginUrl = `${loginbaseUrl}/${applicationId ?? ""}`;
     clearLocalSession();
-    window.location.replace(getLoginRedirectUrl(applicationId));
+    window.location.replace(loginUrl);
 }
 
 export function redirectToMarketingPage(productCode: string = "default") {

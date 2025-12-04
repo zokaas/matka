@@ -1,3 +1,5 @@
+// app copy/root.tsx
+
 import React from "react";
 import {
     isRouteErrorResponse,
@@ -17,6 +19,8 @@ import tailwindStyles from "./global.css?url";
 import { bodyStyles, bodyStylesThemeClass } from "./styles.css";
 import { useSessionManager } from "./hooks";
 import { getSession } from "./services/session/cacheSession.server";
+import { T_StatusMessagesData } from "./services";
+import { getStatusMessages } from "./services/api/get-status-messages.server";
 
 const DEFAULT_THEME = "sweden-b2b-application";
 const DEFAULT_BG_IMAGE = "var(--bg-image)";
@@ -31,24 +35,26 @@ type LoaderData = {
     maxSessionRefresh: number;
     sessionRefreshCount: number;
     applicationId?: string;
+    statusMessages: T_StatusMessagesData;
 };
-
-export const links: LinksFunction = () => [{ rel: "stylesheet", href: tailwindStyles }];
 
 export const loader: LoaderFunction = async ({ params, request }: LoaderFunctionArgs) => {
     const productId = params.productId ?? DEFAULT_THEME;
     const session = await getSession(request.headers?.get("Cookie"));
-    const exp = session.get("exp");
+
+    // Load status messages - no auth needed
+    const statusMessages = await getStatusMessages("en");
 
     return {
         theme: productId,
         backgroundImage: DEFAULT_BG_IMAGE,
         sessionId: session.get("sessionId") ?? undefined,
         productId: session.get("productId") ?? productId,
-        exp,
+        exp: session.get("exp"),
         maxSessionRefresh: session.get("maxSessionRefresh") ?? 1,
         sessionRefreshCount: session.get("sessionRefreshCount") ?? 0,
         applicationId: session.get("applicationId") ?? undefined,
+        statusMessages,
     } satisfies LoaderData;
 };
 
@@ -67,8 +73,6 @@ function Document({
                 <Meta />
                 <Links />
             </head>
-            {/* <body className="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed"> */}
-            {/* TODO: Move bodyStylesThemeClass to theme prop in Document when tailwind is no longer needed */}
             <body className={`${bodyStylesThemeClass} ${bodyStyles}`}>
                 {children}
                 <ScrollRestoration />
@@ -78,7 +82,6 @@ function Document({
     );
 }
 
-// throws a Response during render
 function ThrowResponse({ response }: { response: Response }): never {
     throw response;
 }
@@ -108,27 +111,27 @@ export default function App() {
         </Document>
     );
 }
-
 export function ErrorBoundary() {
     const error = useRouteError();
+    const rootData = useLoaderData<LoaderData>();
+
     let status = 500;
     let message = "Unknown error";
-    let data: unknown = {};
 
     if (isRouteErrorResponse(error)) {
         status = error.status;
-        message = error.statusText || "Route Error response";
-        data = error.data;
+        message = error.statusText || "Error";
     } else if (error instanceof Error) {
-        message = error.message || "Application error";
-        data = { stack: error.stack };
-    } else {
-        data = { raw: error };
+        message = error.message;
     }
 
     return (
         <Document theme={DEFAULT_THEME}>
-            <ErrorHandler status={status} message={message} data={data} />
+            <ErrorHandler
+                status={status}
+                message={message}
+                statusMessages={rootData?.statusMessages}
+            />
         </Document>
     );
 }

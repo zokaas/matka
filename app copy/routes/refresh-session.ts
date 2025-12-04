@@ -5,6 +5,7 @@ import {
     getSession,
 } from "~/services/session/cacheSession.server";
 import { refreshBffSession } from "~/services/session/sessionProvider.server";
+import { computeMaxAgeFromExp } from "~/utils/expiryUtils.server";
 
 export const action: ActionFunction = async ({ request }) => {
     // read server session (cookie)
@@ -36,13 +37,14 @@ export const action: ActionFunction = async ({ request }) => {
 
         // normalize exp to ms on server if needed
         let exp = result.exp;
+        const maxAge = computeMaxAgeFromExp(exp);
         if (typeof exp === "number" && exp < 1e12) exp = exp * 1000;
 
         // update server session values and commit cookie
         session.set("exp", exp);
         session.set("sessionRefreshCount", result.sessionRefreshCount ?? 0);
         session.set("sessionId", result.sessionId);
-        const setCookie = await commitSession(session);
+        const setCookie = await commitSession(session, { maxAge });
 
         return new Response(JSON.stringify(result), {
             status: 200,

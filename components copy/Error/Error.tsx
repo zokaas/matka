@@ -1,3 +1,5 @@
+// components copy/Error/Error.tsx
+
 import React from "react";
 import { Container } from "@ui/container";
 import { T_Error, T_ErrorView } from "./errorTypes";
@@ -7,77 +9,55 @@ import {
     statusPageBodyText,
     statusPageButton,
     statusPageContainer,
-    statusPageHeader,
 } from "~/styles";
 import { Button } from "@ui/button";
 import { redirectToLogin } from "~/utils";
 
-export const ErrorHandler = ({ status, message, data }: T_Error) => {
-    /**
-     * Error handler
-     * - send error data for debugging
-     * - redirect to login page
-     */
-    //TODO: send to logger service if needed
-    console.log("ErrorHandler", status, message, data);
 
-    const t = {
-        errors: {
-            "404": {
-                message: "Page not found",
-                label: "Login",
-            },
-            "500": {
-                message: "Something went wrong on our side",
-                label: "Login",
-            },
-            "440": {
-                message: "Session expired, should login again",
-                label: "Login",
-            },
-            "401": {
-                message: "Not authorized, should login again ",
-                label: "Login",
-            },
-            "400": {
-                message: "Bad request",
-                label: "Login",
-            },
-        },
-    };
-    const translatedMessage: string =
-        t.errors[String(status) as keyof typeof t.errors].message || message;
-    const buttonLabel: string = t.errors[String(status) as keyof typeof t.errors].label;
+// const FALLBACK_MESSAGES = {
+//     "404": { message: "Page not found", label: "Login" },
+//     "500": { message: "Something went wrong", label: "Login" },
+//     "440": { message: "Session expired", label: "Login" },
+//     "401": { message: "Not authorized", label: "Login" },
+//     "400": { message: "Bad request", label: "Login" },
+// };
+
+export const ErrorHandler = ({ status, message, statusMessages }: T_Error) => {
+    const code = String(status);
+    const strapiMsg = statusMessages?.[code];
+
+    console.log("🔍 Debug Info:");
+    console.log("  - Status Code:", code);
+    console.log("  - Strapi Messages Available:", !!statusMessages);
+    console.log("  - Strapi Message for", code, ":", strapiMsg);
+    console.log("  - Will Display:", strapiMsg?.message ||message);
+
+    const displayMessage = strapiMsg?.message || message;
+    const buttonLabel = strapiMsg?.label || "Login";
+
 
     const handleRedirectToLogin = () => {
         const id = localStorage.getItem("applicationId") || null;
         redirectToLogin(id);
     };
 
-    const actionButton = (() => {
-        const commonProps = {
-            type: "button" as const,
-            className: statusPageButton,
-            label: buttonLabel,
-        };
-        return <Button {...commonProps} onClick={handleRedirectToLogin} />;
-    })();
-
     return (
-        <ErrorView status={status} message={translatedMessage}>
-            {actionButton}
+        <ErrorView status={status} message={displayMessage}>
+            <Button
+                type="button"
+                className={statusPageButton}
+                label={buttonLabel}
+                onClick={handleRedirectToLogin}
+            />
         </ErrorView>
     );
 };
 
-//TODO status left for testing, remove it
-export const ErrorView = ({ status, message, children }: T_ErrorView) => {
+export const ErrorView = ({ message, children }: T_ErrorView) => {
     return (
         <StatusLayout>
             <Container className={statusPageContainer}>
-                <Text className={statusPageHeader}>Error:</Text>
-                {status && <Text className={statusPageBodyText}>status: {status}</Text>}
-                <Text className={statusPageBodyText}>message: {message}</Text>
+                <Text className={statusPageBodyText}>{message}</Text>
                 {children}
             </Container>
         </StatusLayout>

@@ -1,7 +1,9 @@
-import { getEnv } from "~/environment";
+import { appConfig } from "~/config";
 
 export const buildUrl = (path: string, param?: string): string => {
-    const baseUrl = getEnv(process.env).BFF_BASE_URL;
+    const { bffBaseUrl } = appConfig;
 
-    return param ? `${baseUrl}/${path}/${param}` : `${baseUrl}/${path}`;
+    if (!param) return `${bffBaseUrl}/${path}`;
+
+    return `${bffBaseUrl}/${path}/${param}`;
 };

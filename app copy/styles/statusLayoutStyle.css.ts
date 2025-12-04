@@ -17,11 +17,13 @@ export const statusPageHeader = style({
 });
 
 export const statusPageBodyText = style({
-    fontSize: vars.font.size.xlFontSize,
-    lineHeight: vars.size.size_m,
+    fontSize: vars.font.size.xxlFontSize,
+    lineHeight: vars.size.size_xl,
     fontWeight: vars.font.fontWeightMedium,
     color: vars.color.baseContent,
     marginTop: vars.spacing.basicPadding,
+    alignItems: "center",
+    textAlign: "center",
 });
 
 export const statusPageButton = style([

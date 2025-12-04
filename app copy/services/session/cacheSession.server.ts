@@ -1,23 +1,26 @@
 import { createCookie, createSessionStorage } from "react-router";
 import { buildUrl } from "../utils/urlHelpers.server";
 import { deleteRequest, getRequest, postRequest } from "../utils/apiHelpers.server";
-import {
+import type {
     T_BffSessionGetResponse,
     T_BffSessionPostResponse,
     T_CompanyDataFromSession,
     T_SessionData,
 } from "../api";
+import { appConfig } from "~/config";
 
 const cacheSessionServicePath = "cache/session";
 // ----- cookie used to store the session id on the client -----
+const { sessionSecret } = appConfig;
+
 const sessionCookie = createCookie("opr_kyc", {
     httpOnly: true,
     path: "/",
     sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
-    // `secrets` is used to sign/encrypt cookie values if optional features are used
-    // If you want signed cookies pass secrets here: secrets: [process.env.COOKIE_SECRET!]
-    // maxAge is set per request when committing the session (calculated from sessionInfo.exp)
+    secrets: [sessionSecret],
+    // maxAge is initially set for 60 sec, then it will be set per request when committing the session (calculated from sessionInfo.exp)
+    maxAge: 60,
 });
 
 // ---- BFF API Calls ----
@@ -64,7 +67,8 @@ function sessionStorage() {
                 maxSessionRefresh: data.maxSessionRefresh ?? 1,
                 companyName: data.companyName ?? "",
                 orgNumber: data.orgNumber ?? "",
-                redirectUrl: data.redirectUrl ?? "",
+                loginUrl: data.loginUrl ?? "",
+                kycDoneUrl: data.kycDoneUrl ?? "",
             };
 
             const res = await bffPost(payload);

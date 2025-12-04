@@ -1,6 +1,6 @@
 import { T_DependentQuestion } from "./formData";
 import { T_ComponentType, T_Option, T_QuestionErrorMessage } from "./questionProperties";
-import { T_DynamicFieldInfo } from "./questionType";
+import { T_AnalysisType, T_DynamicFieldInfo } from "./questionType";
 
 export type T_QuestionData = {
     componentType: T_ComponentType;
@@ -31,7 +31,7 @@ export type T_QuestionData = {
     pepQuestion: string | null;
     pepOptions: Array<T_Option> | null;
     automaticAnalysis: boolean | null;
-    automaticAnalysisType: "Boolean" | "Int" | "String" | null;
+    automaticAnalysisType: T_AnalysisType;
 };
 
 export type T_Question = {

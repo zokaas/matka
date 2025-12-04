@@ -1,8 +1,8 @@
 import { getRequest } from "../utils/apiHelpers.server";
 import { T_ApiFormResponse, T_ParsedFormData } from "~/types";
 import { parseResponse } from "../utils/parseResponse.server";
-import { getEnvVariables, T_EnvVariables } from "../utils";
 import { getCountryList } from "./get-country-list.server";
+import { appConfig } from "~/config";
 
 // If we use mockoon, mock data is not necessary anymore
 // Mock data can be found in JSON files un .mockoon folder
@@ -12,8 +12,9 @@ export const getAndParseFormData = async (
     kycType: string,
     sessionId: string
 ): Promise<T_ParsedFormData> => {
-    const envData: T_EnvVariables = getEnvVariables();
-    const url: string = `${envData.completeBaseUrl}/form/${productId}/${kycType}`;
+    const { apiBaseUrl } = appConfig;
+
+    const url: string = `${apiBaseUrl}/form/${productId}/${kycType}`;
 
     const response = await getRequest<T_ApiFormResponse>(url, sessionId);
 

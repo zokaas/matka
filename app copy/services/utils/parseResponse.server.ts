@@ -18,7 +18,8 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
         id,
         product,
         formType,
-        redirectUrl,
+        loginUrl,
+        kycDoneUrl,
         steps,
         button,
         footer,
@@ -59,10 +60,10 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
             question: answerFieldName,
             automaticAnalysis: item.question.automaticAnalysis ?? false,
             type:
-                item.question.automaticAnalysis === true
+                item.question.automaticAnalysis
                     ? item.question.automaticAnalysisType
                     : null,
-            beneficialOwners: isBeneficialOwner ? true : undefined, // ✅ Simple!
+            beneficialOwners: isBeneficialOwner ? true : undefined,
             answer: "",
         });
 
@@ -75,7 +76,7 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
                     question: depField,
                     automaticAnalysis: currentField.automaticAnalysis ?? false,
                     type:
-                        currentField.automaticAnalysis === true
+                        currentField.automaticAnalysis
                             ? currentField.automaticAnalysisType
                             : null,
                     beneficialOwners: undefined,
@@ -124,7 +125,8 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
         id,
         product,
         formType,
-        redirectUrl,
+        loginUrl,
+        kycDoneUrl,
         generalFormData,
         steps: parsedQuestionsByStep,
         answers,

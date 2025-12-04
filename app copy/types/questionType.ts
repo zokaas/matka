@@ -15,7 +15,7 @@ export type T_DynamicFieldComponent =
 export type T_DynamicFieldDependentQuestion = {
     conditionValue: number | string;
     automaticAnalysis: boolean | null;
-    automaticAnalysisType: "Boolean" | "Int" | "String" | null;
+    automaticAnalysisType: T_AnalysisType;
     placeholder: string | null;
     options: Array<T_Option> | null;
     useCountryList: boolean | null;
@@ -76,7 +76,7 @@ export type T_ApiQuestionData = {
     step: number;
     componentType: string;
     automaticAnalysis: boolean;
-    automaticAnalysisType: "Boolean" | "Int" | "String" | null;
+    automaticAnalysisType: T_AnalysisType;
     options: Array<T_Option> | null;
     placeholder: string | null;
     questionParameter: string;
@@ -88,3 +88,5 @@ export type T_ApiQuestion = {
     id: number;
     question: T_ApiQuestionData;
 };
+
+export type T_AnalysisType = "Boolean" | "Int" | "String" | null;

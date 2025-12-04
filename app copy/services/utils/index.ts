@@ -1,2 +1,1 @@
-export * from "./getEnvVariables";
-export * from "./types";
+export * from "./submitFormAnswers";

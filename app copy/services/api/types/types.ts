@@ -22,7 +22,8 @@ export type T_SessionData = SessionData & {
     maxSessionRefresh?: number;
     companyName: string;
     orgNumber: string;
-    redirectUrl: string;
+    loginUrl: string;
+    kycDoneUrl: string;
 };
 
 export type T_BffSessionPostResponse = {
