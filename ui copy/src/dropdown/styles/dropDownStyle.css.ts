@@ -145,7 +145,7 @@ export const multiSelectTag = style({
     height: "30px",
     padding: "12px 15px",
     boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.5)",
-    background: "linear-gradient(to top, #efefef, var(--ffffff-white-2))",
+    backgroundImage: "linear-gradient(to top, #efefef, var(--ffffff-white-2))",
     border: "none",
     borderRadius: "4px",
     whiteSpace: "nowrap",

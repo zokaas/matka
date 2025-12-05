@@ -1,12 +1,19 @@
-// packages/ui/src/themes/sweden-b2b.theme.css.ts
+// packages/ui/src/themes/sweden-b2b-application.theme.css.ts
 import { createTheme } from "@vanilla-extract/css";
-import { baseTokens, vars } from ".";
+import { themeVars } from "./contract.css";
 import backgroundImage from "../assets/backgrounds/Foretagslan_background.svg";
 
-
-export const swedenB2BTheme = createTheme(vars, {
+/**
+ * Sweden B2B Theme
+ * Only contains values that are SPECIFIC to this theme
+ * Constants are imported from constants.ts and used directly in components
+ */
+export const swedenB2BTheme = createTheme(themeVars, {
+    /**
+     * Brand Colors - Sweden B2B specific
+     */
     color: {
-        // Brand colors
+        // Primary brand colors
         primary: "oklch(58.5% 0.233 277.117)",
         primaryContent: "oklch(100% 0 0)",
         secondary: "oklch(70% 0.15 130)",
@@ -47,39 +54,32 @@ export const swedenB2BTheme = createTheme(vars, {
         blackAlpha20: "oklch(0 0 0 / 20%)",
     },
 
+    /**
+     * Typography - Sweden B2B font
+     */
     font: {
         family: "'Open Sans', sans-serif",
     },
 
+    /**
+     * Background - Sweden B2B specific
+     */
     background: {
         image: `url(${backgroundImage})`,
         color: "transparent",
     },
 
-    // Shared tokens (same for all themes)
-    spacing: baseTokens.spacing,
-    size: baseTokens.size,
-    radius: baseTokens.radius,
-    fontSize: baseTokens.fontSize,
-    fontWeight: baseTokens.fontWeight,
-    lineHeight: baseTokens.lineHeight,
-    width: baseTokens.width,
-
+    /**
+     * Component-specific theme values
+     */
     header: {
-        backgroundColor: "oklch(100% 0 0)",
-        boxShadow: baseTokens.header.boxShadow,
-        minHeight: baseTokens.header.minHeight,
-        position: baseTokens.header.position,
-        width: baseTokens.header.width,
-        zIndex: baseTokens.header.zIndex,
+        background: "oklch(100% 0 0)",
     },
 
     steps: {
         badgeBackgroundColor: "oklch(0.6948 0.1262 151.95)",
         badgeBorderColor: "oklch(0.6948 0.1262 151.95)",
         labelColor: "oklch(70.7% 0.022 261.325)",
-        labelFontSize: "0.875rem",
-        labelMarginTop: "0.5rem",
         labelActiveColor: "oklch(13% 0.028 261.692)",
         progressLineBackgroundColor: "oklch(0.6948 0.1262 151.95)",
     },

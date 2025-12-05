@@ -16,11 +16,11 @@ export const Header: React.FC<T_HeaderProps> = (props: T_HeaderProps) => {
                 <Container className={headerLogoContainer}>
                     <img className={headerLogoImage} src={props.logoSrc} />
                 </Container>
-                {/* {props.title && (
+                {props.title && (
                     <Container>
                         <h1 className={headerTitle}>{props.title}</h1>
                     </Container>
-                )} */}
+                )}
             </Container>
         </header>
     );
