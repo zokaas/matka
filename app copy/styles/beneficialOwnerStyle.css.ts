@@ -1,21 +1,28 @@
+// app/styles/beneficialOwnerStyle.css.ts
 import { style } from "@vanilla-extract/css";
-import { vars } from "@ui/themes";
+import { designConstants, themeVars } from "@ui/themes";
 
 export const boComponentContainer = style({
-    padding: "5px",
+    // Structure
+    padding: designConstants.spacing.tinyPadding,
     border: "1px solid",
-    borderColor: "oklch(95% 0 0)",
+    borderRadius: designConstants.radius.sm,
     zIndex: 10000,
+    
+    // Appearance
+    borderColor: themeVars.color.baseWhite300,
 });
 
 export const boQuestionContainer = style({
+    // Structure
     display: "flex",
     flexDirection: "column",
-    gap: "12px",
+    gap: designConstants.spacing.smallPadding,
     width: "100%",
 });
 
 export const boLabelButtonRow = style({
+    // Structure
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
@@ -24,112 +31,157 @@ export const boLabelButtonRow = style({
 });
 
 export const boLabelContainer = style({
+    // Structure
     flex: "1",
-    marginRight: "12px",
+    marginRight: designConstants.spacing.smallPadding,
     maxWidth: "calc(100% - 60px)",
 });
 
 export const boButtonContainer = style({
+    // Structure
     flexShrink: 0,
-    width: "40px",
-    height: "40px",
+    width: designConstants.size.xl,
+    height: designConstants.size.xl,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     alignSelf: "flex-start",
-    marginTop: "2px",
+    marginTop: designConstants.spacing.defaultPadding,
 });
 
 export const boPopoverButton = style({
+    // Structure
     all: "unset",
     borderRadius: "100%",
-    width: vars.size.size_xl,
-    height: vars.size.size_xl,
+    width: designConstants.size.xl,
+    height: designConstants.size.xl,
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    color: vars.color.baseWhite100,
-    backgroundColor: vars.color.baseGreen500,
+    cursor: "pointer",
+    transition: `background-image ${designConstants.transitions.base}`,
+    
+    // Appearance
+    color: themeVars.color.baseWhite100,
+    backgroundColor: themeVars.color.baseGreen500,
+    
     ":hover": {
-        backgroundImage: vars.color.baseGreen420,
+        backgroundImage: themeVars.color.baseGreen420,
     },
 });
 
 export const boCloseIcon = style({
+    // Structure
     all: "unset",
     display: "inline-flex",
     position: "absolute",
-    top: vars.size.size_xs,
-    right: vars.size.size_xs,
+    top: designConstants.spacing.tinyPadding,
+    right: designConstants.spacing.tinyPadding,
 });
 
 export const addBoFormButton = style({
-    marginTop: vars.spacing.smallPadding,
+    // Structure
+    marginTop: designConstants.spacing.smallPadding,
     marginLeft: "auto",
     marginRight: 0,
-    padding: vars.spacing.tinyPadding,
-    borderRadius: "2px",
-    boxShadow: `0 2px 4px 0 ${vars.color.blackAlpha20}`,
-    backgroundImage: `linear-gradient(to bottom, ${vars.color.baseGreen400} -14%, ${vars.color.baseGreen500} 114%)`,
-    color: vars.color.baseWhite100,
+    padding: designConstants.spacing.tinyPadding,
+    borderRadius: designConstants.radius.sm,
+    boxShadow: designConstants.shadows.base,
+    border: "none",
+    cursor: "pointer",
+    transition: `background-image ${designConstants.transitions.base}`,
+    fontSize: designConstants.fontSize.base,
+    fontWeight: designConstants.fontWeight.normal,
+    lineHeight: designConstants.lineHeight.normal,
+    
+    // Appearance
+    backgroundImage: `linear-gradient(to bottom, ${themeVars.color.baseGreen400} -14%, ${themeVars.color.baseGreen500} 114%)`,
+    color: themeVars.color.baseWhite100,
+    fontFamily: themeVars.font.family,
+    
     ":hover": {
-        backgroundImage: `linear-gradient(to bottom, ${vars.color.baseGreen410} -14%, ${vars.color.baseGreen500} 114%)`,
+        backgroundImage: `linear-gradient(to bottom, ${themeVars.color.baseGreen410} -14%, ${themeVars.color.baseGreen500} 114%)`,
     },
+    
     ":active": {
-        backgroundImage: `linear-gradient(to bottom, ${vars.color.baseGreen420} -14%, ${vars.color.baseGreen500} 114%)`,
+        backgroundImage: `linear-gradient(to bottom, ${themeVars.color.baseGreen420} -14%, ${themeVars.color.baseGreen500} 114%)`,
     },
+    
     ":disabled": {
-        boxShadow: `0 2px 1px 0 ${vars.color.blackAlpha43}`,
+        boxShadow: designConstants.shadows.sm,
         backgroundImage: "none",
-        backgroundColor: vars.color.baseNeutral350,
+        backgroundColor: themeVars.color.baseNeutral350,
+        color: themeVars.color.baseGray500,
+        cursor: "not-allowed",
     },
 });
 
 export const boResultAndButton = style({
+    // Structure
     display: "flex",
-    borderTop: `1px solid ${vars.color.baseGray500}`,
-    marginTop: vars.spacing.tinyPadding,
     alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
+    marginTop: designConstants.spacing.tinyPadding,
+    borderTop: "1px solid",
+    
+    // Appearance
+    borderColor: themeVars.color.baseGray500,
 });
 
 export const removeBoFormButton = style({
+    // Structure
     flexShrink: 0,
     all: "unset",
-    width: vars.size.size_xl,
-    height: vars.size.size_huge,
+    width: designConstants.size.xl,
+    height: designConstants.size.huge,
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    color: vars.color.baseContent,
-    //backgroundColor: vars.color.baseGreen500,
+    cursor: "pointer",
+    transition: `color ${designConstants.transitions.base}`,
+    
+    // Appearance
+    color: themeVars.color.baseContent,
+    
     ":hover": {
-        color: vars.color.blackAlpha20,
+        color: themeVars.color.error,
     },
 });
 
 export const boResultContainer = style({
+    // Structure
     flex: "1",
     display: "grid",
-    // fr = fraction => https://www.digitalocean.com/community/tutorials/css-css-grid-layout-fr-unit
-    // https://css-tricks.com/introduction-fr-css-unit/
     gridTemplateColumns: "repeat(2, 1fr)",
-    gap: "10px",
-    marginTop: vars.spacing.tinyPadding,
-    marginRight: vars.spacing.basicPadding,
+    gap: designConstants.spacing.smallPadding,
+    marginTop: designConstants.spacing.tinyPadding,
+    marginRight: designConstants.spacing.basicPadding,
 });
 
 export const boResultValuesContainer = style({
-    padding: `${vars.spacing.defaultPadding} 0`,
+    // Structure
+    padding: `${designConstants.spacing.defaultPadding} 0`,
 });
 
 export const boResultValueLabelContainer = style({
-    padding: vars.spacing.defaultPadding,
-    backgroundColor: vars.color.baseWhite400,
-    fontWeight: vars.font.fontWeightSemiBold,
+    // Structure
+    padding: designConstants.spacing.defaultPadding,
+    fontSize: designConstants.fontSize.base,
+    fontWeight: designConstants.fontWeight.semiBold,
+    lineHeight: designConstants.lineHeight.normal,
+    
+    // Appearance
+    backgroundColor: themeVars.color.baseWhite400,
+    fontFamily: themeVars.font.family,
 });
 
 export const boResultValueContainer = style({
-    padding: vars.spacing.defaultPadding,
+    // Structure
+    padding: designConstants.spacing.defaultPadding,
+    fontSize: designConstants.fontSize.base,
+    lineHeight: designConstants.lineHeight.normal,
+    
+    // Appearance
+    fontFamily: themeVars.font.family,
 });

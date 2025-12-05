@@ -1,37 +1,48 @@
+// ui/src/steps/styles/steps.css.ts
 import { style } from "@vanilla-extract/css";
+import { designConstants, themeVars } from "@ui/themes";
 
 export const stepsStyle = style({
+    // Structure
     width: "100%",
     maxWidth: "600px",
     margin: "0 auto",
-    padding: "0 16px",
+    padding: `0 ${designConstants.spacing.smallPadding}`,
 });
 
 export const stepsContainerStyle = style({
+    // Structure
     display: "flex",
     justifyContent: "space-between",
-    marginTop: "40px",
+    marginTop: designConstants.spacing.largePadding,
     position: "relative",
+    
+    // Background line (unfilled)
     "::before": {
         content: "",
         position: "absolute",
-        background: "oklch(87.2% 0.01 258.338)",
-        height: "0.25rem",
+        height: designConstants.spacing.defaultPadding,
         width: "100%",
         top: "50%",
         transform: "translateY(-50%)",
         left: 0,
+        
+        // Appearance
+        background: themeVars.color.baseWhite300,
     },
 });
 
 export const stepsFilledLineStyle = style({
+    // Structure
     content: "",
     position: "absolute",
-    background: "oklch(58.5% 0.233 277.117)", // color-indigo-500
-    height: "0.25rem",
+    height: designConstants.spacing.defaultPadding,
     width: "100%",
     top: "50%",
-    transition: "0.4s ease",
     transform: "translateY(-50%)",
     left: 0,
+    transition: designConstants.transitions.slower,
+    
+    // Appearance
+    background: themeVars.steps.progressLineBackgroundColor,
 });

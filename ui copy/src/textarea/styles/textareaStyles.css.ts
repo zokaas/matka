@@ -1,30 +1,51 @@
+// ui/src/textarea/styles/textareaStyles.css.ts
 import { style } from "@vanilla-extract/css";
+import { designConstants, themeVars } from "@ui/themes";
 
 export const textareaContainerStyle = style({
     display: "flex",
     flexDirection: "column",
-    gap: "8px",
+    gap: designConstants.spacing.tinyPadding,
 });
 
 export const textareaFieldStyle = style({
+    // Structure
     width: "100%",
-    padding: "0.5rem",
-    border: "1px solid",
-    borderColor: "oklch(95% 0 0)",
-    backgroundColor: "oklch(100% 0 0)",
-    color: "oklch(21% 0.006 285.885)",
-    borderRadius: "0.25rem",
     minHeight: "100px",
-
+    padding: designConstants.spacing.tinyPadding,
+    fontSize: designConstants.fontSize.base,
+    fontWeight: designConstants.fontWeight.normal,
+    lineHeight: designConstants.lineHeight.normal,
+    borderRadius: designConstants.radius.md,
+    border: "1px solid",
+    resize: "vertical",
+    transition: `all ${designConstants.transitions.base}`,
+    
+    // Appearance
+    borderColor: themeVars.color.baseWhite300,
+    backgroundColor: themeVars.color.baseWhite100,
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
+    
     "::placeholder": {
-        color: "oklch(21% 0.006 285.885, 0.4)",
+        color: themeVars.color.baseGray500,
+        opacity: 0.6,
     },
-
+    
+    ":hover": {
+        borderColor: themeVars.color.baseWhite200,
+    },
+    
     ":focus": {
         outline: "none",
-        boxShadow: "0 0 0 2px oklch(0.6948 0.1262 151.95)",
+        borderColor: themeVars.color.primary,
+        boxShadow: `0 0 0 3px ${themeVars.color.primary}33`,
     },
-    ":hover": {
-        borderColor: "oklch(90% 0 0)",
+    
+    ":disabled": {
+        backgroundColor: themeVars.color.baseWhite200,
+        color: themeVars.color.baseGray500,
+        cursor: "not-allowed",
+        opacity: 0.6,
     },
 });

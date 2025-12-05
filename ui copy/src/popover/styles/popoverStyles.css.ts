@@ -1,124 +1,88 @@
+// ui/src/popover/styles/popoverStyles.css.ts
 import { style } from "@vanilla-extract/css";
+import { designConstants, themeVars } from "@ui/themes";
 
 export const popoverButtonStyles = style({
+    // Structure
     all: "unset",
     borderRadius: "100%",
-    height: "35px",
-    width: "35px",
+    width: designConstants.size.m,
+    height: designConstants.size.m,
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    color: "#000",
-    backgroundColor: "green",
-    boxShadow: "0 2px 10px #000",
-    /*
-	&:hover {
-		background-color: var(--violet-3);
-	}
-	&:focus {
-		box-shadow: 0 0 0 2px black;
-	}
-    */
+    cursor: "pointer",
+    transition: `background-color ${designConstants.transitions.base}`,
+    boxShadow: designConstants.shadows.base,
+    
+    // Appearance
+    color: themeVars.color.baseWhite100,
+    backgroundColor: themeVars.color.baseGreen500,
+
+    ":hover": {
+        backgroundColor: themeVars.color.baseGreen410,
+        boxShadow: designConstants.shadows.md,
+    },
+    
+    ":focus": {
+        outline: `2px solid ${themeVars.color.primary}`,
+        outlineOffset: "2px",
+    },
 });
 
 export const popoverContentStyles = style({
-    borderRadius: "5px",
-    padding: "20px",
+    // Structure
+    padding: designConstants.spacing.basicPadding,
     width: "260px",
-    backgroundColor: "#fff",
-    boxShadow:
-        "hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px",
-    /*
-	animation-duration: 400ms;
-	animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-	will-change: transform, opacity;
-	&:focus {
-		box-shadow:
-			hsl(206 22% 7% / 35%) 0px 10px 38px -10px,
-			hsl(206 22% 7% / 20%) 0px 10px 20px -15px,
-			0 0 0 2px var(--violet-7);
-	}
-	&[data-state="open"][data-side="top"] {
-		animation-name: slideDownAndFade;
-	}
-	&[data-state="open"][data-side="right"] {
-		animation-name: slideLeftAndFade;
-	}
-	&[data-state="open"][data-side="bottom"] {
-		animation-name: slideUpAndFade;
-	}
-	&[data-state="open"][data-side="left"] {
-		animation-name: slideRightAndFade;
-	}
-
-    @keyframes slideUpAndFade {
-	from {
-		opacity: 0;
-		transform: translateY(2px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-
-@keyframes slideRightAndFade {
-	from {
-		opacity: 0;
-		transform: translateX(-2px);
-	}
-	to {
-		opacity: 1;
-		transform: translateX(0);
-	}
-}
-
-@keyframes slideDownAndFade {
-	from {
-		opacity: 0;
-		transform: translateY(-2px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-
-@keyframes slideLeftAndFade {
-	from {
-		opacity: 0;
-		transform: translateX(2px);
-	}
-	to {
-		opacity: 1;
-		transform: translateX(0);
-	}
-}
-
-     */
+    borderRadius: designConstants.radius.md,
+    boxShadow: designConstants.shadows.xl,
+    zIndex: designConstants.zIndex.popover,
+    
+    // Appearance
+    backgroundColor: themeVars.color.baseWhite100,
+    border: `1px solid ${themeVars.color.baseWhite300}`,
+    
+    // Animation - could add if needed
+    // animationDuration: designConstants.transitions.slower,
+    // animationTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+    
+    // Focus state
+    ":focus": {
+        outline: "none",
+        boxShadow: `${designConstants.shadows.xl}, 0 0 0 2px ${themeVars.color.primary}33`,
+    },
 });
 
 export const popoverArrowStyles = style({
-    fill: "#fff",
+    // Appearance
+    fill: themeVars.color.baseWhite100,
 });
 
 export const popoverCloseIconStyles = style({
-    /*     	all: unset;
-	font-family: inherit;
-	border-radius: 100%;
-	height: 25px;
-	width: 25px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	color: var(--violet-11);
-	position: absolute;
-	top: 5px;
-	right: 5px;
-	&:hover {
-		background-color: var(--violet-4);
-	}
-	&:focus {
-		box-shadow: 0 0 0 2px var(--violet-7);
-	} */
+    // Structure
+    all: "unset",
+    fontFamily: "inherit",
+    borderRadius: "100%",
+    width: "25px",
+    height: "25px",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "absolute",
+    top: designConstants.spacing.tinyPadding,
+    right: designConstants.spacing.tinyPadding,
+    cursor: "pointer",
+    transition: `background-color ${designConstants.transitions.base}`,
+    
+    // Appearance
+    color: themeVars.color.baseContent,
+    
+    ":hover": {
+        backgroundColor: themeVars.color.baseWhite200,
+    },
+    
+    ":focus": {
+        outline: `2px solid ${themeVars.color.primary}`,
+        outlineOffset: "2px",
+    },
 });

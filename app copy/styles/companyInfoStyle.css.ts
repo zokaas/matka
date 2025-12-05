@@ -1,37 +1,52 @@
-import { vars } from "@ui/themes";
+// app/styles/companyInfoStyle.css.ts
 import { style } from "@vanilla-extract/css";
+import { designConstants, themeVars } from "@ui/themes";
 
-const bgColor = `color-mix(in oklab, ${vars.color.baseWhite200}, transparent)`;
+// Using color-mix for subtle background
+const bgColor = `color-mix(in oklab, ${themeVars.color.baseWhite200}, transparent)`;
 
 export const companyInfoContainerStyle = style({
+    // Structure
+    padding: designConstants.spacing.basicPadding,
+    borderRadius: designConstants.radius.lg,
+    marginBottom: designConstants.spacing.basicPadding,
+    
+    // Appearance
     backgroundColor: bgColor,
-    padding: vars.spacing.basicPadding,
-    borderRadius: vars.radius.radiusLg,
-    marginBottom: vars.spacing.basicPadding,
 });
 
 export const companyInfoGridStyle = style({
+    // Structure
     display: "grid",
     gridTemplateColumns: "repeat(1, minmax(0, 1fr))",
+    gap: designConstants.spacing.smallPadding,
+    
     "@media": {
         "(width >= 48rem)": {
             gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
         },
     },
-    gap: vars.spacing.smallPadding,
 });
 
 export const companyInfoLabelStyle = style({
-    color: vars.color.baseGray100,
-    fontWeight: vars.font.fontWeightMedium,
-    fontSize: vars.font.size.smFontSize,
-    lineHeight: vars.font.lineHeight.smLineHeight,
-    marginBottom: vars.spacing.defaultPadding,
+    // Structure
+    fontSize: designConstants.fontSize.sm,
+    fontWeight: designConstants.fontWeight.medium,
+    lineHeight: designConstants.lineHeight.normal,
+    marginBottom: designConstants.spacing.defaultPadding,
+    
+    // Appearance
+    color: themeVars.color.baseGray100,
+    fontFamily: themeVars.font.family,
 });
 
 export const companyInfoStyle = style({
-    color: vars.color.baseContent,
-    fontWeight: vars.font.fontWeightSemiBold,
-    fontSize: vars.font.size.baseFontSize,
-    lineHeight: vars.font.lineHeight.baseLineHeight,
+    // Structure
+    fontSize: designConstants.fontSize.base,
+    fontWeight: designConstants.fontWeight.semiBold,
+    lineHeight: designConstants.lineHeight.normal,
+    
+    // Appearance
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
 });

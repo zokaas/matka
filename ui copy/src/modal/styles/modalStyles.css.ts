@@ -1,111 +1,131 @@
+// ui/src/modal/styles/modalStyles.css.ts
 import { style } from "@vanilla-extract/css";
+import { designConstants, themeVars } from "@ui/themes";
 
 export const modalOverlayStyles = style({
+    // Structure
     position: "fixed",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 1000,
+    zIndex: designConstants.zIndex.modalBackdrop,
+    
+    // Appearance
+    backgroundColor: themeVars.color.blackAlpha50,
 });
 
 export const modalContentContainerStyles = style({
+    // Structure
     position: "relative",
     width: "80%",
-    maxWidth: "664px",
+    maxWidth: designConstants.width.containerLg,
     height: "auto",
-    backgroundColor: "white",
-    borderRadius: "0",
-    padding: "2rem",
-    margin: "20px",
-    boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
-    color: "oklch(21% 0.006 285.885)",
-    fontFamily: "inherit",
+    padding: designConstants.spacing.largePadding,
+    margin: designConstants.spacing.basicPadding,
+    borderRadius: "0", // Keep as specified (no rounding)
+    boxShadow: designConstants.shadows.xl,
     overflowY: "auto",
     maxHeight: "90vh",
-
+    
+    // Appearance
+    backgroundColor: themeVars.color.baseWhite100,
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
+    
+    // Responsive
     "@media": {
         "screen and (min-width: 768px)": {
             width: "50%",
-            padding: "3rem",
+            padding: designConstants.spacing.largePadding,
         },
     },
 });
 
 export const modalTitleStyles = style({
-    color: "oklch(21% 0.006 285.885)",
-    fontSize: "1.5rem",
-    fontWeight: "bold",
-    lineHeight: "1.333",
-    margin: "0 0 1rem 0",
+    // Structure
+    fontSize: designConstants.fontSize.xxl,
+    fontWeight: designConstants.fontWeight.bold,
+    lineHeight: designConstants.lineHeight.tight,
+    margin: `0 0 ${designConstants.spacing.smallPadding} 0`,
     textAlign: "center",
-    fontFamily: "inherit",
+    
+    // Appearance
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
 });
 
 export const modalDescriptionStyles = style({
-    fontFamily: "inherit",
-    fontWeight: "400",
-    color: "oklch(21% 0.006 285.885)",
-    fontSize: "1rem",
-    lineHeight: "1.5",
-    margin: "0 0 2rem 0",
+    // Structure
+    fontSize: designConstants.fontSize.base,
+    fontWeight: designConstants.fontWeight.normal,
+    lineHeight: designConstants.lineHeight.normal,
+    margin: `0 0 ${designConstants.spacing.largePadding} 0`,
     textAlign: "center",
+    
+    // Appearance
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
 });
 
 export const modalActionBlockStyles = style({
+    // Structure
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: "1rem",
-    marginTop: "1.5rem",
+    gap: designConstants.spacing.smallPadding,
+    marginTop: designConstants.spacing.basicPadding,
 
     "@media": {
         "screen and (max-width: 767px)": {
             flexDirection: "column",
-            gap: "0.5rem",
+            gap: designConstants.spacing.tinyPadding,
         },
     },
 });
 
 export const modalButtonStyles = style({
+    // Structure
     width: "180px",
     height: "48px",
-    padding: "0.75rem 0.5rem",
-    margin: "0 0.5rem",
-    boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.5)",
-    backgroundImage: "linear-gradient(to top, #c7c7c7, #fff)",
-    border: "none",
+    padding: `${designConstants.spacing.smallPadding} ${designConstants.spacing.tinyPadding}`,
+    margin: `0 ${designConstants.spacing.tinyPadding}`,
+    fontSize: designConstants.fontSize.base,
+    fontWeight: designConstants.fontWeight.normal,
+    lineHeight: designConstants.lineHeight.normal,
     borderRadius: "0",
-    fontSize: "1rem",
-    fontWeight: "400",
-    color: "#373737",
+    border: "none",
+    boxShadow: designConstants.shadows.custom,
     cursor: "pointer",
-    transition: "background-image 0.2s ease",
-    fontFamily: "inherit",
-    lineHeight: "1.5rem",
+    transition: `background-image ${designConstants.transitions.base}`,
     textAlign: "center",
     whiteSpace: "nowrap",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    
+    // Appearance
+    backgroundImage: `linear-gradient(to top, ${themeVars.color.baseWhite300}, ${themeVars.color.baseWhite100})`,
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
 
     ":hover": {
-        backgroundImage: "linear-gradient(to top, #bbb, #eee)",
+        backgroundImage: `linear-gradient(to top, ${themeVars.color.baseWhite200}, ${themeVars.color.baseWhite100})`,
     },
 
     ":disabled": {
-        color: "#cccccc",
+        color: themeVars.color.baseGray500,
         cursor: "not-allowed",
+        opacity: 0.6,
     },
 
     "@media": {
         "screen and (max-width: 767px)": {
-            margin: "0.25rem 0",
+            margin: `${designConstants.spacing.defaultPadding} 0`,
             width: "100%",
             whiteSpace: "normal",
         },

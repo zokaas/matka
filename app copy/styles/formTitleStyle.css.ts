@@ -1,19 +1,31 @@
-import { vars } from "@ui/themes";
+// app/styles/formTitleStyle.css.ts
 import { style } from "@vanilla-extract/css";
+import { designConstants, themeVars } from "@ui/themes";
 
 export const formTitleStyle = style({
+    // Structure
     textAlign: "center",
-    marginBottom: vars.spacing.largePadding,
+    marginBottom: designConstants.spacing.largePadding,
 });
 
 export const titleStyle = style({
-    color: vars.color.baseContent,
-    fontWeight: vars.font.fontWeightBold,
-    marginBottom: vars.spacing.tinyPadding,
-    fontSize: vars.font.size.xxxlFontSize,
-    lineHeight: vars.font.lineHeight.xxxlLineHeight,
+    // Structure
+    fontSize: designConstants.fontSize.xxxl,
+    fontWeight: designConstants.fontWeight.bold,
+    lineHeight: designConstants.lineHeight.tight,
+    marginBottom: designConstants.spacing.tinyPadding,
+    
+    // Appearance
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
 });
 
 export const subtitleStyle = style({
-    color: vars.color.baseContent,
+    // Structure
+    fontSize: designConstants.fontSize.base,
+    lineHeight: designConstants.lineHeight.normal,
+    
+    // Appearance
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
 });

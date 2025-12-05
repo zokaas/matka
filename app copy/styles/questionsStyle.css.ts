@@ -1,10 +1,31 @@
-import { vars } from "@ui/themes";
+// app/styles/questionsStyle.css.ts
 import { style } from "@vanilla-extract/css";
+import { designConstants } from "@ui/themes";
 
-export const questionsStyle = style({
+/**
+ * Questions Component Styles
+ * Wrapper for form questions/fields
+ */
+
+export const questionsContainerStyle = style({
+    // Structure
     padding: 0,
     margin: 0,
-    marginBottom: vars.spacing.basicPadding,
-    width: vars.width.fullWidth,
-    minWidth: vars.width.fullWidth,
+    marginBottom: designConstants.spacing.basicPadding,
+    width: "100%",
+    minWidth: "100%",
+});
+
+export const questionItemStyle = style({
+    // Structure
+    marginBottom: designConstants.spacing.smallPadding,
+    width: "100%",
+});
+
+export const questionGroupStyle = style({
+    // Structure
+    display: "flex",
+    flexDirection: "column",
+    gap: designConstants.spacing.smallPadding,
+    marginBottom: designConstants.spacing.basicPadding,
 });

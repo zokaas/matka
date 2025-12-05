@@ -1,58 +1,79 @@
+// ui/src/tooltip/styles/tooltipStyles.css.ts
 import { style } from "@vanilla-extract/css";
+import { designConstants, themeVars } from "@ui/themes";
 
 export const tooltipTriggerStyles = style({
+    // Structure
     all: "unset",
-    width: "20px",
-    height: "20px",
+    width: designConstants.size.s,  // 20px equivalent
+    height: designConstants.size.s,
     borderRadius: "50%",
-    backgroundColor: "#2e6db4",
-    color: "white",
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    fontSize: "12px",
-    fontWeight: "bold",
+    fontSize: designConstants.fontSize.sm,
+    fontWeight: designConstants.fontWeight.bold,
     cursor: "pointer",
-    transition: "background-color 0.2s ease",
-
+    transition: `background-color ${designConstants.transitions.base}`,
+    
+    // Appearance
+    backgroundColor: themeVars.color.primary,
+    color: themeVars.color.primaryContent,
+    
     ":hover": {
-        backgroundColor: "#274f8b",
+        backgroundColor: themeVars.color.accent,
     },
-
+    
     ":focus": {
-        outline: "2px solid #2e6db4",
+        outline: `2px solid ${themeVars.color.primary}`,
         outlineOffset: "2px",
     },
 });
 
 export const tooltipContentStyles = style({
-    borderRadius: "6px",
-    padding: "12px 16px",
+    // Structure
     maxWidth: "300px",
-    backgroundColor: "white",
-    color: "#333",
-    fontSize: "14px",
-    lineHeight: "1.4",
-    border: "1px solid #e5e7eb",
-    boxShadow: "0 10px 38px -10px rgba(22, 23, 24, 0.35), 0 10px 20px -15px rgba(22, 23, 24, 0.2)",
-    zIndex: 1000,
+    padding: `${designConstants.spacing.smallPadding} ${designConstants.spacing.smallPadding}`,
+    borderRadius: designConstants.radius.md,
+    fontSize: designConstants.fontSize.sm,
+    lineHeight: designConstants.lineHeight.relaxed,
+    border: "1px solid",
+    boxShadow: designConstants.shadows.lg,
+    zIndex: designConstants.zIndex.tooltip,
+    
+    // Appearance
+    backgroundColor: themeVars.color.baseWhite100,
+    color: themeVars.color.baseContent,
+    borderColor: themeVars.color.baseWhite300,
+    fontFamily: themeVars.font.family,
 });
 
 export const tooltipArrowStyles = style({
-    fill: "white",
-    stroke: "#e5e7eb",
+    // Appearance
+    fill: themeVars.color.baseWhite100,
+    stroke: themeVars.color.baseWhite300,
     strokeWidth: "1px",
 });
 
 export const tooltipHeaderStyles = style({
-    margin: "0 0 8px 0",
-    fontSize: "16px",
-    fontWeight: "600",
-    color: "#1f2937",
+    // Structure
+    margin: `0 0 ${designConstants.spacing.tinyPadding} 0`,
+    fontSize: designConstants.fontSize.base,
+    fontWeight: designConstants.fontWeight.semiBold,
+    lineHeight: designConstants.lineHeight.normal,
+    
+    // Appearance
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
 });
 
 export const tooltipDescriptionStyles = style({
+    // Structure
     margin: "0",
-    color: "#6b7280",
-    lineHeight: "1.5",
+    fontSize: designConstants.fontSize.sm,
+    lineHeight: designConstants.lineHeight.normal,
+    
+    // Appearance
+    color: themeVars.color.baseGray500,
+    fontFamily: themeVars.font.family,
 });

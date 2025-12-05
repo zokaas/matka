@@ -1,198 +1,300 @@
+// ui/src/dropdown/styles/dropDownStyle.css.ts
 import { style } from "@vanilla-extract/css";
+import { designConstants, themeVars } from "@ui/themes";
+
+// Container for the entire dropdown component
 export const dropDownContainerStyle = style({
     flexGrow: 1,
     display: "flex",
     flexDirection: "column",
-    gap: "8px",
+    gap: designConstants.spacing.tinyPadding,
 });
 
+// Label styling (if not using separate Label component)
 export const dropDownLabel = style({
-    fontSize: "1rem",
+    // Structure
+    fontSize: designConstants.fontSize.base,
+    fontWeight: designConstants.fontWeight.normal,
+    lineHeight: designConstants.lineHeight.normal,
+    
+    // Appearance
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
 });
 
+// Main dropdown trigger button
 export const dropDownStyle = style({
+    // Structure
     display: "inline-flex",
-    fontSize: "1rem",
-    lineHeight: "1.5rem",
-    width: "100%",
-    backgroundColor: "white",
-    border: "1px solid #cccccc",
-    borderRadius: "6px",
     justifyContent: "space-between",
-    padding: "10px",
+    alignItems: "center",
+    width: "100%",
+    padding: designConstants.spacing.smallPadding,
+    fontSize: designConstants.fontSize.base,
+    lineHeight: designConstants.lineHeight.normal,
+    borderRadius: designConstants.radius.md,
+    border: "1px solid",
+    cursor: "pointer",
+    transition: `all ${designConstants.transitions.base}`,
+    
+    // Appearance
+    backgroundColor: themeVars.color.baseWhite100,
+    borderColor: themeVars.color.baseWhite300,
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
+    
+    ":hover": {
+        borderColor: themeVars.color.baseWhite200,
+        backgroundColor: themeVars.color.baseWhite200,
+    },
+    
+    ":focus": {
+        outline: "none",
+        borderColor: themeVars.color.primary,
+        boxShadow: `0 0 0 3px ${themeVars.color.primary}33`,
+    },
 });
-/*
-    &:hover {
-        background-color: var(--mauve-3);
-    }
-    &:focus {
-        box-shadow: 0 0 0 2px black;
-    }
-    &[data-placeholder] {
-        color: var(--violet-9);
-    } */
 
+// Icon container (chevron)
 export const dropDownOpenIconStyle = style({
-    color: "#cccccc",
-    borderLeft: "1px solid #cccccc",
-    paddingLeft: "10px",
+    // Structure
+    paddingLeft: designConstants.spacing.smallPadding,
+    borderLeft: "1px solid",
+    display: "flex",
+    alignItems: "center",
+    transition: `transform ${designConstants.transitions.base}`,
+    
+    // Appearance
+    color: themeVars.color.baseGray500,
+    borderColor: themeVars.color.baseWhite300,
 });
 
+// Dropdown list container (portal)
 export const dropDownListStyle = style({
+    // Structure
     overflow: "hidden",
-    backgroundColor: "white",
-    borderRadius: "6px",
-    padding: "5px",
-    boxShadow: "0 0 2px 0 rgba(0, 0, 0, 0.6), 0 2px 2px 0 rgba(0, 0, 0, 0.5)",
+    padding: designConstants.spacing.tinyPadding,
+    borderRadius: designConstants.radius.md,
     width: "var(--radix-select-trigger-width)",
     minWidth: "var(--radix-select-trigger-width)",
     maxWidth: "max(var(--radix-select-trigger-width), 400px)",
     boxSizing: "border-box",
-    zIndex: 50,
+    boxShadow: designConstants.shadows.lg,
+    zIndex: designConstants.zIndex.dropdown,
+    
+    // Appearance
+    backgroundColor: themeVars.color.baseWhite100,
+    border: `1px solid ${themeVars.color.baseWhite300}`,
 });
 
+// MultiSelect specific list (uses Popover)
 export const multiSelectListStyle = style({
+    // Structure
     overflow: "hidden",
-    backgroundColor: "white",
-    borderRadius: "6px",
-    padding: "5px",
-    boxShadow: "0 0 2px 0 rgba(0, 0, 0, 0.6), 0 2px 2px 0 rgba(0, 0, 0, 0.5)",
+    padding: designConstants.spacing.tinyPadding,
+    borderRadius: designConstants.radius.md,
     width: "var(--radix-popover-trigger-width)",
     minWidth: "var(--radix-popover-trigger-width)",
     maxWidth: "max(var(--radix-popover-trigger-width), 400px)",
     boxSizing: "border-box",
-    zIndex: 50,
+    boxShadow: designConstants.shadows.lg,
+    zIndex: designConstants.zIndex.dropdown,
+    
+    // Appearance
+    backgroundColor: themeVars.color.baseWhite100,
+    border: `1px solid ${themeVars.color.baseWhite300}`,
 });
 
+// Viewport (scrollable area)
 export const dropDownViewportStyle = style({
-    padding: "5px",
+    // Structure
+    padding: designConstants.spacing.tinyPadding,
     boxSizing: "border-box",
     maxHeight: "300px",
     overflowY: "auto",
     overflowX: "hidden",
 });
 
+// Individual dropdown item
+const baseItemStyle = {
+    // Structure
+    fontSize: designConstants.fontSize.base,
+    lineHeight: 1.4,
+    padding: designConstants.spacing.tinyPadding,
+    borderRadius: designConstants.radius.sm,
+    position: "relative" as const,
+    userSelect: "none" as const,
+    boxSizing: "border-box" as const,
+    minHeight: "auto",
+    cursor: "pointer",
+    transition: `all ${designConstants.transitions.fast}`,
+    
+    // Appearance
+    color: themeVars.color.baseContent,
+};
+
+const baseHoverStyle = {
+    outline: "none",
+    backgroundColor: themeVars.color.baseWhite200,
+    color: themeVars.color.primary,
+};
+
+// Single-select dropdown item
+export const dropDownItemStyles = style({
+    ...baseItemStyle,
+    display: "flex",
+    alignItems: "center",
+    paddingRight: "30px",
+    paddingLeft: "20px",
+    
+    selectors: {
+        "&[data-highlighted]": baseHoverStyle,
+        "&[data-disabled]": {
+            opacity: 0.5,
+            cursor: "not-allowed",
+            pointerEvents: "none",
+        },
+    },
+});
+
+// Item indicator (checkmark for selected item)
 export const dropDownItemIndicatorStyles = style({
+    // Structure
     position: "absolute",
     left: "6px",
     top: "50%",
     transform: "translateY(-50%)",
-    width: "20px",
+    width: designConstants.size.s,
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
 });
 
+// Icon styling
 export const iconStyle = style({
-    color: "#2e6db4 !important",
+    color: `${themeVars.color.primary} !important`,
 });
 
+// Filter container (inside dropdown)
 export const filterContainer = style({
-    padding: "5px",
-    borderBottom: "1px solid #e5e7eb",
-});
-const baseItemStyle = {
-    fontSize: "1rem",
-    lineHeight: 1.4,
-    color: "#000000",
-    display: "flex",
-    alignItems: "center",
-    padding: "8px 5px",
-    position: "relative" as const,
-    userSelect: "none" as const,
-    boxSizing: "border-box" as const,
-    minHeight: "auto",
-};
-
-const baseHoverStyle = {
-    outline: "none",
-    backgroundColor: "#e2ecf6",
-    color: "#274f8b",
-};
-
-export const dropDownItemStyles = style({
-    ...baseItemStyle,
-    paddingRight: "30px",
-    paddingLeft: "20px",
-    selectors: {
-        "&[data-highlighted]": baseHoverStyle,
-    },
+    // Structure
+    padding: designConstants.spacing.tinyPadding,
+    borderBottom: "1px solid",
+    
+    // Appearance
+    borderColor: themeVars.color.baseWhite300,
 });
 
+// Placeholder text
+export const selectPlaceholder = style({
+    color: themeVars.color.baseGray500,
+    opacity: 0.8,
+});
+
+// ============================================
+// MultiSelect Specific Styles
+// ============================================
+
+// Container for selected tags
 export const multiSelectTagsContainer = style({
     display: "flex",
     flexWrap: "wrap",
-    gap: "4px",
+    gap: designConstants.spacing.defaultPadding,
     flex: 1,
     alignItems: "center",
     maxWidth: "calc(100% - 50px)",
 });
 
+// Field container wrapper
 export const multiSelectFieldContainer = style({
     position: "relative",
     display: "flex",
     alignItems: "center",
 });
 
-export const selectPlaceholder = style({
-    color: "#999",
-});
-
+// Individual selected tag
 export const multiSelectTag = style({
+    // Structure
     display: "flex",
     alignItems: "center",
     minWidth: "91px",
     height: "30px",
-    padding: "12px 15px",
-    boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.5)",
-    backgroundImage: "linear-gradient(to top, #efefef, var(--ffffff-white-2))",
+    padding: `${designConstants.spacing.smallPadding} ${designConstants.spacing.smallPadding}`,
+    borderRadius: designConstants.radius.sm,
     border: "none",
-    borderRadius: "4px",
+    boxShadow: designConstants.shadows.custom,
     whiteSpace: "nowrap",
+    fontSize: designConstants.fontSize.sm,
+    
+    // Appearance
+    backgroundImage: `linear-gradient(to top, ${themeVars.color.baseWhite300}, ${themeVars.color.baseWhite100})`,
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
 });
 
+// Remove button on tag
 export const multiSelectTagRemove = style({
+    // Structure
     cursor: "pointer",
-    color: "#666",
-    fontSize: "16px",
+    fontSize: designConstants.fontSize.base,
     lineHeight: "1",
-    width: "16px",
-    height: "16px",
+    width: designConstants.size.xs,
+    height: designConstants.size.xs,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: "2px",
-    transition: "background-color 0.2s",
-    marginLeft: "8px",
+    borderRadius: designConstants.radius.sm,
+    marginLeft: designConstants.spacing.tinyPadding,
+    transition: `background-color ${designConstants.transitions.base}`,
+    
+    // Appearance
+    color: themeVars.color.baseGray500,
+    
+    ":hover": {
+        backgroundColor: themeVars.color.baseWhite200,
+        color: themeVars.color.error,
+    },
 });
 
+// Checkbox in multiselect items
 export const multiSelectCheckbox = style({
+    // Structure
     width: "17px",
     height: "17px",
-    borderRadius: "2px",
-    boxShadow: "inset 0px 1px 4px 0px rgba(0, 0, 0, 0.5)",
-    backgroundColor: "#ffffff",
+    borderRadius: designConstants.radius.sm,
+    boxShadow: `inset 0px 1px 4px 0px ${themeVars.color.blackAlpha50}`,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: "5px",
+    marginRight: designConstants.spacing.tinyPadding,
+    flexShrink: 0,
+    
+    // Appearance
+    backgroundColor: themeVars.color.baseWhite100,
+    border: `1px solid ${themeVars.color.baseWhite300}`,
 });
 
+// Option text
 export const multiSelectOptionText = style({
     flex: 1,
     whiteSpace: "normal",
     wordBreak: "break-word",
     overflowWrap: "anywhere",
+    fontSize: designConstants.fontSize.base,
+    lineHeight: designConstants.lineHeight.normal,
+    fontFamily: themeVars.font.family,
 });
 
+// Option button/label
 export const multiSelectOptionButton = style({
     ...baseItemStyle,
     width: "100%",
     textAlign: "left",
     border: "none",
     background: "none",
-    cursor: "pointer",
     alignItems: "flex-start",
+    display: "flex",
+    
     selectors: {
         "&:hover": baseHoverStyle,
         "&:disabled": {

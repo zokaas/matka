@@ -1,29 +1,36 @@
-import { vars } from "@ui/themes";
+// app/styles/mainContentStyle.css.ts
 import { style } from "@vanilla-extract/css";
+import { designConstants, themeVars } from "@ui/themes";
 
 export const mainContentStyle = style({
-    paddingInline: vars.spacing.smallPadding,
+    // Structure
+    paddingInline: designConstants.spacing.smallPadding,
+    paddingBlock: designConstants.spacing.basicPadding,
+    flexGrow: 1,
+    
     "@media": {
         "(width >= 48rem)": {
-            paddingInline: vars.spacing.basicPadding,
+            paddingInline: designConstants.spacing.basicPadding,
         },
     },
-    flexGrow: 1,
-    paddingBlock: vars.spacing.basicPadding,
 });
 
 export const mainContainerStyle = style({
-    boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
-    padding: vars.spacing.largePadding,
-    backgroundColor: vars.color.baseWhite100,
-    maxWidth: vars.width.container_2xl,
+    // Structure
+    padding: designConstants.spacing.largePadding,
+    maxWidth: designConstants.width.container2xl,
     marginInline: "auto",
+    boxShadow: designConstants.shadows.xl,
+    
+    // Appearance
+    backgroundColor: themeVars.color.baseWhite100,
 });
 
 export const formQuestionsContainer = style({
-    marginTop: vars.spacing.basicPadding,
+    // Structure
+    marginTop: designConstants.spacing.basicPadding,
     minHeight: "300px",
-    maxWidth: vars.width.container_2xl,
+    maxWidth: designConstants.width.container2xl,
     marginLeft: "auto",
     marginRight: "auto",
 });

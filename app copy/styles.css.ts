@@ -1,9 +1,10 @@
-import { vars, themeClass } from "@ui/themes";
+
+import { themeVars, themeClass } from "@ui/themes";
 import { style } from "@vanilla-extract/css";
 
 export const bodyStyles = style({
-    backgroundColor: vars.color.baseWhite100,
-    backgroundImage: vars.background.image,
+    backgroundColor: themeVars.color.baseWhite100,
+    backgroundImage: themeVars.background.image,
     backgroundSize: "cover",
     backgroundRepeat: "no-repeat",
     backgroundPosition: "center",

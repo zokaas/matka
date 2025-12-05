@@ -1,38 +1,58 @@
-import { vars } from "@ui/themes";
+// app/styles/stepsStyle.css.ts
 import { style } from "@vanilla-extract/css";
+import { designConstants, themeVars } from "@ui/themes";
 
-export const badgeActiveStyle = style({
-    /* Other Css styles can also be added */
-    backgroundColor: vars.steps.badge.backgroudColor,
-    borderColor: vars.steps.badge.borderColor,
-    width: "2.5rem",
-    height: "2.5rem",
-    borderRadius: "50%",
-    transition: "0.4s ease",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    margin: "0 auto",
+/**
+ * App-specific Steps overrides
+ * These styles override or extend the base steps component styles
+ * for application-specific needs
+ */
+
+// Override for steps wrapper in app context
+export const appStepsWrapperStyle = style({
+    // Structure
+    marginTop: designConstants.spacing.largePadding,
+    marginBottom: designConstants.spacing.largePadding,
+    padding: `0 ${designConstants.spacing.smallPadding}`,
+    
+    // Appearance - could add app-specific background if needed
+    // backgroundColor: themeVars.color.baseWhite100,
 });
 
-export const progressLineActiveStyle = style({
-    backgroundColor: vars.steps.progressLine.backgroundColor,
-    content: "",
-    position: "absolute",
-    height: "0.25rem",
-    width: "100%",
-    top: "50%",
-    transition: "0.4s ease",
-    transform: "translateY(-50%)",
-    left: 0,
+// Custom step indicator for app
+export const appStepNumberStyle = style({
+    // Structure
+    fontSize: designConstants.fontSize.sm,
+    fontWeight: designConstants.fontWeight.semiBold,
+    lineHeight: designConstants.lineHeight.tight,
+    
+    // Appearance
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
 });
 
-export const labelStyle = style({
-    color: vars.steps.label.color,
-    fontSize: vars.steps.label.fontSize,
-    marginTop: vars.steps.label.marginTop,
+// App-specific active step highlight
+export const appActiveStepStyle = style({
+    // Appearance
+    color: themeVars.color.primary,
+    fontWeight: designConstants.fontWeight.bold,
 });
 
-export const labelActiveStyle = style({
-    color: vars.steps.label.activeColor,
+// Custom step label for app context  
+export const appStepLabelStyle = style({
+    // Structure
+    fontSize: designConstants.fontSize.base,
+    marginTop: designConstants.spacing.tinyPadding,
+    lineHeight: designConstants.lineHeight.normal,
+    
+    // Appearance
+    color: themeVars.steps.labelColor,
+    fontFamily: themeVars.font.family,
+});
+
+// App-specific completed step styling
+export const appCompletedStepStyle = style({
+    // Appearance
+    color: themeVars.steps.labelActiveColor,
+    fontWeight: designConstants.fontWeight.semiBold,
 });

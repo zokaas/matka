@@ -1,4 +1,6 @@
+// ui/src/steps/styles/step.css.ts
 import { style } from "@vanilla-extract/css";
+import { designConstants, themeVars } from "@ui/themes";
 
 export const stepContainerStyle = style({
     position: "relative",
@@ -6,44 +8,64 @@ export const stepContainerStyle = style({
 });
 
 export const stepCircleStyle = style({
-    width: "2.5rem",
-    height: "2.5rem",
+    // Structure
+    width: designConstants.size.xl,
+    height: designConstants.size.xl,
     borderRadius: "50%",
-    backgroundColor: "oklch(92.8% 0.006 264.531)", // gray-200
-    border: "2px solid oklch(87.2% 0.01 258.338)", // gray-300
-    transition: "0.4s ease",
+    border: "2px solid",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     margin: "0 auto",
-});
-
-export const stepCountSyle = style({
-    color: "oklch(55.1% 0.027 264.364)", // gray-500
-    fontSize: "0.875rem", // font-sm
-    lineHeight: "0.875", // lien-height-sm
+    transition: designConstants.transitions.slower,
+    
+    // Appearance
+    backgroundColor: themeVars.color.baseWhite200,
+    borderColor: themeVars.color.baseWhite300,
 });
 
 export const stepCircleCompletedStyle = style({
-    backgroundColor: "oklch(58.5% 0.233 277.117)",
-    borderColor: "oklch(58.5% 0.233 277.117)",
+    // Appearance - uses theme-specific step colors
+    backgroundColor: themeVars.steps.badgeBackgroundColor,
+    borderColor: themeVars.steps.badgeBorderColor,
+});
+
+export const stepCountSyle = style({
+    // Structure
+    fontSize: designConstants.fontSize.sm,
+    lineHeight: designConstants.lineHeight.tight,
+    fontWeight: designConstants.fontWeight.normal,
+    
+    // Appearance
+    color: themeVars.steps.labelColor,
+    fontFamily: themeVars.font.family,
 });
 
 export const stepActiveStyle = style({
-    color: "#ffffff",
+    // Appearance
+    color: themeVars.color.baseWhite100,
+    fontWeight: designConstants.fontWeight.semiBold,
 });
 
 export const stepDoneStyle = style({
-    fontSize: "20px",
-    fontWeight: "600",
-    color: "#ffffff",
+    // Structure
+    fontSize: designConstants.fontSize.xl,
+    fontWeight: designConstants.fontWeight.semiBold,
+    lineHeight: "1",
+    
+    // Visual trick for checkmark
     transform: "scaleX(-1) rotate(-46deg)",
     marginTop: "-5px",
     marginRight: "-3px",
+    
+    // Appearance
+    color: themeVars.color.baseWhite100,
+    fontFamily: themeVars.font.family,
 });
 
 // Step Label styles
 export const stepLabelContainerStyle = style({
+    // Structure
     position: "absolute",
     top: "65px",
     left: "50%",
@@ -52,11 +74,18 @@ export const stepLabelContainerStyle = style({
 });
 
 export const stepLabelStyle = style({
-    fontSize: "0.875rem", // font-sm
-    color: "oklch(70.7% 0.022 261.325)", // gray-400
-    marginTop: "0.5rem", // spacing [0.25rem] * 2
+    // Structure
+    fontSize: designConstants.fontSize.sm,
+    lineHeight: designConstants.lineHeight.normal,
+    marginTop: designConstants.spacing.tinyPadding,
+    
+    // Appearance
+    color: themeVars.steps.labelColor,
+    fontFamily: themeVars.font.family,
 });
 
 export const stepActiveLabelStyle = style({
-    color: "oklch(13% 0.028 261.692)",
+    // Appearance
+    color: themeVars.steps.labelActiveColor,
+    fontWeight: designConstants.fontWeight.semiBold,
 });

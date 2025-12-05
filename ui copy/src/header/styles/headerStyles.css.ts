@@ -1,41 +1,64 @@
+// ui/src/header/styles/headerStyles.css.ts
 import { style } from "@vanilla-extract/css";
-import { vars } from "@ui/themes";
-
-// TODO: Remove theme references / hardcode all styles. Then override in application with the values
+import { designConstants, themeVars } from "@ui/themes";
 
 export const headerStyles = style({
-    backgroundColor: vars.header.backgroundColor,
-    boxShadow: vars.header.boxShadow,
-    minHeight: vars.header.minHeight,
-    position: vars.header.position,
-    width: vars.header.width,
-    zIndex: vars.header.zIndex,
+    // Structure - using layout constants
+    minHeight: designConstants.layout.header.minHeight,
+    width: designConstants.layout.header.width,
+    position: designConstants.layout.header.position,
+    zIndex: designConstants.layout.header.zIndex,
+    boxShadow: designConstants.shadows.md,
+    
+    // Appearance
+    backgroundColor: themeVars.header.background,
 });
 
 export const headerContentContainer = style({
+    // Structure
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    maxWidth: "976px",
+    maxWidth: designConstants.width.container6xl,
     height: "100%",
     marginInline: "auto",
-    paddingInline: "1.5rem",
-    paddingTop: "6px", //center child vertically
+    paddingInline: designConstants.spacing.basicPadding,
+    paddingTop: "6px", // Fine-tune for vertical centering
 });
 
 export const headerLogoContainer = style({
-    flexShrink: "0",
+    flexShrink: 0,
 });
 
 export const headerLogoImage = style({
-    height: "64px !important",
-    width: "auto !important",
+    height: designConstants.size.huge,
+    width: "auto",
     maxWidth: "100%",
+    
+    // Force important to override any global styles
+    selectors: {
+        "&": {
+            height: `${designConstants.size.huge} !important`,
+            width: "auto !important",
+            maxWidth: "100%",
+        },
+    },
 });
 
 export const headerTitle = style({
-    fontSize: "1.5rem",
-    color: vars.color.baseContent,
-    lineHeight: "1.333rem",
-    fontWeight: "600",
+    // Structure
+    fontSize: designConstants.fontSize.xxl,
+    fontWeight: designConstants.fontWeight.semiBold,
+    lineHeight: designConstants.lineHeight.tight,
+    
+    // Appearance
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
+    
+    // Responsive
+    "@media": {
+        "screen and (max-width: 768px)": {
+            fontSize: designConstants.fontSize.lg,
+        },
+    },
 });

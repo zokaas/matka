@@ -1,23 +1,27 @@
+// ui/src/footer/styles/footerStyles.css.ts
 import { style } from "@vanilla-extract/css";
+import { designConstants, themeVars } from "@ui/themes";
 
 export const footerStyle = style({
+    // Structure
     width: "100%",
-    paddingTop: "2.5rem",
-    paddingBottom: "2.5rem",
+    paddingTop: designConstants.spacing.largePadding,
+    paddingBottom: designConstants.spacing.largePadding,
     marginTop: "auto",
-    maxWidth: "72rem",
+    maxWidth: designConstants.width.container6xl,
     marginLeft: "auto",
     marginRight: "auto",
-    paddingLeft: "1.5rem",
-    paddingRight: "1.5rem",
+    paddingLeft: designConstants.spacing.basicPadding,
+    paddingRight: designConstants.spacing.basicPadding,
 });
 
 export const footerSectionContainerStyle = style({
+    // Structure
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    gap: "2rem",
+    gap: designConstants.spacing.largePadding,
     textAlign: "center",
 
     "@media": {
@@ -30,6 +34,7 @@ export const footerSectionContainerStyle = style({
 });
 
 export const footerSectionStyle = style({
+    // Structure
     flex: "1",
     minWidth: "200px",
     maxWidth: "300px",
@@ -42,13 +47,23 @@ export const footerSectionStyle = style({
 });
 
 export const footerHeadingStyle = style({
-    fontSize: "1.125rem",
-    fontWeight: "500",
-    marginBottom: "0.75rem",
-    color: "#ffffff",
+    // Structure
+    fontSize: designConstants.fontSize.lg,
+    fontWeight: designConstants.fontWeight.medium,
+    lineHeight: designConstants.lineHeight.normal,
+    marginBottom: designConstants.spacing.smallPadding,
+    
+    // Appearance
+    color: themeVars.color.baseWhite100,
+    fontFamily: themeVars.font.family,
 });
 
 export const footerTextStyle = style({
-    fontSize: "0.875rem",
-    color: "#ffffff",
+    // Structure
+    fontSize: designConstants.fontSize.sm,
+    lineHeight: designConstants.lineHeight.normal,
+    
+    // Appearance
+    color: themeVars.color.baseWhite100,
+    fontFamily: themeVars.font.family,
 });

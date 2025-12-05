@@ -1,99 +1,101 @@
+// ui/src/radiogroup/styles/radiogroupStyles.css.ts
 import { style } from "@vanilla-extract/css";
+import { designConstants, themeVars } from "@ui/themes";
 
 export const radiogroupContainerStyle = style({
     display: "flex",
     flexDirection: "column",
-    gap: "8px",
+    gap: designConstants.spacing.tinyPadding,
     flexGrow: 1,
 });
 
 export const radiogroupRootStyle = style({
     display: "flex",
     flexDirection: "row",
-    gap: "1rem",
+    gap: designConstants.spacing.smallPadding,
 });
 
 export const radioItemContainerStyle = style({
     display: "flex",
     alignItems: "center",
+    gap: designConstants.spacing.tinyPadding,
 });
 
 export const radioLabelStyle = style({
-    color: "oklch(21% 0.006 285.885)",
-    fontSize: "1rem",
-    lineHeight: "1.5rem",
-    paddingLeft: "1rem",
+    // Structure
+    fontSize: designConstants.fontSize.base,
+    fontWeight: designConstants.fontWeight.normal,
+    lineHeight: designConstants.lineHeight.normal,
+    paddingLeft: designConstants.spacing.smallPadding,
+    cursor: "pointer",
+    
+    // Appearance
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
 });
 
 export const radiogroupLabelStyle = style({
+    // Structure
     display: "block",
-    marginBottom: "0.5rem",
-    fontWeight: 500,
+    marginBottom: designConstants.spacing.tinyPadding,
+    fontSize: designConstants.fontSize.base,
+    fontWeight: designConstants.fontWeight.medium,
+    lineHeight: designConstants.lineHeight.normal,
+    
+    // Appearance
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
 });
 
 export const radioItemStyle = style({
+    // Structure
     all: "unset",
-    backgroundColor: "white",
     width: "25px",
     height: "25px",
-    borderRadius: " 100%",
-    border: "1px solid green",
-    boxShadow: "0 2px 10px var(--black-a7)",
+    borderRadius: "100%",
+    border: "1px solid",
+    boxShadow: designConstants.shadows.sm,
+    cursor: "pointer",
+    transition: `all ${designConstants.transitions.base}`,
+    
+    // Appearance
+    backgroundColor: themeVars.color.baseWhite100,
+    borderColor: themeVars.color.primary,
+    
     ":hover": {
-        backgroundColor: "blue",
+        backgroundColor: themeVars.color.baseWhite200,
+        boxShadow: designConstants.shadows.base,
     },
+    
     ":focus": {
-        boxShadow: "0 0 0 2px black",
+        outline: `2px solid ${themeVars.color.primary}`,
+        outlineOffset: "2px",
+    },
+    
+    ":disabled": {
+        backgroundColor: themeVars.color.baseWhite300,
+        borderColor: themeVars.color.baseGray500,
+        cursor: "not-allowed",
+        opacity: 0.6,
     },
 });
 
 export const radioIndicatorStyle = style({
+    // Structure
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
     height: "100%",
     position: "relative",
+    
+    // Inner dot
     "::after": {
         content: "",
         display: "block",
         width: "11px",
         height: "11px",
         borderRadius: "50%",
-        backgroundColor: "violet",
+        backgroundColor: themeVars.color.primary,
     },
 });
-
-/* 
-.RadioGroupItem {
-	background-color: white;
-	width: 25px;
-	height: 25px;
-	border-radius: 100%;
-	box-shadow: 0 2px 10px var(--black-a7);
-}
-.RadioGroupItem:hover {
-	background-color: var(--violet-3);
-}
-.RadioGroupItem:focus {
-	box-shadow: 0 0 0 2px black;
-}
-
-.RadioGroupIndicator {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 100%;
-	height: 100%;
-	position: relative;
-}
-.RadioGroupIndicator::after {
-	content: "";
-	display: block;
-	width: 11px;
-	height: 11px;
-	border-radius: 50%;
-	background-color: var(--violet-11);
-}
-
- */

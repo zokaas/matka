@@ -1,18 +1,37 @@
 import { style } from "@vanilla-extract/css";
+import { designConstants, themeVars } from "@ui/themes";
 
 export const buttonStyles = style({
     width: "auto",
     height: "auto",
-    boxShadow: "0 2px 4px 0 rgba(0, 0, 0, 0.5)",
-    backgroundImage: "linear-gradient(to top, #c7c7c7, #fff)",
-    padding: "5px 10px",
-    lineHeight: "1.5rem",
-    fontSize: "1rem",
-    color: "#373737",
-    ":disabled": {
-        color: "#cccccc",
-    },
+    padding: `${designConstants.spacing.tinyPadding} ${designConstants.spacing.smallPadding}`,
+    fontSize: designConstants.fontSize.base,
+    fontWeight: designConstants.fontWeight.medium,
+    lineHeight: designConstants.lineHeight.normal,
+    borderRadius: designConstants.radius.md,
+    boxShadow: designConstants.shadows.custom,
+    border: "none",
+    cursor: "pointer",
+    transition: `all ${designConstants.transitions.base}`,
+    
+
+    backgroundImage: `linear-gradient(to top, ${themeVars.color.baseWhite300}, ${themeVars.color.baseWhite100})`,
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
+    
     ":hover": {
-        backgroundImage: "linear-gradient(to top, #bbb, #eee)",
+        backgroundImage: `linear-gradient(to top, ${themeVars.color.baseWhite200}, ${themeVars.color.baseWhite100})`,
+        boxShadow: designConstants.shadows.md,
+    },
+    
+    ":disabled": {
+        color: themeVars.color.baseGray500,
+        cursor: "not-allowed",
+        opacity: 0.6,
+    },
+    
+    ":focus": {
+        outline: `2px solid ${themeVars.color.primary}`,
+        outlineOffset: "2px",
     },
 });

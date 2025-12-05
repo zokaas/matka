@@ -1,23 +1,29 @@
+// ui/src/label/styles/labelStyles.css.ts
 import { style } from "@vanilla-extract/css";
+import { designConstants, themeVars } from "@ui/themes";
 
 export const labelContainerStyle = style({
     display: "flex",
     flexDirection: "column",
-    gap: "8px",
+    gap: designConstants.spacing.tinyPadding,
 });
 
 export const labelTextStyle = style({
-    fontSize: "16px",
-    fontWeight: "400",
-    color: "oklch(21% 0.006 285.885)",
+    // Structure
+    fontSize: designConstants.fontSize.base,
+    fontWeight: designConstants.fontWeight.normal,
+    lineHeight: designConstants.lineHeight.normal,
     wordWrap: "break-word",
-    lineHeight: "1.5",
+    
+    // Appearance
+    color: themeVars.color.baseContent,
+    fontFamily: themeVars.font.family,
 });
 
 export const labelWithTooltipStyle = style({
     display: "flex",
     alignItems: "center",
-    gap: "8px",
+    gap: designConstants.spacing.tinyPadding,
 });
 
 export const tooltipWrapperStyle = style({
@@ -27,10 +33,14 @@ export const tooltipWrapperStyle = style({
 });
 
 export const subHeaderStyle = style({
-    fontSize: "0.875rem",
-    color: "oklch(55.1% 0.027 264.364)",
+    // Structure
+    fontSize: designConstants.fontSize.sm,
+    lineHeight: designConstants.lineHeight.relaxed,
     fontStyle: "italic",
-    marginTop: "2px",
+    marginTop: designConstants.spacing.defaultPadding,
     wordWrap: "break-word",
-    lineHeight: "1.4",
+    
+    // Appearance
+    color: themeVars.color.baseGray500,
+    fontFamily: themeVars.font.family,
 });
