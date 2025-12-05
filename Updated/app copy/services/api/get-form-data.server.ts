@@ -1,0 +1,27 @@
+import { getRequest } from "../utils/apiHelpers.server";
+import { T_ApiFormResponse, T_ParsedFormData } from "~/types";
+import { parseResponse } from "../utils/parseResponse.server";
+import { getCountryList } from "./get-country-list.server";
+import { appConfig } from "~/config";
+
+// If we use mockoon, mock data is not necessary anymore
+// Mock data can be found in JSON files un .mockoon folder
+
+export const getAndParseFormData = async (
+    productId: string,
+    kycType: string,
+    sessionId: string
+): Promise<T_ParsedFormData> => {
+    const { apiBaseUrl } = appConfig;
+
+    const url: string = `${apiBaseUrl}/form/${productId}/${kycType}`;
+
+    const response = await getRequest<T_ApiFormResponse>(url, sessionId);
+
+    const parsedFormData: T_ParsedFormData = parseResponse(response);
+
+    if (parsedFormData.generalFormData.useCountryList)
+        parsedFormData.countryList = await getCountryList(productId, sessionId);
+
+    return parsedFormData;
+};

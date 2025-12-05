@@ -1,0 +1,23 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "noEmit": true,
+        "types": ["@react-router/node", "vite/client"],
+        "rootDirs": [".", "./.react-router/types"],
+        "paths": {
+            "~/*": ["apps/kyc/app/*"], // adjust if needed
+            "mock/*": ["apps/kyc/mock/*"],
+            "@ui-components/*": ["packages/ui-components/src/*"],
+            "@ui/*": ["packages/ui/src/*"]
+        }
+    },
+    "include": [
+        "**/*.ts",
+        "**/*.tsx",
+        "**/.server/**/*.ts",
+        "**/.server/**/*.tsx",
+        "**/.client/**/*.ts",
+        "**/.client/**/*.tsx",
+        ".react-router/types/**/*"
+    ]
+}
