@@ -32,7 +32,7 @@ export const action: ActionFunction = async ({ request }) => {
         );
     }
 
-    const sessionId = session.get("sessionId");
+    const sessionId = session.get("session")?.sessionId;
     const clientId = session.get("clientId");
 
     if (!sessionId || !clientId) {

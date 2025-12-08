@@ -2,10 +2,8 @@ import React, { useEffect } from "react";
 import {
     ActionFunction,
     ActionFunctionArgs,
-    isRouteErrorResponse,
     useActionData,
     useLoaderData,
-    useRouteError,
 } from "react-router";
 
 import {
@@ -30,7 +28,7 @@ import { Route } from "apps/kyc/.react-router/types/app/+types/root";
 import { Header } from "@ui/header";
 import { Container } from "@ui/container";
 import { pageContentStyle } from "~/styles/pageContentStyle.css";
-import { SessionModalManager, ErrorHandler, T_ErrorView } from "apps/kyc/components";
+import { SessionModalManager, T_ErrorView } from "apps/kyc/components";
 import { Footer } from "@ui/footer";
 import { T_ActionResponse } from "./types";
 import { getAndParseFormData } from "~/services/api/get-form-data.server";
@@ -61,7 +59,7 @@ export const loader = async ({
     const session = await getCachedSession(request.headers?.get("Cookie"));
     const { sessionId, organizationName, organizationNumber } =
         await getOrganizationFromSession(request);
-    const exp = session.get("exp") ?? Date.now();
+    const exp = session.get("session")?.exp ?? Date.now();
 
     if (!sessionId) {
         throw new Response("Session not found", { status: 401, statusText: "Unauthorized" });
@@ -93,8 +91,8 @@ export const loader = async ({
         loaderData.sessionData = {
             applicationId: session.get("applicationId") ?? "",
             productId: session.get("clientId") ?? "",
-            sessionRefreshCount: session.get("sessionRefreshCount") ?? 0,
-            maxSessionRefresh: session.get("maxSessionRefresh") ?? 1,
+            sessionRefreshCount: session.get("session")?.sessionRefreshCount ?? 0,
+            maxSessionRefresh: session.get("session")?.maxSessionRefresh ?? 1,
             exp,
             loginUrl: loginUrl ?? "",
         };
@@ -127,8 +125,13 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
 
     try {
         const session = await getCachedSession(request.headers?.get("Cookie"));
-        const applicationId = session.get("applicationId");
-        const kcUserId = session.get("kcUserId");
+        const { applicationId, kycDoneUrl } = await getSessionProps(
+            request,
+            "applicationId",
+            "kycDoneUrl"
+        );
+        const kcUserId = session.get("session")?.kcUserId;
+
         const { sessionId, organizationName, organizationNumber } =
             await getOrganizationFromSession(request);
 
@@ -164,8 +167,6 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
         const result = await sendFormData(payload, productId, kycType, applicationId, sessionId);
 
         console.log("Backend result:", result);
-
-        const { kycDoneUrl } = await getSessionProps(request, "kycDoneUrl");
 
         if (result.status === "ok") {
             // Attempt to clear server-side session cookie and return it with the redirect
@@ -239,7 +240,7 @@ export default function KycFormPage(): JSX.Element {
 
     return (
         <Container className={pageContentStyle}>
-            <Header logoSrc="/logos/t.svg" title={formData.generalFormData.formHeader.title} />
+            <Header title={formData.generalFormData.formHeader.title} />
             <FormPage generalData={pageData} formData={formData} error={error} />
             <Footer footer={formData.generalFormData.footer} />
             <SessionModalManager
@@ -248,27 +249,4 @@ export default function KycFormPage(): JSX.Element {
             />
         </Container>
     );
-}
-
-export function ErrorBoundary() {
-    const error = useRouteError();
-
-    let status = 500;
-    let message = "Unknown error";
-    let data: unknown = {};
-
-    if (isRouteErrorResponse(error)) {
-        status = error.status ?? 500;
-        message = error.statusText || "Something went wrong";
-        data = error.data ?? undefined;
-    } else if (error instanceof Error) {
-        message = error.message || "Application error";
-        data = { stack: error.stack };
-    } else {
-        status = error instanceof Response ? error.status : 500;
-        message = error instanceof Response ? error.statusText : "Error";
-        data = { raw: error };
-    }
-
-    return <ErrorHandler status={status} message={message} data={data} />;
 }

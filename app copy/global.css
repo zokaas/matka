@@ -1,3 +1,4 @@
+/* TODO: font should be used from font */
 * {
   font-family: 'Open Sans', sans-serif;
 }
@@ -7,33 +8,4 @@ body {
   line-height: 1.5;
   margin: 0;
   padding: 0;
-}
-
-/* Force logo sizing (overrides any theme-specific rules) */
-img[src*="/logos/"] {
-  height: 64px !important;
-  width: auto !important;
-  max-width: 100%;
-}
-
-/* Utility gradient classes - Keep if you need them */
-.bg-blue-gradient {
-  background: linear-gradient(to bottom, rgb(38, 158, 245) -14%, rgb(38, 79, 133) 114%);
-}
-
-.bg-green-gradient {
-  background: linear-gradient(to bottom, #a8e0a1 -5%, #4caf50 114%);
-}
-
-.bg-red-gradient {
-  background: linear-gradient(to bottom, #ff4d4d 60%, #cc0000 114%);
-}
-
-/* Utility shadow classes - Keep if you need them */
-.shadow-custom {
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-}
-
-.shadow-strong {
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
 }

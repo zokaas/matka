@@ -1,4 +1,3 @@
-// app/styles/stepsStyle.css.ts
 import { designConstants, themeVars } from "@ui/themes";
 import { style } from "@vanilla-extract/css";
 

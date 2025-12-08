@@ -1,15 +1,8 @@
 import { createCookie, createSessionStorage } from "react-router";
-import { buildUrl } from "../utils/urlHelpers.server";
-import { deleteRequest, getRequest, postRequest } from "../utils/apiHelpers.server";
-import type {
-    T_BffSessionGetResponse,
-    T_BffSessionPostResponse,
-    T_CompanyDataFromSession,
-    T_SessionData,
-} from "../api";
+import type { T_CompanyDataFromSession, T_SessionData } from "../api";
 import { appConfig } from "~/config";
+import { bffDelete, bffGet, bffPost } from "../api/api-cahe.server";
 
-const cacheSessionServicePath = "cache/session";
 // ----- cookie used to store the session id on the client -----
 const { sessionSecret } = appConfig;
 
@@ -23,34 +16,6 @@ const sessionCookie = createCookie("opr_kyc", {
     maxAge: 60,
 });
 
-// ---- BFF API Calls ----
-async function bffPost(
-    body: T_SessionData,
-    id: string = ""
-): Promise<T_BffSessionPostResponse | null> {
-    const url = buildUrl(cacheSessionServicePath, id);
-    return postRequest(url, id, body);
-}
-
-async function bffGet(id: string): Promise<T_BffSessionGetResponse | null> {
-    const url = buildUrl(cacheSessionServicePath, id);
-    try {
-        return await getRequest<T_BffSessionGetResponse>(url, id);
-    } catch (error) {
-        console.error("Failed to get session data from bff redis", error);
-        return null;
-    }
-}
-
-async function bffDelete(id: string): Promise<void> {
-    const url = buildUrl(cacheSessionServicePath, id);
-    try {
-        await deleteRequest(url, id);
-    } catch (error) {
-        console.error("Failed to delete session data from bff redis", error);
-    }
-}
-
 // ---- Custom Session Storage ----
 function sessionStorage() {
     return createSessionStorage<T_SessionData>({
@@ -58,17 +23,29 @@ function sessionStorage() {
         // createData: called when there's no session id cookie (create new session in redis)
         createData: async (data: Partial<T_SessionData>): Promise<string> => {
             const payload: T_SessionData = {
-                exp: data.exp,
-                sessionId: data.sessionId!,
-                clientId: data.clientId!,
                 applicationId: data.applicationId ?? "",
-                kcUserId: data.kcUserId ?? "",
-                sessionRefreshCount: data.sessionRefreshCount ?? 0,
-                maxSessionRefresh: data.maxSessionRefresh ?? 1,
-                companyName: data.companyName ?? "",
-                orgNumber: data.orgNumber ?? "",
+                clientId: data.clientId ?? "",
+                kycType: data.kycType ?? "",
                 loginUrl: data.loginUrl ?? "",
                 kycDoneUrl: data.kycDoneUrl ?? "",
+                company: data.company ?? {
+                    orgNumber: "",
+                    companyName: "",
+                    sniCode: "",
+                },
+                session: data.session ?? {
+                    sessionId: "",
+                    exp: 0,
+                    sessionRefreshCount: 0,
+                    maxSessionRefresh: 0,
+                    kcUserId: "",
+                },
+                auth: data.auth ?? {
+                    given_name: "",
+                    family_name: "",
+                    ssn: "",
+                    iat: 0,
+                },
             };
 
             const res = await bffPost(payload);
@@ -78,6 +55,7 @@ function sessionStorage() {
         },
 
         async readData(id: string): Promise<T_SessionData | null> {
+            console.log("readData", id);
             if (!id) return null;
 
             const res = await bffGet(id);
@@ -107,9 +85,9 @@ export const getOrganizationFromSession = async (
 ): Promise<T_CompanyDataFromSession> => {
     const session = await getSession(request.headers.get("Cookie"));
 
-    const sessionId = session.get("sessionId");
-    const organizationName = session.get("companyName") ?? "";
-    const organizationNumber = session.get("orgNumber") ?? "";
+    const sessionId = session.get("session")?.sessionId;
+    const organizationName = session.get("company")?.companyName ?? "";
+    const organizationNumber = session.get("company")?.orgNumber ?? "";
 
     return {
         sessionId: sessionId ?? "",

@@ -1,4 +1,3 @@
-// app/styles/radiogroupStyle.css.ts
 import { style } from "@vanilla-extract/css";
 import { themeVars, designConstants } from "@ui/themes";
 

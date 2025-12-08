@@ -12,18 +12,35 @@ export type T_RefreshSessionResponse = {
     sessionRefreshCount: number;
 };
 
-export type T_SessionData = SessionData & {
-    sessionId: string;
-    clientId: string;
-    applicationId: string;
-    kcUserId: string;
-    exp?: number;
-    sessionRefreshCount?: number;
-    maxSessionRefresh?: number;
-    companyName: string;
+export type T_CacheUserAuthData = {
+    given_name: string;
+    family_name: string;
+    ssn: string;
+    iat: number;
+};
+
+export type T_CacheCompanyData = {
     orgNumber: string;
-    loginUrl: string;
+    companyName: string;
+    sniCode: string;
+};
+
+export type T_CacheSessionData = {
+    sessionId: string;
+    exp: number;
+    sessionRefreshCount: number;
+    maxSessionRefresh: number;
+    kcUserId: string;
+};
+
+export type T_SessionData = SessionData & {
+    applicationId: string;
+    clientId: string;
     kycDoneUrl: string;
+    loginUrl: string;
+    session: T_CacheSessionData;
+    company: T_CacheCompanyData;
+    auth: T_CacheUserAuthData;
 };
 
 export type T_BffSessionPostResponse = {

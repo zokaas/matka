@@ -7,6 +7,7 @@ import {
     Scripts,
     ScrollRestoration,
     useLoaderData,
+    useRouteLoaderData,
     useRouteError,
     LinksFunction,
     LoaderFunctionArgs,
@@ -18,10 +19,12 @@ import { bodyStyles } from "./styles.css";
 import { getThemeClass } from "@ui/themes";
 import { useSessionManager } from "./hooks";
 import { getSession } from "./services/session/cacheSession.server";
+import { T_StatusMessagesData } from "./services";
+import { getStatusMessages } from "./services/api/get-status-messages.server";
+import { getLanguageFromProductId } from "./utils";
 
 //TODO: change default theme to opr-theme??
 const DEFAULT_THEME = "sweden-b2b-application";
-
 
 type LoaderData = {
     theme: string;
@@ -31,37 +34,72 @@ type LoaderData = {
     maxSessionRefresh: number;
     sessionRefreshCount: number;
     applicationId?: string;
+    statusMessages?: T_StatusMessagesData;
 };
 
 export const links: LinksFunction = () => [{ rel: "stylesheet", href: tailwindStyles }];
 
-export const loader: LoaderFunction = async ({ params, request }: LoaderFunctionArgs) => {
-    const productId = params.productId ?? DEFAULT_THEME;
+// Export a handle to identify this route's loader data
+export const handle = { id: "root" };
+
+export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
     const session = await getSession(request.headers?.get("Cookie"));
-    const exp = session.get("exp");
+    const productId = session.get("clientId") ?? DEFAULT_THEME;
+    const cacheSession = session.get("session");
+    const sessionId = cacheSession?.sessionId ?? undefined;
+    const exp = cacheSession?.exp ?? 0;
+    const maxSessionRefresh = cacheSession?.maxSessionRefresh ?? 1;
+    const sessionRefreshCount = cacheSession?.sessionRefreshCount ?? 0;
+    const applicationId = session.get("applicationId") ?? undefined;
+
+    // Derive language from productId
+    const lang = getLanguageFromProductId(productId);
+    
+    console.log("🔧 Root Loader Debug:");
+    console.log("  - productId (clientId):", productId);
+    console.log("  - Derived language:", lang);
+    console.log("  - Session language:", session.get("language"));
+    console.log("  - applicationId:", applicationId);
+
+    let statusMessages: T_StatusMessagesData | undefined;
+    try {
+        statusMessages = await getStatusMessages(lang);
+        console.log("  - Status messages fetched:", !!statusMessages);
+        console.log("  - Available error codes:", statusMessages ? Object.keys(statusMessages) : "none");
+    } catch (error) {
+        console.error("  - ❌ Failed to fetch status messages:", error);
+        statusMessages = undefined;
+    }
 
     return {
         theme: productId,
-        sessionId: session.get("sessionId") ?? undefined,
-        productId: session.get("productId") ?? productId,
+        sessionId,
+        productId,
         exp,
-        maxSessionRefresh: session.get("maxSessionRefresh") ?? 1,
-        sessionRefreshCount: session.get("sessionRefreshCount") ?? 0,
-        applicationId: session.get("applicationId") ?? undefined,
+        maxSessionRefresh,
+        sessionRefreshCount,
+        applicationId,
+        statusMessages,
     } satisfies LoaderData;
 };
 
 function Document({
     children,
     theme = DEFAULT_THEME,
+    lang = "sv",
 }: Readonly<{
     children: React.ReactNode;
     theme?: string;
+    lang?: string;
 }>) {
     const themeClass = getThemeClass(theme);
 
+    console.log("📄 Document Render:");
+    console.log("  - HTML lang attribute:", lang);
+    console.log("  - Theme:", theme);
+
     return (
-        <html lang="en" data-theme={theme}>
+        <html lang={lang} data-theme={theme}>
             <head>
                 <meta charSet="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -77,7 +115,7 @@ function Document({
     );
 }
 
-// throws a Response during render
+
 function ThrowResponse({ response }: { response: Response }): never {
     throw response;
 }
@@ -99,9 +137,17 @@ function SessionManagerGate() {
 
 export default function App() {
     const initialSession = useLoaderData<LoaderData>();
+    const derivedLang = getLanguageFromProductId(initialSession?.productId || DEFAULT_THEME);
+
+    console.log("🚀 App Component:");
+    console.log("  - productId:", initialSession?.productId);
+    console.log("  - Derived lang:", derivedLang);
+    console.log("  - Theme:", initialSession?.theme);
 
     return (
-        <Document theme={initialSession?.theme || DEFAULT_THEME}>
+        <Document
+            theme={initialSession?.theme || DEFAULT_THEME}
+            lang={derivedLang}>
             <SessionManagerGate />
             <Outlet />
         </Document>
@@ -110,6 +156,15 @@ export default function App() {
 
 export function ErrorBoundary() {
     const error = useRouteError();
+
+    // ✅ CRITICAL FIX: Use useRouteLoaderData to access ROOT loader data
+    // This works even when error occurs in child routes
+    const rootLoaderData = useRouteLoaderData<LoaderData>("root");
+    
+    console.log("🚨 ErrorBoundary Debug:");
+    console.log("  - Root loader data available:", !!rootLoaderData);
+    console.log("  - statusMessages from root:", !!rootLoaderData?.statusMessages);
+
     let status = 500;
     let message = "Unknown error";
     let data: unknown = {};
@@ -125,9 +180,25 @@ export function ErrorBoundary() {
         data = { raw: error };
     }
 
+    const derivedLang = getLanguageFromProductId(rootLoaderData?.productId || DEFAULT_THEME);
+
+    console.log("  - Error status:", status);
+    console.log("  - Error message:", message);
+    console.log("  - productId:", rootLoaderData?.productId);
+    console.log("  - Derived lang:", derivedLang);
+    console.log("  - statusMessages available:", !!rootLoaderData?.statusMessages);
+
     return (
-        <Document theme={DEFAULT_THEME}>
-            <ErrorHandler status={status} message={message} data={data} />
+        <Document 
+            theme={DEFAULT_THEME} 
+            lang={derivedLang}
+        >
+            <ErrorHandler
+                status={status}
+                message={message}
+                data={data}
+                statusMessages={rootLoaderData?.statusMessages}
+            />
         </Document>
     );
 }

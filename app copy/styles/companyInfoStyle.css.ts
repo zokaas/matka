@@ -1,4 +1,3 @@
-// app/styles/companyInfoStyle.css.ts
 import { themeVars, designConstants } from "@ui/themes";
 import { style } from "@vanilla-extract/css";
 

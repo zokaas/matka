@@ -113,9 +113,8 @@ export const removeBoFormButton = style({
     alignItems: "center",
     justifyContent: "center",
     color: themeVars.color.baseContent,
-    //backgroundColor: themeVars.color.baseGreen500,
     ":hover": {
-        color: themeVars.color.blackAlpha20,
+        color: themeVars.color.error,
     },
 });
 

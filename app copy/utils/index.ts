@@ -4,3 +4,4 @@ export * from "./isCountryListUsed";
 export * from "./isCountryOptions";
 export * from "./isInfo";
 export * from "./navigation";
+export * from "./getLanguageFromProductId";

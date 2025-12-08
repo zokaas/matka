@@ -8,7 +8,7 @@ export type T_AuthSessionApiResponse<T = unknown> = {
     data: T;
 };
 
-export type T_SessionData = {
+export type T_BffSessionData = {
     userInfo: T_UserInfo;
     exp: number;
     sessionRefreshCount: number;

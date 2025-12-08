@@ -1,4 +1,5 @@
 import type { ActionFunction } from "react-router";
+import { T_CacheSessionData } from "~/services";
 import {
     buildDestroySessionHeader,
     commitSession,
@@ -12,7 +13,7 @@ export const action: ActionFunction = async ({ request }) => {
     const cookieHeader = request.headers.get("cookie") ?? "";
     const session = await getSession(cookieHeader);
 
-    const sessionId = session.get("sessionId");
+    const sessionId = session.get("session")?.sessionId;
     const clientId = session.get("clientId");
 
     if (!sessionId || !clientId) {
@@ -41,9 +42,21 @@ export const action: ActionFunction = async ({ request }) => {
         if (typeof exp === "number" && exp < 1e12) exp = exp * 1000;
 
         // update server session values and commit cookie
-        session.set("exp", exp);
-        session.set("sessionRefreshCount", result.sessionRefreshCount ?? 0);
-        session.set("sessionId", result.sessionId);
+        const cacheSessionData: T_CacheSessionData = session.get("session") ?? {
+            sessionId: "",
+            exp: 0,
+            sessionRefreshCount: 0,
+            maxSessionRefresh: 0,
+            kcUserId: "",
+        };
+        const updatedSessionData: T_CacheSessionData = {
+            ...cacheSessionData,
+            exp,
+            sessionRefreshCount: result.sessionRefreshCount ?? 0,
+            sessionId: result.sessionId,
+        };
+        session.set("session", updatedSessionData);
+
         const setCookie = await commitSession(session, { maxAge });
 
         return new Response(JSON.stringify(result), {

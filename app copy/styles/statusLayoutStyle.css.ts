@@ -1,4 +1,3 @@
-// app/styles/statusLayoutStyle.css.ts
 import { buttonStyles } from "@ui/button";
 import { themeVars, designConstants } from "@ui/themes";
 import { style } from "@vanilla-extract/css";

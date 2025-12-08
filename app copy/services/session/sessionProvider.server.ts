@@ -1,7 +1,7 @@
 import {
     T_AuthSessionApiResponse,
     T_VerifySessionResponseData,
-    T_SessionData,
+    T_BffSessionData as T_BffSessionData,
 } from "~/types/session";
 import { buildUrl } from "../utils/urlHelpers.server";
 import { getRequest } from "../utils/apiHelpers.server";
@@ -13,7 +13,6 @@ export const verifyBffSession = async (
 ): Promise<T_VerifySessionResponseData> => {
     const verifyPath = "authenticate/verify";
     const url = buildUrl(verifyPath, clientId);
-
     try {
         const response = await getRequest<T_VerifySessionResponseData>(url, sessionId);
         return response;
@@ -36,12 +35,12 @@ export const endBffSession = async (
 export const getBffSession = async (
     sessionId: string,
     clientId: string
-): Promise<T_SessionData | null> => {
+): Promise<T_BffSessionData | null> => {
     const sessionInfoPath = "authenticate/sessioninfo";
     const url = buildUrl(sessionInfoPath, clientId);
 
     try {
-        return await getRequest<T_SessionData>(url, sessionId);
+        return await getRequest<T_BffSessionData>(url, sessionId);
     } catch (error) {
         console.error("Failed to get session data from bff", error);
         return null;

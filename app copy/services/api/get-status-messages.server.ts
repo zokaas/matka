@@ -1,19 +1,5 @@
 import { appConfig } from "~/config";
-
-export type T_StatusMessageItem = {
-    message: string;
-    label: string;
-};
-
-export type T_StatusMessagesData = {
-    [statusCode: string]: T_StatusMessageItem;
-};
-
-type T_StatusMessagesResponse = {
-    data: {
-        messages: T_StatusMessagesData;
-    };
-};
+import { T_StatusMessagesData, T_StatusMessagesResponse } from "./types";
 
 export const getStatusMessages = async (lang: string = "en"): Promise<T_StatusMessagesData> => {
     const { bffBaseUrl } = appConfig;
