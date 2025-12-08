@@ -1,4 +1,3 @@
-// app/styles/questionsStyle.css.ts
 import { designConstants } from "@ui/themes";
 import { style } from "@vanilla-extract/css";
 

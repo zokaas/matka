@@ -3,7 +3,6 @@ import { designConstants, themeVars } from "@ui/themes";
 import { style } from "@vanilla-extract/css";
 
 export const badgeActiveStyle = style({
-    /* Other Css styles can also be added */
     backgroundColor: themeVars.steps.badgeBackgroundColor,
     borderColor: themeVars.steps.badgeBorderColor,
     width: "2.5rem",

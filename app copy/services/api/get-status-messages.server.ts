@@ -1,5 +1,3 @@
-// app copy/services/api/get-status-messages.server.ts
-
 import { appConfig } from "~/config";
 
 export type T_StatusMessageItem = {

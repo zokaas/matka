@@ -7,9 +7,8 @@ import {
     boCloseIcon,
     boComponentContainer,
     boPopoverButton,
-    boQuestionContainer,
+    boLabelAndButtonContainer,
     boLabelButtonRow,
-    boLabelContainer,
     boButtonContainer,
     boResultAndButton,
     removeBoFormButton,
@@ -93,16 +92,14 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
 
     return (
         <Container className={boComponentContainer}>
-            <Container className={boQuestionContainer}>
+            <Container className={boLabelAndButtonContainer}>
                 <Container className={boLabelButtonRow}>
-                    <Container className={boLabelContainer}>
                         <Label
                             htmlFor={fieldName}
                             labelClassName={classNames?.beneficialOwnerLabel}
                             infoItems={infoItems}>
                             {label}
                         </Label>
-                    </Container>
 
                     {fieldsMap.size < beneficialOwnersMaxCount && (
                         <Container className={boButtonContainer}>

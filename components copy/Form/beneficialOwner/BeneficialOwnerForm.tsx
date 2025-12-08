@@ -10,6 +10,7 @@ import {
     b2bRadioIndicatorStyle,
     b2bRadioItemLabelStyle,
     b2bRadioItemStyle,
+    boQuestionsStyle,
 } from "~/styles";
 
 export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
@@ -56,6 +57,7 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
 
     return (
         <Container>
+        <Container className={boQuestionsStyle}>
             <InputText
                 label={fields.name.label}
                 fieldName={fields.name.parameter}
@@ -74,6 +76,8 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
                 onBlur={() => {}}
                 error=""
             />
+                        </Container>
+                        <Container className={boQuestionsStyle}>
             <InputText
                 fieldName={fields.ssn.parameter}
                 label={fields.ssn.label}
@@ -92,6 +96,8 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
                 onBlur={() => {}}
                 error=""
             />
+            </Container>
+            <Container className={boQuestionsStyle}>
             <InputText
                 label={fields.ownership.label}
                 fieldName={fields.ownership.parameter}
@@ -110,6 +116,8 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
                 onBlur={() => {}}
                 error=""
             />
+            </Container>
+            <Container className={boQuestionsStyle}>
             <DropDown
                 label={fields.country.label}
                 fieldName={fields.country.parameter}
@@ -127,6 +135,8 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
                 }}
                 onBlur={() => {}}
             />
+            </Container>
+            <Container className={boQuestionsStyle}>
             <Radiogroup
                 fieldName={fields.pep.parameter}
                 label={fields.pep.label}
@@ -149,6 +159,7 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
                     radioLabel: b2bRadioItemLabelStyle,
                 }}
             />
+            </Container>
             <Button
                 type="button"
                 label={addButton}

@@ -14,17 +14,17 @@ import {
 } from "react-router";
 import { ErrorHandler } from "../components";
 import tailwindStyles from "./global.css?url";
-import { bodyStyles, bodyStylesThemeClass } from "./styles.css";
+import { bodyStyles } from "./styles.css";
+import { getThemeClass } from "@ui/themes";
 import { useSessionManager } from "./hooks";
 import { getSession } from "./services/session/cacheSession.server";
 
+//TODO: change default theme to opr-theme??
 const DEFAULT_THEME = "sweden-b2b-application";
-const DEFAULT_BG_IMAGE = "var(--bg-image)";
 
-// Define the loader data type
+
 type LoaderData = {
     theme: string;
-    backgroundImage: string;
     sessionId?: string;
     productId?: string;
     exp?: number;
@@ -42,7 +42,6 @@ export const loader: LoaderFunction = async ({ params, request }: LoaderFunction
 
     return {
         theme: productId,
-        backgroundImage: DEFAULT_BG_IMAGE,
         sessionId: session.get("sessionId") ?? undefined,
         productId: session.get("productId") ?? productId,
         exp,
@@ -59,6 +58,8 @@ function Document({
     children: React.ReactNode;
     theme?: string;
 }>) {
+    const themeClass = getThemeClass(theme);
+
     return (
         <html lang="en" data-theme={theme}>
             <head>
@@ -67,9 +68,7 @@ function Document({
                 <Meta />
                 <Links />
             </head>
-            {/* <body className="min-h-screen bg-cover bg-center bg-no-repeat bg-fixed"> */}
-            {/* TODO: Move bodyStylesThemeClass to theme prop in Document when tailwind is no longer needed */}
-            <body className={`${bodyStylesThemeClass} ${bodyStyles}`}>
+            <body className={`${themeClass} ${bodyStyles}`}>
                 {children}
                 <ScrollRestoration />
                 <Scripts />

@@ -1,5 +1,3 @@
-// app copy/services/api/get-status-messages.server.ts
-
 export type T_StatusMessage = {
     id: number;
     code: string;

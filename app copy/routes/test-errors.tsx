@@ -1,4 +1,3 @@
-// app copy/routes/test-errors.tsx
 import React from "react";
 import { LoaderFunction } from "react-router";
 

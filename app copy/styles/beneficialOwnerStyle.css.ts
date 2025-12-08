@@ -1,4 +1,3 @@
-// app/styles/beneficialOwnerStyle.css.ts
 import { style } from "@vanilla-extract/css";
 import { themeVars, designConstants } from "@ui/themes";
 
@@ -6,13 +5,13 @@ export const boComponentContainer = style({
     padding: "5px",
     border: "1px solid",
     borderColor: "oklch(95% 0 0)",
-    zIndex: 10000,
+    zIndex: designConstants.zIndex.modal,
 });
 
-export const boQuestionContainer = style({
+export const boLabelAndButtonContainer = style({
     display: "flex",
     flexDirection: "column",
-    gap: "12px",
+    gap: designConstants.spacing.tinyPadding,
     width: "100%",
 });
 
@@ -22,12 +21,6 @@ export const boLabelButtonRow = style({
     alignItems: "center",
     width: "100%",
     minHeight: "40px",
-});
-
-export const boLabelContainer = style({
-    flex: "1",
-    marginRight: "12px",
-    maxWidth: "calc(100% - 60px)",
 });
 
 export const boButtonContainer = style({
@@ -44,8 +37,8 @@ export const boButtonContainer = style({
 export const boPopoverButton = style({
     all: "unset",
     borderRadius: "100%",
-    width: designConstants.size.xs,
-    height: designConstants.size.xs,
+    width: designConstants.size.xl,
+    height: designConstants.size.xl,
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
@@ -60,29 +53,45 @@ export const boCloseIcon = style({
     all: "unset",
     display: "inline-flex",
     position: "absolute",
-    top: designConstants.size.xs,
-    right: designConstants.size.xs,
+    top: designConstants.size.s,
+    right: designConstants.size.s,
+});
+
+export const boQuestionsStyle = style({
+    padding: 0,
+    margin: 0,
+    marginBottom: designConstants.spacing.tinyPadding,
+    width: designConstants.width.full,
+    minWidth: designConstants.width.full,
 });
 
 export const addBoFormButton = style({
     marginTop: designConstants.spacing.smallPadding,
-    marginLeft: "auto",
-    marginRight: 0,
-    padding: designConstants.spacing.tinyPadding,
-    borderRadius: "2px",
-    boxShadow: `0 2px 4px 0 ${themeVars.color.blackAlpha20}`,
-    backgroundImage: `linear-gradient(to bottom, ${themeVars.color.baseGreen400} -14%, ${themeVars.color.baseGreen500} 114%)`,
-    color: themeVars.color.baseWhite100,
+    padding: `${designConstants.spacing.tinyPadding} ${designConstants.spacing.smallPadding}`,
+    fontWeight: designConstants.fontWeight.normal,
+    lineHeight: designConstants.lineHeight.normal,
+    borderRadius: designConstants.radius.md,
+    border: "none",
+    cursor: "pointer",
+    transition: `all ${designConstants.transitions.base}`,
+    
+    boxShadow: designConstants.shadows.md,
+    backgroundImage: `linear-gradient(to top, ${themeVars.color.baseWhite400}, ${themeVars.color.baseWhite100})`,
+    color: themeVars.color.baseContent,
+    
     ":hover": {
-        backgroundImage: `linear-gradient(to bottom, ${themeVars.color.baseGreen410} -14%, ${themeVars.color.baseGreen500} 114%)`,
-    },
-    ":active": {
-        backgroundImage: `linear-gradient(to bottom, ${themeVars.color.baseGreen420} -14%, ${themeVars.color.baseGreen500} 114%)`,
+        backgroundImage: `linear-gradient(to top, ${themeVars.color.baseWhite400}, ${themeVars.color.baseWhite100})`,
+        boxShadow: designConstants.shadows.md,
     },
     ":disabled": {
-        boxShadow: `0 2px 1px 0 ${themeVars.color.blackAlpha43}`,
-        backgroundImage: "none",
-        backgroundColor: themeVars.color.baseNeutral350,
+        color: themeVars.color.baseGray500,
+        cursor: "not-allowed",
+        opacity: 0.6,
+    },
+    
+    ":focus": {
+        outline: `2px solid ${themeVars.color.baseWhite400}`,
+        outlineOffset: "2px",
     },
 });
 
@@ -116,13 +125,12 @@ export const boResultContainer = style({
     // fr = fraction => https://www.digitalocean.com/community/tutorials/css-css-grid-layout-fr-unit
     // https://css-tricks.com/introduction-fr-css-unit/
     gridTemplateColumns: "repeat(2, 1fr)",
-    gap: "10px",
-    marginTop: designConstants.spacing.tinyPadding,
+    gap: "0 10px" ,
     marginRight: designConstants.spacing.basicPadding,
 });
 
 export const boResultValuesContainer = style({
-    padding: `${designConstants.spacing.defaultPadding} 0`,
+    // padding: `${designConstants.spacing.defaultPadding} 0`,
 });
 
 export const boResultValueLabelContainer = style({
@@ -132,5 +140,5 @@ export const boResultValueLabelContainer = style({
 });
 
 export const boResultValueContainer = style({
-    padding: designConstants.spacing.defaultPadding,
+    // padding: designConstants.spacing.defaultPadding,
 });

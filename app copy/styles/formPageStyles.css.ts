@@ -3,26 +3,26 @@ import { style } from "@vanilla-extract/css";
 import { themeVars, designConstants } from "@ui/themes";
 
 export const stepsWrapperStyle = style({
-    marginBottom: "3rem",
+    marginBottom: designConstants.spacing.smallPadding,  // 16px ✅
     position: "relative",
-    paddingBottom: "3rem",
+    paddingBottom: designConstants.spacing.largePadding,  // 32px ✅
 });
-
+    
 export const dividerStyle = style({
-    borderTopWidth: "1px",
-    borderColor: themeVars.color.baseNeutral350,
+    borderColor: themeVars.color.blackAlpha20,
+    marginTop: designConstants.spacing.largePadding,
     marginBottom: designConstants.spacing.basicPadding,
 });
 
 export const buttonContainerStyle = style({
-    marginTop: "50px",
+    marginTop: designConstants.spacing.largePadding,
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
 });
 
 export const singleButtonContainerStyle = style({
-    marginTop: "50px",
+    marginTop: designConstants.spacing.largePadding,
     display: "flex",
     justifyContent: "flex-end",
     alignItems: "center",

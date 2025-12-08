@@ -6,9 +6,9 @@ const bgColor = `color-mix(in oklab, ${themeVars.color.baseWhite200}, transparen
 
 export const companyInfoContainerStyle = style({
     backgroundColor: bgColor,
-    padding: designConstants.spacing.basicPadding,
+    padding: designConstants.spacing.smallPadding,
     borderRadius: designConstants.radius.lg,
-    marginBottom: designConstants.spacing.basicPadding,
+    marginBottom: designConstants.spacing.smallPadding,
 });
 
 export const companyInfoGridStyle = style({
@@ -19,20 +19,17 @@ export const companyInfoGridStyle = style({
             gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
         },
     },
-    gap: designConstants.spacing.smallPadding,
 });
 
 export const companyInfoLabelStyle = style({
     color: themeVars.color.baseGray100,
     fontWeight: designConstants.fontWeight.medium,
     fontSize: designConstants.fontSize.sm,
-    lineHeight: designConstants.lineHeight.normal,
-    marginBottom: designConstants.spacing.basicPadding,
+    marginBottom: designConstants.spacing.smallPadding,
 });
 
 export const companyInfoStyle = style({
     color: themeVars.color.baseContent,
     fontWeight: designConstants.fontWeight.semiBold,
     fontSize: designConstants.fontSize.base,
-    lineHeight: designConstants.lineHeight.normal,
 });

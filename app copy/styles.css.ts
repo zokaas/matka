@@ -1,5 +1,4 @@
-// app/styles.css.ts
-import { themeVars, getThemeClass } from "@ui/themes";
+import { themeVars } from "@ui/themes";
 import { style } from "@vanilla-extract/css";
 
 export const bodyStyles = style({
@@ -11,5 +10,3 @@ export const bodyStyles = style({
     backgroundAttachment: "fixed",
     minHeight: "100vh",
 });
-
-export const bodyStylesThemeClass = getThemeClass('sweden-b2b-application');
