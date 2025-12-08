@@ -2,8 +2,11 @@ import React, { useEffect } from "react";
 import {
     ActionFunction,
     ActionFunctionArgs,
+    isRouteErrorResponse,
     useActionData,
     useLoaderData,
+    useRouteError,
+    useRouteLoaderData,
 } from "react-router";
 
 import {
@@ -28,13 +31,14 @@ import { Route } from "apps/kyc/.react-router/types/app/+types/root";
 import { Header } from "@ui/header";
 import { Container } from "@ui/container";
 import { pageContentStyle } from "~/styles/pageContentStyle.css";
-import { SessionModalManager, T_ErrorView } from "apps/kyc/components";
+import { ErrorHandler, SessionModalManager, T_ErrorView } from "apps/kyc/components";
 import { Footer } from "@ui/footer";
 import { T_ActionResponse } from "./types";
 import { getAndParseFormData } from "~/services/api/get-form-data.server";
 import { mapDataForPayload } from "~/services/utils/mapDataForPayload.server";
 import { sendFormData } from "~/services/api/api-kyc.server";
 import { computeMaxAgeFromExp } from "~/utils/expiryUtils.server";
+import { LoaderData } from "~/root";
 
 export const loader = async ({
     request,
@@ -131,6 +135,7 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
             "kycDoneUrl"
         );
         const kcUserId = session.get("session")?.kcUserId;
+        const authData = session.get("auth");
 
         const { sessionId, organizationName, organizationNumber } =
             await getOrganizationFromSession(request);
@@ -139,8 +144,7 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
         const answersJson = formData.get("answers");
         const questionSetId = formData.get("questionSetId");
 
-        if (!answersJson || !applicationId || !questionSetId || !kcUserId) {
-            console.error("Missing required data");
+        if (!answersJson || !applicationId || !questionSetId || !kcUserId || !authData) {
             return {
                 success: false,
                 message: "Missing required data",
@@ -149,11 +153,19 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
                     hasAppId: !!applicationId,
                     hasQSetId: !!questionSetId,
                     hasUserId: !!kcUserId,
+                    hasAuthData: !!authData,
                 },
             };
         }
 
         const answerEntries = JSON.parse(answersJson as string) as Array<T_AnswerObject>;
+
+        const bankIdAuthData = authData || {
+            given_name: "",
+            family_name: "",
+            ssn: "",
+            iat: 0,
+        };
 
         const payload = mapDataForPayload(
             answerEntries,
@@ -162,7 +174,8 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
             productId,
             questionSetId as string,
             organizationName,
-            organizationNumber
+            organizationNumber,
+            bankIdAuthData
         );
         const result = await sendFormData(payload, productId, kycType, applicationId, sessionId);
 
@@ -248,5 +261,36 @@ export default function KycFormPage(): JSX.Element {
                 sessionData={sessionData}
             />
         </Container>
+    );
+}
+
+export function ErrorBoundary() {
+    const error = useRouteError();
+    const rootData = useRouteLoaderData<LoaderData>("root");
+
+    let status = 500;
+    let message = "Unknown error";
+    let data: unknown = {};
+
+    if (isRouteErrorResponse(error)) {
+        status = error.status ?? 500;
+        message = error.statusText || "Something went wrong";
+        data = error.data ?? undefined;
+    } else if (error instanceof Error) {
+        message = error.message || "Application error";
+        data = { stack: error.stack };
+    } else {
+        status = error instanceof Response ? error.status : 500;
+        message = error instanceof Response ? error.statusText : "Error";
+        data = { raw: error };
+    }
+
+    return (
+        <ErrorHandler
+            status={status}
+            message={message}
+            data={data}
+            statusMessages={rootData?.statusMessages}
+        />
     );
 }

@@ -58,13 +58,12 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
         answers.set(answerFieldName, {
             questionId: String(item.id),
             question: answerFieldName,
+            questionLabel: item.question.questionLabel,
             automaticAnalysis: item.question.automaticAnalysis ?? false,
-            type:
-                item.question.automaticAnalysis
-                    ? item.question.automaticAnalysisType
-                    : null,
+            type: item.question.automaticAnalysis ? item.question.automaticAnalysisType : null,
             beneficialOwners: isBeneficialOwner ? true : undefined,
             answer: "",
+            answerText: undefined,
         });
 
         item.question.dynamicField?.forEach((currentField) => {
@@ -74,13 +73,14 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
                 answers.set(depField, {
                     questionId: String(currentField.id),
                     question: depField,
+                    questionLabel: currentField.questionLabel,
                     automaticAnalysis: currentField.automaticAnalysis ?? false,
-                    type:
-                        currentField.automaticAnalysis
-                            ? currentField.automaticAnalysisType
-                            : null,
+                    type: currentField.automaticAnalysis
+                        ? currentField.automaticAnalysisType
+                        : null,
                     beneficialOwners: undefined,
                     answer: "",
+                    answerText: undefined,
                 });
             }
         });

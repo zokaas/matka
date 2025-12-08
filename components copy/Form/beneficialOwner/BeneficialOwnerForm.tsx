@@ -40,11 +40,13 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
         fieldname: "",
         value: "",
         label: "",
+        text: "",
     });
     const [pep, setPep] = useState<T_BoFieldParams>({
         fieldname: "",
         value: "",
         label: "",
+        text: "",
     });
 
     const [addButtonDisabled, setAddButtonDisabled] = useState(true);
@@ -57,108 +59,118 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
 
     return (
         <Container>
-        <Container className={boQuestionsStyle}>
-            <InputText
-                label={fields.name.label}
-                fieldName={fields.name.parameter}
-                placeholder={fields.name.placeholder}
-                classNames={{
-                    fieldClassName: classNames.formInputField || "",
-                    labelClassName: classNames.formLabelFields || "",
-                }}
-                onChange={(value) => {
-                    setName({
-                        fieldname: fields.name.parameter,
-                        label: fields.name.label,
-                        value: value.trim(),
-                    });
-                }}
-                onBlur={() => {}}
-                error=""
-            />
-                        </Container>
-                        <Container className={boQuestionsStyle}>
-            <InputText
-                fieldName={fields.ssn.parameter}
-                label={fields.ssn.label}
-                placeholder={fields.ssn.placeholder}
-                classNames={{
-                    fieldClassName: classNames.formInputField || "",
-                    labelClassName: classNames.formLabelFields || "",
-                }}
-                onChange={(value) => {
-                    setSsn({
-                        fieldname: fields.ssn.parameter,
-                        label: fields.ssn.label,
-                        value: value.trim(),
-                    });
-                }}
-                onBlur={() => {}}
-                error=""
-            />
+            <Container className={boQuestionsStyle}>
+                <InputText
+                    label={fields.name.label}
+                    fieldName={fields.name.parameter}
+                    placeholder={fields.name.placeholder}
+                    classNames={{
+                        fieldClassName: classNames.formInputField || "",
+                        labelClassName: classNames.formLabelFields || "",
+                    }}
+                    onChange={(value) => {
+                        setName({
+                            fieldname: fields.name.parameter,
+                            label: fields.name.label,
+                            value: value.trim(),
+                        });
+                    }}
+                    onBlur={() => {}}
+                    error=""
+                />
             </Container>
             <Container className={boQuestionsStyle}>
-            <InputText
-                label={fields.ownership.label}
-                fieldName={fields.ownership.parameter}
-                placeholder={fields.ownership.placeholder}
-                classNames={{
-                    fieldClassName: classNames.formInputField || "",
-                    labelClassName: classNames.formLabelFields || "",
-                }}
-                onChange={(value) => {
-                    setOwnership({
-                        fieldname: fields.ownership.parameter,
-                        label: fields.ownership.label,
-                        value: value.trim(),
-                    });
-                }}
-                onBlur={() => {}}
-                error=""
-            />
+                <InputText
+                    fieldName={fields.ssn.parameter}
+                    label={fields.ssn.label}
+                    placeholder={fields.ssn.placeholder}
+                    classNames={{
+                        fieldClassName: classNames.formInputField || "",
+                        labelClassName: classNames.formLabelFields || "",
+                    }}
+                    onChange={(value) => {
+                        setSsn({
+                            fieldname: fields.ssn.parameter,
+                            label: fields.ssn.label,
+                            value: value.trim(),
+                        });
+                    }}
+                    onBlur={() => {}}
+                    error=""
+                />
             </Container>
             <Container className={boQuestionsStyle}>
-            <DropDown
-                label={fields.country.label}
-                fieldName={fields.country.parameter}
-                placeholder={fields.country.placeholder}
-                value={country.value}
-                searchEnabled
-                options={countryList || null}
-                showSelectedItemIcon={true}
-                onChange={(selectedCountry) => {
-                    setCountry({
-                        fieldname: fields.country.parameter,
-                        label: fields.country.label,
-                        value: `${selectedCountry}`,
-                    });
-                }}
-                onBlur={() => {}}
-            />
+                <InputText
+                    label={fields.ownership.label}
+                    fieldName={fields.ownership.parameter}
+                    placeholder={fields.ownership.placeholder}
+                    classNames={{
+                        fieldClassName: classNames.formInputField || "",
+                        labelClassName: classNames.formLabelFields || "",
+                    }}
+                    onChange={(value) => {
+                        setOwnership({
+                            fieldname: fields.ownership.parameter,
+                            label: fields.ownership.label,
+                            value: value.trim(),
+                        });
+                    }}
+                    onBlur={() => {}}
+                    error=""
+                />
             </Container>
             <Container className={boQuestionsStyle}>
-            <Radiogroup
-                fieldName={fields.pep.parameter}
-                label={fields.pep.label}
-                onChange={(value) => {
-                    setPep({
-                        fieldname: fields.pep.parameter,
-                        label: fields.pep.label,
-                        value: value,
-                    });
-                }}
-                onBlur={() => {}}
-                options={fields.pep.options || []}
-                defaultValue={pep.value}
-                error=""
-                classNames={{
-                    radioRoot: b2bRadiogroupRootStyle,
-                    radioItemContainer: b2bRadiogroupRootStyle,
-                    radioItem: b2bRadioItemStyle,
-                    radioIndicator: b2bRadioIndicatorStyle,
-                    radioLabel: b2bRadioItemLabelStyle,
-                }}
-            />
+                <DropDown
+                    label={fields.country.label}
+                    fieldName={fields.country.parameter}
+                    placeholder={fields.country.placeholder}
+                    value={country.value}
+                    searchEnabled
+                    options={countryList || null}
+                    showSelectedItemIcon={true}
+                    onChange={(selectedCountry) => {
+                        const countryOption = countryList?.find(
+                            (c) => String(c.value) === String(selectedCountry)
+                        );
+
+                        setCountry({
+                            fieldname: fields.country.parameter,
+                            label: fields.country.label,
+                            value: String(selectedCountry),
+                            text: countryOption?.text || String(selectedCountry),
+                        });
+                    }}
+                    onBlur={() => {}}
+                />
+            </Container>
+            <Container className={boQuestionsStyle}>
+                <Radiogroup
+                    fieldName={fields.pep.parameter}
+                    label={fields.pep.label}
+                    onChange={(value) => {
+                        const pepOption = fields.pep.options?.find(
+                            (opt) => String(opt.value) === String(value)
+                        );
+
+                        setPep({
+                            fieldname: fields.pep.parameter,
+                            label: fields.pep.label,
+                            value: value,
+                            text: pepOption?.text || value,
+                        });
+                    }}
+                    onBlur={() => {}}
+                    options={fields.pep.options || []}
+                    defaultValue={pep.value}
+                    error=""
+                    classNames={{
+                        radioRoot: b2bRadiogroupRootStyle,
+                        radioItemContainer: b2bRadiogroupRootStyle,
+                        radioItem: b2bRadioItemStyle,
+                        radioIndicator: b2bRadioIndicatorStyle,
+                        radioLabel: b2bRadioItemLabelStyle,
+                    }}
+                />
             </Container>
             <Button
                 type="button"

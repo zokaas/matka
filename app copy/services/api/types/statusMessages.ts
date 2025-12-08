@@ -3,7 +3,7 @@ export type T_StatusMessage = {
     code: string;
     message: string;
     locale: string;
-}
+};
 
 export type T_StatusMessageItem = {
     message: string;

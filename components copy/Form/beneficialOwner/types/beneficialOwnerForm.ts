@@ -28,6 +28,7 @@ export type T_BoFieldParams = {
     fieldname: string;
     value: string;
     label: string;
+    text?: string;
 };
 
 export type T_BoMapObject = {

@@ -1,6 +1,6 @@
 import { LoaderFunction, redirect } from "react-router";
 import { T_BffSessionGetResponse, T_SessionData } from "~/services";
-import { bffGet } from "~/services/api/api-cahe.server";
+import { bffGet } from "~/services/api/api-cache.server";
 import {
     buildDestroySessionHeader,
     getSession as getCachedSession,

@@ -1,40 +1,29 @@
-// components copy/Error/Error.tsx
-
 import React from "react";
 import { Container } from "@ui/container";
 import { T_Error, T_ErrorView } from "./errorTypes";
 import { Text } from "@ui/text";
 import { StatusLayout } from "../statusLayout";
-import {
-    statusPageBodyText,
-    statusPageButton,
-    statusPageContainer,
-} from "~/styles";
+import { statusPageBodyText, statusPageButton, statusPageContainer } from "~/styles";
 import { Button } from "@ui/button";
 import { redirectToLogin } from "~/utils";
 
-
-// const FALLBACK_MESSAGES = {
-//     "404": { message: "Page not found", label: "Login" },
-//     "500": { message: "Something went wrong", label: "Login" },
-//     "440": { message: "Session expired", label: "Login" },
-//     "401": { message: "Not authorized", label: "Login" },
-//     "400": { message: "Bad request", label: "Login" },
-// };
+const FALLBACK_MESSAGES = {
+    "404": { message: "Page not found", label: "Login" },
+    "500": { message: "Something went wrong", label: "Login" },
+    "440": { message: "Session expired", label: "Login" },
+    "401": { message: "Not authorized", label: "Login" },
+    "400": { message: "Bad request", label: "Login" },
+};
 
 export const ErrorHandler = ({ status, message, statusMessages }: T_Error) => {
     const code = String(status);
+
+    // Get messages from Strapi (if available) or fallback
     const strapiMsg = statusMessages?.[code];
+    const fallbackMsg = FALLBACK_MESSAGES[code as keyof typeof FALLBACK_MESSAGES];
 
-    console.log("🔍 Debug Info:");
-    console.log("  - Status Code:", code);
-    console.log("  - Strapi Messages Available:", !!statusMessages);
-    console.log("  - Strapi Message for", code, ":", strapiMsg);
-    console.log("  - Will Display:", strapiMsg?.message ||message);
-
-    const displayMessage = strapiMsg?.message || message;
-    const buttonLabel = strapiMsg?.label || "Login";
-
+    const displayMessage = strapiMsg?.message || fallbackMsg?.message || message;
+    const buttonLabel = strapiMsg?.label || fallbackMsg?.label || "Log in";
 
     const handleRedirectToLogin = () => {
         const id = localStorage.getItem("applicationId") || null;

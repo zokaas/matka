@@ -74,11 +74,11 @@ export const addBoFormButton = style({
     border: "none",
     cursor: "pointer",
     transition: `all ${designConstants.transitions.base}`,
-    
+
     boxShadow: designConstants.shadows.md,
     backgroundImage: `linear-gradient(to top, ${themeVars.color.baseWhite400}, ${themeVars.color.baseWhite100})`,
     color: themeVars.color.baseContent,
-    
+
     ":hover": {
         backgroundImage: `linear-gradient(to top, ${themeVars.color.baseWhite400}, ${themeVars.color.baseWhite100})`,
         boxShadow: designConstants.shadows.md,
@@ -88,7 +88,7 @@ export const addBoFormButton = style({
         cursor: "not-allowed",
         opacity: 0.6,
     },
-    
+
     ":focus": {
         outline: `2px solid ${themeVars.color.baseWhite400}`,
         outlineOffset: "2px",
@@ -124,7 +124,7 @@ export const boResultContainer = style({
     // fr = fraction => https://www.digitalocean.com/community/tutorials/css-css-grid-layout-fr-unit
     // https://css-tricks.com/introduction-fr-css-unit/
     gridTemplateColumns: "repeat(2, 1fr)",
-    gap: "0 10px" ,
+    gap: "0 10px",
     marginRight: designConstants.spacing.basicPadding,
 });
 

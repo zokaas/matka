@@ -23,7 +23,7 @@ export const mainContainerStyle = style({
     marginInline: "auto",
     width: "100%",
     boxSizing: "border-box",
-    
+
     // Reduce internal padding on mobile
     "@media": {
         "(width < 48rem)": {

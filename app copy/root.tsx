@@ -23,10 +23,9 @@ import { T_StatusMessagesData } from "./services";
 import { getStatusMessages } from "./services/api/get-status-messages.server";
 import { getLanguageFromProductId } from "./utils";
 
-//TODO: change default theme to opr-theme??
 const DEFAULT_THEME = "sweden-b2b-application";
 
-type LoaderData = {
+export type LoaderData = {
     theme: string;
     sessionId?: string;
     productId?: string;
@@ -39,7 +38,6 @@ type LoaderData = {
 
 export const links: LinksFunction = () => [{ rel: "stylesheet", href: tailwindStyles }];
 
-// Export a handle to identify this route's loader data
 export const handle = { id: "root" };
 
 export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) => {
@@ -52,22 +50,13 @@ export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) =>
     const sessionRefreshCount = cacheSession?.sessionRefreshCount ?? 0;
     const applicationId = session.get("applicationId") ?? undefined;
 
-    // Derive language from productId
     const lang = getLanguageFromProductId(productId);
-    
-    console.log("🔧 Root Loader Debug:");
-    console.log("  - productId (clientId):", productId);
-    console.log("  - Derived language:", lang);
-    console.log("  - Session language:", session.get("language"));
-    console.log("  - applicationId:", applicationId);
 
     let statusMessages: T_StatusMessagesData | undefined;
     try {
         statusMessages = await getStatusMessages(lang);
-        console.log("  - Status messages fetched:", !!statusMessages);
-        console.log("  - Available error codes:", statusMessages ? Object.keys(statusMessages) : "none");
     } catch (error) {
-        console.error("  - ❌ Failed to fetch status messages:", error);
+        console.error("Failed to fetch status messages:", error);
         statusMessages = undefined;
     }
 
@@ -86,17 +75,13 @@ export const loader: LoaderFunction = async ({ request }: LoaderFunctionArgs) =>
 function Document({
     children,
     theme = DEFAULT_THEME,
-    lang = "sv",
+    lang = "en",
 }: Readonly<{
     children: React.ReactNode;
     theme?: string;
     lang?: string;
 }>) {
     const themeClass = getThemeClass(theme);
-
-    console.log("📄 Document Render:");
-    console.log("  - HTML lang attribute:", lang);
-    console.log("  - Theme:", theme);
 
     return (
         <html lang={lang} data-theme={theme}>
@@ -114,7 +99,6 @@ function Document({
         </html>
     );
 }
-
 
 function ThrowResponse({ response }: { response: Response }): never {
     throw response;
@@ -139,15 +123,8 @@ export default function App() {
     const initialSession = useLoaderData<LoaderData>();
     const derivedLang = getLanguageFromProductId(initialSession?.productId || DEFAULT_THEME);
 
-    console.log("🚀 App Component:");
-    console.log("  - productId:", initialSession?.productId);
-    console.log("  - Derived lang:", derivedLang);
-    console.log("  - Theme:", initialSession?.theme);
-
     return (
-        <Document
-            theme={initialSession?.theme || DEFAULT_THEME}
-            lang={derivedLang}>
+        <Document theme={initialSession?.theme || DEFAULT_THEME} lang={derivedLang}>
             <SessionManagerGate />
             <Outlet />
         </Document>
@@ -156,14 +133,9 @@ export default function App() {
 
 export function ErrorBoundary() {
     const error = useRouteError();
-
-    // ✅ CRITICAL FIX: Use useRouteLoaderData to access ROOT loader data
-    // This works even when error occurs in child routes
     const rootLoaderData = useRouteLoaderData<LoaderData>("root");
-    
-    console.log("🚨 ErrorBoundary Debug:");
-    console.log("  - Root loader data available:", !!rootLoaderData);
-    console.log("  - statusMessages from root:", !!rootLoaderData?.statusMessages);
+
+    const derivedLang = getLanguageFromProductId(rootLoaderData?.productId || DEFAULT_THEME);
 
     let status = 500;
     let message = "Unknown error";
@@ -180,19 +152,8 @@ export function ErrorBoundary() {
         data = { raw: error };
     }
 
-    const derivedLang = getLanguageFromProductId(rootLoaderData?.productId || DEFAULT_THEME);
-
-    console.log("  - Error status:", status);
-    console.log("  - Error message:", message);
-    console.log("  - productId:", rootLoaderData?.productId);
-    console.log("  - Derived lang:", derivedLang);
-    console.log("  - statusMessages available:", !!rootLoaderData?.statusMessages);
-
     return (
-        <Document 
-            theme={DEFAULT_THEME} 
-            lang={derivedLang}
-        >
+        <Document theme={DEFAULT_THEME} lang={derivedLang}>
             <ErrorHandler
                 status={status}
                 message={message}

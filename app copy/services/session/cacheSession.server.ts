@@ -1,7 +1,7 @@
 import { createCookie, createSessionStorage } from "react-router";
 import type { T_CompanyDataFromSession, T_SessionData } from "../api";
 import { appConfig } from "~/config";
-import { bffDelete, bffGet, bffPost } from "../api/api-cahe.server";
+import { bffDelete, bffGet, bffPost } from "../api/api-cache.server";
 
 // ----- cookie used to store the session id on the client -----
 const { sessionSecret } = appConfig;

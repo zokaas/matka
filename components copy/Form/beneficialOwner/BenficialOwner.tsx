@@ -94,12 +94,12 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
         <Container className={boComponentContainer}>
             <Container className={boLabelAndButtonContainer}>
                 <Container className={boLabelButtonRow}>
-                        <Label
-                            htmlFor={fieldName}
-                            labelClassName={classNames?.beneficialOwnerLabel}
-                            infoItems={infoItems}>
-                            {label}
-                        </Label>
+                    <Label
+                        htmlFor={fieldName}
+                        labelClassName={classNames?.beneficialOwnerLabel}
+                        infoItems={infoItems}>
+                        {label}
+                    </Label>
 
                     {fieldsMap.size < beneficialOwnersMaxCount && (
                         <Container className={boButtonContainer}>

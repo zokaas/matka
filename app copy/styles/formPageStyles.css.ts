@@ -2,11 +2,11 @@ import { style } from "@vanilla-extract/css";
 import { themeVars, designConstants } from "@ui/themes";
 
 export const stepsWrapperStyle = style({
-    marginBottom: designConstants.spacing.smallPadding,  // 16px ✅
+    marginBottom: designConstants.spacing.smallPadding, // 16px ✅
     position: "relative",
-    paddingBottom: designConstants.spacing.largePadding,  // 32px ✅
+    paddingBottom: designConstants.spacing.largePadding, // 32px ✅
 });
-    
+
 export const dividerStyle = style({
     borderColor: themeVars.color.blackAlpha20,
     marginTop: designConstants.spacing.largePadding,

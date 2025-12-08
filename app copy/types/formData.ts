@@ -20,13 +20,22 @@ export type T_AnswerValue =
 export type T_AnswerObject = {
     questionId: string;
     question: string;
+    questionLabel: string;
     automaticAnalysis: boolean;
     type: T_AnalysisType;
     beneficialOwners?: boolean; //only used for beneficial owner answer -> if is bo answer = true
     answer: T_AnswerValue;
+    answerText?: string;
 };
 
 export type T_Answers = Map<string, T_AnswerObject>;
+
+export type T_BankIdAuth = {
+    givenName: string;
+    familyName: string;
+    ssn: string;
+    iat: number;
+};
 
 export type T_Payload = {
     userId: string;
@@ -35,6 +44,7 @@ export type T_Payload = {
     questionSetId: string;
     organizationName: string;
     organizationNumber: string;
+    bankIdAuth: T_BankIdAuth; 
     answers: Array<T_AnswerObject>;
 };
 

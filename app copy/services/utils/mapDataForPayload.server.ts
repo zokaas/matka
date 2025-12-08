@@ -1,22 +1,22 @@
 import { T_AnswerObject, T_AnswerValue, T_Payload } from "~/types";
 
 export function mapDataForPayload(
-    answersEntries: Array<T_AnswerObject>,
-    userId: string,
-    applicationId: string,
-    productId: string,
-    questionSetId: string,
-    organizationName: string,
-    organizationNumber: string
+    payload: T_Payload,
 ): T_Payload {
     return {
-        userId,
-        applicationId,
-        productId,
-        questionSetId,
-        organizationName,
-        organizationNumber,
-        answers: createAnswersArray(answersEntries),
+        userId: payload.userId,
+        applicationId: payload.applicationId,
+        productId: payload.productId,
+        questionSetId: payload.questionSetId,
+        organizationName: payload.organizationName,
+        organizationNumber: payload.organizationNumber,
+        bankIdAuth: {
+            givenName: payload.bankIdAuth.givenName,
+            familyName: payload.bankIdAuth.familyName,
+            ssn: payload.bankIdAuth.ssn,
+            iat: payload.bankIdAuth.iat,
+        },
+        answers: createAnswersArray(payload.answers),
     };
 }
 
@@ -25,9 +25,11 @@ export function createAnswersArray(answersEntries: Array<T_AnswerObject>) {
         const baseAnswer = {
             questionId: entry.questionId,
             question: entry.question,
+            questionLabel: entry.questionLabel,
             automaticAnalysis: entry.automaticAnalysis ?? false,
             type: entry.automaticAnalysis === true ? entry.type : null,
             answer: normalizeAnswerValue(entry.answer),
+            ...(entry.answerText !== undefined && { answerText: entry.answerText }),
         };
 
         if (entry.beneficialOwners === true) {
