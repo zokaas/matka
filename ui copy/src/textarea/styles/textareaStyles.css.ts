@@ -1,4 +1,3 @@
-// ui/src/textarea/styles/textareaStyles.css.ts
 import { style } from "@vanilla-extract/css";
 import { designConstants, themeVars } from "@ui/themes";
 
@@ -9,7 +8,6 @@ export const textareaContainerStyle = style({
 });
 
 export const textareaFieldStyle = style({
-    // Structure
     width: "100%",
     minHeight: "100px",
     padding: designConstants.spacing.tinyPadding,
@@ -20,28 +18,26 @@ export const textareaFieldStyle = style({
     border: "1px solid",
     resize: "vertical",
     transition: `all ${designConstants.transitions.base}`,
-    
-    // Appearance
+
     borderColor: themeVars.color.baseWhite400,
     backgroundColor: themeVars.color.baseWhite100,
     color: themeVars.color.baseContent,
-    
-    
+
     "::placeholder": {
         color: themeVars.color.baseGray500,
         opacity: 0.6,
     },
-    
+
     ":hover": {
         borderColor: themeVars.color.baseWhite200,
     },
-    
+
     ":focus": {
         outline: "none",
         borderColor: themeVars.color.primary,
         boxShadow: `0 0 0 3px ${themeVars.color.primary}33`,
     },
-    
+
     ":disabled": {
         backgroundColor: themeVars.color.baseWhite200,
         color: themeVars.color.baseGray500,

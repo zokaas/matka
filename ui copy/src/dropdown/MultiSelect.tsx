@@ -9,7 +9,6 @@ import { NO_RESULTS, NO_RESULTS_DEFAULT_TEXT, DEFAULT_PLACEHOLDER } from "./drop
 import {
     iconStyle,
     dropDownContainerStyle,
-    dropDownStyle,
     dropDownOpenIconStyle,
     multiSelectListStyle,
     dropDownViewportStyle,
@@ -21,6 +20,7 @@ import {
     multiSelectCheckbox,
     multiSelectOptionButton,
     multiSelectOptionText,
+    multiSelectFieldButton,
 } from "./styles";
 import { T_MultiSelectProps } from "./types";
 
@@ -45,7 +45,7 @@ export const MultiSelect: React.FC<T_MultiSelectProps> = ({
 
     const selectedValues: string[] = Array.isArray(value) ? value.map(String) : [];
     const selectContainer = classNames?.dropDownContainer || dropDownContainerStyle;
-    const selectField = classNames?.dropDownField || dropDownStyle;
+    const selectField = classNames?.dropDownField || multiSelectFieldButton;
     const selectIcon = classNames?.dropDownIcon || dropDownOpenIconStyle;
     const selectValuesList = classNames?.dropDownSelectionList || multiSelectListStyle;
     const selectViewport = classNames?.dropDownViewport || dropDownViewportStyle;
@@ -145,7 +145,7 @@ export const MultiSelect: React.FC<T_MultiSelectProps> = ({
                     <Popover.Trigger asChild>
                         <button
                             type="button"
-                            className={selectField}
+                            className={multiSelectFieldButton}
                             aria-label={label}
                             onBlur={onBlur}>
                             <div className={selectTagsContainer}>

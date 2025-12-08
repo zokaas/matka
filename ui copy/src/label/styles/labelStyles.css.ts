@@ -1,4 +1,3 @@
-// ui/src/label/styles/labelStyles.css.ts
 import { style } from "@vanilla-extract/css";
 import { designConstants, themeVars } from "@ui/themes";
 
@@ -9,15 +8,11 @@ export const labelContainerStyle = style({
 });
 
 export const labelTextStyle = style({
-    // Structure
     fontSize: designConstants.fontSize.base,
     fontWeight: designConstants.fontWeight.normal,
     lineHeight: designConstants.lineHeight.normal,
     wordWrap: "break-word",
-    
-    // Appearance
     color: themeVars.color.baseContent,
-    
 });
 
 export const labelWithTooltipStyle = style({
@@ -33,14 +28,10 @@ export const tooltipWrapperStyle = style({
 });
 
 export const subHeaderStyle = style({
-    // Structure
     fontSize: designConstants.fontSize.sm,
     lineHeight: designConstants.lineHeight.relaxed,
     fontStyle: "italic",
     marginTop: designConstants.spacing.defaultPadding,
     wordWrap: "break-word",
-    
-    // Appearance
     color: themeVars.color.baseGray500,
-    
 });

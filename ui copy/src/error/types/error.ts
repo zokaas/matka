@@ -4,6 +4,5 @@ export type T_ErrorMessageProps = {
 };
 
 export type T_ErrorClassNamesProps = {
-    errorContainerStyle?: string;
     errorTextStyle?: string;
 };

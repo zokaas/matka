@@ -1,6 +1,6 @@
 # Theme System
 
-A modern theme system separating structure from appearance.
+A theme system separating structure from appearance.
 
 ## Core Concept
 
@@ -27,17 +27,6 @@ export const button = style({
     color: themeVars.color.primaryContent,
     
 });
-```
-
-## Files
-
-```
-themes/
-├── constants.ts           # Design constants (~70 values)
-├── contract.css.ts        # Theme contract (~38 properties)
-├── *.theme.css.ts         # Theme definitions
-├── metadata.ts            # Logos, fonts, etc.
-└── index.ts               # Exports
 ```
 
 ## Design Constants
@@ -199,6 +188,10 @@ themeVars.font.family  // Font family (changes per theme)
 themeVars.background.image  // Background image
 themeVars.background.color  // Background color
 ```
+### Logo
+```typescript
+themeVars.assets.logo  // logo image
+```
 
 ### Component-Specific
 ```typescript
@@ -222,61 +215,6 @@ Need a value?
         └─ YES → Use designConstants
 ```
 
-## Common Patterns
-
-### Button
-```typescript
-export const button = style({
-    padding: `${designConstants.spacing.tinyPadding} ${designConstants.spacing.smallPadding}`,
-    borderRadius: designConstants.radius.md,
-    fontSize: designConstants.fontSize.base,
-    fontWeight: designConstants.fontWeight.medium,
-    boxShadow: designConstants.shadows.base,
-    backgroundColor: themeVars.color.primary,
-    color: themeVars.color.primaryContent,
-    
-});
-```
-
-### Card
-```typescript
-export const card = style({
-    padding: designConstants.spacing.basicPadding,
-    borderRadius: designConstants.radius.lg,
-    maxWidth: designConstants.width.container2xl,
-    boxShadow: designConstants.shadows.xl,
-    backgroundColor: themeVars.color.baseWhite100,
-    color: themeVars.color.baseContent,
-});
-```
-
-### Modal
-```typescript
-export const modal = style({
-    maxWidth: designConstants.width.containerLg,
-    padding: designConstants.spacing.largePadding,
-    borderRadius: designConstants.radius.lg,
-    zIndex: designConstants.zIndex.modal,
-    boxShadow: designConstants.shadows.xl,
-    backgroundColor: themeVars.color.baseWhite100,
-    color: themeVars.color.baseContent,
-});
-```
-
-### Input
-```typescript
-export const input = style({
-    padding: designConstants.spacing.tinyPadding,
-    borderRadius: designConstants.radius.md,
-    fontSize: designConstants.fontSize.base,
-    lineHeight: designConstants.lineHeight.normal,
-    border: `1px solid ${themeVars.color.baseWhite400}`,
-    backgroundColor: themeVars.color.baseWhite100,
-    color: themeVars.color.baseContent,
-    
-});
-```
-
 ## Creating a Theme
 
 Only define colors, fonts, and backgrounds. Structure is shared automatically.
@@ -290,7 +228,7 @@ export const myTheme = createTheme(themeVars, {
     color: {
         primary: "oklch(60% 0.25 250)",
         primaryContent: "oklch(100% 0 0)",
-        // ... ~30 colors
+        // ... ~other colors
     },
     
     font: {
@@ -329,105 +267,3 @@ export function getThemeClass(productId: string): string {
     return themeMap[productId] || myTheme;
 }
 ```
-
-## Rules
-
-### ✅ Do
-- Use `designConstants` for spacing, sizing, borders, shadows, z-index
-- Use `themeVars` for colors, fonts, backgrounds
-- Be consistent with spacing and sizing
-- Use semantic color names
-
-### ❌ Don't
-- Use magic numbers (`padding: '16px'`)
-- Mix constants and theme variables
-- Put layout values in themes
-- Hardcode colors or shadows
-
-## Cheat Sheet
-
-| Property | Use |
-|----------|-----|
-| `padding`, `margin`, `gap` | `designConstants.spacing.*` |
-| `width`, `height` | `designConstants.size.*` |
-| `borderRadius` | `designConstants.radius.*` |
-| `fontSize` | `designConstants.fontSize.*` |
-| `fontWeight` | `designConstants.fontWeight.*` |
-| `lineHeight` | `designConstants.lineHeight.*` |
-| `maxWidth` | `designConstants.width.*` |
-| `boxShadow` | `designConstants.shadows.*` |
-| `zIndex` | `designConstants.zIndex.*` |
-| `color`, `backgroundColor` | `themeVars.color.*` |
-| `fontFamily` | `themeVars.font.family` |
-| `backgroundImage` | `themeVars.background.*` |
-
-## Example Component
-
-```typescript
-import { style } from '@vanilla-extract/css';
-import { themeVars, designConstants } from '@ui/themes';
-
-export const container = style({
-    // Layout (constants)
-    display: 'flex',
-    flexDirection: 'column',
-    gap: designConstants.spacing.smallPadding,
-    padding: designConstants.spacing.basicPadding,
-    maxWidth: designConstants.width.container2xl,
-    marginInline: 'auto',
-    
-    // Visual structure (constants)
-    borderRadius: designConstants.radius.lg,
-    boxShadow: designConstants.shadows.xl,
-    
-    // Typography sizes (constants)
-    fontSize: designConstants.fontSize.base,
-    fontWeight: designConstants.fontWeight.normal,
-    lineHeight: designConstants.lineHeight.normal,
-    
-    // Appearance (theme variables)
-    backgroundColor: themeVars.color.baseWhite100,
-    color: themeVars.color.baseContent,
-    borderColor: themeVars.color.baseWhite400,
-});
-
-export const heading = style({
-    // Typography sizes (constants)
-    fontSize: designConstants.fontSize.xxl,
-    fontWeight: designConstants.fontWeight.bold,
-    lineHeight: designConstants.lineHeight.tight,
-    marginBottom: designConstants.spacing.smallPadding,
-    
-    // Appearance (theme variables)
-    color: themeVars.color.primary,
-    
-});
-
-export const button = style({
-    // Layout & structure (constants)
-    padding: `${designConstants.spacing.tinyPadding} ${designConstants.spacing.basicPadding}`,
-    borderRadius: designConstants.radius.md,
-    fontSize: designConstants.fontSize.base,
-    fontWeight: designConstants.fontWeight.medium,
-    boxShadow: designConstants.shadows.base,
-    transition: `all ${designConstants.transitions.base}`,
-    
-    // Appearance (theme variables)
-    backgroundColor: themeVars.color.primary,
-    color: themeVars.color.primaryContent,
-    
-    
-    ':hover': {
-        backgroundColor: themeVars.color.accent,
-        boxShadow: designConstants.shadows.lg,
-    },
-});
-```
-
-## Benefits
-
-- **Consistency**: Spacing and sizing identical across all themes
-- **Speed**: Create new theme in 5-10 minutes (only ~38 values)
-- **Type Safety**: TypeScript catches incorrect usage
-- **Clarity**: Clear separation of structure vs appearance
-- **Maintainability**: Change constants once, affects all themes

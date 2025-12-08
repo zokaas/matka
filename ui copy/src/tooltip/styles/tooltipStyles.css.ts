@@ -13,10 +13,8 @@ export const tooltipTriggerStyles = style({
     fontWeight: designConstants.fontWeight.bold,
     cursor: "pointer",
     transition: `background-color ${designConstants.transitions.base}`,
-    
     backgroundColor: themeVars.color.primary,
     color: themeVars.color.primaryContent,
-    
     ":focus": {
         outline: `2px solid ${themeVars.color.primary}`,
         outlineOffset: "2px",
@@ -32,11 +30,9 @@ export const tooltipContentStyles = style({
     border: "1px solid",
     boxShadow: designConstants.shadows.lg,
     zIndex: designConstants.zIndex.tooltip,
-    
     backgroundColor: themeVars.color.baseWhite100,
     color: themeVars.color.baseContent,
     borderColor: themeVars.color.baseWhite400,
-    
 });
 
 export const tooltipArrowStyles = style({
@@ -50,16 +46,12 @@ export const tooltipHeaderStyles = style({
     fontSize: designConstants.fontSize.base,
     fontWeight: designConstants.fontWeight.semiBold,
     lineHeight: designConstants.lineHeight.normal,
-    
     color: themeVars.color.baseContent,
-    
 });
 
 export const tooltipDescriptionStyles = style({
     margin: "0",
     fontSize: designConstants.fontSize.sm,
     lineHeight: designConstants.lineHeight.normal,
-    
     color: themeVars.color.baseGray500,
-    
 });

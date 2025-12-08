@@ -1,4 +1,3 @@
-// ui/src/radiogroup/styles/radiogroupStyles.css.ts
 import { style } from "@vanilla-extract/css";
 import { designConstants, themeVars } from "@ui/themes";
 
@@ -21,33 +20,24 @@ export const radioItemContainerStyle = style({
 });
 
 export const radioLabelStyle = style({
-    // Structure
     fontSize: designConstants.fontSize.base,
     fontWeight: designConstants.fontWeight.normal,
     lineHeight: designConstants.lineHeight.normal,
     paddingLeft: designConstants.spacing.smallPadding,
     cursor: "pointer",
-    
-    // Appearance
     color: themeVars.color.baseContent,
-    
 });
 
 export const radiogroupLabelStyle = style({
-    // Structure
     display: "block",
     marginBottom: designConstants.spacing.tinyPadding,
     fontSize: designConstants.fontSize.base,
     fontWeight: designConstants.fontWeight.medium,
     lineHeight: designConstants.lineHeight.normal,
-    
-    // Appearance
     color: themeVars.color.baseContent,
-    
 });
 
 export const radioItemStyle = style({
-    // Structure
     all: "unset",
     width: "25px",
     height: "25px",
@@ -56,21 +46,19 @@ export const radioItemStyle = style({
     boxShadow: designConstants.shadows.sm,
     cursor: "pointer",
     transition: `all ${designConstants.transitions.base}`,
-    
-    // Appearance
     backgroundColor: themeVars.color.baseWhite100,
     borderColor: themeVars.color.primary,
-    
+
     ":hover": {
         backgroundColor: themeVars.color.baseWhite200,
         boxShadow: designConstants.shadows.base,
     },
-    
+
     ":focus": {
         outline: `2px solid ${themeVars.color.primary}`,
         outlineOffset: "2px",
     },
-    
+
     ":disabled": {
         backgroundColor: themeVars.color.baseWhite400,
         borderColor: themeVars.color.baseGray500,
@@ -80,15 +68,12 @@ export const radioItemStyle = style({
 });
 
 export const radioIndicatorStyle = style({
-    // Structure
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
     height: "100%",
     position: "relative",
-    
-    // Inner dot
     "::after": {
         content: "",
         display: "block",

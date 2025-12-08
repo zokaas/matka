@@ -4,6 +4,6 @@ import { designConstants, themeVars } from "@ui/themes";
 export const errorTextStyle = style({
     fontSize: designConstants.fontSize.sm,
     fontWeight: designConstants.fontWeight.normal,
-    
     color: themeVars.color.error,
+    marginBottom: "0",
 });

@@ -1,5 +1,3 @@
-// packages/ui/src/themes/constants.ts
-
 /**
  * Design constants that NEVER change across themes
  * These are layout, spacing, sizing, shadows, and z-index values

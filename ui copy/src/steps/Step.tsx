@@ -14,6 +14,7 @@ import { T_StepProps } from "./types";
 import { StepLabel } from "./StepLabel";
 import { StepContainer } from "./StepContainer";
 import { StepBadge } from "./StepBadge";
+import { Icon } from "@ui/icon";
 
 //const getDefaultClasses
 
@@ -59,7 +60,7 @@ export const Step: React.FC<T_StepProps> = ({
                             styling?.badge?.stepCounterDoneStyles,
                             undefined
                         )}
-                        label="L"
+                        label={<Icon iconName="check" iconPrefix="fas" />}
                     />
                 ) : (
                     <StepLabel

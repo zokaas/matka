@@ -6,59 +6,68 @@ export const dropDownContainerStyle = style({
     display: "flex",
     flexDirection: "column",
     gap: designConstants.spacing.tinyPadding,
-    zIndex: designConstants.zIndex.popoverDropdown,
+    width: designConstants.width.full,
 });
 
 export const dropDownLabel = style({
-    // Structure
     fontSize: designConstants.fontSize.base,
     lineHeight: designConstants.lineHeight.normal,
     fontWeight: designConstants.fontWeight.normal,
 
-    // Appearance
     color: themeVars.color.baseContent,
 });
 
-export const dropDownStyle = style({
-    // Structure
-    display: "inline-flex",
+const baseFieldStyle = {
+    display: "inline-flex" as const,
     fontSize: designConstants.fontSize.base,
     lineHeight: designConstants.lineHeight.normal,
     width: designConstants.width.full,
     borderRadius: designConstants.radius.md,
-    justifyContent: "space-between",
-    padding: designConstants.spacing.smallPadding,
+    justifyContent: "space-between" as const,
+    padding: `${designConstants.spacing.tinyPadding} ${designConstants.spacing.smallPadding}`,
     border: "1px solid",
-    cursor: "pointer",
+    cursor: "pointer" as const,
     transition: `all ${designConstants.transitions.base}`,
-    zIndex: designConstants.zIndex.popoverDropdown,
+    minHeight: "42px",
+    boxSizing: "border-box" as const,
+    alignItems: "center" as const,
 
-    // Appearance
     backgroundColor: themeVars.color.baseWhite100,
     borderColor: themeVars.color.baseWhite400,
     color: themeVars.color.baseContent,
+};
 
-    ":hover": {
-        borderColor: themeVars.color.baseWhite200,
-        backgroundColor: themeVars.color.baseWhite200,
-    },
+const baseFieldHoverStyle = {
+    borderColor: themeVars.color.baseWhite200,
+    backgroundColor: themeVars.color.baseWhite200,
+};
 
-    // ":focus": {
-    //     outline: "none",
-    //     borderColor: themeVars.color.baseWhite400,
-    //     boxShadow: `0 0 0 3px ${themeVars.color.baseWhite400}33`,
-    // },
+const baseFieldFocusStyle = {
+    outline: "none",
+    boxShadow: `0 0 0 3px ${themeVars.color.primary}33`,
+};
+
+export const dropDownStyle = style({
+    ...baseFieldStyle,
+
+    ":hover": baseFieldHoverStyle,
+    ":focus": baseFieldFocusStyle,
+});
+
+export const multiSelectFieldButton = style({
+    ...baseFieldStyle,
+
+    ":hover": baseFieldHoverStyle,
+    ":focus-within": baseFieldFocusStyle,
 });
 
 export const dropDownOpenIconStyle = style({
-    // Structure
     paddingLeft: designConstants.spacing.smallPadding,
     borderLeft: "1px solid",
     display: "flex",
     alignItems: "center",
     transition: `transform ${designConstants.transitions.base}`,
 
-    // Appearance
     color: themeVars.color.baseGray500,
     borderColor: themeVars.color.baseWhite400,
 });
@@ -76,13 +85,11 @@ export const dropDownListStyle = style({
     zIndex: designConstants.zIndex.popoverDropdown,
     border: "1px solid",
 
-    // Appearance
     backgroundColor: themeVars.color.baseWhite100,
     borderColor: themeVars.color.baseWhite400,
 });
 
 export const multiSelectListStyle = style({
-    // Structure
     overflow: "hidden",
     borderRadius: designConstants.radius.md,
     padding: designConstants.spacing.tinyPadding,
@@ -91,16 +98,13 @@ export const multiSelectListStyle = style({
     maxWidth: "max(var(--radix-popover-trigger-width), 400px)",
     boxSizing: "border-box",
     boxShadow: designConstants.shadows.lg,
-    zIndex: designConstants.zIndex.dropdown,
     border: "1px solid",
 
-    // Appearance
     backgroundColor: themeVars.color.baseWhite100,
     borderColor: themeVars.color.baseWhite400,
 });
 
 export const dropDownViewportStyle = style({
-    // Structure
     padding: designConstants.spacing.tinyPadding,
     boxSizing: "border-box",
     maxHeight: "300px",
@@ -109,7 +113,6 @@ export const dropDownViewportStyle = style({
 });
 
 const baseItemStyle = {
-    // Structure
     fontSize: designConstants.fontSize.base,
     lineHeight: 1.4,
     padding: designConstants.spacing.tinyPadding,
@@ -121,7 +124,6 @@ const baseItemStyle = {
     cursor: "pointer",
     transition: `all ${designConstants.transitions.fast}`,
 
-    // Appearance
     color: themeVars.color.baseContent,
 };
 
@@ -148,7 +150,6 @@ export const dropDownItemStyles = style({
 });
 
 export const dropDownItemIndicatorStyles = style({
-    // Structure
     position: "absolute",
     left: "6px",
     top: "50%",
@@ -163,79 +164,85 @@ export const iconStyle = style({
     color: `${themeVars.color.primary} !important`,
 });
 
-export const filterContainer = style({
-    // Structure
-    padding: designConstants.spacing.tinyPadding,
-    borderBottom: "1px solid",
-
-    // Appearance
-    borderColor: themeVars.color.baseWhite400,
-});
-
 export const selectPlaceholder = style({
     color: themeVars.color.baseGray500,
     opacity: 0.8,
 });
 
-// MultiSelect Specific Styles
 export const multiSelectTagsContainer = style({
     display: "flex",
     flexWrap: "wrap",
-    gap: designConstants.spacing.defaultPadding,
+    gap: designConstants.spacing.tinyPadding,
     flex: 1,
     alignItems: "center",
     maxWidth: "calc(100% - 50px)",
+    minHeight: "24px",
 });
 
 export const multiSelectFieldContainer = style({
     position: "relative",
     display: "flex",
     alignItems: "center",
+    width: designConstants.width.full,
 });
 
 export const multiSelectTag = style({
-    // Structure
     display: "flex",
     alignItems: "center",
-    minWidth: "91px",
-    height: "30px",
-    padding: `${designConstants.spacing.smallPadding} ${designConstants.spacing.smallPadding}`,
-    borderRadius: designConstants.radius.sm,
-    border: "none",
-    boxShadow: designConstants.shadows.custom,
+    gap: designConstants.spacing.tinyPadding,
+    minWidth: "fit-content",
+    height: "32px",
+    padding: `${designConstants.spacing.defaultPadding} ${designConstants.spacing.tinyPadding}`,
+    border: "1px solid",
+    borderRadius: designConstants.radius.md,
+    boxShadow: designConstants.shadows.sm,
     whiteSpace: "nowrap",
     fontSize: designConstants.fontSize.sm,
+    fontWeight: designConstants.fontWeight.medium,
+    transition: `all ${designConstants.transitions.base}`,
 
-    // Appearance
-    backgroundImage: `linear-gradient(to top, ${themeVars.color.baseWhite400}, ${themeVars.color.baseWhite100})`,
+    backgroundColor: themeVars.color.baseWhite100,
+    borderColor: themeVars.color.baseWhite400,
     color: themeVars.color.baseContent,
-});
-
-export const multiSelectTagRemove = style({
-    // Structure
-    cursor: "pointer",
-    fontSize: designConstants.fontSize.base,
-    lineHeight: "1",
-    width: designConstants.size.s,
-    height: designConstants.size.s,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: designConstants.radius.sm,
-    marginLeft: designConstants.spacing.tinyPadding,
-    transition: `background-color ${designConstants.transitions.base}`,
-
-    // Appearance
-    color: themeVars.color.baseGray500,
 
     ":hover": {
         backgroundColor: themeVars.color.baseWhite200,
-        color: themeVars.color.error,
+        borderColor: themeVars.color.baseWhite200,
+        boxShadow: designConstants.shadows.base,
+    },
+});
+
+export const multiSelectTagRemove = style({
+    all: "unset",
+    cursor: "pointer",
+    fontSize: designConstants.fontSize.base,
+    lineHeight: "1",
+    width: "20px",
+    height: "20px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    border: "1px solid",
+    transition: `all ${designConstants.transitions.base}`,
+    flexShrink: 0,
+
+    color: themeVars.color.baseGray500,
+    borderColor: themeVars.color.baseGray500,
+    backgroundColor: "transparent",
+
+    ":hover": {
+        backgroundColor: themeVars.color.error,
+        borderColor: themeVars.color.error,
+        color: themeVars.color.baseWhite100,
+    },
+
+    ":focus": {
+        outline: `2px solid ${themeVars.color.primary}`,
+        outlineOffset: "2px",
     },
 });
 
 export const multiSelectCheckbox = style({
-    // Structure
     width: "17px",
     height: "17px",
     borderRadius: designConstants.radius.sm,
@@ -247,7 +254,6 @@ export const multiSelectCheckbox = style({
     flexShrink: 0,
     border: "1px solid",
 
-    // Appearance
     backgroundColor: themeVars.color.baseWhite100,
     borderColor: themeVars.color.baseWhite400,
 });

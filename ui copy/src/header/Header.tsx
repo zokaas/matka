@@ -14,7 +14,7 @@ export const Header: React.FC<T_HeaderProps> = (props: T_HeaderProps) => {
         <header className={headerStyles}>
             <Container className={headerContentContainer}>
                 <Container className={headerLogoContainer}>
-                    <img className={headerLogoImage} src={props.logoSrc} />
+                    <div className={headerLogoImage} />
                 </Container>
                 {props.title && (
                     <Container>
