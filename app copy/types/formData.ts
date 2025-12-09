@@ -44,7 +44,7 @@ export type T_Payload = {
     questionSetId: string;
     organizationName: string;
     organizationNumber: string;
-    bankIdAuth: T_BankIdAuth; 
+    bankIdAuth: T_BankIdAuth;
     answers: Array<T_AnswerObject>;
 };
 

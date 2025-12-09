@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import { Form, useSubmit, useNavigation } from "react-router";
 
 import { Steps } from "@ui/steps";
@@ -25,7 +25,7 @@ import { Container } from "@ui/container";
 import { Button } from "@ui/button";
 import { Icon } from "@ui/icon";
 import { Questions } from "../questions/Questions";
-import { T_AnswerValue, T_DependentQuestion, T_FormStepsKeys, T_QuestionData } from "~/types";
+import { T_AnswerValue, T_FormStepsKeys } from "~/types";
 import { submitFormAnswers } from "~/services/utils/submitFormAnswers";
 import { ErrorView } from "../../Error";
 import { useFormValidation } from "~/hooks/useFormValidation";
@@ -56,7 +56,7 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
         return map;
     }, [formValues]);
 
-    const handleChange = (field: string, value: T_AnswerValue) => {
+    const handleChange = (field: string, value: T_AnswerValue, displayText?: string) => {
         setFormValues((prev) => {
             const updated = new Map(prev);
             const existingEntry = updated.get(field);
@@ -64,6 +64,7 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
                 updated.set(field, {
                     ...existingEntry,
                     answer: value,
+                    ...(displayText !== undefined && { answerText: displayText }),
                 });
             }
             return updated;
@@ -125,7 +126,7 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
             return;
         }
 
-        submitFormAnswers(formValues, String(formData.id), formData, submit);
+        submitFormAnswers(formValues, String(formData.id), submit);
     };
 
     const getCurrentStepName = (activeStepIndex: number): string =>

@@ -3,6 +3,7 @@ import { Container } from "@ui/container";
 import { DropDown, MultiSelect } from "@ui/dropdown";
 import { Textarea } from "@ui/textarea";
 import { Radiogroup } from "@ui/radiogroup";
+import { Checkbox } from "@ui/checkbox";
 import { E_ComponentTypes, T_QuestionProps } from "./types";
 import {
     b2bRadiogroupRootStyle,
@@ -29,6 +30,8 @@ export const Question: React.FC<T_QuestionProps> = ({
     };
 
     if (questionType === E_ComponentTypes.SELECT) {
+        const options = question?.useCountryList ? countryList : question?.options;
+
         return (
             <Container className={questionsStyle}>
                 <DropDown
@@ -36,11 +39,18 @@ export const Question: React.FC<T_QuestionProps> = ({
                     infoItems={question?.infoItems || null}
                     fieldName={question!.questionParameter}
                     placeholder={question?.placeholder || ""}
-                    options={question?.options || []}
+                    options={options || []}
                     showSelectedItemIcon={true}
                     value={currentValue as string}
-                    onChange={(e) => {
-                        questionProps.onChange(question!.questionParameter, e);
+                    onChange={(selectedValue) => {
+                        const option = options?.find(
+                            (opt) => String(opt.value) === String(selectedValue)
+                        );
+                        questionProps.onChange(
+                            question!.questionParameter,
+                            selectedValue,
+                            option?.text
+                        );
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     error={getFieldError(question!.questionParameter)}
@@ -49,18 +59,39 @@ export const Question: React.FC<T_QuestionProps> = ({
         );
     }
 
-    if (questionType === E_ComponentTypes.MULTISELECT)
+    if (questionType === E_ComponentTypes.MULTISELECT) {
+        const options = question?.useCountryList ? countryList : question?.options;
         return (
             <Container className={questionsStyle}>
                 <MultiSelect
                     label={question?.questionLabel || ""}
                     fieldName={question!.questionParameter}
                     placeholder={question?.placeholder || ""}
-                    options={(question?.useCountryList ? countryList : question?.options) || []}
+                    options={options || []}
                     searchEnabled={true}
                     value={currentValue as Array<string>}
                     onChange={(selectedArray: T_AnswerValue) => {
-                        questionProps.onChange(question!.questionParameter, selectedArray);
+                        if (Array.isArray(selectedArray) && options) {
+                            const selectedTexts = selectedArray
+                                .map((v) => {
+                                    const option = options.find(
+                                        (opt) => String(opt.value) === String(v)
+                                    );
+                                    return option?.text;
+                                })
+                                .filter(Boolean);
+
+                            const displayText =
+                                selectedTexts.length > 0 ? selectedTexts.join(", ") : undefined;
+
+                            questionProps.onChange(
+                                question!.questionParameter,
+                                selectedArray,
+                                displayText
+                            );
+                        } else {
+                            questionProps.onChange(question!.questionParameter, selectedArray);
+                        }
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     error={getFieldError(question!.questionParameter)}
@@ -68,7 +99,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                 />
             </Container>
         );
-
+    }
     if (questionType === E_ComponentTypes.TEXTAREA)
         return (
             <Container className={questionsStyle}>
@@ -93,11 +124,18 @@ export const Question: React.FC<T_QuestionProps> = ({
                 <Radiogroup
                     fieldName={question!.questionParameter}
                     label={question?.questionLabel || ""}
-                    onChange={(e) => {
-                        questionProps.onChange(question!.questionParameter, e);
+                    onChange={(selectedValue) => {
+                        const option = question?.options?.find(
+                            (opt) => String(opt.value) === String(selectedValue)
+                        );
+                        questionProps.onChange(
+                            question!.questionParameter,
+                            selectedValue,
+                            option?.text
+                        );
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
-                    options={question?.options ? question.options : []}
+                    options={question?.options ?? []}
                     defaultValue={currentValue as string}
                     error={getFieldError(question!.questionParameter) || ""}
                     classNames={{
@@ -147,6 +185,24 @@ export const Question: React.FC<T_QuestionProps> = ({
                 />
             </Container>
         );
+
+    if (questionType === E_ComponentTypes.CHECKBOX) {
+        return (
+            <Container className={questionsStyle}>
+                <Checkbox
+                    label={question?.questionLabel || ""}
+                    fieldName={question!.questionParameter}
+                    checked={currentValue as boolean}
+                    onChange={(checked) => {
+                        questionProps.onChange(question!.questionParameter, checked);
+                    }}
+                    onBlur={() => questionProps.onBlur(question!.questionParameter)}
+                    error={getFieldError(question!.questionParameter)}
+                    infoItems={question?.infoItems || null}
+                />
+            </Container>
+        );
+    }
 
     if (questionType === E_ComponentTypes.BENEFICIALOWNER) {
         const boQuestion = question as T_QuestionData;

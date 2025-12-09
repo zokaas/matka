@@ -1,8 +1,6 @@
 import { T_AnswerObject, T_AnswerValue, T_Payload } from "~/types";
 
-export function mapDataForPayload(
-    payload: T_Payload,
-): T_Payload {
+export function mapDataForPayload(payload: T_Payload): T_Payload {
     return {
         userId: payload.userId,
         applicationId: payload.applicationId,

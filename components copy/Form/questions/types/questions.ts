@@ -6,7 +6,7 @@ export type T_QuestionsProps = {
     activeStepName: string;
     questions: T_FormStepsWithQuestions;
     formValues: T_Answers;
-    onChange: (fieldName: string, value: T_AnswerValue) => void;
+    onChange: (fieldName: string, value: T_AnswerValue, displayText?: string) => void;
     onBlur: (fieldName: string) => void;
     countryList?: T_CountryArray;
     validationErrors: T_ValidationErrors;
@@ -14,6 +14,7 @@ export type T_QuestionsProps = {
 
 export enum E_ComponentTypes {
     BENEFICIALOWNER = "BeneficialOwner",
+    CHECKBOX = "Checkbox",
     MULTISELECT = "MultiSelectDropdown",
     NUMBER = "Number",
     RADIOGROUP = "RadioGroup",

@@ -145,6 +145,7 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
         const questionSetId = formData.get("questionSetId");
 
         if (!answersJson || !applicationId || !questionSetId || !kcUserId || !authData) {
+            console.error("Missing required data");
             return {
                 success: false,
                 message: "Missing required data",
@@ -160,23 +161,23 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
 
         const answerEntries = JSON.parse(answersJson as string) as Array<T_AnswerObject>;
 
-        const bankIdAuthData = authData || {
-            given_name: "",
-            family_name: "",
-            ssn: "",
-            iat: 0,
-        };
+        const bankIdAuthData = authData;
 
-        const payload = mapDataForPayload(
-            answerEntries,
-            kcUserId,
+        const payload = mapDataForPayload({
+            userId: kcUserId,
             applicationId,
             productId,
-            questionSetId as string,
+            questionSetId: questionSetId as string,
             organizationName,
             organizationNumber,
-            bankIdAuthData
-        );
+            bankIdAuth: {
+                givenName: bankIdAuthData.given_name || "",
+                familyName: bankIdAuthData.family_name || "",
+                ssn: bankIdAuthData.ssn || "",
+                iat: bankIdAuthData.iat || 0,
+            },
+            answers: answerEntries,
+        });
         const result = await sendFormData(payload, productId, kycType, applicationId, sessionId);
 
         console.log("Backend result:", result);

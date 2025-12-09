@@ -1,11 +1,11 @@
 export function getLanguageFromProductId(productId: string): "sv" | "en" | "fi" {
-    const lowerProductId = productId.toLowerCase();
+    const lowerCaseProductId = productId.toLowerCase();
 
-    if (lowerProductId.includes("sweden") || lowerProductId.includes("se")) {
+    if (lowerCaseProductId.includes("sweden") || lowerCaseProductId.includes("se")) {
         return "sv";
     }
 
-    if (lowerProductId.includes("finland") || lowerProductId.includes("fi")) {
+    if (lowerCaseProductId.includes("finland") || lowerCaseProductId.includes("fi")) {
         return "fi";
     }
 

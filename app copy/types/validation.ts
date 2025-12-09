@@ -5,7 +5,8 @@ export type T_ErrorType =
     | "maxLength20"
     | "maxLength100"
     | "maxLength1000"
-    | "numeric";
+    | "numeric"
+    | "mustBeChecked";
 
 export type T_ValidationRule = {
     type: T_ErrorType;

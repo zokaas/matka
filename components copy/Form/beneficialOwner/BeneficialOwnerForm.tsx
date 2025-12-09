@@ -137,7 +137,7 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
                             fieldname: fields.country.parameter,
                             label: fields.country.label,
                             value: String(selectedCountry),
-                            text: countryOption?.text || String(selectedCountry),
+                            text: countryOption?.text,
                         });
                     }}
                     onBlur={() => {}}
@@ -156,7 +156,7 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
                             fieldname: fields.pep.parameter,
                             label: fields.pep.label,
                             value: value,
-                            text: pepOption?.text || value,
+                            text: pepOption?.text,
                         });
                     }}
                     onBlur={() => {}}

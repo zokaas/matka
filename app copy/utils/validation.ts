@@ -67,6 +67,13 @@ const valueAsString = (value: T_AnswerValue): string => {
 };
 
 const validateSingleRule = (value: T_AnswerValue, rule: T_ValidationRule): string | null => {
+    if (rule.type === "mustBeChecked") {
+        if (value !== true) {
+            return rule.message;
+        }
+        return null;
+    }
+
     if (rule.type === "isRequired") {
         return isEmpty(value) ? rule.message : null;
     }
