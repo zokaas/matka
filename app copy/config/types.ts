@@ -4,6 +4,7 @@ export const appConfigSchema = z.object({
     bffBaseUrl: z.string(),
     apiBaseUrl: z.string(),
     sessionSecret: z.string(),
+    testMode: z.number(),
     optionalPropExample: z.boolean().default(false),
 });
 export type AppConfig = z.infer<typeof appConfigSchema>;

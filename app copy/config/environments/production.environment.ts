@@ -7,6 +7,7 @@ export function createProductionConfig() {
         env: "production",
         bffBaseUrl: `${bffUrl}`,
         apiBaseUrl: `${bffUrl}/kyc`,
+        testMode: 1,
         sessionSecret: "MJXg6A6mGotVYSq79dAfDHw0tN85wQ26DsKd0LVTr3SoPFneJQQaGYBddtKAN265",
     });
 }

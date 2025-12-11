@@ -15,7 +15,7 @@ export const BeneficialOwnerResult: React.FC<T_BeneficialOwnerResultProps> = ({ 
             {fieldArray.map((item, index) => (
                 <Container key={`${index}-${item.fieldname}`} className={boResultValuesContainer}>
                     <Text className={boResultValueLabelContainer}>{item.label}</Text>
-                    <Text className={boResultValueContainer}>{item.value}</Text>
+                    <Text className={boResultValueContainer}>{item.text}</Text>
                 </Container>
             ))}
         </Container>

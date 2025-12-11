@@ -1,4 +1,5 @@
 import { LoaderFunction, redirect } from "react-router";
+import { appConfig } from "~/config";
 import { T_BffSessionGetResponse, T_SessionData } from "~/services";
 import { bffGet } from "~/services/api/api-cache.server";
 import {
@@ -8,20 +9,33 @@ import {
 } from "~/services/session/cacheSession.server";
 import { verifyBffSession } from "~/services/session/sessionProvider.server";
 import { computeMaxAgeFromExp } from "~/utils/expiryUtils.server";
+import { getTestData } from "../../.mock/mockSessionData";
 
 export const loader: LoaderFunction = async ({ request }) => {
     const url = new URL(request.url);
     const searchParams = Object.fromEntries(url.searchParams.entries());
-    // get redis key from Url and fetch cached data
-    const { key } = searchParams;
-    const cachedData: T_BffSessionGetResponse | null = await bffGet(key);
+    let cachedData: T_BffSessionGetResponse | null = null;
+    const { testMode } = appConfig;
+    if (testMode === 1) {
+        const expires = (Math.floor(Date.now() / 1000) + 5 * 60) * 1000;
+
+        const { appid, id } = searchParams;
+        console.log(`Test Mode with appId: ${appid} and sessonId ${id}`);
+        cachedData = getTestData(appid, id, expires);
+    } else {
+        // get redis key from Url and fetch cached data
+        const { key } = searchParams;
+        cachedData = await bffGet(key);
+    }
+
+    console.log("cachedData", cachedData);
+
     if (!cachedData) {
         throw new Response("Invalid or expired session", {
             status: 401,
             statusText: "Unauthorized",
         });
     }
-    console.log("cachedData", cachedData);
 
     const { clientId, kycType } = cachedData;
     const { sessionId, exp } = cachedData.session;

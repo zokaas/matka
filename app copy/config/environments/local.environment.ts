@@ -7,6 +7,7 @@ export function createLocalConfig() {
         env: "local",
         bffBaseUrl: `${bffUrl}`,
         apiBaseUrl: `${bffUrl}/kyc`,
+        testMode: 0,
         sessionSecret: "b/+01TNUZjK2t30sCBaWVC5uf/bVT2xrVFKt7CSM35R7RtVpIep72fQwgxQWESrK",
     });
 }

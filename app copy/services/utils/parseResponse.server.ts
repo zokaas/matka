@@ -59,8 +59,14 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
             questionId: String(item.id),
             question: answerFieldName,
             questionLabel: item.question.questionLabel,
+            ...(item.question.calculateAnswer && {
+                calculateAnswer: item.question.calculateAnswer,
+            }),
             automaticAnalysis: item.question.automaticAnalysis ?? false,
-            type: item.question.automaticAnalysis ? item.question.automaticAnalysisType : null,
+            type:
+                item.question.automaticAnalysis && item.question.automaticAnalysisType
+                    ? item.question.automaticAnalysisType
+                    : "",
             beneficialOwners: isBeneficialOwner ? true : undefined,
             answer: "",
             answerText: undefined,
@@ -74,10 +80,14 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
                     questionId: String(currentField.id),
                     question: depField,
                     questionLabel: currentField.questionLabel,
+                    ...(currentField.calculateAnswer && {
+                        calculateAnswer: currentField.calculateAnswer,
+                    }),
                     automaticAnalysis: currentField.automaticAnalysis ?? false,
-                    type: currentField.automaticAnalysis
-                        ? currentField.automaticAnalysisType
-                        : null,
+                    type:
+                        currentField.automaticAnalysis && currentField.automaticAnalysisType
+                            ? currentField.automaticAnalysisType
+                            : "",
                     beneficialOwners: undefined,
                     answer: "",
                     answerText: undefined,

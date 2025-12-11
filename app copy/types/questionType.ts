@@ -14,8 +14,9 @@ export type T_DynamicFieldComponent =
 // Component: "kyc.dependent-question"
 export type T_DynamicFieldDependentQuestion = {
     conditionValue: number | string;
+    calculateAnswer: boolean | null;
     automaticAnalysis: boolean | null;
-    automaticAnalysisType: T_AnalysisType;
+    automaticAnalysisType: string;
     placeholder: string | null;
     options: Array<T_Option> | null;
     useCountryList: boolean | null;
@@ -75,6 +76,7 @@ export type T_ApiQuestionData = {
     questionLabel: string;
     step: number;
     componentType: string;
+    calculateAnswer?: boolean | null;
     automaticAnalysis: boolean;
     automaticAnalysisType: T_AnalysisType;
     options: Array<T_Option> | null;
@@ -89,4 +91,4 @@ export type T_ApiQuestion = {
     question: T_ApiQuestionData;
 };
 
-export type T_AnalysisType = "Boolean" | "Int" | "String" | null;
+export type T_AnalysisType = "Boolean" | "Int" | "String" | "" | null;

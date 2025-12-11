@@ -7,6 +7,7 @@ export function createDevelopmentConfig() {
         env: "development",
         bffBaseUrl: `${bffUrl}`,
         apiBaseUrl: `${bffUrl}/kyc`,
+        testMode: 0,
         sessionSecret: "SFZrUuaYAXWE/oLmGO3ShnEs5LMOTSkGYeYVSXx8PDDh1ACwGv7AY0hF1uHV9MTe",
     });
 }

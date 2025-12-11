@@ -24,8 +24,9 @@ export function createAnswersArray(answersEntries: Array<T_AnswerObject>) {
             questionId: entry.questionId,
             question: entry.question,
             questionLabel: entry.questionLabel,
+            ...(entry.calculateAnswer === true && { calculateAnswer: true }),
             automaticAnalysis: entry.automaticAnalysis ?? false,
-            type: entry.automaticAnalysis === true ? entry.type : null,
+            type: entry.type || "",
             answer: normalizeAnswerValue(entry.answer),
             ...(entry.answerText !== undefined && { answerText: entry.answerText }),
         };
