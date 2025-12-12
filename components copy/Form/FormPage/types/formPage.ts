@@ -1,4 +1,4 @@
-import { T_ErrorView } from "apps/kyc/components/Error";
+import { T_ErrorView } from "apps/kyc/components/error";
 import { T_ProductIdPageData } from "~/routes/types";
 import { T_ParsedFormData } from "~/types";
 

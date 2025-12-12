@@ -27,7 +27,7 @@ import { Icon } from "@ui/icon";
 import { Questions } from "../questions/Questions";
 import { T_AnswerValue, T_FormStepsKeys } from "~/types";
 import { submitFormAnswers } from "~/services/utils/submitFormAnswers";
-import { ErrorView } from "../../Error";
+import { ErrorView } from "../../error";
 import { useFormValidation } from "~/hooks/useFormValidation";
 
 export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {

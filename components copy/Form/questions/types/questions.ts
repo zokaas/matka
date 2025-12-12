@@ -21,5 +21,4 @@ export enum E_ComponentTypes {
     SELECT = "Select",
     TEXT = "Text",
     TEXTAREA = "Textarea",
-    HIDDENINPUT = "HiddenInput",
 }

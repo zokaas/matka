@@ -12,7 +12,7 @@ import {
     b2bRadioItemStyle,
     questionsStyle,
 } from "~/styles";
-import { InputNumber, InputText } from "@ui/inputField";
+import { InputNumber, InputText } from "@ui/input";
 import { BeneficialOwner, T_BeneficialOwnerCardProps } from "../beneficialOwner";
 import { BO_MAX_COUNT, EMPTY_STRING } from "./questions.constants";
 import { T_AnswerValue, T_QuestionData } from "~/types";

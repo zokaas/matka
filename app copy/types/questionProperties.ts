@@ -8,8 +8,7 @@ export type T_ComponentType =
     | "Number"
     | "BeneficialOwner"
     | "MultiSelectDropdown"
-    | "Checkbox"
-    | "HiddenInput"
+    | "Checkbox";
 
 export type T_Option = {
     text: string;

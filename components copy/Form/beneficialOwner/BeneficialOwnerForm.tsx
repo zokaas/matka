@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Container } from "@ui/container";
 import { T_BeneficialOwnerFormProps, T_BoFieldParams } from "./types";
-import { InputText } from "@ui/inputField";
+import { InputText } from "@ui/input";
 import { Button } from "@ui/button";
 import { DropDown } from "@ui/dropdown";
 import { Radiogroup } from "@ui/radiogroup";

@@ -24,14 +24,13 @@ import {
     T_ProductIdLoaderData,
     T_ProductIdPageData,
 } from "./types/productIdPage";
-import { FormPage } from "../../components/Form";
 import { T_ParsedFormData, T_AnswerObject } from "~/types";
 import { Route } from "apps/kyc/.react-router/types/app/+types/root";
 
 import { Header } from "@ui/header";
 import { Container } from "@ui/container";
 import { pageContentStyle } from "~/styles/pageContentStyle.css";
-import { ErrorHandler, SessionModalManager, T_ErrorView } from "apps/kyc/components";
+import { ErrorHandler, FormPage, SessionModalManager, T_ErrorView } from "apps/kyc/components";
 import { Footer } from "@ui/footer";
 import { T_ActionResponse } from "./types";
 import { getAndParseFormData } from "~/services/api/get-form-data.server";

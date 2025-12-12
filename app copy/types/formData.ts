@@ -21,10 +21,8 @@ export type T_AnswerObject = {
     questionId: string;
     question: string;
     questionLabel: string;
-    calculateAnswer?: boolean | null;
     automaticAnalysis: boolean;
     type: T_AnalysisType;
-    beneficialOwners?: boolean; //only used for beneficial owner answer -> if is bo answer = true
     answer: T_AnswerValue;
     answerText?: string;
 };

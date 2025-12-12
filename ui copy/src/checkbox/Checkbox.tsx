@@ -46,10 +46,7 @@ export const Checkbox: React.FC<T_CheckboxProps> = ({
                         <Icon iconName="check" iconPrefix="fas" />
                     </RadixCheckbox.Indicator>
                 </RadixCheckbox.Root>
-                <Label 
-                    htmlFor={fieldName} 
-                    labelClassName={labelStyle}
-                    infoItems={infoItems}>
+                <Label htmlFor={fieldName} labelClassName={labelStyle} infoItems={infoItems}>
                     {label}
                 </Label>
             </Container>
