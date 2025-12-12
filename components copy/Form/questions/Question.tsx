@@ -12,7 +12,7 @@ import {
     b2bRadioItemStyle,
     questionsStyle,
 } from "~/styles";
-import { InputNumber, InputText } from "@ui/inputField";
+import { InputNumber, InputText, HiddenInput } from "@ui/inputField";
 import { BeneficialOwner, T_BeneficialOwnerCardProps } from "../beneficialOwner";
 import { BO_MAX_COUNT, EMPTY_STRING } from "./questions.constants";
 import { T_AnswerValue, T_QuestionData } from "~/types";
@@ -258,6 +258,18 @@ export const Question: React.FC<T_QuestionProps> = ({
                     currentValue={currentValue}
                 />
             </Container>
+        );
+    }
+
+    if (questionType === E_ComponentTypes.HIDDENINPUT) {
+        return (
+            <HiddenInput
+                fieldName={question!.questionParameter}
+                value={currentValue as string | boolean}
+                onChange={(value) => {
+                    questionProps.onChange(question!.questionParameter, value, String(value));
+                }}
+            />
         );
     }
 
