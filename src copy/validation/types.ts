@@ -1,0 +1,32 @@
+import { ZodArray, ZodBoolean, ZodEffects, ZodString, ZodNumber } from "zod";
+
+export type T_FormSchema = {
+    organizationNumber: ZodEffects<ZodString>;
+    loanAmount: ZodString;
+    repaymentPeriod: ZodEffects<ZodString>;
+    loanPurpose?: ZodEffects<ZodString>;
+    loanPurposeDescription?: ZodEffects<ZodString>;
+    campaignCode: ZodString;
+    businessSector?: ZodString;
+    streetAddress: ZodEffects<ZodString>;
+    zipCode: ZodEffects<ZodString>;
+    city: ZodEffects<ZodString>;
+    disburismentAccount: ZodEffects<ZodString>;
+    applicantName: ZodEffects<ZodString>;
+    ssn: ZodEffects<ZodString>;
+    emailAddress: ZodString;
+    applicantPhone: ZodEffects<ZodString>;
+    PEP?: ZodEffects<ZodString>;
+    allowMarketing: ZodBoolean;
+    businessCheck: ZodEffects<ZodBoolean>;
+    selfGuarantor: ZodEffects<ZodBoolean>;
+    otherAsFirstGuarantor: ZodEffects<ZodBoolean>;
+    guarantorName: ZodEffects<ZodString>;
+    guarantorEmail: ZodString;
+    guarantorPhone: ZodEffects<ZodString>;
+    secondGuarantorName: ZodEffects<ZodString>;
+    secondGuarantorEmail: ZodString;
+    secondGuarantorPhone: ZodEffects<ZodString>;
+    attachments: ZodArray<any>;
+    invoiceDueDate: ZodNumber;
+};

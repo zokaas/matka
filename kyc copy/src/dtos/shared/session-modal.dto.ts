@@ -6,12 +6,6 @@ export class SessionModalDto {
   id?: number;
 
   @IsString()
-  companyName: string;
-
-  @IsString()
-  orgNumber: string;
-
-  @IsString()
   refreshTitle: string;
 
   @IsString()

@@ -17,13 +17,21 @@ export class ApiQuestionDto {
   documentId: string;
 
   @IsString()
-  questionParameter: string;
+  questionParameter: string | null;
+
+  @IsOptional()
+  @IsString()
+  hiddenInputQuestionParameter: string | null;
 
   @IsString()
   questionLabel: string;
 
   @IsString()
   componentType: string;
+
+  @IsOptional()
+  @IsBoolean()
+  calculateAnswer?: boolean | null;
 
   @IsBoolean()
   automaticAnalysis: boolean;

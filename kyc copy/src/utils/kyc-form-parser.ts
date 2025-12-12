@@ -40,7 +40,7 @@ export class KycFormParser {
       try {
         return {
           value: country.value,
-          text: country.text, 
+          text: country.text,
         };
       } catch (error) {
         this.logger.error("Critical parsing error:", error);
@@ -138,19 +138,24 @@ export class KycFormParser {
           continue;
         }
 
+        const questionParameter =
+          questionAttributes.questionParameter ||
+          questionAttributes.hiddenInputQuestionParameter;
+
         questions.push({
           id: questionComponent.id,
           question: {
             questionLabel: questionAttributes.questionLabel,
             componentType: questionAttributes.componentType,
             step: questionComponent.step,
+            calculateAnswer: questionAttributes.calculateAnswer,
             automaticAnalysis: questionAttributes.automaticAnalysis,
             automaticAnalysisType: this.convertAnalysisType(
               questionAttributes.automaticAnalysisType
             ),
             options: questionAttributes.options,
             placeholder: questionAttributes.placeholder,
-            questionParameter: questionAttributes.questionParameter,
+            questionParameter: questionParameter,
             errorMessages: this.cleanErrorMessages(
               questionAttributes.errorMessages
             ),

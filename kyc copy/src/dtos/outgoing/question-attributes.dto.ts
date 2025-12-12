@@ -42,6 +42,9 @@ export class QuestionAttributesDto {
   questionParameter: string;
 
   @IsBoolean()
+  calculateAnswer: boolean;
+
+  @IsBoolean()
   automaticAnalysis: boolean;
 
   @IsString()
