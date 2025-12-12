@@ -3,4 +3,5 @@ export type T_HiddenInputProps = {
   value?: unknown;
   onChange: (val: unknown) => void;
   onBlur: () => void;
+  sniCode?: string;
 };
