@@ -38,6 +38,7 @@ import { mapDataForPayload } from "~/services/utils/mapDataForPayload.server";
 import { sendFormData } from "~/services/api/api-kyc.server";
 import { computeMaxAgeFromExp } from "~/utils/expiryUtils.server";
 import { LoaderData } from "~/root";
+import { populateHiddenFields } from "~/utils/populateHiddenFields";
 
 export const loader = async ({
     request,
@@ -60,8 +61,8 @@ export const loader = async ({
     };
 
     const session = await getCachedSession(request.headers?.get("Cookie"));
-    const { sessionId, organizationName, organizationNumber } =
-        await getOrganizationFromSession(request);
+    const companyData = await getOrganizationFromSession(request);
+    const {sessionId, organizationName, organizationNumber, sniCode} = companyData
     const exp = session.get("session")?.exp ?? Date.now();
 
     if (!sessionId) {
@@ -82,6 +83,7 @@ export const loader = async ({
         }
 
         const parsedFormData = await getAndParseFormData(productId, kycType, sessionId);
+        populateHiddenFields(parsedFormData.answers, companyData);
 
         const { loginUrl, kycDoneUrl } = parsedFormData;
         loaderData.formData = parsedFormData;
@@ -90,6 +92,7 @@ export const loader = async ({
             kycType,
             organizationNumber,
             productId,
+            sniCode
         };
         loaderData.sessionData = {
             applicationId: session.get("applicationId") ?? "",
@@ -177,6 +180,7 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
             },
             answers: answerEntries,
         });
+        console.log(payload)
         const result = await sendFormData(payload, productId, kycType, applicationId, sessionId);
 
         console.log("Backend result:", result);

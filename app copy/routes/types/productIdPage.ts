@@ -5,6 +5,7 @@ export type T_ProductIdPageData = {
     organizationNumber: string;
     productId: string;
     kycType: string;
+    sniCode: string
 };
 
 export type T_Error = {

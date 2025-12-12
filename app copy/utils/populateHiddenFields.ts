@@ -6,18 +6,18 @@ export function populateHiddenFields(
     sessionData: T_CompanyDataFromSession
 ): T_Answers {
 
-    //predefined special cases, in strapi under hiddenFieldQuestionParameter
-    if (answers.has('sniCode')) {
-        const existingAnswer = answers.get('sniCode')!;
-        answers.set('sniCode', {
+    //predefined special cases, in strapi under hiddenInputQuestionParameter
+    if (answers.has('SNICode')) {
+        const existingAnswer = answers.get('SNICode')!;
+        answers.set('SNICode', {
             ...existingAnswer,
             answer: sessionData.sniCode,
         });
     }
 
-    if (answers.has('distanceAgreement')) {
-        const existingAnswer = answers.get('distanceAgreement')!;
-        answers.set('distanceAgreement', {
+    if (answers.has('DistanceAgreement')) {
+        const existingAnswer = answers.get('DistanceAgreement')!;
+        answers.set('DistanceAgreement', {
                         ...existingAnswer,
             answer: true,
         });

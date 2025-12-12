@@ -1,4 +1,3 @@
-import { T_ProductIdPageData } from "~/routes/types";
 import { T_Answers, T_AnswerValue, T_CountryArray, T_FormStepsWithQuestions } from "~/types";
 import { T_ValidationErrors } from "~/types/validation";
 
@@ -11,7 +10,6 @@ export type T_QuestionsProps = {
     onBlur: (fieldName: string) => void;
     countryList?: T_CountryArray;
     validationErrors: T_ValidationErrors;
-    pageData: T_ProductIdPageData;
 };
 
 export enum E_ComponentTypes {

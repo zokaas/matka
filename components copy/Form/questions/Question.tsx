@@ -12,7 +12,7 @@ import {
     b2bRadioItemStyle,
     questionsStyle,
 } from "~/styles";
-import { InputNumber, InputText } from "@ui/input";
+import { HiddenField, InputNumber, InputText } from "@ui/input";
 import { BeneficialOwner, T_BeneficialOwnerCardProps } from "../beneficialOwner";
 import { BO_MAX_COUNT, EMPTY_STRING } from "./questions.constants";
 import { T_AnswerValue, T_QuestionData } from "~/types";
@@ -109,7 +109,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     placeholder={question?.placeholder ? question.placeholder : undefined}
                     value={currentValue as string}
                     onChange={(e) => {
-                        questionProps.onChange(question!.questionParameter, e);
+                        questionProps.onChange(question!.questionParameter, e as T_AnswerValue);
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     error={getFieldError(question!.questionParameter)}
@@ -159,7 +159,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     placeholder={question?.placeholder ? question.placeholder : undefined}
                     value={currentValue as string}
                     onChange={(e) => {
-                        questionProps.onChange(question!.questionParameter, e);
+                        questionProps.onChange(question!.questionParameter, e as T_AnswerValue);
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     error={getFieldError(question!.questionParameter) || ""}
@@ -177,7 +177,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     placeholder={question?.placeholder ? question.placeholder : undefined}
                     value={currentValue as string}
                     onChange={(e) => {
-                        questionProps.onChange(question!.questionParameter, e);
+                        questionProps.onChange(question!.questionParameter, e as T_AnswerValue);
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     error={getFieldError(question!.questionParameter) || ""}
@@ -201,6 +201,19 @@ export const Question: React.FC<T_QuestionProps> = ({
                     infoItems={question?.infoItems || null}
                 />
             </Container>
+        );
+    }
+
+    if (questionType === E_ComponentTypes.HIDDENINPUT) {
+        return (
+            <HiddenField
+                fieldName={question!.questionParameter}
+                value={currentValue as string}
+                onChange={(e) => {
+                    questionProps.onChange(question!.questionParameter, e as T_AnswerValue);
+                }}
+                onBlur={() => questionProps.onBlur(question!.questionParameter)}
+            />
         );
     }
 
