@@ -9,13 +9,24 @@ import { T_AnalysisType, T_ApiQuestion } from "./questionType";
 
 export type T_FormGlobalProperties = T_FormMainCommonProperties & T_FormGeneralFormProperties;
 
+export type T_MultiSelectItem = {
+    value: number | string;
+    text: string;
+};
+
+type T_BeneficialOwner = Record<string, string | number>;
+
 export type T_AnswerValue =
     | string
     | number
     | boolean
     | Array<string>
-    | Array<Record<string, string>>
+    | Array<number>
+    | Array<T_MultiSelectItem | T_BeneficialOwner>
+    | T_MultiSelectItem
     | undefined;
+    
+export type T_AnswerDisplayText = string | Array<string>;
 
 export type T_AnswerObject = {
     questionId: string;
@@ -23,9 +34,8 @@ export type T_AnswerObject = {
     questionLabel: string;
     automaticAnalysis: boolean;
     type: T_AnalysisType;
-    beneficialOwners?: boolean; //only used for beneficial owner answer -> if is bo answer = true
     answer: T_AnswerValue;
-    answerText?: string;
+    answerText?: string | Array<string>;
 };
 
 export type T_Answers = Map<string, T_AnswerObject>;

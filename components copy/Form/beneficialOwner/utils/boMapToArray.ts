@@ -6,14 +6,21 @@ export const convertMapToOwnersArray = (map: Map<string, Array<T_BoFieldParams>>
 
         arr.forEach((field) => {
             if (field?.fieldname) {
-                if (field.text !== undefined) {
+                if (field.fieldname === "BOCountry" && field.text !== undefined) {
+                    obj[field.fieldname] = field.text;
+                }
+                else if (field.fieldname === "BOPEP") {
                     obj[field.fieldname] = field.value;
-                    obj[`${field.fieldname}Text`] = field.text;
-                } else {
+                    if (field.text !== undefined) {
+                        obj[`${field.fieldname}Text`] = field.text;
+                    }
+                }
+                else {
                     obj[field.fieldname] = field.value;
                 }
             }
         });
+        
         return obj;
     });
 };

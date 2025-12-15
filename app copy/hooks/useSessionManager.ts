@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useActivityTracker } from "./useActivityTracker";
 import { T_RefreshResult, T_SessionLoaderData } from "./types";
 import { useExpiryTimer } from "./useExpiryTimer";
-import { T_SessionModalPayload } from "apps/kyc/components/SessionModal/types";
+import { T_SessionModalPayload } from "apps/kyc/components/sessionModal/types";
 import { useLoaderData } from "react-router";
 import { requestSessionRefresh } from "~/services";
 

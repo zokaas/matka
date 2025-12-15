@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Popover, Checkbox } from "radix-ui";
 import { ErrorMessage } from "@ui/error";
 import { Container } from "@ui/container";
@@ -22,7 +22,7 @@ import {
     multiSelectOptionText,
     multiSelectFieldButton,
 } from "./styles";
-import { T_MultiSelectProps } from "./types";
+import { T_MultiSelectProps, T_DropDownOption } from "./types";
 
 export const MultiSelect: React.FC<T_MultiSelectProps> = ({
     fieldName,
@@ -43,9 +43,22 @@ export const MultiSelect: React.FC<T_MultiSelectProps> = ({
     const [isOpen, setIsOpen] = useState(false);
     const [optionsArray, setOptionsArray] = useState(options || []);
 
-    const selectedValues: string[] = Array.isArray(value) ? value.map(String) : [];
+    const selectedItems: Array<T_DropDownOption> = useMemo(() => {
+        if (!Array.isArray(value)) return [];
+        
+        return value.filter((item): item is T_DropDownOption => 
+            item !== null && 
+            typeof item === "object" && 
+            "value" in item && 
+            "text" in item
+        );
+    }, [value]);
+
+    const selectedTexts = useMemo(() => {
+        return selectedItems.map((item) => item.text);
+    }, [selectedItems]);
+
     const selectContainer = classNames?.dropDownContainer || dropDownContainerStyle;
-    const selectField = classNames?.dropDownField || multiSelectFieldButton;
     const selectIcon = classNames?.dropDownIcon || dropDownOpenIconStyle;
     const selectValuesList = classNames?.dropDownSelectionList || multiSelectListStyle;
     const selectViewport = classNames?.dropDownViewport || dropDownViewportStyle;
@@ -75,38 +88,39 @@ export const MultiSelect: React.FC<T_MultiSelectProps> = ({
         if (!searchText) setOptionsArray(options || []);
     };
 
-    const handleCheckChange = (optionValue: string | number | boolean, checked: boolean) => {
-        const stringValue = String(optionValue);
-        let newValues: Array<string>;
+    const handleCheckChange = (option: T_DropDownOption, checked: boolean) => {
+        let newItems: Array<T_DropDownOption>;
 
         if (checked) {
-            newValues = selectedValues.includes(stringValue)
-                ? selectedValues
-                : [...selectedValues, stringValue];
+            const exists = selectedItems.some(
+                (item) => item.value === option.value && item.text === option.text
+            );
+            newItems = exists ? selectedItems : [...selectedItems, option];
         } else {
-            newValues = selectedValues.filter((v) => v !== stringValue);
+            newItems = selectedItems.filter(
+                (item) => !(item.value === option.value && item.text === option.text)
+            );
         }
 
-        onChange?.(newValues);
+        onChange?.(newItems);
     };
 
-    const selectedItems = selectedValues.map((value) => {
-        const option = options?.find((opt) => String(opt.value) === value);
-        return { value, text: option?.text };
-    });
-
-    const removeItem = (e: React.MouseEvent, valueToRemove: string) => {
+    const removeItem = (e: React.MouseEvent, itemToRemove: T_DropDownOption) => {
         e.preventDefault();
         e.stopPropagation();
-        const newValues = selectedValues.filter((v) => v !== valueToRemove);
-        onChange?.(newValues);
+
+        const newItems = selectedItems.filter(
+            (item) => !(item.value === itemToRemove.value && item.text === itemToRemove.text)
+        );
+        onChange?.(newItems);
     };
 
     const optionItems = optionsArray.map((option, index) => {
         if (option?.value === undefined || option?.value === null) return null;
 
-        const optionValue = String(option.value);
-        const isChecked = selectedValues.includes(optionValue);
+        const isChecked = selectedItems.some(
+            (item) => item.value === option.value && item.text === option.text
+        );
         const isNoResults = option.value === NO_RESULTS;
 
         return (
@@ -118,10 +132,7 @@ export const MultiSelect: React.FC<T_MultiSelectProps> = ({
                     <Checkbox.Root
                         checked={isChecked}
                         onCheckedChange={(checked) => {
-                            handleCheckChange(
-                                option.value as string | number | boolean,
-                                checked === true
-                            );
+                            handleCheckChange(option, checked === true);
                         }}
                         className={selectCheckbox}>
                         <Checkbox.Indicator>
@@ -149,22 +160,25 @@ export const MultiSelect: React.FC<T_MultiSelectProps> = ({
                             aria-label={label}
                             onBlur={onBlur}>
                             <div className={selectTagsContainer}>
-                                {selectedItems.length === 0 ? (
+                                {selectedTexts.length === 0 ? (
                                     <span className={selectValue}>{placeholder}</span>
                                 ) : (
-                                    selectedItems.map((item) => (
-                                        <span key={item.value} className={selectTag}>
-                                            {item.text}
-                                            <input
-                                                type="button"
-                                                className={selectTagRemove}
-                                                onClick={(e) => removeItem(e, item.value)}
-                                                value="×"
-                                                title={`Remove ${item.text}`}
-                                                aria-label={`Remove ${item.text}`}
-                                            />
-                                        </span>
-                                    ))
+                                    selectedTexts.map((text, idx) => {
+                                        const item = selectedItems[idx];
+                                        return (
+                                            <span key={`tag_${text}_${idx}`} className={selectTag}>
+                                                {text}
+                                                <input
+                                                    type="button"
+                                                    className={selectTagRemove}
+                                                    onClick={(e) => removeItem(e, item)}
+                                                    value="×"
+                                                    title={`Remove ${text}`}
+                                                    aria-label={`Remove ${text}`}
+                                                />
+                                            </span>
+                                        );
+                                    })
                                 )}
                             </div>
                             <Container className={selectIcon}>

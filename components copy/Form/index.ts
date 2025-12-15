@@ -1,1 +1,1 @@
-export * from "./FormPage";
+export * from "./formPage";

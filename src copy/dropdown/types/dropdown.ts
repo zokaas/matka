@@ -13,7 +13,7 @@ export interface ItemProps {
 
 export type ItemRef = HTMLDivElement;
 
-export type T_DropDownOptionValue = string | Array<string> | number | boolean | undefined;
+export type T_DropDownOptionValue = string | number ;
 
 export type T_DropDownClassNamesProps = {
     dropDownContainer?: string;
@@ -33,10 +33,10 @@ export type T_DropDownClassNamesProps = {
 export type T_DropDownProps = {
     label: string;
     fieldName: string;
-    value?: string;
+    value: T_DropDownOption;
     options: Array<T_DropDownOption> | null;
     showSelectedItemIcon: boolean;
-    onChange: (value: T_DropDownOptionValue) => void;
+    onChange: (value: T_DropDownOptionValue, text: string) => void;
     onBlur: (value?: React.FocusEvent<HTMLButtonElement, Element>) => void;
     placeholder?: string | null;
     classNames?: T_DropDownClassNamesProps;
@@ -49,6 +49,7 @@ export type T_DropDownProps = {
 };
 
 export type T_DropDownOption = {
+    id?: number;
     value: T_DropDownOptionValue;
     text: string;
 };

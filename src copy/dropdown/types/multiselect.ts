@@ -1,13 +1,13 @@
 import { T_ErrorClassNamesProps } from "@ui/error";
-import { T_DropDownClassNamesProps, T_DropDownOption, T_DropDownOptionValue } from "./dropdown";
+import { T_DropDownClassNamesProps, T_DropDownOption } from "./dropdown";
 import { T_LabelInfo } from "@ui/label";
 
 export type T_MultiSelectProps = {
     label: string;
     fieldName: string;
     options: Array<T_DropDownOption> | null;
-    onChange: (value: T_DropDownOptionValue) => void;
-    value?: Array<string>;
+    onChange: (items: Array<T_DropDownOption>) => void;
+    value: Array<T_DropDownOption>;
     onBlur?: (value?: React.FocusEvent<HTMLButtonElement, Element>) => void;
     placeholder?: string | null;
     classNames?: T_MultiSelectClassNamesProps;

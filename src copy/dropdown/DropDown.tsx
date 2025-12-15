@@ -12,7 +12,7 @@ import {
     selectPlaceholder,
 } from "./styles";
 import { Container } from "@ui/container";
-import { ItemProps, ItemRef, T_DropDownProps } from "./types";
+import { ItemProps, ItemRef, T_DropDownOption, T_DropDownProps } from "./types";
 import { Icon } from "@ui/icon";
 import { ErrorMessage } from "@ui/error";
 import { Filter } from "@ui/filter";
@@ -39,11 +39,16 @@ export const DropDown: React.FC<T_DropDownProps> = ({
     const [isOpen, setIsOpen] = useState(false);
     const [optionsArray, setOptionsArray] = useState(options || []);
 
-    const [selectedValue, setSelectedValue] = useState<string>(value || "");
+    const getDisplayText = (val: T_DropDownOption): string => {
+        if (!val) return "";
+        return val.text || "";
+    };
+
+    const [selectedValue, setSelectedValue] = useState<string>(() => getDisplayText(value));
 
     useEffect(() => {
-        setSelectedValue(value || "");
-    }, [value]);
+        setSelectedValue(getDisplayText(value));
+    }, [value?.text, options]);
 
     const selectContainer = classNames?.dropDownContainer || dropDownContainerStyle;
     const selectField = classNames?.dropDownField || dropDownStyle;
@@ -71,9 +76,12 @@ export const DropDown: React.FC<T_DropDownProps> = ({
         if (!searchText) setOptionsArray(options || []);
     };
 
-    const handleValueChange = (value: string) => {
-        setSelectedValue(value);
-        onChange(value);
+    const handleValueChange = (selectedText: string) => {
+        const option = optionsArray?.find((opt) => opt.text === selectedText);
+        if (!option) return;
+
+        setSelectedValue(selectedText);
+        onChange(option.value, option.text);
     };
 
     return (
@@ -120,8 +128,8 @@ export const DropDown: React.FC<T_DropDownProps> = ({
                         <Select.Viewport className={selectViewport}>
                             {optionsArray?.map((option, index) => (
                                 <SelectItem
-                                    value={`${option.value}`}
-                                    disabled={option.value === NO_RESULTS}
+                                    value={option.text}
+                                    disabled={option.text === NO_RESULTS}
                                     className={selectItem}
                                     indicatorClassName={selectItemIndicator}
                                     showSelectedIndicator={showSelectedItemIcon}

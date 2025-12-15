@@ -12,7 +12,7 @@ import {
     b2bRadioItemStyle,
     questionsStyle,
 } from "~/styles";
-import { InputNumber, InputText } from "@ui/inputField";
+import { HiddenField, InputNumber, InputText } from "@ui/input";
 import { BeneficialOwner, T_BeneficialOwnerCardProps } from "../beneficialOwner";
 import { BO_MAX_COUNT, EMPTY_STRING } from "./questions.constants";
 import { T_AnswerValue, T_QuestionData } from "~/types";
@@ -42,14 +42,15 @@ export const Question: React.FC<T_QuestionProps> = ({
                     options={options || []}
                     showSelectedItemIcon={true}
                     value={currentValue as string}
-                    onChange={(selectedValue) => {
-                        const option = options?.find(
-                            (opt) => String(opt.value) === String(selectedValue)
-                        );
+                    onChange={(selectedValue, selectedText) => {
+                        if (selectedValue === undefined || !selectedText) return;
+
+                        const option = options?.find((opt) => opt.value === selectedValue);
+
                         questionProps.onChange(
                             question!.questionParameter,
-                            selectedValue,
-                            option?.text
+                            option || { value: selectedValue, text: selectedText },
+                            selectedText
                         );
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
@@ -69,29 +70,9 @@ export const Question: React.FC<T_QuestionProps> = ({
                     placeholder={question?.placeholder || ""}
                     options={options || []}
                     searchEnabled={true}
-                    value={currentValue as Array<string>}
-                    onChange={(selectedArray: T_AnswerValue) => {
-                        if (Array.isArray(selectedArray) && options) {
-                            const selectedTexts = selectedArray
-                                .map((v) => {
-                                    const option = options.find(
-                                        (opt) => String(opt.value) === String(v)
-                                    );
-                                    return option?.text;
-                                })
-                                .filter(Boolean);
-
-                            const displayText =
-                                selectedTexts.length > 0 ? selectedTexts.join(", ") : undefined;
-
-                            questionProps.onChange(
-                                question!.questionParameter,
-                                selectedArray,
-                                displayText
-                            );
-                        } else {
-                            questionProps.onChange(question!.questionParameter, selectedArray);
-                        }
+                    value={currentValue as Array<{ value: number | string; text: string }>}
+                    onChange={(items) => {
+                        questionProps.onChange(question!.questionParameter, items);
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     error={getFieldError(question!.questionParameter)}
@@ -100,6 +81,7 @@ export const Question: React.FC<T_QuestionProps> = ({
             </Container>
         );
     }
+
     if (questionType === E_ComponentTypes.TEXTAREA)
         return (
             <Container className={questionsStyle}>
@@ -109,7 +91,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     placeholder={question?.placeholder ? question.placeholder : undefined}
                     value={currentValue as string}
                     onChange={(e) => {
-                        questionProps.onChange(question!.questionParameter, e);
+                        questionProps.onChange(question!.questionParameter, e as T_AnswerValue, e);
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     error={getFieldError(question!.questionParameter)}
@@ -159,7 +141,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     placeholder={question?.placeholder ? question.placeholder : undefined}
                     value={currentValue as string}
                     onChange={(e) => {
-                        questionProps.onChange(question!.questionParameter, e);
+                        questionProps.onChange(question!.questionParameter, e as T_AnswerValue, e);
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     error={getFieldError(question!.questionParameter) || ""}
@@ -177,7 +159,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     placeholder={question?.placeholder ? question.placeholder : undefined}
                     value={currentValue as string}
                     onChange={(e) => {
-                        questionProps.onChange(question!.questionParameter, e);
+                        questionProps.onChange(question!.questionParameter, e as T_AnswerValue, e);
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     error={getFieldError(question!.questionParameter) || ""}
@@ -194,13 +176,34 @@ export const Question: React.FC<T_QuestionProps> = ({
                     fieldName={question!.questionParameter}
                     checked={currentValue as boolean}
                     onChange={(checked) => {
-                        questionProps.onChange(question!.questionParameter, checked);
+                        questionProps.onChange(
+                            question!.questionParameter,
+                            checked,
+                            checked ? "Ja" : "Nej" //TODO: implement proper translations for boolean
+                        );
                     }}
                     onBlur={() => questionProps.onBlur(question!.questionParameter)}
                     error={getFieldError(question!.questionParameter)}
                     infoItems={question?.infoItems || null}
                 />
             </Container>
+        );
+    }
+
+    if (questionType === E_ComponentTypes.HIDDENINPUT) {
+        return (
+            <HiddenField
+                fieldName={question!.questionParameter}
+                value={currentValue as string}
+                onChange={(e) => {
+                    questionProps.onChange(
+                        question!.questionParameter,
+                        e as T_AnswerValue,
+                        e as string
+                    );
+                }}
+                onBlur={() => questionProps.onBlur(question!.questionParameter)}
+            />
         );
     }
 
@@ -261,5 +264,5 @@ export const Question: React.FC<T_QuestionProps> = ({
         );
     }
 
-    return <Container className={questionsStyle}>Question type does not exist</Container>;
+    return <Container className={questionsStyle}>Question type does not exist</Container>; //TODO? other fallback or transaltions?
 };

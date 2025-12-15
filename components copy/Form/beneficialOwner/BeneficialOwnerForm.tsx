@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Container } from "@ui/container";
 import { T_BeneficialOwnerFormProps, T_BoFieldParams } from "./types";
-import { InputText } from "@ui/inputField";
+import { InputText } from "@ui/input";
 import { Button } from "@ui/button";
 import { DropDown } from "@ui/dropdown";
 import { Radiogroup } from "@ui/radiogroup";
@@ -124,20 +124,16 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
                     label={fields.country.label}
                     fieldName={fields.country.parameter}
                     placeholder={fields.country.placeholder}
-                    value={country.value}
+                    value={{ value: country.value || "", text: country.text || ""}}
                     searchEnabled
                     options={countryList || null}
                     showSelectedItemIcon={true}
-                    onChange={(selectedCountry) => {
-                        const countryOption = countryList?.find(
-                            (c) => String(c.value) === String(selectedCountry)
-                        );
-
+                    onChange={(value, text) => {
                         setCountry({
                             fieldname: fields.country.parameter,
                             label: fields.country.label,
-                            value: String(selectedCountry),
-                            text: countryOption?.text,
+                            value: String(text),
+                            text: String(text),
                         });
                     }}
                     onBlur={() => {}}
