@@ -1,4 +1,4 @@
-import { IsBoolean, IsDefined, IsString } from "class-validator";
+import { IsBoolean, IsDefined, IsOptional, IsString } from "class-validator";
 import { BeneficialOwnerAnswerDto } from "./beneficial-owner-answer.dto";
 
 export class AnswerDto {
@@ -11,9 +11,10 @@ export class AnswerDto {
   @IsBoolean()
   automaticAnalysis: boolean;
 
+  @IsOptional()
   @IsString()
-  type: string | null;
+  type?: string; 
 
   @IsDefined()
-  answer: string | Array<number> | Array<string> | Array<BeneficialOwnerAnswerDto>;
+  answer: string | number | Array<number> | Array<string> | Array<BeneficialOwnerAnswerDto> | boolean ;
 }

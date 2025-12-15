@@ -7,8 +7,6 @@ export const statusPageContainer = style({
     flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: themeVars.color.baseWhite100,
-    padding: designConstants.spacing.largePadding,
 });
 
 export const statusPageHeader = style({

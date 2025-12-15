@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { T_RefreshResult } from "./types";
-import type { T_SessionModalPayload } from "apps/kyc/components/sessionModal/types";
+import type { T_SessionModalPayload } from "apps/kyc/components/SessionModal/types";
 
 /**
  * Hook: manages the single timer that triggers warning/refresh logic.

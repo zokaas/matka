@@ -2,8 +2,8 @@ import React from "react";
 import { Container } from "@ui/container";
 import { T_Error, T_ErrorView } from "./errorTypes";
 import { Text } from "@ui/text";
-
-import { mainContentStyle, statusPageBodyText, statusPageButton, statusPageContainer } from "~/styles";
+import { StatusLayout } from "../statusLayout";
+import { statusPageBodyText, statusPageButton, statusPageContainer } from "~/styles";
 import { Button } from "@ui/button";
 import { redirectToLogin } from "~/utils";
 
@@ -44,12 +44,11 @@ export const ErrorHandler = ({ status, message, statusMessages }: T_Error) => {
 
 export const ErrorView = ({ message, children }: T_ErrorView) => {
     return (
-        <Container className={mainContentStyle}>
-                <Container className={statusPageContainer}>
-                    <Text className={statusPageBodyText}>{message}</Text>
-                    {children}
-                </Container>
-        </Container>
-
+        <StatusLayout>
+            <Container className={statusPageContainer}>
+                <Text className={statusPageBodyText}>{message}</Text>
+                {children}
+            </Container>
+        </StatusLayout>
     );
 };

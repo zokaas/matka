@@ -24,13 +24,14 @@ import {
     T_ProductIdLoaderData,
     T_ProductIdPageData,
 } from "./types/productIdPage";
+import { FormPage } from "../../components/Form";
 import { T_ParsedFormData, T_AnswerObject } from "~/types";
 import { Route } from "apps/kyc/.react-router/types/app/+types/root";
 
 import { Header } from "@ui/header";
 import { Container } from "@ui/container";
 import { pageContentStyle } from "~/styles/pageContentStyle.css";
-import { ErrorHandler, FormPage, SessionModalManager, T_ErrorView } from "apps/kyc/components";
+import { ErrorHandler, SessionModalManager, T_ErrorView } from "apps/kyc/components";
 import { Footer } from "@ui/footer";
 import { T_ActionResponse } from "./types";
 import { getAndParseFormData } from "~/services/api/get-form-data.server";
@@ -38,7 +39,6 @@ import { mapDataForPayload } from "~/services/utils/mapDataForPayload.server";
 import { sendFormData } from "~/services/api/api-kyc.server";
 import { computeMaxAgeFromExp } from "~/utils/expiryUtils.server";
 import { LoaderData } from "~/root";
-import { populateHiddenFields } from "~/utils/populateHiddenFields";
 
 export const loader = async ({
     request,
@@ -61,7 +61,7 @@ export const loader = async ({
     };
 
     const session = await getCachedSession(request.headers?.get("Cookie"));
-    const { sessionId, organizationName, organizationNumber, sniCode } =
+    const { sessionId, organizationName, organizationNumber } =
         await getOrganizationFromSession(request);
     const exp = session.get("session")?.exp ?? Date.now();
 
@@ -83,7 +83,6 @@ export const loader = async ({
         }
 
         const parsedFormData = await getAndParseFormData(productId, kycType, sessionId);
-        populateHiddenFields(parsedFormData.answers, sniCode);
 
         const { loginUrl, kycDoneUrl } = parsedFormData;
         loaderData.formData = parsedFormData;
@@ -92,7 +91,6 @@ export const loader = async ({
             kycType,
             organizationNumber,
             productId,
-            sniCode,
         };
         loaderData.sessionData = {
             applicationId: session.get("applicationId") ?? "",
@@ -180,8 +178,6 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
             },
             answers: answerEntries,
         });
-        console.log(JSON.stringify(payload.answers, null, 2));
-
         const result = await sendFormData(payload, productId, kycType, applicationId, sessionId);
 
         console.log("Backend result:", result);

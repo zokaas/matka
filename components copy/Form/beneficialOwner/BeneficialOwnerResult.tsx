@@ -12,18 +12,12 @@ import {
 export const BeneficialOwnerResult: React.FC<T_BeneficialOwnerResultProps> = ({ fieldArray }) => {
     return (
         <Container className={boResultContainer}>
-            {fieldArray.map((item, index) => {
-                const displayValue = item.text || item.value;
-
-                return (
-                    <Container
-                        key={`${index}-${item.fieldname}`}
-                        className={boResultValuesContainer}>
-                        <Text className={boResultValueLabelContainer}>{item.label}</Text>
-                        <Text className={boResultValueContainer}>{displayValue}</Text>
-                    </Container>
-                );
-            })}
+            {fieldArray.map((item, index) => (
+                <Container key={`${index}-${item.fieldname}`} className={boResultValuesContainer}>
+                    <Text className={boResultValueLabelContainer}>{item.label}</Text>
+                    <Text className={boResultValueContainer}>{item.value}</Text>
+                </Container>
+            ))}
         </Container>
     );
 };

@@ -88,13 +88,11 @@ export const getOrganizationFromSession = async (
     const sessionId = session.get("session")?.sessionId;
     const organizationName = session.get("company")?.companyName ?? "";
     const organizationNumber = session.get("company")?.orgNumber ?? "";
-    const sniCode = session.get("company")?.sniCode ?? "";
 
     return {
         sessionId: sessionId ?? "",
         organizationName,
         organizationNumber,
-        sniCode: sniCode,
     };
 };
 

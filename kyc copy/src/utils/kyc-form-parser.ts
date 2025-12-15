@@ -39,6 +39,7 @@ export class KycFormParser {
     const parsedCountries: Array<OptionDto> = response.map((country) => {
       try {
         return {
+          id: country.id,
           value: country.value,
           text: country.text,
         };
@@ -196,12 +197,21 @@ export class KycFormParser {
       const hasErrorMessages =
         "errorMessages" in field && Array.isArray(field.errorMessages);
 
+      const hasAutomaticAnalysisType =
+        "automaticAnalysisType" in field &&
+        typeof field.automaticAnalysisType === "string";
+
       const cleaned = {
         ...field,
         __component: cleanedComponent,
         ...(hasErrorMessages && {
           errorMessages: this.cleanErrorMessages(
             field.errorMessages as Array<ErrorMessageDto>
+          ),
+        }),
+        ...(hasAutomaticAnalysisType && {
+          automaticAnalysisType: this.convertAnalysisType(
+            field.automaticAnalysisType as string
           ),
         }),
       };

@@ -4,7 +4,6 @@ export type T_CompanyDataFromSession = {
     sessionId: string;
     organizationName: string;
     organizationNumber: string;
-    sniCode: string;
 };
 
 export type T_RefreshSessionResponse = {

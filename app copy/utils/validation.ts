@@ -1,4 +1,4 @@
-import { isNumber } from "@ui/input/utils";
+import { isNumber } from "@ui/inputField/utils";
 import { T_AnswerValue, T_ParsedFormData } from "~/types";
 import {
     T_ErrorType,

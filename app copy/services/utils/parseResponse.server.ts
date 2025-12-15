@@ -53,12 +53,15 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
         const stepKeyName = stepKeyNames[item.question.step - 1] as T_FormStepsKeys;
         const answerFieldName = item.question.questionParameter;
 
+        const isBeneficialOwner = item.question.componentType === "BeneficialOwner";
+
         answers.set(answerFieldName, {
             questionId: String(item.id),
             question: answerFieldName,
             questionLabel: item.question.questionLabel,
             automaticAnalysis: item.question.automaticAnalysis ?? false,
             type: item.question.automaticAnalysis ? item.question.automaticAnalysisType : null,
+            beneficialOwners: isBeneficialOwner ? true : undefined,
             answer: "",
             answerText: undefined,
         });
@@ -75,6 +78,7 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
                     type: currentField.automaticAnalysis
                         ? currentField.automaticAnalysisType
                         : null,
+                    beneficialOwners: undefined,
                     answer: "",
                     answerText: undefined,
                 });
@@ -87,12 +91,7 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
             questionParameter: item.question.questionParameter,
             questionLabel: item.question.questionLabel,
             placeholder: item.question.placeholder,
-            options:
-                item.question.options?.map((opt) => ({
-                    id: opt.id, // For unique identification
-                    value: opt.value, // For scoring (can be duplicate)
-                    text: opt.text,
-                })) || null,
+            options: item.question.options,
             errorMessages: item.question.errorMessages,
             ...parseDynamicFields(item),
         };

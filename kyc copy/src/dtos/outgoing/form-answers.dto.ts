@@ -22,7 +22,6 @@ export class FormAnswersDto {
   @IsString()
   organizationNumber: string;
 
-  @IsArray()
   @Type(() => BankIdAuthDto)
   bankIdAuth: BankIdAuthDto;
 

@@ -74,11 +74,11 @@ export class KycService {
 
   async getCountryList(productId: string): Promise<Array<OptionDto>> {
     const mockCountryList: Array<OptionDto> = [
-      { value: 0, text: "Sverige" },
-      { value: 0, text: "Finland" },
-      { value: 0, text: "Norge" },
-      { value: 0, text: "Danmark" },
-      { value: 0, text: "Island" },
+      { id: 1, value: 50, text: "Afganistan" },
+      { id: 2, value: 50, text: "Myanmar" },
+      { id:5 , value: 0, text: "Norge" },
+      { id: 6, value: 0, text: "Danmark" },
+      { id: 7, value: 0, text: "Island" },
     ];
 
     // const lang = this.kycFormParser.getLang(productId);
