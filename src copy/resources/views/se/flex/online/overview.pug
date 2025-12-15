@@ -1,0 +1,67 @@
+doctype html
+html(lang='sv')
+    head
+        meta(charset='UTF-8')
+        title Flex-online yearly overivew
+        //- Remove style+include tags as soon as next row works
+        //- link(rel='stylesheet', type='text/css', href=`` + includes.css)
+        style
+             include overview.css
+    body
+        - function formatAmount(amount) {return Number(amount).toLocaleString('se-SE', {style: 'currency', currency:"SEK", minimumFractionDigits: 2, maximumFractionDigits: 2})}
+
+        div(class= "document_body")
+            div(class="header")
+                - const logo = translationObj.media.logo
+                div(class="header_logo_container")
+                    img( class="header__logo" src=logo alt="Logo")
+                div(class="header__contact")
+                    p(class="header_text_bold")="OPR-Företagslån Flex"
+                    p(class="header_text")="Kungsbroplan 1"
+                    p(class="header_text")="112 27 Stockholm"
+                    a(class="header_text_link" href="https://www.opr.se")="www.opr.se"
+                    a(class="header_text")=data.reportGenerationDate
+
+            div(class="loan_info")
+                div(class="loan_info__row")
+                    p(class="body_text")=data.companyName
+                    p(class="body_text")=data.organizationNumber
+                    p(class="body_text")=`Kontonummer: ${data.loanAccountNumber}`
+
+            div(class="document_title")
+                    p(class="body_text_bold")=`Engagemangsbesked för perioden ${data.reportingStartDate} - ${data.reportingEndDate}`
+
+            div(class="overview")
+                div(class="overview__row")
+                    p(class="body_text")="Amortering"
+                    p(class="body_text")=formatAmount(data.totalPaidAmortization)
+                div(class="overview__row")
+                    p(class="body_text")="Ränta"
+                    p(class="body_text")=formatAmount(data.totalPaidInterest)
+                div(class="overview__row")
+                    p(class="body_text")="Dröjsmålsränta"
+                    p(class="body_text")=formatAmount(data.totalPaidLatePaymentInterest)
+                div(class="overview__row")
+                    p(class="body_text")="Uttagsavgift"
+                    p(class="body_text")=formatAmount(data.totalPaidStartupFee)
+                div(class="overview__row")
+                    p(class="body_text")="Förseningsavgift"
+                    p(class="body_text")=formatAmount(data.totalPaidLatePaymentFee)
+
+                div(class="overview__row_margin_top")
+                    p(class="body_text")=`Nyttjad kredit per ${data.reportingEndDate}`
+                    p(class="body_text")=formatAmount(data.remainingPrincipalEnd)
+                
+            div(class="body_signature")
+                p(class="regards_text body_text")="Med vänliga hälsningar,"
+
+                p(class="body_text")="OPR-Företagslån Flex"
+                a(class="customerservice_email")="Flex.kundservice@opr-foretagslan.se"
+
+        div(class="footer")
+                div(class="footer__line")
+                div(class="footer__content")
+                    p="OPR-Finance AB"
+                    p=" organisationsnummer: 556707-7044"
+                    p="Telefon: 08-501 006 60"
+                    p="E-mail: flex.kundservice@opr-foretagslan.se"    

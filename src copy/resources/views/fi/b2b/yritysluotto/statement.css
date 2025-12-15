@@ -1,0 +1,351 @@
+@charset "UTF-8";
+* {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.2;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+table tr td {
+  vertical-align: top;
+}
+
+/* OLDS */
+#ruler {
+  position: absolute;
+  width: 90mm;
+  height: 7mm; /** 7mm */
+  background-color: red;
+  border: 1px solid blue;
+  top: 29mm; /** 29mm */
+  left: 15mm;
+  z-index: 100;
+}
+
+body {
+  width: 200mm;
+  height: 287mm;
+  box-sizing: border-box;
+}
+
+.page_header_space {
+  margin-top: 19mm;
+  height: 60mm;
+}
+
+.div_table {
+  display: table;
+}
+.div_table .div_row {
+  display: table-row;
+}
+.div_table .div_row .div_cell {
+  display: table-cell;
+}
+
+.page_header {
+  position: fixed;
+  top: 19mm;
+  margin: 0 15mm;
+  width: 180mm;
+  height: 60mm;
+}
+.page_header .header_row1 {
+  height: 18mm;
+  width: 30mm;
+}
+.page_header .header_row1 .logo {
+  width: 30mm;
+  height: auto;
+  display: inline-block;
+  margin-top: -13mm;
+}
+.page_header .header_row1 .logo img {
+  width: 100%;
+  object-fit: contain;
+}
+.page_header .header_row1 .company_address {
+  margin-left: 6mm;
+  display: inline-block;
+}
+.page_header .header_row1 .company_address p {
+  line-height: 1;
+  font-size: 0.8em;
+}
+.page_header .header_row1 .document_title p {
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+.page_header .header_row2 {
+  height: 42mm;
+}
+.page_header .header_row2 .recipient_address p {
+  text-transform: uppercase;
+  font-weight: normal;
+  font-size: 0.8em;
+}
+.page_header .header_row2 .invoice_info {
+  width: 100%;
+  font-size: 0.78em;
+}
+.page_header .header_row2 .invoice_info .div_row .div_cell {
+  width: 50%;
+}
+.page_header .header_row2 .invoice_info .div_row .div_cell p {
+  line-height: 1.3;
+}
+.page_header .header_row2 .invoice_info .div_row .divCell:last-child {
+  text-align: right;
+}
+
+.content_cell {
+  width: 90mm;
+  vertical-align: top;
+}
+
+.banner {
+  width: 180mm;
+  height: auto;
+  display: inline-block;
+}
+.banner img {
+  width: 100%;
+  object-fit: contain;
+}
+
+.main_content_table {
+  width: 100%;
+}
+.main_content_table .div_table {
+  width: 100%;
+}
+.main_content_table .div_table .div_cell {
+  width: 25%;
+}
+.main_content_table .div_table .div_cell p {
+  font-size: 0.78em;
+}
+.main_content_table .main_content {
+  width: 180mm;
+  height: 124.5mm; /* 124.5mm; 128.5 mm */
+  margin: 0 15mm;
+}
+.main_content_table .main_content .invoice_text {
+  font-weight: bold;
+  font-size: 0.78em;
+}
+.main_content_table .main_content .specification_table {
+  width: 80%;
+  margin-top: 5mm;
+}
+.main_content_table .main_content .specification_table .specification_title_row {
+  border-bottom: 0.5mm solid #000;
+  margin-bottom: 3mm;
+}
+.main_content_table .main_content .specification_table .specification_title {
+  font-weight: bold;
+}
+.main_content_table .main_content .specification_table .specification_value_row {
+  margin-top: 3mm;
+}
+.main_content_table .main_content .specification_table thead tr {
+  border-bottom: 1px solid #000;
+}
+.main_content_table .main_content .specification_table td {
+  padding: 1mm;
+}
+.main_content_table .main_content .specification_table tfoot tr {
+  border-top: 1px solid #000;
+}
+.main_content_table .main_content .specification_table .align_right {
+  text-align: right;
+}
+.main_content_table .main_content .specification_table .total {
+  font-weight: bold;
+}
+.main_content_table .main_content .title {
+  padding-bottom: 3mm;
+}
+.main_content_table .main_content .reference_table {
+  width: 80%;
+  margin-top: 3mm;
+  border: 1px solid rgb(0, 0, 0);
+}
+.main_content_table .main_content .reference_table .div_row .div_cell {
+  width: 34%;
+  padding: 1mm;
+  border-right: 1px solid rgb(0, 0, 0);
+}
+.main_content_table .main_content .reference_table .div_row .reference_title {
+  font-size: 0.66em;
+}
+.main_content_table .main_content .reference_table .div_row .reference_value {
+  font-size: 0.9em;
+  font-weight: bolder !important;
+}
+.main_content_table .main_content .reference_table .div_row .middle {
+  text-align: center;
+}
+.main_content_table .main_content .reference_table .div_row .euros:after {
+  content: " €";
+}
+.main_content_table .main_content .legal_info p {
+  font-size: 0.56em;
+  margin-top: 4mm;
+}
+.main_content_table .main_content .legal_info p:last-child {
+  margin-bottom: 5mm;
+}
+.main_content_table .main_content .faq_info p {
+  font-size: 0.56em;
+  margin-top: 4mm;
+}
+.main_content_table .transfer_check {
+  width: 210mm;
+  margin: 0 0;
+  /* .content {
+      padding: 1mm;
+
+      p {
+          font-size: $font_size_smaller;
+          line-height: 1.2;
+      }
+      .normal {
+          font-size: $font_size_normal;
+      }
+      .normal_with_margin {
+          font-size: $font_size_normal;
+          margin-top: 2mm;
+      }
+  } */
+}
+.main_content_table .transfer_check .company_info_footer {
+  width: 100%;
+  margin: 0 0 3mm 0;
+}
+.main_content_table .transfer_check .company_info_footer .div_cell {
+  width: 20%;
+  text-align: center;
+}
+.main_content_table .transfer_check .company_info_footer span {
+  font-size: 0.78em;
+  line-height: 1.2;
+  margin-right: 1em;
+}
+.main_content_table .transfer_check .transfer_check_container {
+  border-top: 1px solid #999;
+  height: 85mm;
+}
+.main_content_table .transfer_check .transfer_check_container .transfer_check_table {
+  width: 100%;
+}
+.main_content_table .transfer_check .transfer_check_container .header_row {
+  border-bottom: 2px solid #000;
+  height: 16mm;
+}
+.main_content_table .transfer_check .transfer_check_container .receiver_row {
+  border-bottom: 2px solid #000;
+  height: 43mm;
+}
+.main_content_table .transfer_check .transfer_check_container .receiver_row .receiver_info {
+  border-bottom: 2px solid #000;
+  height: 14mm;
+}
+.main_content_table .transfer_check .transfer_check_container .receiver_row .payer_info {
+  height: 19mm;
+}
+.main_content_table .transfer_check .transfer_check_container .receiver_row .signing_info {
+  height: 10mm;
+  padding-bottom: 2mm;
+}
+.main_content_table .transfer_check .transfer_check_container .receiver_row .signing_info .signing_line {
+  width: 80mm;
+  height: 6mm;
+  border-bottom: 1px solid #999;
+}
+.main_content_table .transfer_check .transfer_check_container .amount_row {
+  height: 8mm;
+  border-bottom: 2px solid #000;
+}
+.main_content_table .transfer_check .transfer_check_container .amount_row .date_amount_container > div {
+  float: left;
+  height: 8mm;
+}
+.main_content_table .transfer_check .transfer_check_container .amount_row .date_amount_container .content.date_info {
+  width: 22mm;
+  border-right: 2px solid #000;
+}
+.main_content_table .transfer_check .transfer_check_container .amount_row .date_amount_container .content.date {
+  width: 22mm;
+  border-right: 2px solid #000;
+}
+.main_content_table .transfer_check .transfer_check_container .barcode_row .barcode {
+  text-align: center;
+}
+.main_content_table .transfer_check .transfer_check_container .info_column {
+  text-align: right;
+  width: 20mm;
+}
+.main_content_table .transfer_check .transfer_check_container .content_column {
+  width: 95mm;
+}
+.main_content_table .transfer_check .transfer_check_container .content_column .container {
+  height: 43mm;
+  position: relative;
+}
+.main_content_table .transfer_check .transfer_check_container .content_column .container .content.bottom {
+  position: absolute;
+  bottom: 8mm;
+  margin-bottom: 1mm;
+}
+.main_content_table .transfer_check .transfer_check_container .content_column .container .ref_container {
+  position: absolute;
+  bottom: 0px;
+  height: 8mm;
+  width: 100%;
+  border-top: 2px solid #000;
+}
+.main_content_table .transfer_check .transfer_check_container .content_column .container .ref_container > div {
+  float: left;
+}
+.main_content_table .transfer_check .transfer_check_container .content_column .container .ref_container > div.info {
+  width: 22mm;
+  border-right: 2px solid #000;
+}
+.main_content_table .transfer_check .transfer_check_container .border_right {
+  border-right: 2px solid #000;
+}
+
+.content {
+  padding: 1mm;
+}
+.content p {
+  font-size: 0.56em;
+  line-height: 1.2;
+}
+.content .normal {
+  font-size: 0.78em;
+}
+.content .normal_with_margin {
+  font-size: 0.78em;
+  margin-top: 2mm;
+}
+
+@media print {
+  #page1 {
+    page-break-after: always;
+  }
+  /* Page 2 margin fix */
+  #page2 {
+    margin-top: 0.1mm;
+  }
+}
+
+/*# sourceMappingURL=statement.css.map */

@@ -1,0 +1,25 @@
+export default () => ({
+    app: {
+        env: process.env.APP_ENV,
+        swaggerEnabled: process.env.SWAGGER_DOCS_ENABLED,
+        port: process.env.PORT,
+        environment: process.env.APP_ENV,
+        globalPath: process.env.GW_GLOBAL_PATH,
+    },
+    contentful: {
+        accessToken: process.env.CONTENTFUL_ACCESS_TOKEN,
+        space: process.env.CONTENTFUL_SPACE,
+        baseUrl: process.env.CONTENTFUL_BASE_URL,
+        contentType: process.env.CONTENTFUL_CONTENT_TYPE,
+        environment: process.env.CONTENTFUL_ENVIRONMENT,
+        queryUrl: `${process.env.CONTENTFUL_BASE_URL}/${process.env.CONTENTFUL_SPACE}/environments/${process.env.CONTENTFUL_ENVIRONMENT}`,
+        "b2b-yritysluotto-fi-statement": process.env.B2B_YRITYSLUOTTO_FI_STATEMENT_ENTRY_ID,
+        "flex-online-fi-transactions": process.env.FLEX_ONLINE_FI_LOGO_ENTRY_ID,
+        "flex-online-fi-overview": process.env.FLEX_ONLINE_FI_LOGO_ENTRY_ID,
+        "flex-online-se-transactions": process.env.FLEX_ONLINE_SE_LOGO_ENTRY_ID,
+        "flex-online-se-overview": process.env.FLEX_ONLINE_SE_LOGO_ENTRY_ID,
+        "flex-online-nl-overview": process.env.FLEX_ONLINE_NL_LOGO_ENTRY_ID,
+        "flex-online-se-kyc": process.env.FLEX_ONLINE_SE_LOGO_ENTRY_ID,
+        "b2b-foretagslan-se-kyc": process.env.B2B_FL_SE_LOGO_ENTRY_ID,
+    },
+});

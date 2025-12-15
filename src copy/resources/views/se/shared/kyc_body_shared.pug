@@ -1,0 +1,56 @@
+include ./mixins.pug
+
+- const companyAnswers = data.questionAnswers?.answers_data || {}
+- const answersArray = companyAnswers.answers || []
+- const bankIdAuth = data.questionAnswers?.answers_data?.bankIdAuth || {}
+
+div.document_title
+	p.body_text_bold_italic Riskbedömning baserat på inhämtad information via kundkännedomsfrågor, information från Creditsafe samt av inhämtning av verkliga huvudmän från Bolagsverket.
+
+div.document_subheader
+	p.company_info 
+		span.body_text_bold Företagsnamn:
+		span.body_text  #{companyAnswers.organizationName}
+	p.company_info
+		span.body_text_bold Organisationsnummer: 
+		span.body_text #{companyAnswers.organizationName}
+	p.company_info
+		span.body_text_bold SNI-Kod: 
+		+getAnswerText("sniCode")
+	p.company_info
+		span.body_text_bold Ansökan är gjort på distans: : 
+		+getAnswerText("distanceAgreement")
+
+div.document_subheader
+	p.body_text_bold Kundkännedomsfrågor -och svar:
+
+if answersArray.length
+	table.answers__table
+		thead
+			tr
+			th.table_question_col Fråga
+			th.table_answer_col Svar
+		tbody
+			each ans in answersArray
+				+questionAnswerRow(ans)
+else
+	p.body_text Inga svar hittades.
+
+// Representative BOs
+div.document_subheader
+	p.body_text_bold Verkliga huvudmän angivna av företrädaren:
++renderBeneficialOwnersRepresentative(answersArray)
+
+// Authorities BOs
+div.document_subheader
+	p.body_text_bold Verkliga huvudmän från Bolagsverket:
++renderBeneficialOwnersFromAuthorities(data)
+
+div.document_subheader
+	p.body_text_bold Formuläret är besvarat av företrädare som är autentiserad med BankID innan frågorna besvarats:
+
+if Object.keys(bankIdAuth || {}).length
+	div.answers
+		p.body_text Namn: #{bankIdAuth.givenName} #{bankIdAuth.familyName}
+		p.body_text Personnummer: #{bankIdAuth.ssn}
+		p.body_text Datum och tid: #{bankIdAuth.iat}

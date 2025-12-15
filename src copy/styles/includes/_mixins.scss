@@ -1,0 +1,10 @@
+@mixin backgroundColor($color, $isVisible: true) {
+    @if $isVisible {
+        background-color: $color;
+    }
+}
+
+@mixin flexWithDirection($direction: row) {
+    display: flex;
+    flex-direction: $direction;
+}

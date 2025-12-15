@@ -1,0 +1,32 @@
+doctype html
+html(lang='sv')
+    head
+        meta(charset='UTF-8')
+        title b2b-Foretagslan KYC questions and answers
+        style
+            include ../../shared/kyc.css
+
+        include ../../shared/mixins.pug
+
+    body
+        div.header
+            div.header_left_container
+                - const logo = translationObj?.media?.logo
+                div.logo_container
+                    img.logo(src=logo || "./OPR-finance-logo-SE.png" alt="Logo")
+            div.header_right_container
+                - const date = new Date().toLocaleDateString('sv-SE', { year:"numeric", month:"2-digit", day:"2-digit"})
+                p.header_text PDF skapad: #{date}
+
+        
+        
+        div.document_body
+            include ../../shared/kyc_body_shared.pug
+
+        //- div.footer
+        //- div.footer__line
+        //- div.footer__content
+        //-     p OPR-Finance AB
+        //-     p organisationsnummer: 556707-7044
+        //-     p Telefon: 08-501 006 60
+        //-     p E-mail: kundservice@opr-foretagslan.se

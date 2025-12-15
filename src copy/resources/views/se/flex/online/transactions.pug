@@ -1,0 +1,82 @@
+doctype html
+html(lang='sv')
+    head
+        meta(charset='UTF-8')
+        title Flex-online Transactions
+        //- Remove style+include tags as soon as next row works
+        //- link(rel='stylesheet', type='text/css', href=`` + includes.css)
+        style
+            include transactions.css
+    body
+        // div(id="ruler")
+        - const transactions = data.transactions
+        - function formatDate(date){return date.toLocaleDateString('sv-SE', { year:"numeric", month:"2-digit", day:"2-digit"})}
+        - const date=formatDate(new Date())
+        
+    div(class="document_body")  
+        div(class="page_header")
+            table
+                tbody
+                    tr(class="header_row1")
+                        td(class="content_cell")
+                            div(class="logo")
+                                - const logo = translationObj.media.logo
+                                img(src=logo alt="Logo")
+                        td(class="company_address")
+                            p(class="bold") OPR-Företagslån Flex
+                            p Kungsbroplan 1
+                            p 112 27 Stockholm
+                            p(class="link") www.opr.se
+                            p=date
+                    tr(class="header_row2")
+                        td(class="content_cell")
+                            div(class="company_data")
+                                p= data.companyName
+                                p= data.organisationNumber
+                                p= `Kontonummer ${data.accountNumber}`
+                                p= `Krediten skapad ${data.creationDate}`
+
+                        td(class="content_cell")
+                        
+        
+        div(class="table_transactions_title") 
+            p(class="body_text")=`Transaktionshistorik för perioden ${data.dateFrom} - ${data.dateTo}`
+        each page, key in transactions
+            
+            div(class="iterative_page_content")
+                if page.pageNumber > 1
+                    div(class="page_number")
+                        p=`Sida ${page.pageNumber}`                
+                table(class="table_transactions")
+                    thead
+                        tr
+                            td
+                                div(class="main_table_space")
+                                    p Datum för händelse
+                            td
+                                div(class="main_table_space")
+                                    p Transaktion
+                            td
+                                div(class="main_table_space")
+                                    p Belopp
+                    tbody
+                        tr
+                            td
+                                div(class="main_table_space")
+                    each item, key in page.transactions
+                        tr
+                            td
+                                p= formatDate(new Date(item.transactionDate))
+                            td
+                                p= item.type
+                            td
+                                p= item.amount
+
+                div(class="footer")
+                    div(class="footer__line")
+                    div(class="footer__content")
+                        p="OPR-Finance AB"
+                        p="Organisationsnummer: 556707-7044."
+                        p="Telefon: 08-501 066 60."
+                        p="E-mail: flex.kundservice@opr-foretagslan.se"
+                            
