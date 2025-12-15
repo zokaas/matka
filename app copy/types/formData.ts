@@ -4,7 +4,7 @@ import {
     T_FormStepsWithQuestions,
 } from "./formDataPartials";
 import { T_QuestionData } from "./question";
-import { T_CountryArray } from "./questionProperties";
+import { T_CountryArray, T_Option } from "./questionProperties";
 import { T_AnalysisType, T_ApiQuestion } from "./questionType";
 
 export type T_FormGlobalProperties = T_FormMainCommonProperties & T_FormGeneralFormProperties;
@@ -14,8 +14,12 @@ export type T_AnswerValue =
     | number
     | boolean
     | Array<string>
+    | Array<number>
     | Array<Record<string, string>>
-    | undefined;
+    | undefined
+    | T_Option;
+
+export type T_AnswerDisplayText = string | Array<string>;
 
 export type T_AnswerObject = {
     questionId: string;
@@ -24,7 +28,7 @@ export type T_AnswerObject = {
     automaticAnalysis: boolean;
     type: T_AnalysisType;
     answer: T_AnswerValue;
-    answerText?: string;
+    answerText?: string | string[];
 };
 
 export type T_Answers = Map<string, T_AnswerObject>;

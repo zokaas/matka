@@ -128,16 +128,17 @@ export const BeneficialOwnerForm: React.FC<T_BeneficialOwnerFormProps> = ({
                     searchEnabled
                     options={countryList || null}
                     showSelectedItemIcon={true}
-                    onChange={(selectedCountry) => {
-                        const countryOption = countryList?.find(
-                            (c) => String(c.value) === String(selectedCountry)
-                        );
+onChange={(selectedCountry, selectedText) => {
+                        const countryOption =
+                            selectedText ||
+                            countryList?.find((c) => String(c.value) === String(selectedCountry))
+                                ?.text;
 
                         setCountry({
                             fieldname: fields.country.parameter,
                             label: fields.country.label,
                             value: String(selectedCountry),
-                            text: countryOption?.text,
+                            text: countryOption,
                         });
                     }}
                     onBlur={() => {}}

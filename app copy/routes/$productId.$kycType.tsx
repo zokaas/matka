@@ -61,8 +61,8 @@ export const loader = async ({
     };
 
     const session = await getCachedSession(request.headers?.get("Cookie"));
-    const companyData = await getOrganizationFromSession(request);
-    const {sessionId, organizationName, organizationNumber, sniCode} = companyData
+    const { sessionId, organizationName, organizationNumber, sniCode } =
+        await getOrganizationFromSession(request);
     const exp = session.get("session")?.exp ?? Date.now();
 
     if (!sessionId) {
@@ -83,7 +83,7 @@ export const loader = async ({
         }
 
         const parsedFormData = await getAndParseFormData(productId, kycType, sessionId);
-        populateHiddenFields(parsedFormData.answers, companyData);
+        populateHiddenFields(parsedFormData.answers, sniCode);
 
         const { loginUrl, kycDoneUrl } = parsedFormData;
         loaderData.formData = parsedFormData;
@@ -92,7 +92,7 @@ export const loader = async ({
             kycType,
             organizationNumber,
             productId,
-            sniCode
+            sniCode,
         };
         loaderData.sessionData = {
             applicationId: session.get("applicationId") ?? "",
@@ -180,7 +180,8 @@ export const action: ActionFunction = async ({ request, params }: ActionFunction
             },
             answers: answerEntries,
         });
-        console.log(payload)
+        console.log(JSON.stringify(payload.answers, null, 2));
+
         const result = await sendFormData(payload, productId, kycType, applicationId, sessionId);
 
         console.log("Backend result:", result);

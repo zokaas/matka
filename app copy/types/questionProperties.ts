@@ -12,6 +12,7 @@ export type T_ComponentType =
     | "HiddenInput";
 
 export type T_Option = {
+    id: number;
     text: string;
     value: number;
 };

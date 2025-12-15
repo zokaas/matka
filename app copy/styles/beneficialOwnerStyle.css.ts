@@ -129,7 +129,7 @@ export const boResultContainer = style({
 });
 
 export const boResultValuesContainer = style({
-    // padding: `${designConstants.spacing.defaultPadding} 0`,
+    padding: `${designConstants.spacing.defaultPadding} 0`,
 });
 
 export const boResultValueLabelContainer = style({

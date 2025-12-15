@@ -42,18 +42,32 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
      */
     const [fieldsMap, setFieldsMap] = useState<Map<string, Array<T_BoFieldParams>>>(new Map());
 
-    /**
-     * Preserve immutability with this helper function
-     */
+    const transformOwners = (
+        map: Map<string, Array<T_BoFieldParams>>
+    ): Array<Record<string, any>> => {
+        const owners = convertMapToOwnersArray(map);
+
+        return owners.map((owner: any, index: number) => {
+            const ownerNumber = index + 1;
+            const transformed: Record<string, Array<T_BoFieldParams>> = {};
+
+            Object.keys(owner).forEach((key) => {
+                transformed[`owner_${ownerNumber}_${key}`] = owner[key];
+            });
+
+            return transformed;
+        });
+    };
+
     const updateMap = (key: string, value: Array<T_BoFieldParams>) => {
         const tempMap = new Map(fieldsMap);
         tempMap.set(key, value);
         setFieldsMap(tempMap);
 
-        const owners = convertMapToOwnersArray(tempMap);
+        const transformedOwners = transformOwners(tempMap);
 
         if (onChange) {
-            onChange(fieldName, owners);
+            onChange(fieldName, transformedOwners);
         }
 
         if (onBlur) {
@@ -72,6 +86,7 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
         const nextIndex = entriesIndex + 1;
         setEntriesIndex(nextIndex);
         updateMap(`owner_${nextIndex}`, valueArray);
+        setPopoverOpen(false);
     };
 
     const handleRemoveBo = (mapKey: string) => {
@@ -79,10 +94,10 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
         tempMap.delete(mapKey);
         setFieldsMap(tempMap);
 
-        const owners = convertMapToOwnersArray(tempMap);
+        const transformedOwners = transformOwners(tempMap);
 
         if (onChange) {
-            onChange(fieldName, owners);
+            onChange(fieldName, transformedOwners);
         }
 
         if (onBlur) {
@@ -115,7 +130,6 @@ export const BeneficialOwner: React.FC<T_BeneficialOwnerProps> = ({
                                     formData={beneficialOwnerFieldsData}
                                     onButtonClick={(name, ssn, ownership, countries, pep) => {
                                         handleAddBo(name, ssn, ownership, countries, pep);
-                                        setPopoverOpen(false);
                                     }}
                                     countryList={countryList}
                                 />

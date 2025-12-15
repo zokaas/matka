@@ -25,7 +25,7 @@ import { Container } from "@ui/container";
 import { Button } from "@ui/button";
 import { Icon } from "@ui/icon";
 import { Questions } from "../questions/Questions";
-import { T_AnswerValue, T_FormStepsKeys } from "~/types";
+import { T_AnswerDisplayText, T_AnswerValue, T_FormStepsKeys } from "~/types";
 import { submitFormAnswers } from "~/services/utils/submitFormAnswers";
 import { ErrorView } from "../../error";
 import { useFormValidation } from "~/hooks/useFormValidation";
@@ -56,7 +56,7 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
         return map;
     }, [formValues]);
 
-    const handleChange = (field: string, value: T_AnswerValue, displayText?: string) => {
+    const handleChange = (field: string, value: T_AnswerValue, displayText?: T_AnswerDisplayText) => {
         setFormValues((prev) => {
             const updated = new Map(prev);
             const existingEntry = updated.get(field);

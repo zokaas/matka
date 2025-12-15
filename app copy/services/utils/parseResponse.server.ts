@@ -87,7 +87,12 @@ export const parseResponse = (apiResponse: T_ApiFormResponse): T_ParsedFormData 
             questionParameter: item.question.questionParameter,
             questionLabel: item.question.questionLabel,
             placeholder: item.question.placeholder,
-            options: item.question.options,
+            options:
+                item.question.options?.map((opt) => ({
+                    id: opt.id, // For unique identification
+                    value: opt.value, // For scoring (can be duplicate)
+                    text: opt.text,
+                })) || null,
             errorMessages: item.question.errorMessages,
             ...parseDynamicFields(item),
         };

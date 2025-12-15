@@ -89,4 +89,4 @@ export type T_ApiQuestion = {
     question: T_ApiQuestionData;
 };
 
-export type T_AnalysisType = "Boolean" | "Int" | "String" | null;
+export type T_AnalysisType = string | null;
