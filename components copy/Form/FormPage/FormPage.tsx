@@ -56,7 +56,11 @@ export const FormPage: React.FC<T_FormPageProps> = (props: T_FormPageProps) => {
         return map;
     }, [formValues]);
 
-    const handleChange = (field: string, value: T_AnswerValue, displayText?: T_AnswerDisplayText) => {
+    const handleChange = (
+        field: string,
+        value: T_AnswerValue,
+        displayText?: T_AnswerDisplayText
+    ) => {
         setFormValues((prev) => {
             const updated = new Map(prev);
             const existingEntry = updated.get(field);

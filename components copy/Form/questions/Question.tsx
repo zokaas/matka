@@ -15,7 +15,7 @@ import {
 import { HiddenField, InputNumber, InputText } from "@ui/input";
 import { BeneficialOwner, T_BeneficialOwnerCardProps } from "../beneficialOwner";
 import { BO_MAX_COUNT, EMPTY_STRING } from "./questions.constants";
-import { T_AnswerValue, T_QuestionData } from "~/types";
+import { T_AnswerValue, T_QuestionData, T_SelectItem } from "~/types";
 
 export const Question: React.FC<T_QuestionProps> = ({
     questionType,
@@ -41,7 +41,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     placeholder={question?.placeholder || ""}
                     options={options || []}
                     showSelectedItemIcon={true}
-                    value={currentValue as string}
+                    value={currentValue as T_SelectItem}
                     onChange={(selectedValue, selectedText) => {
                         if (selectedValue === undefined || !selectedText) return;
 
@@ -70,7 +70,7 @@ export const Question: React.FC<T_QuestionProps> = ({
                     placeholder={question?.placeholder || ""}
                     options={options || []}
                     searchEnabled={true}
-                    value={currentValue as Array<{ value: number | string; text: string }>}
+                    value={currentValue as Array<T_SelectItem>}
                     onChange={(items) => {
                         questionProps.onChange(question!.questionParameter, items);
                     }}
