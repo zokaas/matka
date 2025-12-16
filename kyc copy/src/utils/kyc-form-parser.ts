@@ -8,51 +8,25 @@ import {
   ApiFormDto,
   ErrorMessageDto,
   DynamicFieldDto,
+  DependentQuestionDto,
 } from "../dtos";
-
-type Language = "fi" | "se";
+import { LanguageConfig } from "./language-config";
 
 @Injectable()
 export class KycFormParser {
   private readonly logger = new Logger(KycFormParser.name);
 
-  private static readonly LANG_SWEDISH: Language = "se";
-  private static readonly LANG_FINNISH: Language = "fi";
-
-  private static readonly productIdToLang: Record<string, Language> = {
-    "sweden-b2b-application": KycFormParser.LANG_SWEDISH,
-    "finland-b2b-application": KycFormParser.LANG_FINNISH,
-  };
-
-  public getLang(productId: string): Language {
-    return (
-      KycFormParser.productIdToLang[productId] ?? KycFormParser.LANG_SWEDISH
-    );
-  }
-
   parseCountryList(
-    response: Array<OptionDto>,
+    response: Array<OptionDto | string>,
     productId: string
   ): Array<OptionDto> {
-    const lang = this.getLang(productId);
+    const lang = LanguageConfig.getCountryLocale(productId);
 
-    const parsedCountries: Array<OptionDto> = response.map((country) => {
-      try {
-        return {
-          id: country.id,
-          value: country.value,
-          text: country.text,
-        };
-      } catch (error) {
-        this.logger.error("Critical parsing error:", error);
-        return {
-          value: "[Invalid Country]",
-          text: "[Invalid Country]",
-        };
-      }
-    });
+    const countries = response.map((item) =>
+      typeof item === "string" ? (JSON.parse(item) as OptionDto) : item
+    );
 
-    return parsedCountries.sort((a, b) => a.text.localeCompare(b.text, lang));
+    return countries.sort((a, b) => a.text.localeCompare(b.text, lang));
   }
 
   parseProductData(apiResponse: ApiFormDto, productId: string): KycFormDto {
@@ -122,15 +96,15 @@ export class KycFormParser {
       return [];
     }
 
-    const lang = this.getLang(productId);
+    const lang = LanguageConfig.getQuestionLang(productId);
     const questions: Array<QuestionDto> = [];
 
     for (const questionComponent of setOfQuestions) {
       try {
-        const questionAttributes = this.getQuestionAttributes(
-          questionComponent,
-          lang
-        );
+        const questionAttributes =
+          lang === "se"
+            ? questionComponent.questions_se
+            : questionComponent.questions_fi;
 
         if (!questionAttributes) {
           this.logger.warn(
@@ -138,10 +112,6 @@ export class KycFormParser {
           );
           continue;
         }
-
-        const questionParameter =
-          questionAttributes.questionParameter ||
-          questionAttributes.hiddenInputQuestionParameter;
 
         questions.push({
           id: questionComponent.id,
@@ -156,7 +126,9 @@ export class KycFormParser {
             ),
             options: questionAttributes.options,
             placeholder: questionAttributes.placeholder,
-            questionParameter: questionParameter,
+            questionParameter:
+              questionAttributes.questionParameter ||
+              questionAttributes.hiddenInputQuestionParameter,
             errorMessages: this.cleanErrorMessages(
               questionAttributes.errorMessages
             ),
@@ -176,47 +148,31 @@ export class KycFormParser {
     return questions;
   }
 
-  private getQuestionAttributes(q: ApiQuestionComponentDto, lang: Language) {
-    return {
-      [KycFormParser.LANG_SWEDISH]: q.questions_se,
-      [KycFormParser.LANG_FINNISH]: q.questions_fi,
-    }[lang];
-  }
-
   private cleanDynamicFields(
     fields?: Array<DynamicFieldDto>
   ): Array<DynamicFieldUnion> {
     if (!Array.isArray(fields)) return [];
 
-    return fields.map((field): DynamicFieldUnion => {
-      if (!field || typeof field !== "object") {
-        return field as unknown as DynamicFieldUnion;
-      }
-
-      const cleanedComponent = this.cleanComponentName(field.__component);
-      const hasErrorMessages =
-        "errorMessages" in field && Array.isArray(field.errorMessages);
-
-      const hasAutomaticAnalysisType =
-        "automaticAnalysisType" in field &&
-        typeof field.automaticAnalysisType === "string";
-
+    return fields.map((field) => {
       const cleaned = {
         ...field,
-        __component: cleanedComponent,
-        ...(hasErrorMessages && {
-          errorMessages: this.cleanErrorMessages(
-            field.errorMessages as Array<ErrorMessageDto>
-          ),
-        }),
-        ...(hasAutomaticAnalysisType && {
-          automaticAnalysisType: this.convertAnalysisType(
-            field.automaticAnalysisType as string
-          ),
-        }),
+        __component: this.cleanComponentName(field.__component),
       };
+      const isDependentQuestion =
+        field.__component.includes("dependent-question");
 
-      return cleaned as unknown as DynamicFieldUnion;
+      if (isDependentQuestion) {
+        const depQuestion = field as unknown as DependentQuestionDto;
+        return {
+          ...cleaned,
+          errorMessages: this.cleanErrorMessages(depQuestion.errorMessages),
+          automaticAnalysisType: this.convertAnalysisType(
+            depQuestion.automaticAnalysisType
+          ),
+        } as DynamicFieldUnion;
+      }
+
+      return cleaned as DynamicFieldUnion;
     });
   }
 

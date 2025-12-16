@@ -4,7 +4,7 @@ import { ConfigService } from "@nestjs/config";
 import { AxiosRequestConfig, Method } from "axios";
 import { catchError, lastValueFrom, map } from "rxjs";
 import { ApiFormDto, OptionDto } from "./dtos";
-import { KycFormParser } from "./utils";
+import { KycFormParser, LanguageConfig } from "./utils";
 
 @Injectable()
 export class KycService {
@@ -73,22 +73,15 @@ export class KycService {
   }
 
   async getCountryList(productId: string): Promise<Array<OptionDto>> {
-    const mockCountryList: Array<OptionDto> = [
-      { id: 1, value: 50, text: "Afganistan" },
-      { id: 2, value: 50, text: "Myanmar" },
-      { id:5 , value: 0, text: "Norge" },
-      { id: 6, value: 0, text: "Danmark" },
-      { id: 7, value: 0, text: "Island" },
-    ];
+    const lang = LanguageConfig.getCountryLocale(productId);
 
-    // const lang = this.kycFormParser.getLang(productId);
-    // const apiPath = `countrylist/${lang}`;
-    // const requestConfig = this.getRequestConfig(apiPath, "GET");
-    // const response = await this.sendRequestToApi<Array<OptionDto>>(
-    //   apiPath,
-    //   requestConfig
-    // );
-    return this.kycFormParser.parseCountryList(mockCountryList, productId);
+    const apiPath = `countrylist/${lang}`;
+    const requestConfig = this.getRequestConfig(apiPath, "GET");
+    const response = await this.sendRequestToApi<Array<OptionDto>>(
+      apiPath,
+      requestConfig
+    );
+    return this.kycFormParser.parseCountryList(response, productId);
   }
 
   async sendFormData<R = unknown>(

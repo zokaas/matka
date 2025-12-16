@@ -6,7 +6,7 @@ export class BankIdAuthDto {
 
   @IsString()
   familyName: string;
-  
+
   @IsString()
   ssn: string;
 

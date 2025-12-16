@@ -13,8 +13,13 @@ export class AnswerDto {
 
   @IsOptional()
   @IsString()
-  type?: string; 
+  type?: string;
 
   @IsDefined()
-  answer: string | number | Array<number> | Array<string> | Array<BeneficialOwnerAnswerDto> | boolean ;
+  answer:
+    | string
+    | number
+    | Array<number | string>
+    | Array<BeneficialOwnerAnswerDto>
+    | boolean;
 }
