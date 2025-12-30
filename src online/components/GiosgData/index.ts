@@ -1,0 +1,1 @@
+export { GiosgData } from "./GiosgData";

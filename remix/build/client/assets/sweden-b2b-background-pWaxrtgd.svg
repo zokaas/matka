@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2031" height="5377" viewBox="0 0 2031 5377">
+    <g fill="none" fill-rule="evenodd">
+        <g>
+            <path fill="#728DAA" d="M0 0H2031V5377H0z"/>
+            <path fill="#708DAD" fill-rule="nonzero" d="M0 0L387 0 0 681z"/>
+            <path fill="#7292B4" fill-rule="nonzero" d="M387 0L477 0 812 902 0 982 0 681z"/>
+            <path fill="#7694B3" fill-rule="nonzero" d="M477 0L601 0 1262 362 1773 821 812 902z"/>
+            <path fill="#7E9BB9" fill-rule="nonzero" d="M601 0L1178 0 1262 362z"/>
+            <path fill="#7A9AB7" fill-rule="nonzero" d="M1262 362L1280 0 1178 0z"/>
+            <path fill="#7F9CBB" fill-rule="nonzero" d="M1280 0L1730 0 1262 362z"/>
+            <path fill="#819FBC" fill-rule="nonzero" d="M1262 362L1730 0 2031 0 2031 476z"/>
+            <path fill="#809DBA" fill-rule="nonzero" d="M1262 362L1773 821 2031 476z"/>
+            <path fill="#819EBB" fill-rule="nonzero" d="M2031 1220L1773 821 2031 476z"/>
+            <path fill="#7595B4" fill-rule="nonzero" d="M0 982L0 1458 176 1917 812 902z"/>
+            <path fill="#728DAA" fill-rule="nonzero" d="M176 1917L1478 1323 812 902z"/>
+            <path fill="#708FAF" fill-rule="nonzero" d="M812 902L1773 821 1478 1323z"/>
+            <path fill="#7A97B4" fill-rule="nonzero" d="M1478 1323L1854 1280 1773 821z"/>
+            <path fill="#85A0BB" fill-rule="nonzero" d="M1854 1280L2031 1593 2031 1207 1773 821z"/>
+            <path fill="#7F9EBC" fill-rule="nonzero" d="M176 1917L0 1824 0 1458z"/>
+            <path fill="#7F9DBB" fill-rule="nonzero" d="M0 1824L176 1917 0 1988z"/>
+            <path fill="#7999B9" fill-rule="nonzero" d="M0 1988L176 1917 0 2175z"/>
+            <path fill="#7E9CBB" fill-rule="nonzero" d="M176 1917L349 3372 0 3178 0 2175z"/>
+            <path fill="#7895B1" fill-rule="nonzero" d="M176 1917L2031 2321 1478 1323z"/>
+            <path fill="#809DB9" fill-rule="nonzero" d="M1478 1323L1854 1280 2031 1593 2031 2321z"/>
+            <path fill="#819FBE" fill-rule="nonzero" d="M1331 3480L176 1917 349 3372z"/>
+            <path fill="#83A1BE" fill-rule="nonzero" d="M176 1917L1331 3480 2031 2666 2031 2321z"/>
+            <path fill="#87A3BE" fill-rule="nonzero" d="M2031 2666L2031 3040 1331 3480z"/>
+            <path fill="#7999B8" fill-rule="nonzero" d="M0 3178L349 3372 157 4128 0 3843z"/>
+            <path fill="#6986A6" fill-rule="nonzero" d="M0 3843L157 4128 0 4080z"/>
+            <path fill="#6783A3" fill-rule="nonzero" d="M157 4128L0 4231 0 4080z"/>
+            <path fill="#6884A4" fill-rule="nonzero" d="M0 4231L157 4128 0 4480z"/>
+            <path fill="#7F9DBA" fill-rule="nonzero" d="M157 4128L581 3791 349 3372z"/>
+            <path fill="#89A3BE" fill-rule="nonzero" d="M581 3791L349 3372 1331 3480z"/>
+            <path fill="#88A2BC" fill-rule="nonzero" d="M581 3791L157 4128 1620 4406z"/>
+            <path fill="#83A1BE" fill-rule="nonzero" d="M1620 4406L1597 3950 581 3791z"/>
+            <path fill="#8BA4BE" fill-rule="nonzero" d="M1597 3950L2031 3417 2031 4163z"/>
+            <path fill="#8AA5BE" fill-rule="nonzero" d="M2031 3417L1331 3480 2031 3040z"/>
+            <path fill="#8DA6BE" fill-rule="nonzero" d="M581 3791L1331 3480 2031 3417 1597 3950z"/>
+            <path fill="#859EB8" fill-rule="nonzero" d="M157 4128L696 4703 175 4869z"/>
+            <path fill="#647E9D" fill-rule="nonzero" d="M0 4968L175 4869 157 4128 0 4480z"/>
+            <path fill="#8BA5BE" fill-rule="nonzero" d="M157 4128L1620 4406 696 4703z"/>
+            <path fill="#88A3BE" fill-rule="nonzero" d="M1620 4406L1597 3950 2031 4163 2031 4558z"/>
+            <path fill="#708AA7" fill-rule="nonzero" d="M0 4968L175 4869 121 5367 0 5367z"/>
+            <path fill="#839CB7" fill-rule="nonzero" d="M467 4954L1517 5290 1587 5367 121 5367z"/>
+            <path fill="#718AA7" fill-rule="nonzero" d="M121 5367L175 4869 467 4954z"/>
+            <path fill="#88A3BE" fill-rule="nonzero" d="M175 4869L1620 4406 1946 4954 1517 5290z"/>
+            <path fill="#89A3BE" fill-rule="nonzero" d="M1517 5290L2031 5174 2031 5367 1587 5367z"/>
+            <path fill="#8CA6BE" fill-rule="nonzero" d="M1517 5290L2031 4888 2031 5174z"/>
+            <path fill="#7D9CBA" fill-rule="nonzero" d="M1946 4954l-326-548 411 152v330l-85 66z"/>
+        </g>
+    </g>
+</svg>
