@@ -7,12 +7,12 @@ import { AppActionConstants } from "../actions/actions";
 const logger = new ConsoleLogger({ level: LOG_LEVEL });
 
 export function* watchStartPipelineTrigger() {
-    yield takeEvery(AppActionConstants.SE_PIPELINE_TRIGGER, handleStartPipelineTrigger);
+    yield takeEvery(AppActionConstants.FI_PIPELINE_TRIGGER, handleStartPipelineTrigger);
 }
 
 export function* handleStartPipelineTrigger() {
     try {
-        yield logger.log("swedish pipeline initializer");
+        yield logger.log("finnish pipeline initializer");
     } catch (e) {
         logger.log("fetch front page trigger failed");
     }

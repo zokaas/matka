@@ -1,11 +1,13 @@
 import React from "react";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
+import CookieBot from "react-cookiebot";
 import { Layout } from "@opr-finance/layout-flex";
 import { iconLibrary } from "@opr-finance/feature-icon-library";
 import { Logo } from "@opr-finance/component-logo";
-import logo from "./images/logo.svg";
+import logo from "./images/logo.png";
 import { PipelinePage } from "./pages/PipelinePage";
 import { CompletedPage } from "./pages/CompletedPage";
+import { RescoringPage } from "./pages/RescoringPage";
 import styled from "styled-components";
 import {
     body,
@@ -35,6 +37,8 @@ const FooterIcon = styled.img`
     margin: 0 24px 0 0;
 `;
 
+const domainGroupId = process.env.REACT_APP_COOKIEBOT_DOMAING_GROUP_ID as string;
+
 const App: React.FC = () => {
     return (
         <Layout
@@ -52,19 +56,19 @@ const App: React.FC = () => {
             }}
             translation={{
                 footer: {
-                    customerServiceTitle: "Kundtjänst",
-                    customerServiceLine1: "Öppen vardagar kl. 9–16:00",
-                    customerServiceLine2: "08 501 006 60",
-                    customerServiceLine3: "flex.kundservice@opr-foretagslan.se",
-                    customerServiceLine4: "Vanliga frågor",
+                    customerServiceTitle: "Asiakaspalvelu",
+                    customerServiceLine1: "Avoinna arkisin 9–17",
+                    customerServiceLine2: "020 741 2032",
+                    customerServiceLine3: "asiakaspalvelu.flex@yritysluotto.fi",
+                    customerServiceLine4: "Usein kysyttyä",
                     customerServiceLink: `${
                         process.env.REACT_APP_MARKETING_PAGE_URL as string
-                    }/kundservice/vanliga-fragor/`,
-                    contactTitle: "Kontaktuppgifter",
-                    contactLine1: "OPR- Finance AB",
-                    contactLine2: "Kungsbroplan 1",
-                    contactLine3: "112 27 Stockholm",
-                    contactLine4: "Organisationsnummer: 556707-7044",
+                    }/asiakaspalvelu/usein-kysyttya/`,
+                    contactTitle: "Yhteystiedot",
+                    contactLine1: "OPR-Finance B2B Oy",
+                    contactLine2: "Lautatarhankatu 8B",
+                    contactLine3: "00580 Helsinki",
+                    contactLine4: "Y-tunnus 2494620-4",
                 },
             }}
             logo={
@@ -77,7 +81,15 @@ const App: React.FC = () => {
                     }}
                 />
             }>
+            <CookieBot domainGroupId={domainGroupId} />
             <Switch>
+                <Route
+                    path="/fi"
+                    exact
+                    render={() => {
+                        return <Redirect to="/" />;
+                    }}
+                />
                 <Route
                     path="/"
                     exact
@@ -95,18 +107,18 @@ const App: React.FC = () => {
                                     button: button(),
                                     buttonText: buttonText(),
                                     formError: formError(),
-                                    contractLink: link(),
                                 }}
                             />
                         );
                     }}
                 />
                 <Route
-                    path="/financed" // Partner is called Financed
+                    path="/partner"
                     exact
                     render={() => {
                         return (
                             <PartnerPipelinePage
+                                brokerName="fortis"
                                 styleConfig={{
                                     body: body(),
                                     bodyTitle: bodyTitle(),
@@ -118,7 +130,51 @@ const App: React.FC = () => {
                                     button: button(),
                                     buttonText: buttonText(),
                                     formError: formError(),
-                                    contractLink: link(),
+                                }}
+                            />
+                        );
+                    }}
+                />
+                <Route
+                    path="/swiftdial"
+                    exact
+                    render={() => {
+                        return (
+                            <PartnerPipelinePage
+                                brokerName="swiftdial"
+                                styleConfig={{
+                                    body: body(),
+                                    bodyTitle: bodyTitle(),
+                                    pageTitle: pageTitle(),
+                                    textField: textField(),
+                                    select: select(),
+                                    checkbox: checkbox(),
+                                    checkboxText: checkboxText(),
+                                    button: button(),
+                                    buttonText: buttonText(),
+                                    formError: formError(),
+                                }}
+                            />
+                        );
+                    }}
+                />
+                <Route
+                    path="/korotushakemus"
+                    exact
+                    render={() => {
+                        return (
+                            <RescoringPage
+                                styleConfig={{
+                                    body: body(),
+                                    bodyTitle: bodyTitle(),
+                                    pageTitle: pageTitle(),
+                                    textField: textField(),
+                                    select: select(),
+                                    checkbox: checkbox(),
+                                    checkboxText: checkboxText(),
+                                    button: button(),
+                                    buttonText: buttonText(),
+                                    formError: formError(),
                                 }}
                             />
                         );

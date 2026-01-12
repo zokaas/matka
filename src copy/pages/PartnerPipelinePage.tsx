@@ -12,29 +12,27 @@ import {
 } from "@opr-finance/component-forms";
 import styled from "styled-components";
 import * as yup from "yup";
-import { pickOff, sendGAEvent, sendGAConversion } from "@opr-finance/utils";
+import {
+    FontStyleProps,
+    InputStyleProps,
+    onPageLoad,
+    pickOff,
+    sendGAConversion,
+} from "@opr-finance/utils";
 import { useHistory } from "react-router-dom";
-import { sendPartnerApplication } from "../api/flex";
+import { sendBrokerApplication } from "../api/flex";
 import { Icon } from "@opr-finance/component-icon";
 import { Loader } from "@opr-finance/component-loader";
+import { isValidFinnishCompanyId, isValidPhoneNumberFi } from "@opr-finance/validators";
 import { currency, CurrencyFormat, CurrencyLocale } from "@opr-finance/component-currency";
+import { T_BrokerApplication } from "../types/partner";
 import {
-    T_Application,
-    T_PipelinePageProps,
-    T_ApplicationSent,
-    T_ApplicationPayload,
-} from "../types/general";
-import { logger } from "@opr-finance/feature-console-logger/src/consoleLogger";
-import { validateDisbursementAccount } from "../api/validateDisbursementAccount";
-import { isValidPhoneNumberSe, validateZipCode } from "@opr-finance/validators/src/se";
-import { isValidEmail } from "@opr-finance/validators";
-import { Tooltip } from "@opr-finance/component-tooltip";
-import { Link } from "@opr-finance/component-link-to";
-import {
-    applicationMapper,
-    createDataLayerEventPurchase,
-    createDataLayerEventSubmit,
+    handleSubmit,
+    mapBrokerApplication,
+    onPageFullyLoaded,
+    sendAnalyticsEvents,
 } from "../utils";
+import { BrokerName } from "../api/brokerConfig";
 
 const Form = styled.form`
     display: flex;
@@ -70,223 +68,160 @@ const LoaderContainer = styled.div`
     justify-content: center;
 `;
 
-const TooltipLabel = styled.div`
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-`;
-export function PartnerPipelinePage(props: Readonly<T_PipelinePageProps>) {
+export type PipelinePageProps = {
+    brokerName: BrokerName;
+    styleConfig: {
+        body: FontStyleProps;
+        bodyTitle: FontStyleProps;
+        pageTitle: FontStyleProps;
+        textField: InputStyleProps;
+        select: InputStyleProps;
+        checkbox: InputStyleProps;
+        checkboxText: FontStyleProps;
+        button: InputStyleProps;
+        buttonText: FontStyleProps;
+        formError: FontStyleProps;
+    };
+};
+
+export function PartnerPipelinePage(props: PipelinePageProps) {
     const history = useHistory();
 
     const amountOptions = [
-        option("Välj"),
+        option("Valitse"),
+        option(
+            currency({
+                value: 2000,
+                locale: CurrencyLocale.Finland,
+                currency: CurrencyFormat.Finland,
+            })
+        ),
+        option(
+            currency({
+                value: 5000,
+                locale: CurrencyLocale.Finland,
+                currency: CurrencyFormat.Finland,
+            })
+        ),
+        option(
+            currency({
+                value: 8000,
+                locale: CurrencyLocale.Finland,
+                currency: CurrencyFormat.Finland,
+            })
+        ),
+        option(
+            currency({
+                value: 10000,
+                locale: CurrencyLocale.Finland,
+                currency: CurrencyFormat.Finland,
+            })
+        ),
+        option(
+            currency({
+                value: 15000,
+                locale: CurrencyLocale.Finland,
+                currency: CurrencyFormat.Finland,
+            })
+        ),
         option(
             currency({
                 value: 20000,
-                locale: CurrencyLocale.Sweden,
-                currency: CurrencyFormat.Sweden,
-            })
-        ),
-        option(
-            currency({
-                value: 50000,
-                locale: CurrencyLocale.Sweden,
-                currency: CurrencyFormat.Sweden,
-            })
-        ),
-        option(
-            currency({
-                value: 100000,
-                locale: CurrencyLocale.Sweden,
-                currency: CurrencyFormat.Sweden,
-            })
-        ),
-        option(
-            currency({
-                value: 150000,
-                locale: CurrencyLocale.Sweden,
-                currency: CurrencyFormat.Sweden,
-            })
-        ),
-        option(
-            currency({
-                value: 200000,
-                locale: CurrencyLocale.Sweden,
-                currency: CurrencyFormat.Sweden,
+                locale: CurrencyLocale.Finland,
+                currency: CurrencyFormat.Finland,
             })
         ),
     ];
-
-    const reasonOptions = [
-        option("Välj"),
-        option("Köpa utrustning"),
-        option("Anställa personal"),
-        option("Finansiera skuld"),
-        option("Marknadsföring"),
-        option("Inköp av inventarier"),
-        option("Oväntad utgift"),
-        option("Expansion"),
-        option("Betala leverantörsfakturor"),
-        option("Annat"),
-    ];
-    const pepOptions = [option("Välj"), option("Ja"), option("Nej")];
 
     const validAmounts: string[] = pickOff(
         amountOptions,
-        (option: SelectOption) => option.value === "Välj"
+        (option: SelectOption) => option.value === "Valitse"
     ).map((option: SelectOption) => {
         return option.value;
     });
 
-    const validReasons: string[] = pickOff(
-        reasonOptions,
-        (option: SelectOption) => option.value === "Välj"
-    ).map((option: SelectOption) => {
-        return option.value;
-    });
-
-    const validPepOptions: string[] = pickOff(
-        pepOptions,
-        (option: SelectOption) => option.value === "Välj"
-    ).map((option: SelectOption) => {
-        return option.value;
-    });
-
-    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const handlePartnerApplicationSubmit = async (data: T_BrokerApplication) => {
+        await handleSubmit(data, {
+            mapper: mapBrokerApplication,
+            sender: sendBrokerApplication(props.brokerName),
+            analytics: sendAnalyticsEvents,
+            conversion: sendGAConversion,
+            setIsLoading,
+            onCompleted: (result) =>
+                history.push("/completed", {
+                    status: result.status,
+                    type: result.type,
+                    partner: true,
+                }),
+        });
+    };
 
     const schema = yup.object().shape({
-        amount: yup
+        amount: yup.string().oneOf(validAmounts, "pakollinen kenttä").required("pakollinen kenttä"),
+        companyName: yup
             .string()
-            .oneOf(validAmounts, "Kreditgräns saknas")
-            .required("Kreditgräns saknas"),
-        reason: yup.string().oneOf(validReasons, "Lånesyfte saknas").required("Lånesyfte saknas"),
-        reasonDescription: yup
+            .min(3, "pienin sallittu pituus on 3 merkkiä")
+            .required("pakollinen kenttä"),
+        companyId: yup
             .string()
-            .min(1, "Ange en mer detaljerad beskrivning av syftet med lånet")
-            .required("Ange en mer detaljerad beskrivning av syftet med lånet"),
-        ssn: yup.string().notRequired(),
-        companyName: yup.string().min(3, "Företagsnamn saknas").required("Företagsnamn saknas"),
-        companyId: yup.string().required("Organisationsnummer saknas"),
-        iban: yup
-            .string()
-            .test(
-                "isValidDisbursementAccount",
-                "Felaktigt kontonummer",
-                validateDisbursementAccount
-            )
-            .notRequired(),
-        companyAddressStreet: yup.string().notRequired(),
-        companyAddressCity: yup.string().notRequired(),
-        companyAddressZip: yup
-            .string()
-            .test("looksLikeZipCode", "Angivet postnummer är felaktigt", validateZipCode)
-            .notRequired(),
-        turnover: yup
-            .string()
-            .required("Företagets månadsomsättning saknas")
-            .matches(/^\d+([.,]\d+)?$/, "Fel format, endast siffror är tillåtna"),
-        applicantGivenName: yup.string().required("Förnamn saknas"),
-        applicantSurname: yup.string().required("Efternamn saknas"),
-        applicantEmail: yup
-            .string()
-            .required("Email saknas")
-            .test("validateEmailFormat", "Angiven emailadress är felaktig", isValidEmail),
+            .required("pakollinen kenttä")
+            .test("isValidCompanyId", "virheellinen Y-tunnus", isValidFinnishCompanyId),
+        turnover: yup.string().required("pakollinen kenttä"),
+        applicantSurname: yup.string().required("pakollinen kenttä"),
+        applicantGivenName: yup.string().required("pakollinen kenttä"),
+        applicantEmail: yup.string().email("virheellinen sähköposti").required("pakollinen kenttä"),
         applicantPhone: yup
             .string()
-            .test("isValidPhone", "Angivet telefonnummer är felaktigt", isValidPhoneNumberSe)
-            .required("Telefonnummer saknas"),
-        creditCheck: yup
+            .test("isValidPhone", "virheellinen puhelinnumero", isValidPhoneNumberFi)
+            .required("pakollinen kenttä"),
+        allowMarketing: yup.boolean().notRequired(),
+        consentGiven: yup
             .boolean()
-            .oneOf([true], "Credit check saknas")
-            .required("Credit check saknas"),
-        isPep: yup
-            .string()
-            .oneOf(validPepOptions, "Pep check saknas")
-            .required("Credit check saknas"),
+            .oneOf([true], "pakollinen kenttä")
+            .required("pakollinen kenttä"),
         campaignCode: yup.string().notRequired(),
     });
 
-    const { form, processChange, processBlur, processSubmit, Error } = useForm<T_Application>({
-        initial: {
-            ssn: "",
-            amount: "Välj",
-            reason: "Välj",
-            reasonDescription: "",
-            companyName: "",
-            companyId: "",
-            iban: "",
-            companyAddressStreet: "",
-            companyAddressCity: "",
-            companyAddressZip: "",
-            isPep: "Välj",
-            turnover: "",
-            applicantName: "",
-            applicantBirthday: "",
-            applicantGivenName: "",
-            applicantSurname: "",
-            applicantEmail: "",
-            applicantPhone: "",
-            creditCheck: false,
-            campaignCode: "",
-        },
-        schema,
-        styleConfig: {
-            body: props.styleConfig.body,
-            bodyTitle: props.styleConfig.bodyTitle,
-            button: props.styleConfig.button,
-            buttonText: props.styleConfig.buttonText,
-            checkbox: props.styleConfig.checkbox,
-            checkboxText: props.styleConfig.checkboxText,
-            formError: props.styleConfig.formError,
-            select: props.styleConfig.select,
-            textField: props.styleConfig.textField,
-        },
-        onChange: () => {
-            logger.log("on change!");
-        },
-        onError: () => {
-            logger.log("on error!");
-        },
-        onSubmit: async (data: T_Application) => {
-            const mappedData: T_ApplicationPayload = await applicationMapper(data);
-            logger.log("got form result:", mappedData);
-            setIsLoading(true);
-            const result = await sendPartnerApplication(mappedData);
-            sendGAConversion(mappedData.amount);
-            logger.log("got result", result);
-            // Analytics stay the same as for PipelinePage
-            const dataLayerEventSubmit = createDataLayerEventSubmit(mappedData);
-            sendGAEvent(dataLayerEventSubmit);
-            sendGAEvent({ ecommerce: null });
-            const dataLayerEventPurchase = createDataLayerEventPurchase(mappedData);
-            sendGAEvent(dataLayerEventPurchase);
-            setIsLoading(false);
-            const sendState: T_ApplicationSent = {
-                status: result.status,
-                partner: true,
-            };
-            history.push("/completed", sendState);
-        },
-    });
+    const { form, processChange, processBlur, processSubmit, Error } = useForm<T_BrokerApplication>(
+        {
+            initial: {
+                amount: "Valitse",
+                companyName: "",
+                companyId: "",
+                turnover: "",
+                applicantGivenName: "",
+                applicantSurname: "",
+                applicantEmail: "",
+                applicantPhone: "",
+                allowMarketing: false,
+                consentGiven: false,
+                campaignCode: "",
+                clientApplicationId: (window as any).clientApplicationId,
+                externalReference: (window as any).clientApplicationId,
+            },
+            schema,
+            styleConfig: {
+                body: props.styleConfig.body,
+                bodyTitle: props.styleConfig.bodyTitle,
+                button: props.styleConfig.button,
+                buttonText: props.styleConfig.buttonText,
+                checkbox: props.styleConfig.checkbox,
+                checkboxText: props.styleConfig.checkboxText,
+                formError: props.styleConfig.formError,
+                select: props.styleConfig.select,
+                textField: props.styleConfig.textField,
+            },
+            onChange: () => {},
+            onError: () => {},
+            onSubmit: async (data: T_BrokerApplication) => handlePartnerApplicationSubmit(data),
+        }
+    );
+
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        const onPageLoad = () => {
-            sendGAEvent({ event: "start" });
-            // Push Data Layer event when a visitor visit a page or the page reloads.
-            sendGAEvent({ event: "pageview" });
-            // TODO: should it be separated event? "... partner"?
-            // Push Data Layer event when a visitor begins a application for a business credit
-            sendGAEvent({ event: "begin_application_business_credit" });
-        };
-
-        // Check if the page has already loaded
-        if (document.readyState === "complete") {
-            onPageLoad();
-        } else {
-            window.addEventListener("load", onPageLoad, false);
-            // Remove the event listener when component unmounts
-            return () => window.removeEventListener("load", onPageLoad);
-        }
+        const cleanup = onPageLoad(() => onPageFullyLoaded());
+        return cleanup;
     }, []);
 
     if (isLoading) {
@@ -301,29 +236,26 @@ export function PartnerPipelinePage(props: Readonly<T_PipelinePageProps>) {
         <div>
             <Form>
                 <Font styleConfig={{ root: props.styleConfig.pageTitle }}>
-                    Ansök om OPR-Företagslån Flex
+                    Hae Yritysluotto Flex joustoluottoa
                 </Font>
                 <Font styleConfig={{ root: props.styleConfig.body }}>
-                    Ansökan tar enbart 1 minut och du får ditt kreditbesked redan samma dag. Nedan
-                    väljer du den kreditgräns som passar företagets behov samt bifogar företagets
-                    uppgifter och dina kontaktuppgifter.
+                    Aloita joustoluoton hakeminen täyttämällä hakulomake. Valitse haluamasi
+                    luottolimiitin summa ja täytä tiedot yrityksestäsi sekä yhteystietosi.
+                    Huomioithan, että käytät hakemuksen sähköpostiosoitteena osoitetta, josta
+                    jatkossakin hoidat luottolimiittiäsi. Esimerkiksi nostopyynnöt tulee tehdä
+                    sähköpostiosoittesta, joka on lisätty hakemukselle.
                 </Font>
                 <Font styleConfig={{ root: props.styleConfig.body }}>
-                    Vi handlägger sedan din ansökan och skickar ditt krediterbjudande för signering
-                    med mobilt BankID via e-post. Efter signering har du fri möjlighet att nyttja
-                    din nya företagskredit. Således kan du ha pengarna ditt företag behöver redan
-                    idag.
+                    Lähetämme lainapäätöksen sekä lainasopimuksen ilmoittamaasi sähköpostiin. Voit
+                    allekirjoittaa lainasopimuksen sähköisesti, jonka jälkeen Yritysluotto Flex
+                    joustoluotto on käytettävissäsi ja voit nostaa haluamasi summan yrityksesi
+                    tilille luottorajasi puitteissa.
                 </Font>
                 <Font styleConfig={{ root: props.styleConfig.body }}>
-                    Vi efterfrågar borgensåtagande från ansökande.
+                    Tähdellä (*) merkityt tiedot ovat pakollisia.
                 </Font>
-                <Font styleConfig={{ root: props.styleConfig.body }}>
-                    Uppgifterna markerade med asterisk * i formuläret är obligatoriska.
-                </Font>
-                <Font styleConfig={{ root: props.styleConfig.bodyTitle }}>
-                    Uppgifter om krediten
-                </Font>
-                <Font styleConfig={{ root: props.styleConfig.body }}>Kreditgräns *</Font>
+                <Font styleConfig={{ root: props.styleConfig.bodyTitle }}>Joustoluoton tiedot</Font>
+                <Font styleConfig={{ root: props.styleConfig.body }}>Luottolimiitin summa *</Font>
                 <SelectField
                     name="amount"
                     icon={null}
@@ -331,7 +263,7 @@ export function PartnerPipelinePage(props: Readonly<T_PipelinePageProps>) {
                     inputConfig={{
                         select: {
                             value: form.data.amount,
-                            onChange: (e) => {
+                            onChange: async (e) => {
                                 processChange({
                                     field: "amount",
                                     value: e?.value,
@@ -359,97 +291,38 @@ export function PartnerPipelinePage(props: Readonly<T_PipelinePageProps>) {
                         },
                     }}
                 />
-                <Font styleConfig={{ root: props.styleConfig.body }}>Lånesyfte *</Font>
-                <SelectField
-                    name="reason"
-                    icon={null}
-                    value={getOption(reasonOptions, form.data.reason)}
-                    inputConfig={{
-                        select: {
-                            value: form.data.reason,
-                            onChange: (e) => {
-                                processChange({
-                                    field: "reason",
-                                    value: e?.value,
-                                    validate: true,
-                                    blurred: true,
-                                    touched: true,
-                                });
-                            },
-                        },
-                    }}
-                    options={reasonOptions}
-                    styleConfig={{
-                        select: props.styleConfig.select,
-                        singleValue: {
-                            fontFamily: "arial",
-                            fontSize: "16px",
-                            color: "#0c445c",
-                            fontWeight: "bold",
-                        },
-                        option: {
-                            fontFamily: "arial",
-                            fontSize: "16px",
-                            color: "#0c445c",
-                            fontWeight: "bold",
-                        },
-                    }}
-                />
-                <Error field="reason" />
-                <Font styleConfig={{ root: props.styleConfig.body }}>
-                    Vänligen förklara mer ingående vad lånet är avsett för *
-                </Font>
-                <TextField
-                    inputConfig={{
-                        name: "reasonDescription",
-                        value: form.data.reasonDescription,
-                        onChange: (e) => {
-                            processChange({
-                                field: "reasonDescription",
-                                value: e.target.value,
-                            });
-                        },
-                        onBlur: () => {
-                            processBlur("reasonDescription");
-                        },
-                    }}
-                    styleConfig={{ root: props.styleConfig.textField }}
-                />
-                <Error field="reasonDescription" />
-                <Font styleConfig={{ root: props.styleConfig.bodyTitle }}>
-                    Uppgifter om företaget
-                </Font>
-                <Font styleConfig={{ root: props.styleConfig.body }}>Företagets namn *</Font>
+                <Error field="amount" />
+                <Font styleConfig={{ root: props.styleConfig.bodyTitle }}>Yrityksen tiedot</Font>
+                <Font styleConfig={{ root: props.styleConfig.body }}>Yrityksen nimi *</Font>
                 <TextField
                     inputConfig={{
                         name: "companyName",
                         value: form.data.companyName,
-                        onChange: (e) => {
+                        onChange: async (e) => {
                             processChange({
                                 field: "companyName",
                                 value: e.target.value,
                             });
                         },
-                        onBlur: () => {
+                        onBlur: async () => {
                             processBlur("companyName");
                         },
                     }}
                     styleConfig={{ root: props.styleConfig.textField }}
                 />
                 <Error field="companyName" />
-                <Font styleConfig={{ root: props.styleConfig.body }}>Organisationsnummer *</Font>
+                <Font styleConfig={{ root: props.styleConfig.body }}>Y-tunnus *</Font>
                 <TextField
                     inputConfig={{
                         name: "companyId",
-                        placeholder: "Ange organisationsnummer i formatet 123456-1234",
                         value: form.data.companyId,
-                        onChange: (e) => {
+                        onChange: async (e) => {
                             processChange({
                                 field: "companyId",
                                 value: e.target.value,
                             });
                         },
-                        onBlur: () => {
+                        onBlur: async () => {
                             processBlur("companyId");
                         },
                     }}
@@ -457,312 +330,174 @@ export function PartnerPipelinePage(props: Readonly<T_PipelinePageProps>) {
                 />
                 <Error field="companyId" />
                 <Font styleConfig={{ root: props.styleConfig.body }}>
-                    Företagets månadsomsättning *
+                    Yrityksen kuukausittainen liikevaihto *
                 </Font>
                 <TextField
                     inputConfig={{
                         name: "turnover",
                         value: form.data.turnover,
-                        onChange: (e) => {
-                            const value = e.target.value;
-                            // allow empty string, digits, dot and comma
-                            if (/^\d*([.,]\d*)?$/.test(value)) {
-                                processChange({
-                                    field: "turnover",
-                                    value: e.target.value,
-                                });
-                            }
+                        onChange: async (e) => {
+                            processChange({
+                                field: "turnover",
+                                value: e.target.value,
+                            });
                         },
-                        onBlur: () => {
+                        onBlur: async () => {
                             processBlur("turnover");
                         },
                     }}
                     styleConfig={{ root: props.styleConfig.textField }}
                 />
                 <Error field="turnover" />
-                <TooltipLabel>
-                    <Font styleConfig={{ root: props.styleConfig.body }}>
-                        Kontonummer (kontonummer kan tillhandahållas i ett senare skede)
-                    </Font>
-                    <Tooltip
-                        icon={<Icon icon={["far", "question-circle"]} />}
-                        styleConfig={{
-                            root: {
-                                margin: "10px 0 0 0",
-                            },
-                        }}>
-                        Använd vanligt kontonummer (inte PG/BG) och bindestreck mellan clearing och
-                        kontonummer. Exempelvis: CCCC-012345678.
-                        <br />
-                        <br />
-                        Om du har Sparbanken/Swedbank och ditt clearingnummer börjar på 8 ska du
-                        ange 5-siffrig clearingnummer och totalt 15 siffror. Exempelvis:
-                        CCCCC-0123456789.
-                    </Tooltip>
-                </TooltipLabel>
-                <TextField
-                    inputConfig={{
-                        name: "iban",
-                        value: form.data.iban,
-                        onChange: (e) => {
-                            processChange({
-                                field: "iban",
-                                value: e.target.value,
-                            });
-                        },
-                        onBlur: () => {
-                            processBlur("iban");
-                        },
-                    }}
-                    styleConfig={{ root: props.styleConfig.textField }}
-                />
-                <Error field="iban" />
-                <Font styleConfig={{ root: props.styleConfig.body }}>Adress</Font>
-                <TextField
-                    inputConfig={{
-                        name: "companyAddressStreet",
-                        value: form.data.companyAddressStreet,
-                        onChange: (e) => {
-                            processChange({
-                                field: "companyAddressStreet",
-                                value: e.target.value,
-                            });
-                        },
-                        onBlur: () => {
-                            processBlur("companyAddressStreet");
-                        },
-                    }}
-                    styleConfig={{ root: props.styleConfig.textField }}
-                />
-                <Error field="companyAddressStreet" />
-                <Font styleConfig={{ root: props.styleConfig.body }}>Postnummer</Font>
-                <TextField
-                    inputConfig={{
-                        name: "companyAddressZip",
-                        value: form.data.companyAddressZip,
-                        onChange: (e) => {
-                            processChange({
-                                field: "companyAddressZip",
-                                value: e.target.value,
-                            });
-                        },
-                        onBlur: () => {
-                            processBlur("companyAddressZip");
-                        },
-                    }}
-                    styleConfig={{ root: props.styleConfig.textField }}
-                />
-                <Error field="companyAddressZip" />
-                <Font styleConfig={{ root: props.styleConfig.body }}>Postort</Font>
-                <TextField
-                    inputConfig={{
-                        name: "companyAddressCity",
-                        value: form.data.companyAddressCity,
-                        onChange: (e) => {
-                            processChange({
-                                field: "companyAddressCity",
-                                value: e.target.value,
-                            });
-                        },
-                        onBlur: () => {
-                            processBlur("companyAddressCity");
-                        },
-                    }}
-                    styleConfig={{ root: props.styleConfig.textField }}
-                />
-                <Error field="companyAddressCity" />
-                <Font styleConfig={{ root: props.styleConfig.bodyTitle }}>
-                    Uppgifter om sökanden
-                </Font>
-                <Font styleConfig={{ root: props.styleConfig.body }}>Personnummer</Font>
-                <TextField
-                    inputConfig={{
-                        name: "ssn",
-                        value: form.data.ssn,
-                        onChange: (e) => {
-                            processChange({
-                                field: "ssn",
-                                value: e.target.value,
-                            });
-                        },
-                        onBlur: () => {
-                            processBlur("ssn");
-                        },
-                    }}
-                    styleConfig={{ root: props.styleConfig.textField }}
-                />
-                <Error field="ssn" />
-                <Font styleConfig={{ root: props.styleConfig.body }}>Förnamn *</Font>
-                <TextField
-                    inputConfig={{
-                        name: "applicantGivenName",
-                        value: form.data.applicantGivenName,
-                        onChange: (e) => {
-                            processChange({
-                                field: "applicantGivenName",
-                                value: e.target.value,
-                            });
-                        },
-                        onBlur: () => {
-                            processBlur("applicantGivenName");
-                        },
-                    }}
-                    styleConfig={{ root: props.styleConfig.textField }}
-                />
-                <Error field="applicantGivenName" />
-                <Font styleConfig={{ root: props.styleConfig.body }}>Efternamn *</Font>
-                <TextField
-                    inputConfig={{
-                        name: "applicantSurname",
-                        value: form.data.applicantSurname,
-                        onChange: (e) => {
-                            processChange({
-                                field: "applicantSurname",
-                                value: e.target.value,
-                            });
-                        },
-                        onBlur: () => {
-                            processBlur("applicantSurname");
-                        },
-                    }}
-                    styleConfig={{ root: props.styleConfig.textField }}
-                />
-                <Error field="applicantSurname" />
-                <Font styleConfig={{ root: props.styleConfig.body }}>Email *</Font>
+                <Font styleConfig={{ root: props.styleConfig.body }}>Sähköposti *</Font>
                 <TextField
                     inputConfig={{
                         name: "email",
-                        placeholder: "Ange email i formatet adress@domain.com",
+                        placeholder: "Kirjoita sähköposti muodossa osoite@domain.com",
                         value: form.data.applicantEmail,
-                        onChange: (e) => {
+                        onChange: async (e) => {
                             processChange({
                                 field: "applicantEmail",
                                 value: e.target.value,
                             });
                         },
-                        onBlur: () => {
+                        onBlur: async () => {
                             processBlur("applicantEmail");
                         },
                     }}
                     styleConfig={{ root: props.styleConfig.textField }}
                 />
                 <Error field="applicantEmail" />
-                <Font styleConfig={{ root: props.styleConfig.body }}>Telefonnummer *</Font>
+                <Font styleConfig={{ root: props.styleConfig.bodyTitle }}>Hakijan tiedot</Font>
+                <Font styleConfig={{ root: props.styleConfig.body }}>Hakijan etunimi *</Font>
+                <TextField
+                    inputConfig={{
+                        name: "applicantGivenName",
+                        value: form.data.applicantGivenName,
+                        onChange: async (e) => {
+                            processChange({
+                                field: "applicantGivenName",
+                                value: e.target.value,
+                            });
+                        },
+                        onBlur: async () => {
+                            processBlur("applicantGivenName");
+                        },
+                    }}
+                    styleConfig={{ root: props.styleConfig.textField }}
+                />
+                <Error field="applicantGivenName" />
+                <Font styleConfig={{ root: props.styleConfig.body }}>Hakijan sukunimi *</Font>
+                <TextField
+                    inputConfig={{
+                        name: "applicantSurname",
+                        value: form.data.applicantSurname,
+                        onChange: async (e) => {
+                            processChange({
+                                field: "applicantSurname",
+                                value: e.target.value,
+                            });
+                        },
+                        onBlur: async () => {
+                            processBlur("applicantSurname");
+                        },
+                    }}
+                    styleConfig={{ root: props.styleConfig.textField }}
+                />
+                <Error field="applicantSurname" />
+                <Font styleConfig={{ root: props.styleConfig.body }}>Puhelinnumero *</Font>
                 <TextField
                     inputConfig={{
                         name: "phone",
-                        placeholder: "Ange telefonnumret i formatet +46 12 345 67 89",
+                        placeholder: "Kirjoita puhelinnumero muodossa +358 50 123 456",
                         value: form.data.applicantPhone,
-                        onChange: (e) => {
+                        onChange: async (e) => {
                             processChange({
                                 field: "applicantPhone",
                                 value: e.target.value,
                             });
                         },
-                        onBlur: () => {
+                        onBlur: async () => {
                             processBlur("applicantPhone");
                         },
                     }}
                     styleConfig={{ root: props.styleConfig.textField }}
                 />
                 <Error field="applicantPhone" />
-                <Font styleConfig={{ root: props.styleConfig.body }}>Kampanjkod</Font>
+                <Font styleConfig={{ root: props.styleConfig.body }}>Kampanjakoodi</Font>
                 <TextField
                     inputConfig={{
                         name: "campaignCode",
-                        placeholder: "Kampanjkod",
+                        placeholder: "Kampanjakoodi",
                         value: form.data.campaignCode,
-                        onChange: (e) => {
+                        onChange: async (e) => {
                             processChange({
                                 field: "campaignCode",
                                 value: e.target.value,
                             });
                         },
-                        onBlur: () => {
+                        onBlur: async () => {
                             processBlur("campaignCode");
                         },
                     }}
                     styleConfig={{ root: props.styleConfig.textField }}
                 />
                 <Error field="campaignCode" />
-                <Font styleConfig={{ root: props.styleConfig.body }}>
-                    Är du en PEP (Person i politiskt utsatt ställning) och/eller har en
-                    familjemedlem som klassas som PEP? *
-                </Font>
-                <SelectField
-                    name="isPep"
-                    icon={null}
-                    value={getOption(pepOptions, form.data.isPep)}
-                    inputConfig={{
-                        select: {
-                            value: form.data.isPep,
-                            onChange: (e) => {
-                                processChange({
-                                    field: "isPep",
-                                    value: e?.value,
-                                    validate: true,
-                                    blurred: true,
-                                    touched: true,
-                                });
-                            },
-                        },
-                    }}
-                    options={pepOptions}
-                    styleConfig={{
-                        select: props.styleConfig.select,
-                        singleValue: {
-                            fontFamily: "arial",
-                            fontSize: "16px",
-                            color: "#0c445c",
-                            fontWeight: "bold",
-                        },
-                        option: {
-                            fontFamily: "arial",
-                            fontSize: "16px",
-                            color: "#0c445c",
-                            fontWeight: "bold",
-                        },
-                    }}
-                />
-                <Error field="isPep" />
                 <Checkboxes>
-                    <div>
-                        <CheckboxContainer>
-                            <CheckboxField
-                                checked={form.data.creditCheck}
-                                checkedIcon={<Icon icon={["fa", "check"]} />}
-                                onClick={async () => {
-                                    processChange({
-                                        field: "creditCheck",
-                                        value: !form.data.creditCheck,
-                                        validate: true,
-                                        blurred: true,
-                                        touched: true,
-                                    });
-                                }}
-                                styleConfig={{
-                                    root: props.styleConfig.checkbox,
-                                    checked: {},
-                                }}
-                            />
-                            <Font styleConfig={{ root: props.styleConfig.checkboxText }}>
-                                Jag förstår att OPR-Finance AB sparar och behandlar mina
-                                personuppgifter för att utföra en korrekt kreditbedömning och för
-                                att efterleva gällande lagar och förordningar. För mer information,
-                                se OPR-Företagslåns{" "}
-                                <Link
-                                    styleConfig={{ root: props.styleConfig.contractLink }}
-                                    target="_blank"
-                                    href={`${process.env.REACT_APP_MARKETING_PAGE_URL}/integritetspolicy/`}>
-                                    integritetspolicy
-                                </Link>
-                                . *
-                            </Font>
-                        </CheckboxContainer>
-                    </div>
-                    <div>
-                        <Error field="creditCheck" />
-                    </div>
+                    <CheckboxContainer>
+                        <CheckboxField
+                            checked={form.data.allowMarketing}
+                            checkedIcon={<Icon icon={["fa", "check"]} size="1x" />}
+                            onClick={async () => {
+                                processChange({
+                                    field: "allowMarketing",
+                                    value: !form.data.allowMarketing,
+                                    touched: true,
+                                    blurred: true,
+                                    validate: true,
+                                });
+                            }}
+                            styleConfig={{
+                                root: props.styleConfig.checkbox,
+                                checked: {},
+                            }}
+                        />
+                        <Font styleConfig={{ root: props.styleConfig.checkboxText }}>
+                            Yritysluotto Flex saa lähettää minulle ajankohtaista tietoa ja
+                            tarjouksia
+                        </Font>
+                        <Error field="allowMarketing" />
+                    </CheckboxContainer>
+                    <CheckboxContainer>
+                        <CheckboxField
+                            checked={form.data.consentGiven}
+                            checkedIcon={<Icon icon={["fa", "check"]} size="1x" />}
+                            onClick={async () => {
+                                processChange({
+                                    field: "consentGiven",
+                                    value: !form.data.consentGiven,
+                                    touched: true,
+                                    blurred: true,
+                                    validate: true,
+                                });
+                            }}
+                            styleConfig={{
+                                root: props.styleConfig.checkbox,
+                                checked: {},
+                            }}
+                        />
+                        <Font styleConfig={{ root: props.styleConfig.checkboxText }}>
+                            Ymmärrän, että Yritysluotto tallentaa ja käsittelee henkilötietojani.{" "}
+                            <a
+                                href="https://flex.yritysluotto.fi/yritysluotto-flex/rekisteriseloste/"
+                                target="_blank"
+                                rel="noreferrer">
+                                Lue lisää rekisteriselosteesta.
+                            </a>
+                            *
+                        </Font>
+                        <Error field="consentGiven" />
+                    </CheckboxContainer>
                 </Checkboxes>
                 <ButtonField
                     type="submit"
@@ -773,7 +508,7 @@ export function PartnerPipelinePage(props: Readonly<T_PipelinePageProps>) {
                         e.preventDefault();
                         processSubmit();
                     }}>
-                    <Font styleConfig={{ root: props.styleConfig.buttonText }}>Skicka ansökan</Font>
+                    <Font styleConfig={{ root: props.styleConfig.buttonText }}>Lähetä hakemus</Font>
                 </ButtonField>
             </Form>
         </div>

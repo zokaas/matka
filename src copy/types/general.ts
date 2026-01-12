@@ -1,50 +1,39 @@
 import { FeatureInitializerState } from "@opr-finance/feature-initializer";
-import { FontStyleProps, InputStyleProps, T_TrackingPayload } from "@opr-finance/utils";
 
 export type AppState = FeatureInitializerState;
 
 export type T_ApplicationSent = {
     status: boolean;
+    type: "general" | "rescoring";
     partner?: boolean;
 };
 
-export type T_Application = {
+export type T_BaseApplicant = {
     amount: string;
-    applicantBirthday: string;
-    applicantEmail: string;
     applicantGivenName: string;
-    applicantName: string;
-    applicantPhone: string;
     applicantSurname: string;
-    campaignCode: string;
-    companyAddressCity: string;
-    companyAddressStreet: string;
-    companyAddressZip: string;
-    companyId: string;
-    companyName: string;
-    creditCheck: boolean;
-    iban: string;
-    isPep: string;
-    reason: string;
-    reasonDescription: string;
-    ssn: string;
-    turnover: string;
+    applicantEmail: string;
+    applicantPhone: string;
 };
 
-export type T_ApplicationPayload = T_Application & T_TrackingPayload;
-
-export type T_PipelinePageProps = {
-    styleConfig: {
-        body: FontStyleProps;
-        bodyTitle: FontStyleProps;
-        pageTitle: FontStyleProps;
-        textField: InputStyleProps;
-        select: InputStyleProps;
-        checkbox: InputStyleProps;
-        checkboxText: FontStyleProps;
-        button: InputStyleProps;
-        buttonText: FontStyleProps;
-        formError: FontStyleProps;
-        contractLink: FontStyleProps;
-    };
+export type T_Application = T_BaseApplicant & {
+    companyName: string;
+    companyId: string;
+    iban: string;
+    companyAddressStreet: string;
+    companyAddressCity: string;
+    companyAddressZip: string;
+    companyCountryCode: string;
+    turnover: string;
+    applicantName: string;
+    pepCheck: boolean;
+    allowMarketing: boolean;
+    consentGiven: boolean;
+    ssn: string;
+    applicantBirthday: string;
+    campaignCode: string;
+    clientApplicationId: string;
+    externalReference: number;
+    medium: string;
+    source?: string;
 };

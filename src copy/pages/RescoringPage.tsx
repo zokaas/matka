@@ -1,8 +1,4 @@
 import { useState, useEffect } from "react";
-import { useHistory } from "react-router-dom";
-import styled from "styled-components";
-import * as yup from "yup";
-
 import { Font } from "@opr-finance/component-fonts";
 import {
     TextField,
@@ -14,14 +10,18 @@ import {
     option,
     SelectOption,
 } from "@opr-finance/component-forms";
+import styled from "styled-components";
+import * as yup from "yup";
 import {
     FontStyleProps,
     InputStyleProps,
     pickOff,
-    getUtmParameter,
     sendGAConversion,
+    getUtmParameter,
     onPageLoad,
 } from "@opr-finance/utils";
+import { useHistory } from "react-router-dom";
+import { sendRescoringApplication } from "../api/flex";
 import { Icon } from "@opr-finance/component-icon";
 import { Loader } from "@opr-finance/component-loader";
 import {
@@ -31,18 +31,13 @@ import {
     isValidFinnishSSN,
 } from "@opr-finance/validators";
 import { currency, CurrencyFormat, CurrencyLocale } from "@opr-finance/component-currency";
-import { ConsoleLogger, LOG_LEVEL } from "@opr-finance/feature-console-logger";
-
-import { sendApplication } from "../api/flex";
 import { T_Application } from "../types/general";
 import {
     handleSubmit,
-    mapGeneralApplication,
+    mapRescoringApplication,
     onPageFullyLoaded,
     sendAnalyticsEvents,
 } from "../utils";
-
-const logger = new ConsoleLogger({ level: LOG_LEVEL });
 
 const Form = styled.form`
     display: flex;
@@ -78,7 +73,7 @@ const LoaderContainer = styled.div`
     justify-content: center;
 `;
 
-export type PipelinePageProps = {
+export type RescoringPageProps = {
     styleConfig: {
         body: FontStyleProps;
         bodyTitle: FontStyleProps;
@@ -93,18 +88,11 @@ export type PipelinePageProps = {
     };
 };
 
-export function PipelinePage(props: PipelinePageProps) {
+export function RescoringPage(props: RescoringPageProps) {
     const history = useHistory();
 
     const amountOptions = [
         option("Valitse"),
-        option(
-            currency({
-                value: 2000,
-                locale: CurrencyLocale.Finland,
-                currency: CurrencyFormat.Finland,
-            })
-        ),
         option(
             currency({
                 value: 5000,
@@ -149,10 +137,10 @@ export function PipelinePage(props: PipelinePageProps) {
         return option.value;
     });
 
-    const handleApplicationSubmit = async (data: T_Application) => {
+    const handleRescoringSubmit = async (data: T_Application) => {
         await handleSubmit(data, {
-            mapper: mapGeneralApplication,
-            sender: sendApplication,
+            mapper: mapRescoringApplication,
+            sender: sendRescoringApplication,
             analytics: sendAnalyticsEvents,
             conversion: sendGAConversion,
             setIsLoading,
@@ -182,8 +170,8 @@ export function PipelinePage(props: PipelinePageProps) {
         companyAddressZip: yup.string().notRequired(),
         companyAddressCity: yup.string().notRequired(),
         turnover: yup.string().required("pakollinen kenttä"),
-        applicantSurname: yup.string().required("pakollinen kenttä"),
         applicantGivenName: yup.string().required("pakollinen kenttä"),
+        applicantSurname: yup.string().required("pakollinen kenttä"),
         ssn: yup
             .string()
             .test("isValidSSN", "virheelinen henkilötunnus", isValidFinnishSSN)
@@ -193,8 +181,8 @@ export function PipelinePage(props: PipelinePageProps) {
             .string()
             .test("isValidPhone", "virheellinen puhelinnumero", isValidPhoneNumberFi)
             .required("pakollinen kenttä"),
-        pepCheck: yup.boolean().oneOf([true], "pakollinen kenttä").required("pakollinen kenttä"),
-        allowMarketing: yup.boolean().notRequired(),
+        pepCheck: yup.boolean().required("pakollinen kenttä"),
+        allowMarketing: yup.boolean(),
         consentGiven: yup
             .boolean()
             .oneOf([true], "pakollinen kenttä")
@@ -214,19 +202,20 @@ export function PipelinePage(props: PipelinePageProps) {
             iban: "",
             turnover: "",
             applicantName: "",
-            applicantGivenName: "",
             applicantSurname: "",
+            applicantGivenName: "",
             applicantEmail: "",
             applicantPhone: "",
             pepCheck: false,
+
             allowMarketing: false,
             consentGiven: false,
             ssn: "",
             applicantBirthday: "",
             campaignCode: "",
             clientApplicationId: (window as any).clientApplicationId,
-            externalReference: (window as any).clientApplicationId,
             medium: getUtmParameter("utm_medium"),
+            externalReference: (window as any).clientApplicationId,
         },
         schema,
         styleConfig: {
@@ -242,7 +231,7 @@ export function PipelinePage(props: PipelinePageProps) {
         },
         onChange: () => {},
         onError: () => {},
-        onSubmit: async (data: T_Application) => handleApplicationSubmit(data),
+        onSubmit: async (data: T_Application) => handleRescoringSubmit(data),
     });
 
     const [isLoading, setIsLoading] = useState(false);
@@ -263,26 +252,29 @@ export function PipelinePage(props: PipelinePageProps) {
         <div>
             <Form>
                 <Font styleConfig={{ root: props.styleConfig.pageTitle }}>
-                    Hae Yritysluotto Flex joustoluottoa
+                    Hae luottorajan korotusta Yritysluotto Flex joustoluottoosi
                 </Font>
                 <Font styleConfig={{ root: props.styleConfig.body }}>
-                    Aloita joustoluoton hakeminen täyttämällä hakulomake. Valitse haluamasi
-                    luottolimiitin summa ja täytä tiedot yrityksestäsi sekä yhteystietosi.
-                    Huomioithan, että käytät hakemuksen sähköpostiosoitteena osoitetta, josta
-                    jatkossakin hoidat luottolimiittiäsi. Esimerkiksi nostopyynnöt tulee tehdä
-                    sähköpostiosoittesta, joka on lisätty hakemukselle.
+                    Korota joustoluottosi luottorajaa täyttämällä tämä lomake. Valitse haluamasi
+                    uusi luottolimiitin summa ja täytä tiedot yrityksestäsi sekä yhteystietosi.
+                    Huomioithan, että käytät hakemuksen sähköpostiosoitteena osoitetta, jonka avulla
+                    olet hoitanut luottolimiittiäsi ja tulet jatkossakin tekemään esimerkiksi
+                    nostopyynnöt limiitistäsi.
                 </Font>
                 <Font styleConfig={{ root: props.styleConfig.body }}>
-                    Lähetämme lainapäätöksen sekä lainasopimuksen ilmoittamaasi sähköpostiin. Voit
-                    allekirjoittaa lainasopimuksen sähköisesti, jonka jälkeen Yritysluotto Flex
-                    joustoluotto on käytettävissäsi ja voit nostaa haluamasi summan yrityksesi
-                    tilille luottorajasi puitteissa.
+                    Lähetämme luottorajan korotukseen liittyvän luottopäätöksen ja päivitetyn
+                    lainasopimuksen allekirjoitettavaksesi ilmoittamaasi sähköpostiosoitteeseen.
+                    Voit allekirjoittaa lainasopimuksen sähköisesti, jonka jälkeen Yritysluotto Flex
+                    joustoluottosi uusi luottoraja on käytettävissäsi ja voit nostaa haluamasi
+                    summan yrityksesi tilille luottorajasi puitteissa.
                 </Font>
                 <Font styleConfig={{ root: props.styleConfig.body }}>
                     Tähdellä (*) merkityt tiedot ovat pakollisia.
                 </Font>
                 <Font styleConfig={{ root: props.styleConfig.bodyTitle }}>Joustoluoton tiedot</Font>
-                <Font styleConfig={{ root: props.styleConfig.body }}>Luottolimiitin summa *</Font>
+                <Font styleConfig={{ root: props.styleConfig.body }}>
+                    Uusi luottolimiitin summa *
+                </Font>
                 <SelectField
                     name="amount"
                     icon={null}
@@ -395,83 +387,6 @@ export function PipelinePage(props: PipelinePageProps) {
                     styleConfig={{ root: props.styleConfig.textField }}
                 />
                 <Error field="applicantEmail" />
-                <Font styleConfig={{ root: props.styleConfig.body }}>
-                    Tilinumero (voit toimittaa tilinumeron myös myöhemmin)
-                </Font>
-                <TextField
-                    inputConfig={{
-                        name: "iban",
-                        placeholder: "Kirjoita yrityksen tilinumero IBAN-muodossa",
-                        value: form.data.iban,
-                        onChange: async (e) => {
-                            let value = e.target.value.toUpperCase();
-                            value = value.replace(/\u00A0/g, " ");
-                            processChange({
-                                field: "iban",
-                                value: value,
-                            });
-                        },
-                        onBlur: async () => {
-                            processBlur("iban");
-                        },
-                    }}
-                    styleConfig={{ root: props.styleConfig.textField }}
-                />
-                <Error field="iban" />
-                <Font styleConfig={{ root: props.styleConfig.body }}>Laskutusosoite</Font>
-                <TextField
-                    inputConfig={{
-                        name: "companyAddressStreet",
-                        value: form.data.companyAddressStreet,
-                        onChange: async (e) => {
-                            processChange({
-                                field: "companyAddressStreet",
-                                value: e.target.value,
-                            });
-                        },
-                        onBlur: async () => {
-                            processBlur("companyAddressStreet");
-                        },
-                    }}
-                    styleConfig={{ root: props.styleConfig.textField }}
-                />
-                <Error field="companyAddressStreet" />
-                <Font styleConfig={{ root: props.styleConfig.body }}>Postinumero</Font>
-                <TextField
-                    inputConfig={{
-                        name: "companyAddressZip",
-                        value: form.data.companyAddressZip,
-                        onChange: async (e) => {
-                            processChange({
-                                field: "companyAddressZip",
-                                value: e.target.value,
-                            });
-                        },
-                        onBlur: async () => {
-                            processBlur("companyAddressZip");
-                        },
-                    }}
-                    styleConfig={{ root: props.styleConfig.textField }}
-                />
-                <Error field="companyAddressZip" />
-                <Font styleConfig={{ root: props.styleConfig.body }}>Postitoimipaikka</Font>
-                <TextField
-                    inputConfig={{
-                        name: "companyAddressCity",
-                        value: form.data.companyAddressCity,
-                        onChange: async (e) => {
-                            processChange({
-                                field: "companyAddressCity",
-                                value: e.target.value,
-                            });
-                        },
-                        onBlur: async () => {
-                            processBlur("companyAddressCity");
-                        },
-                    }}
-                    styleConfig={{ root: props.styleConfig.textField }}
-                />
-                <Error field="companyAddressCity" />
                 <Font styleConfig={{ root: props.styleConfig.bodyTitle }}>Hakijan tiedot</Font>
                 <Font styleConfig={{ root: props.styleConfig.body }}>Hakijan etunimi *</Font>
                 <TextField
@@ -528,7 +443,6 @@ export function PipelinePage(props: PipelinePageProps) {
                     styleConfig={{ root: props.styleConfig.textField }}
                 />
                 <Error field="ssn" />
-
                 <Font styleConfig={{ root: props.styleConfig.body }}>Puhelinnumero *</Font>
                 <TextField
                     inputConfig={{
@@ -593,30 +507,6 @@ export function PipelinePage(props: PipelinePageProps) {
                     </CheckboxContainer>
                     <CheckboxContainer>
                         <CheckboxField
-                            checked={form.data.allowMarketing}
-                            checkedIcon={<Icon icon={["fa", "check"]} size="1x" />}
-                            onClick={async () => {
-                                processChange({
-                                    field: "allowMarketing",
-                                    value: !form.data.allowMarketing,
-                                    touched: true,
-                                    blurred: true,
-                                    validate: true,
-                                });
-                            }}
-                            styleConfig={{
-                                root: props.styleConfig.checkbox,
-                                checked: {},
-                            }}
-                        />
-                        <Font styleConfig={{ root: props.styleConfig.checkboxText }}>
-                            Yritysluotto Flex saa lähettää minulle ajankohtaista tietoa ja
-                            tarjouksia
-                        </Font>
-                        <Error field="allowMarketing" />
-                    </CheckboxContainer>
-                    <CheckboxContainer>
-                        <CheckboxField
                             checked={form.data.consentGiven}
                             checkedIcon={<Icon icon={["fa", "check"]} size="1x" />}
                             onClick={async () => {
@@ -655,7 +545,9 @@ export function PipelinePage(props: PipelinePageProps) {
                         e.preventDefault();
                         processSubmit();
                     }}>
-                    <Font styleConfig={{ root: props.styleConfig.buttonText }}>Lähetä hakemus</Font>
+                    <Font styleConfig={{ root: props.styleConfig.buttonText }}>
+                        Lähetä luottorajan korotus-hakemus
+                    </Font>
                 </ButtonField>
             </Form>
         </div>
