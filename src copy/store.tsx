@@ -7,8 +7,17 @@ const sagaMiddleware = createSagaMiddleware();
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
+const root = (state, action) => {
+    /*
+    if (action.type === LoginActionConstants.LOGOUT) {
+        state = undefined
+    }
+*/
+    return rootReducer(state, action as never);
+};
+
 export function configureStore() {
-    return createStore(rootReducer, {}, composeEnhancers(applyMiddleware(sagaMiddleware)));
+    return createStore(root, {}, composeEnhancers(applyMiddleware(sagaMiddleware)));
 }
 
 export const store = configureStore();
