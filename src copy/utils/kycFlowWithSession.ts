@@ -1,5 +1,5 @@
 import { ConsoleLogger, LOG_LEVEL } from "@opr-finance/feature-console-logger";
-import { T_CompanyKycParams, T_KycParams } from "../types/kyc";
+import { T_CompanyKycParams, T_KycFlow, T_KycParams } from "../types/kyc";
 import { saveData } from "../api/cacheData";
 import { mapKycParams } from "./kycParams";
 import { T_LoginSessionReducerState } from "@opr-finance/feature-login-session";
@@ -43,9 +43,10 @@ const handleKycRedirect = async (kycCacheId: string): Promise<boolean> => {
 
 export const startKyc = async (
     company: T_CompanyKycParams,
-    session: T_LoginSessionReducerState
+    session: T_LoginSessionReducerState,
+    flow: T_KycFlow
 ): Promise<boolean> => {
-    const params = mapKycParams(company, session);
+    const params = mapKycParams(company, session, flow);
     if (!params) return false;
 
     await initiateKycFlowWithSession(params);

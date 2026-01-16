@@ -16,7 +16,7 @@ import { AppState, E_Routes } from "../../types/general";
 import { messages } from "./messages";
 import { formatOrgNumSwe, history } from "@opr-finance/utils";
 import { mapCompanyDataForKyc, startKyc } from "../../utils";
-import { T_CompanyKycParams } from "../../types/kyc";
+import { kycFlow, T_CompanyKycParams } from "../../types/kyc";
 import { ApplicationPageProps } from "./types";
 
 export function ApplicationPage(props: ApplicationPageProps) {
@@ -51,7 +51,7 @@ export function ApplicationPage(props: ApplicationPageProps) {
 
     const handleStartKyc = async () => {
         logger.log("Start KYC flow");
-        const started = await startKyc(companyData, session);
+        const started = await startKyc(companyData, session, kycFlow.NEW_CUSTOMER);
         if (!started) {
             logger.error("flow not started");
             history.push(E_Routes.ERROR);

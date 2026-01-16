@@ -1,1 +1,0 @@
-export { CollectionBlock } from "./CollectionBlock";

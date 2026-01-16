@@ -5,6 +5,8 @@ import { T_KycState } from "../types/kyc";
 export enum AppActionConstants {
     APPLICATION_TRIGGER = "APP/INIT_TRIGGER",
     APPLICATION_SUCCESS = "APP/INIT_SUCCESS",
+    APPLICATION_PAGE_TRIGGER = "PAGE/APPLICATION_PAGE_TRIGGER",
+    APPLICATION_PAGE_SUCCESS = "PAGE/APPLICATION_PAGE_SUCCESS",
     CONTACT_PAGE_TRIGGER = "PAGE/CONTACT_PAGE_TRIGGER",
     CONTACT_PAGE_SUCCESS = "PAGE/CONTACT_PAGE_SUCCESS",
     CHOOSE_ACCOUNT_PAGE_TRIGGER = "PAGE/CHOOSE_ACCOUNT_PAGE_TRIGGER",
@@ -43,6 +45,8 @@ type T_ChooseAccountPageSelectedPayload = {
 export const appActions = {
     applicationTrigger: createAction(AppActionConstants.APPLICATION_TRIGGER)(),
     applicationSuccess: createAction(AppActionConstants.APPLICATION_SUCCESS)(),
+    applicationPageTrigger: createAction(AppActionConstants.APPLICATION_PAGE_TRIGGER)(),
+    applicationPageSuccess: createAction(AppActionConstants.APPLICATION_PAGE_SUCCESS)(),
     startPageTrigger: createAction(AppActionConstants.START_PAGE_TRIGGER)(),
     startPageSuccess: createAction(AppActionConstants.START_PAGE_SUCCESS)(),
     loginPageTrigger: createAction(AppActionConstants.LOGIN_PAGE_TRIGGER)(),

@@ -1,12 +1,14 @@
 import { ConsoleLogger, LOG_LEVEL } from "@opr-finance/feature-console-logger";
-import { T_CompanyKycParams, T_KycParams } from "../types/kyc";
+import { T_CompanyKycParams, T_KycFlow, T_KycParams, kycRedirectPath, kycType } from "../types/kyc";
 import { T_LoginSessionReducerState } from "@opr-finance/feature-login-session";
 
 const logger = new ConsoleLogger({ level: LOG_LEVEL });
+const flexOnlineBaseUrl = process.env.REACT_APP_FLEX_ONLINE_BASEURL;
 
 export const mapKycParams = (
     company: T_CompanyKycParams,
-    session: T_LoginSessionReducerState
+    session: T_LoginSessionReducerState,
+    flow: T_KycFlow
 ): T_KycParams | null => {
     logger.log("mapKycParams", company, session);
     if (!company || !session) return null;
@@ -42,10 +44,14 @@ export const mapKycParams = (
         return null;
     }
 
+    const kycDoneUrl = `${flexOnlineBaseUrl}/${kycRedirectPath[flow]}`;
+
     return {
         applicationId,
         clientId,
-        kycType: "onboarding",
+        kycType: kycType.ONBOARDING,
+        kycFlow: flow,
+        kycDoneUrl,
         company,
         session: {
             kcUserId: gtm_userId,

@@ -1,7 +1,28 @@
+export const kycFlow = {
+    NEW_CUSTOMER: "new_customer",
+    EXISTING_CUSTOMER: "existing_customer",
+} as const;
+
+export type T_KycFlow = (typeof kycFlow)[keyof typeof kycFlow];
+
+export const kycRedirectPath: Record<T_KycFlow, string> = {
+    [kycFlow.NEW_CUSTOMER]: "thank-you",
+    [kycFlow.EXISTING_CUSTOMER]: "front",
+};
+
+export const kycType = {
+    ONBOARDING: "onboarding",
+    UPDATING: "updating",
+} as const;
+
+export type T_KycType = (typeof kycType)[keyof typeof kycType];
+
 export type T_KycParams = {
     applicationId: string;
     clientId: string;
-    kycType: "onboarding" | "updating";
+    kycType: T_KycType;
+    kycFlow: T_KycFlow;
+    kycDoneUrl: string;
     company: T_CompanyKycParams;
     session: T_SessionKycParams;
     auth: T_UserAuthInfo;

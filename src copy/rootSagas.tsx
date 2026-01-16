@@ -41,6 +41,7 @@ import { watchLogoutPageTrigger } from "./sagas/logout.saga";
 import { watchExpiredPageTrigger } from "./sagas/expiredPage.saga";
 import { watchSmeWithdrawTrigger } from "@opr-finance/feature-withdraw";
 import { watchRefreshSession } from "@opr-finance/feature-session";
+import { watchApplicationPageTrigger } from "./sagas/applicationPage";
 
 // File Imports
 
@@ -81,5 +82,6 @@ export function* rootSaga() {
         fork(watchFetchReport),
         fork(watchRefreshSession),
         fork(watchSmeApplicationTrigger),
+        fork(watchApplicationPageTrigger),
     ]);
 }

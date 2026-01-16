@@ -17,7 +17,7 @@ import { T_GatewayProps } from "@opr-finance/utils/src/types/general";
 import { getGwProps } from "@opr-finance/utils/src/getGwProps";
 import { ConsoleLogger, LOG_LEVEL } from "@opr-finance/feature-console-logger";
 import { T_ApplicationReducerState } from "@opr-finance/feature-sme-customer/src/types";
-import { T_CompanyKycParams } from "../types/kyc";
+import { kycFlow, T_CompanyKycParams } from "../types/kyc";
 
 const logger = new ConsoleLogger({ level: LOG_LEVEL });
 
@@ -54,11 +54,34 @@ function* handleApplicationFlow(token: string) {
         return;
     }
 
-    logger.log("Fetched application; checking if applicant's ssn matches login ssn");
+    logger.log("Fetched application; validating application state");
 
     const application: T_ApplicationReducerState = yield select(
         (state: AppState) => state.customer.application
     );
+
+    const { applicationChannel, applicationState } = application.application ?? {};
+
+    //if broker application is any other than pn_created -> no loan
+    if (applicationChannel === E_ApplicationChannel.BROKER && applicationState !== "PN_CREATED") {
+        yield call(navigateNoLoan);
+        return;
+    }
+
+    //if application is any other than pending/pn_created -> no loan
+    if (
+        applicationChannel &&
+        [E_ApplicationChannel.WEB, E_ApplicationChannel.PHONE].includes(
+            applicationChannel as E_ApplicationChannel
+        ) &&
+        applicationState &&
+        !["PENDING", "PN_CREATED"].includes(applicationState)
+    ) {
+        yield call(navigateNoLoan);
+        return;
+    }
+
+    logger.log("Checking if applicant's ssn matches login ssn");
 
     const applicantSsn: string | undefined = getApplicantSsnFromApplication(application);
     if (!applicantSsn) {
@@ -76,11 +99,11 @@ function* handleApplicationFlow(token: string) {
     }
 
     logger.log("Checking application channel");
-    const applicationChannel = application.application?.applicationChannel;
 
     if (applicationChannel === E_ApplicationChannel.BROKER) {
         logger.log("Application channel is BROKER — preparing company info");
 
+        const newCustomerKycFlow = kycFlow.NEW_CUSTOMER;
         const application = yield select(
             (state: AppState) => state.customer.application.application
         );
@@ -116,7 +139,7 @@ function* handleApplicationFlow(token: string) {
         });
 
         // initiate KYC with session
-        yield call(startKyc, companyData, session);
+        yield call(startKyc, companyData, session, newCustomerKycFlow);
         return;
     }
 

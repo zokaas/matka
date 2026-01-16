@@ -213,6 +213,7 @@ const App: React.FC = () => {
         E_Routes.EXPIRED,
         E_Routes.ERROR,
         E_Routes.LOGOUT,
+        E_Routes.THANK_YOU,
     ];
 
     const noNavPagesList = [...baseNoSessionPages, E_Routes.APPLICATION, E_Routes.THANK_YOU];
@@ -666,13 +667,22 @@ const App: React.FC = () => {
                             path={E_Routes.APPLICATION}
                             render={() => {
                                 return (
-                                    <ApplicationPage
-                                        styleConfig={{
-                                            titleBox: PageTitleStyles.titleBox(),
-                                            pageTitle: PageTitleStyles.pageTitle(),
-                                            titleText: titleText(),
-                                        }}
-                                    />
+                                    <PageInitializer
+                                        id={E_Page_Ids.APPLICATION}
+                                        successfulActions={[
+                                            AppActionConstants.APPLICATION_PAGE_SUCCESS,
+                                        ]}
+                                        pageInitAction={
+                                            AppActionConstants.APPLICATION_PAGE_TRIGGER
+                                        }>
+                                        <ApplicationPage
+                                            styleConfig={{
+                                                titleBox: PageTitleStyles.titleBox(),
+                                                pageTitle: PageTitleStyles.pageTitle(),
+                                                titleText: titleText(),
+                                            }}
+                                        />
+                                    </PageInitializer>
                                 );
                             }}
                         />
