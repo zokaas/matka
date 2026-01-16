@@ -22,7 +22,6 @@ export type T_KycParams = {
     clientId: string;
     kycType: T_KycType;
     kycFlow: T_KycFlow;
-    kycDoneUrl: string;
     company: T_CompanyKycParams;
     session: T_SessionKycParams;
     auth: T_UserAuthInfo;
@@ -66,6 +65,7 @@ type T_SessionKycParams = {
 export type T_KycState = {
     kycDone: boolean;
     kycUpdatedDate: string;
+    kycDueDate: string;
 };
 
 export type T_KycReducerState = {

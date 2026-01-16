@@ -20,7 +20,11 @@ export function* handleStartPageTrigger() {
             (state: T_FeatureLoginSessionState) => state.session.token
         );
         if (sessionToken) {
-            yield put(loginSessionActions.loginSessionEnd());
+            yield put(
+                loginSessionActions.loginSessionEnd({
+                    redirect: false,
+                })
+            );
         }
         yield call(cleanLocalStorage);
         yield put(

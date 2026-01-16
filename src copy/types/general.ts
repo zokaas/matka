@@ -128,6 +128,7 @@ export enum E_Routes {
     KYC = "/application/:id",
     APPLICATION = "/application",
     THANK_YOU = "/thank-you",
+    KYC_COMPLETED = "/kyc-completed",
 }
 
 export type T_FontProps = {

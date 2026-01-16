@@ -44,14 +44,11 @@ export const mapKycParams = (
         return null;
     }
 
-    const kycDoneUrl = `${flexOnlineBaseUrl}/${kycRedirectPath[flow]}`;
-
     return {
         applicationId,
         clientId,
         kycType: kycType.ONBOARDING,
         kycFlow: flow,
-        kycDoneUrl,
         company,
         session: {
             kcUserId: gtm_userId,

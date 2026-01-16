@@ -21,13 +21,10 @@ import { AppActionConstants, appActions } from "../actions/actions";
 import { T_GatewayProps } from "@opr-finance/utils/src/types/general";
 import { getGwProps } from "@opr-finance/utils/src/getGwProps";
 import { loginSessionActions } from "@opr-finance/feature-login-session";
-import {
-    T_CompanyAccountsApiResponse,
-    T_ExistingCustomerApplication,
-    T_ExistingCustomerApplications,
-} from "@opr-finance/feature-sme-customer/src/types";
+import { T_CompanyApiResponse } from "@opr-finance/feature-sme-customer/src/types";
 import { T_KycState } from "../types/kyc";
 import { DEFAULT_KYC_STATE } from "../constants/general";
+import { restoreSession } from "./applicationPage";
 
 const logger = new ConsoleLogger({ level: LOG_LEVEL });
 
@@ -47,7 +44,7 @@ export function* handleFrontPageTrigger() {
 
         if (token) {
             yield call(checkSession);
-
+            yield call(restoreSession, token);
             yield put(engagementActions.engagementTrigger());
 
             const { engagementSuccess, engagementError } = yield race({
@@ -115,9 +112,14 @@ export function* handleFrontPageTrigger() {
 
             yield all([call(getInvoiceData), call(getTransactionsData)]);
 
-            const kycState: T_KycState = yield call(getKycStateFromApplication);
-            logger.log("KYC state", kycState);
-            yield put(appActions.updateKycState(kycState));
+            const kyc: T_KycState = yield select((state: AppState) => state.kyc);
+
+            // Update SME kyc status from dynamic fields
+            if (!kyc.kycDone) {
+                const kycState: T_KycState = yield call(getKycState);
+                logger.log("KYC state", kycState);
+                yield put(appActions.updateKycState(kycState));
+            }
 
             yield put(appActions.frontPageSuccess());
         }
@@ -129,25 +131,12 @@ export function* handleFrontPageTrigger() {
     }
 }
 
-function* getKycStateFromApplication() {
-    const accounts: T_CompanyAccountsApiResponse = yield select(
-        (state: AppState) => state.customer.companyInfo.accounts
-    );
-    const applications: T_ExistingCustomerApplications = accounts?.applications ?? [];
-    console.log("fromUpdatedState3", applications);
-
-    // find an application with status = "ACCOUNT_CREATED"
-    const application: T_ExistingCustomerApplication | undefined = applications?.find(
-        ({ state }) => state === "ACCOUNT_CREATED"
+function* getKycState() {
+    const company: T_CompanyApiResponse = yield select(
+        (state: AppState) => state.customer.companyInfo.info
     );
 
-    //TODO: should be early return in this case or normal flow?
-    if (!application) {
-        history.push(E_Routes.NO_LOAN);
-        return;
-    }
-
-    const kyc = application.dynamicFields?.kyc;
+    const kyc = company.dynamicFields?.kyc;
 
     if (!kyc) {
         logger.warn("No KYC dynamic fields found");
@@ -158,6 +147,7 @@ function* getKycStateFromApplication() {
     const kycState: T_KycState = {
         kycDone: Boolean(kyc.kycDone),
         kycUpdatedDate: kyc.kycUpdatedDate ?? "",
+        kycDueDate: kyc.kycDueDate ?? "",
     };
 
     logger.log("KYC from application", kycState);

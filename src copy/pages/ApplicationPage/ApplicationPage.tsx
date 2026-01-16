@@ -29,7 +29,7 @@ export function ApplicationPage(props: ApplicationPageProps) {
 
     if (!application || !company || !session) return;
 
-    const { dynamicFields } = application;
+    const { dynamicFields } = company;
 
     const { organizationNumber, companyName } = company;
     const { industryCode } = dynamicFields?.kyc || "";

@@ -66,7 +66,7 @@ export function* handleApplicationPageTrigger() {
     }
 }
 
-function* restoreSession(token: string): Generator {
+export function* restoreSession(token: string): Generator {
     const { config } = (yield select(
         (state: T_FeatureLoginSessionState) => state.session
     )) as T_LoginSessionReducerState;

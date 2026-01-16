@@ -59,6 +59,7 @@ import {
 } from "@opr-finance/feature-session";
 import { ApplicationPage } from "./pages/ApplicationPage/ApplicationPage";
 import { ThankYouPage } from "./pages/ThankYouPage/ThankYouPage";
+import { KycCompletedPage } from "./pages/KycCompletedPage/KycCompletedPage";
 
 iconLibrary.initFlexOnline();
 
@@ -131,7 +132,11 @@ const App: React.FC = () => {
 
     const handleLogout = () => {
         toggleSessionManagingModal(false);
-        dispatch(loginSessionActions.loginSessionEnd());
+        dispatch(
+            loginSessionActions.loginSessionEnd({
+                redirect: true,
+            })
+        );
     };
 
     // Using the useCountdown hook to manage the countdown for session expiration
@@ -191,20 +196,13 @@ const App: React.FC = () => {
         );
     }
 
-    let loginButtonText: string;
-    if (isPathMatched(E_Routes.NO_LOAN)) {
-        loginButtonText = fm(messages.logout);
-    } else if (
+    const shouldShowLogin =
         isPathMatched(E_Routes.LOGOUT) ||
         isPathMatched(E_Routes.EXPIRED) ||
-        (isPathMatched(E_Routes.ERROR) && !authenticated)
-    ) {
-        loginButtonText = fm(messages.logIn);
-    } else if (authenticated) {
-        loginButtonText = fm(messages.logout);
-    } else {
-        loginButtonText = fm(messages.logout);
-    }
+        isPathMatched(E_Routes.THANK_YOU) ||
+        (isPathMatched(E_Routes.ERROR) && !authenticated);
+
+    const loginButtonText = shouldShowLogin ? fm(messages.logIn) : fm(messages.logout);
 
     const baseNoSessionPages = [
         E_Routes.ROOT,
@@ -216,7 +214,7 @@ const App: React.FC = () => {
         E_Routes.THANK_YOU,
     ];
 
-    const noNavPagesList = [...baseNoSessionPages, E_Routes.APPLICATION, E_Routes.THANK_YOU];
+    const noNavPagesList = [...baseNoSessionPages, E_Routes.APPLICATION, E_Routes.KYC_COMPLETED];
 
     const noSessionPages = baseNoSessionPages.some((path) => path === window.location.pathname);
     const noNavPages = noNavPagesList.some((path) => path === window.location.pathname);
@@ -327,7 +325,11 @@ const App: React.FC = () => {
                                 <StyledButton
                                     onClick={() => {
                                         if (authenticated) {
-                                            dispatch(loginSessionActions.loginSessionEnd());
+                                            dispatch(
+                                                loginSessionActions.loginSessionEnd({
+                                                    redirect: true,
+                                                })
+                                            );
                                         } else {
                                             window.location.href = "/";
                                         }
@@ -589,6 +591,12 @@ const App: React.FC = () => {
                             }}
                         />
                         <Route
+                            path={E_Routes.KYC_COMPLETED}
+                            render={() => {
+                                return <KycCompletedPage />;
+                            }}
+                        />
+                        <Route
                             path={E_Routes.LOGOUT}
                             render={() => {
                                 return (
@@ -720,7 +728,11 @@ const App: React.FC = () => {
                                         <StyledButton
                                             onClick={() => {
                                                 if (authenticated) {
-                                                    dispatch(loginSessionActions.loginSessionEnd());
+                                                    dispatch(
+                                                        loginSessionActions.loginSessionEnd({
+                                                            redirect: true,
+                                                        })
+                                                    );
                                                 } else {
                                                     window.location.href = "/";
                                                 }

@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useIntl } from "react-intl";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Redirect } from "react-router-dom";
 
 import { StyledGrid } from "@opr-finance/component-grid";
@@ -12,6 +12,8 @@ import { Link } from "@opr-finance/component-link-to";
 import { AppState, E_Routes } from "../../types/general";
 import { ThankYouPageProps } from "./types";
 import { messages } from "./messages";
+import { loginSessionActions } from "@opr-finance/feature-login-session";
+import { clearSessionStorage } from "../../utils";
 
 export function ThankYouPage(props: ThankYouPageProps) {
     const { formatMessage: fm } = useIntl();
@@ -21,6 +23,16 @@ export function ThankYouPage(props: ThankYouPageProps) {
     if (!authenticated && !logoutInProgress) {
         return <Redirect to={E_Routes.ROOT} />;
     }
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        dispatch(
+            loginSessionActions.loginSessionEnd({
+                redirect: false,
+            })
+        );
+        clearSessionStorage();
+    }, [dispatch]);
 
     return (
         <StyledGrid styleConfig={{ root: ThankYouPageStyles.thankYouPageRootStyles() }}>
