@@ -6,10 +6,12 @@ import { Redirect, useLocation } from "react-router-dom";
 import { StyledGrid } from "@opr-finance/component-grid";
 import { StyledPageTitle } from "@opr-finance/component-content";
 import { Image } from "@opr-finance/component-image";
-import { FrontPageStyles } from "@opr-finance/theme-flex-online";
+import { FrontPageStyles, ButtonStyles } from "@opr-finance/theme-flex-online";
 import { add, remove } from "@opr-finance/utils";
 import { Scroll } from "@opr-finance/component-scroll";
 import { Font } from "@opr-finance/component-fonts";
+import { StyledButton } from "@opr-finance/component-button";
+import { Icon } from "@opr-finance/component-icon";
 import { E_AllowedAccountStates } from "@opr-finance/feature-account";
 
 import { selectOverdueDays, selectUnpaidAmount, selectNotPaidStatements } from "../../selectors";
@@ -22,7 +24,13 @@ import { NewsBlock } from "../../components/NewsBlock/NewsBlock";
 import { WithdrawBlock } from "../../components/WithdrawBlock/WithdrawBlock";
 import { CollectionBlock } from "../../components/CollectionBlock";
 import { smeDocumentActions } from "@opr-finance/feature-document";
-import { onComponentMounted } from "../../utils";
+import { onComponentMounted, mapCompanyDataForKyc, startKyc, history, checkKycStatus, clearKycModalDismissal, dismissKycModal, shouldBlockWithdrawal } from "../../utils";
+
+
+import { kycFlow } from "../../types/kyc";
+import { logger } from "@opr-finance/feature-console-logger/src/consoleLogger";
+import { KycModal } from "../../components/KycModal";
+
 
 type LocationState = {
     component: string;
@@ -57,6 +65,13 @@ export function FrontPage(props: FrontPageProps) {
 
     const unpaidAmount = useSelector(selectUnpaidAmount);
 
+    // KYC state management
+    const kycState = useSelector((state: AppState) => state.kyc);
+    const company = useSelector((state: AppState) => state.customer.companyInfo.info);
+    const session = useSelector((state: AppState) => state.session);
+    const [showKycModal, setShowKycModal] = useState(false);
+    const [kycStatus, setKycStatus] = useState(checkKycStatus(kycState));
+
     const [isWithdrawn, setIsWithdrawn] = useState(false);
     const [applicationData, setApplicationData] = useState<{ withdrawnAmount: string }>({
         withdrawnAmount: "0",
@@ -70,6 +85,15 @@ export function FrontPage(props: FrontPageProps) {
     useEffect(() => {
         onComponentMounted(boardMemberId);
     }, []);
+
+    useEffect(() => {
+        const status = checkKycStatus(kycState);
+        setKycStatus(status);
+
+        if (status.shouldShowModal) {
+            setShowKycModal(true);
+        }
+    }, [kycState]);
 
     function handleChange(isValid, formName, form) {
         if (isValid) {
@@ -93,6 +117,42 @@ export function FrontPage(props: FrontPageProps) {
                 documentId: defaultPromissoryNoteId,
             })
         );
+    };
+
+    const handleCloseKycModal = () => {
+        dismissKycModal();
+        setShowKycModal(false);
+    };
+
+    const handleOpenKycModal = () => {
+        clearKycModalDismissal();
+        setShowKycModal(true);
+    };
+
+    const handleStartKyc = async () => {
+        logger.log("Starting KYC flow from FrontPage");
+
+        if (!company) {
+            logger.error("Company info not available");
+            history.push(E_Routes.ERROR);
+            return;
+        }
+
+        const { organizationNumber, companyName, dynamicFields } = company;
+        const { industryCode } = dynamicFields?.kyc || "";
+
+        const companyData = mapCompanyDataForKyc({
+            organizationNumber,
+            companyName,
+            industryCode,
+        });
+
+        const started = await startKyc(companyData, session, kycFlow.EXISTING_CUSTOMER);
+        
+        if (!started) {
+            logger.error("Failed to start KYC flow");
+            history.push(E_Routes.ERROR);
+        }
     };
 
     if (!authenticated && !logoutInProgress) {
@@ -119,12 +179,109 @@ export function FrontPage(props: FrontPageProps) {
     }
 
     const availableCreditLimit = account?.availableCreditLimit;
+    const isWithdrawalBlocked = shouldBlockWithdrawal(kycState);
 
     useEffect(() => {
         if (component && component === "withdraw") {
             window.scrollTo({ top: 500, behavior: "smooth" });
         }
     });
+
+    const renderKycStatusBanner = () => {
+        if (kycState.kycDone) return null;
+
+        const { isOverdue, daysRemaining, reason } = kycStatus;
+
+        let bannerStyle = {};
+        let message = "";
+        let showBanner = false;
+
+        if (isOverdue) {
+            showBanner = true;
+            bannerStyle = {
+                backgroundColor: "#f8d7da",
+                color: "#721c24",
+                padding: "16px",
+                marginBottom: "20px",
+                borderRadius: "4px",
+                border: "1px solid #f5c6cb",
+            };
+            message = "⚠️ Dina KYC-uppgifter måste uppdateras. Uttag är blockerade.";
+        } else if (reason === "no_due_date" && daysRemaining !== null) {
+            // Show banner when no due date is set (using calculated deadline)
+            showBanner = true;
+            bannerStyle = {
+                backgroundColor: "#fff3cd",
+                color: "#856404",
+                padding: "16px",
+                marginBottom: "20px",
+                borderRadius: "4px",
+                border: "1px solid #ffeeba",
+            };
+            message = `ℹ️ Uppdatera dina KYC-uppgifter. Du har ${daysRemaining} dag${
+                daysRemaining !== 1 ? "ar" : ""
+            } kvar.`;
+        } else if (daysRemaining !== null && daysRemaining <= 14) {
+            showBanner = true;
+            bannerStyle = {
+                backgroundColor: "#fff3cd",
+                color: "#856404",
+                padding: "16px",
+                marginBottom: "20px",
+                borderRadius: "4px",
+                border: "1px solid #ffeeba",
+            };
+            message = `⚠️ Uppdatera dina KYC-uppgifter inom ${daysRemaining} dag${
+                daysRemaining !== 1 ? "ar" : ""
+            }.`;
+        }
+
+        if (!showBanner) return null;
+
+        return (
+            <StyledGrid styleConfig={{ root: bannerStyle }}>
+                <StyledGrid
+                    styleConfig={{
+                        root: {
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                            gap: "12px",
+                        },
+                    }}>
+                    <Font styleConfig={{ root: { fontWeight: "bold", flex: 1 } }}>{message}</Font>
+                    <StyledGrid
+                        styleConfig={{
+                            root: { display: "flex", gap: "8px", flexWrap: "wrap" },
+                        }}>
+                        <StyledButton
+                            onClick={handleOpenKycModal}
+                            styleConfig={{
+                                root: ButtonStyles.grayButtonStyles({
+                                    marginTop: "0",
+                                }),
+                            }}>
+                            <Font styleConfig={{ root: ButtonStyles.buttonFontStyles() }}>
+                                Visa detaljer
+                            </Font>
+                        </StyledButton>
+                        <StyledButton
+                            onClick={handleStartKyc}
+                            styleConfig={{
+                                root: ButtonStyles.greenButtonStyles({
+                                    marginTop: "0",
+                                }),
+                            }}>
+                            <Font styleConfig={{ root: ButtonStyles.buttonFontStyles() }}>
+                                Uppdatera nu <Icon icon={["fa", "angle-double-right"]} />
+                            </Font>
+                        </StyledButton>
+                    </StyledGrid>
+                </StyledGrid>
+            </StyledGrid>
+        );
+    };
 
     return (
         <StyledGrid styleConfig={{ root: FrontPageStyles.frontPageRootStyles() }}>
@@ -135,6 +292,18 @@ export function FrontPage(props: FrontPageProps) {
                     pageTitleText: props.styleConfig.pageTitle,
                 }}
             />
+
+            {renderKycStatusBanner()}
+
+            {/* KYC Modal */}
+            <KycModal
+                isOpen={showKycModal}
+                kycStatus={kycStatus}
+                kycDueDate={kycState.kycDueDate}
+                onClose={handleCloseKycModal}
+                onStartKyc={handleStartKyc}
+            />
+
             <Scroll to="withdraw-section">
                 <StyledGrid styleConfig={{ root: props.styleConfig.nostoContainer }}>
                     <Image
@@ -154,7 +323,7 @@ export function FrontPage(props: FrontPageProps) {
                     overdueDays={overdueDays}
                     unpaidAmount={unpaidAmount}
                     accountState={account?.state}
-                    blockedStatus={account?.blockedStatus}
+                    blockedStatus={account?.blockedStatus || isWithdrawalBlocked}
                     handleChange={handleChange}
                 />
             </StyledGrid>

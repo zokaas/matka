@@ -5,3 +5,4 @@ export * from "./onComponentMounted";
 export * from "./guarantors";
 export * from "./kycParams";
 export * from "./clearSessionStorage";
+export * from "./kycStatus";
