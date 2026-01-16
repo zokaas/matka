@@ -25,6 +25,7 @@ export function* handleApplicationTrigger() {
 
         if (!messages) {
             yield call(getTranslations);
+            console.log("messages", messages);
         }
 
         if (token) yield call(saveLoginSession);

@@ -227,8 +227,7 @@ export function FrontPage(props: FrontPageProps) {
                             root: ButtonStyles.buttonStyles(),
                         }}>
                         <Font styleConfig={{ root: ButtonStyles.buttonFontStyles() }}>
-                            <Icon icon={["fas", "exclamation-triangle"]} />{" "}
-                            {"fm(messages.kycUpdateButton)"}
+                            {fm(messages.kycUpdateButton)}
                         </Font>
                     </StyledButton>
                 </StyledGrid>

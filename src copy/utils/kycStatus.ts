@@ -5,17 +5,12 @@ import { KycStatusResult } from "../components/KycModal/types";
 export const KYC_MODAL_DISMISS_KEY = "kycModalDismissed";
 export const KYC_WARNING_DAYS = 14;
 
-/**
- * Get KYC deadline date from environment variable
- */
+//NOTE: date in env is just for existing customers, that are doin kycff, should be removed later?
 export const getKycDeadlineDate = (): string | null => {
     const envDeadline = process.env.REACT_APP_KYC_DEADLINE_DATE;
     return envDeadline || null;
 };
 
-/**
- * Check if KYC modal should be shown
- */
 export const checkKycStatus = (kycState: T_KycState): KycStatusResult => {
     const { kycDone, kycDueDate } = kycState;
 

@@ -78,7 +78,7 @@ export function* getTranslations() {
                     contentParams: {
                         content_type: "staticContent",
                         "fields.slug[in]":
-                            "flex-online-sweden-user-page,flex-online-sweden-topup-page,flex-online-sweden-error-page,flex-online-sweden-start-page,flex-online-sweden-footer,flex-online-sweden-header,flex-online-sweden-account-list-page,flex-online-sweden-contact-page,flex-online-sweden-expired-page,flex-online-sweden-front-page,flex-online-sweden-logout-page,flex-online-sweden-no-loan-page,flex-online-sweden-loan-page,flex-online-sweden-eligible-to-topup-page,flex-online-sweden-generic-table,flex-online-sweden-session-modal,flex-online-sweden-thank-you-page,flex-online-sweden-application-page",
+                            "flex-online-sweden-user-page,flex-online-sweden-topup-page,flex-online-sweden-error-page,flex-online-sweden-start-page,flex-online-sweden-footer,flex-online-sweden-header,flex-online-sweden-account-list-page,flex-online-sweden-contact-page,flex-online-sweden-expired-page,flex-online-sweden-front-page,flex-online-sweden-logout-page,flex-online-sweden-no-loan-page,flex-online-sweden-loan-page,flex-online-sweden-eligible-to-topup-page,flex-online-sweden-generic-table,flex-online-sweden-session-modal,flex-online-sweden-thank-you-page,flex-online-sweden-application-page,flex-online-sweden-kyc",
                     },
                 })
             );

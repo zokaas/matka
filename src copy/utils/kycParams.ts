@@ -18,7 +18,7 @@ export const mapKycParams = (
 
     const clientId = process.env.REACT_APP_CLIENT_ID as string;
     const sessionId = localStorage.getItem("token") ?? "";
-    const applicationId = sessionStorage.getItem("applicationId") ?? "";
+    const applicationId = "11111";
 
     const missing: Record<string, boolean> = {
         organizationNumber: !orgNumber,
