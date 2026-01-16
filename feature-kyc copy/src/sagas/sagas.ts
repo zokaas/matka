@@ -1,18 +1,15 @@
-import { takeEvery, put, call, select } from "redux-saga/effects";
-import { KycActionConstants } from "../types/kyc";
-import { kycActions } from "../actions/kyc";
-import { ActionType } from "typesafe-actions";
+import { takeLatest, put } from "redux-saga/effects";
+import { kycActions, E_KycActionConstants } from "../actions/actions";
 
-export function* watchKycTrigger() {
-    yield takeEvery(KycActionConstants.KYC_TRIGGER, handleKycTrigger);
+function* handleKycValidation() {
+    try {
+        // Add validation logic if needed
+        yield put(kycActions.validationSuccess());
+    } catch (error) {
+        yield put(kycActions.validationFailed({ message: String(error) }));
+    }
 }
 
-export function* handleKycTrigger(action: ActionType<typeof kycActions.kycTrigger>) {
-    try {
-
-        console.log("got action", action);
-
-    } catch (e) {
-        console.log("action trigger failed", e);
-    }
+export function* watchKycValidation() {
+    yield takeLatest(E_KycActionConstants.VALIDATION_START, handleKycValidation);
 }
