@@ -106,4 +106,7 @@ export const messages = defineMessages({
     loanDocumentsButtonText: {
         id: "flex-online-se-loan-page-button-text-loan-documents",
     },
+    kycUpdateButton: {
+        id: "flex-online-se-front-page-kyc-update-button",
+    },
 });
