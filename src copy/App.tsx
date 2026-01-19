@@ -18,7 +18,6 @@ import {
     LogoutPageStyles,
     ModalStyles,
     LoanPageStyles,
-    StartPageStyles,
 } from "@opr-finance/theme-flex-online";
 import { StyledFooter, StyledFooterContent } from "@opr-finance/component-footer/src/StyledFooter";
 import { StyledButton } from "@opr-finance/component-button";
@@ -61,7 +60,7 @@ import {
 import { ApplicationPage } from "./pages/ApplicationPage/ApplicationPage";
 import { ThankYouPage } from "./pages/ThankYouPage/ThankYouPage";
 import { KycCompletedPage } from "./pages/KycCompletedPage/KycCompletedPage";
-import { Notice } from "./components/Notice";
+import { KycNotice } from "./components/KycNotice/KycNotice";
 import { StyledGrid } from "@opr-finance/component-grid";
 
 iconLibrary.initFlexOnline();
@@ -380,17 +379,8 @@ const App: React.FC = () => {
                     mainContentGrid: LayoutStyles.mainContentGrid(),
                     bodyBackgroundColor: "#f1faff",
                 }}>
-                <StyledGrid styleConfig={{ root: LoanPageStyles.loanPageRootStyles() }}>
-                    <Notice
-                        notice="YOU MUST FILL KYC... or else"
-                        styleConfig={{
-                            noticeContainer: StartPageStyles.startPageNoticeContainer({
-                                label: " notice.label",
-                            }),
-                            notice: StartPageStyles.startPageNotice(),
-                        }}
-                    />
-
+                <StyledGrid styleConfig={{ root: FrontPageStyles.frontPageRootStyles() }}>
+                    <KycNotice />
                     <>
                         <Switch>
                             <Route
@@ -736,63 +726,62 @@ const App: React.FC = () => {
                             </Route>
                         </Switch>
                     </>
-                    {width < 786 && (
-                        <MobileNavigation
-                            isVisible={!noNavPages && authenticated}
-                            isMorePageVisible={isMorePageVisible}
-                            onCloseClick={() => setIsMorePageVisible(false)}
-                            morePageTitle={"Mer"}
-                            morePageLinksTitle={"Mina uppgifter och kundtjänst"}
-                            morePageLinks={morePageLinks}
-                            morePageHeader={
-                                <Header
-                                    navigationVisible={false}
-                                    logo={
-                                        <Logo
-                                            logoSrc={logo}
-                                            width={[113, 165]}
+                </StyledGrid>
+                {width < 786 && (
+                    <MobileNavigation
+                        isVisible={!noNavPages && authenticated}
+                        isMorePageVisible={isMorePageVisible}
+                        onCloseClick={() => setIsMorePageVisible(false)}
+                        morePageTitle={"Mer"}
+                        morePageLinksTitle={"Mina uppgifter och kundtjänst"}
+                        morePageLinks={morePageLinks}
+                        morePageHeader={
+                            <Header
+                                navigationVisible={false}
+                                logo={
+                                    <Logo
+                                        logoSrc={logo}
+                                        width={[113, 165]}
+                                        onClick={() => {
+                                            if (authenticated) {
+                                                window.location.href = "/front";
+                                            } else {
+                                                window.location.href = "/";
+                                            }
+                                        }}
+                                    />
+                                }
+                                button={
+                                    !isPathMatched(E_Routes.ROOT) ? (
+                                        <StyledButton
                                             onClick={() => {
                                                 if (authenticated) {
-                                                    window.location.href = "/front";
+                                                    dispatch(
+                                                        loginSessionActions.loginSessionEnd({
+                                                            redirect: true,
+                                                        })
+                                                    );
                                                 } else {
                                                     window.location.href = "/";
                                                 }
                                             }}
-                                        />
-                                    }
-                                    button={
-                                        !isPathMatched(E_Routes.ROOT) ? (
-                                            <StyledButton
-                                                onClick={() => {
-                                                    if (authenticated) {
-                                                        dispatch(
-                                                            loginSessionActions.loginSessionEnd({
-                                                                redirect: true,
-                                                            })
-                                                        );
-                                                    } else {
-                                                        window.location.href = "/";
-                                                    }
-                                                }}
-                                                styleConfig={{ root: ButtonStyles.buttonStyles() }}>
-                                                {loginButtonText}
-                                            </StyledButton>
-                                        ) : null
-                                    }
-                                    authenticated={authenticated ? true : false}
-                                />
-                            }
-                            morePageAfter={""}
-                            icons={[
-                                <MobileNavItems
-                                    isMorePageVisible={isMorePageVisible}
-                                    isTopupVisible={isRescoringVisible}
-                                    setIsMorePageVisible={setIsMorePageVisible}
-                                />,
-                            ]}
-                        />
-                    )}
-                </StyledGrid>
+                                            styleConfig={{ root: ButtonStyles.buttonStyles() }}>
+                                            {loginButtonText}
+                                        </StyledButton>
+                                    ) : null
+                                }
+                                authenticated={authenticated ? true : false}
+                            />
+                        }
+                        morePageAfter={""}
+                        icons={[
+                            <MobileNavItems
+                                isMorePageVisible={isMorePageVisible}
+                                isTopupVisible={isRescoringVisible}
+                                setIsMorePageVisible={setIsMorePageVisible}></MobileNavItems>,
+                        ]}
+                    />
+                )}
             </StyledLayout>
         </>
     );

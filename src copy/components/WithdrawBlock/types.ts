@@ -7,6 +7,6 @@ export type T_WithdrawProps = {
     unpaidAmount: number;
     accountState: VP.components["schemas"]["AccountState"] | undefined;
     blockedStatus: boolean | undefined;
-    kycBlocked?: boolean;
+    kycOverdue?: boolean;
     handleChange: (isValid: boolean, formName: string, form: T_WithdrawAmount) => void;
 };

@@ -24,15 +24,11 @@ export function WithdrawLoanPageBlock(props: T_WithdrawProps) {
     const isIBANRegistered = account?.disbursementAccount?.externalAccountNumber ? true : false;
     const overdueDays = useSelector(selectOverdueDays);
     const unpaidAmount = useSelector(selectUnpaidAmount);
-    
-    // Calculate KYC blocking status
-    const isWithdrawalBlocked = shouldBlockWithdrawal(kycState);
-    
-    // Combine all blocking conditions
-    const blockedStatus = account?.blockedStatus || isWithdrawalBlocked || false;
+
+    const blockedStatus = account?.blockedStatus || false;
+    const isKycOverdue = shouldBlockWithdrawal(kycState);
 
     const [isWithdraw, setIsWithdraw] = useState(false);
-
     return (
         <StyledWithdraw
             styleConfig={{
@@ -94,6 +90,7 @@ export function WithdrawLoanPageBlock(props: T_WithdrawProps) {
             accountState={accountState}
             isIbanMissing={!isIBANRegistered}
             blockedStatus={blockedStatus}
+            kycOverdue={isKycOverdue}
             isLoanPage={true}
             messages={{
                 title: fm(messages.withdrawTitle),
@@ -114,6 +111,7 @@ export function WithdrawLoanPageBlock(props: T_WithdrawProps) {
                 withdrawAvailableCreditTooSmall: fm(messages.withdrawAvailableCreditTooSmall),
                 withdrawNotAbleToMakeWithdrawal: fm(messages.withdrawNotAbleToMakeWithdrawal),
                 withdrawNoIbanNumber: fm(messages.withdrawNoIbanNumber),
+                withdrawBlockedByKyc: fm(messages.withdrawBlockedByKyc),
             }}
         />
     );

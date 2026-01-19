@@ -11,7 +11,6 @@ import {
     ButtonStyles,
     ModalStyles,
     FontsStyles,
-    StartPageStyles,
 } from "@opr-finance/theme-flex-online";
 import { add, remove } from "@opr-finance/utils";
 import { Scroll } from "@opr-finance/component-scroll";
@@ -19,8 +18,6 @@ import { Font } from "@opr-finance/component-fonts";
 import { StyledButton } from "@opr-finance/component-button";
 import { Icon } from "@opr-finance/component-icon";
 import { E_AllowedAccountStates } from "@opr-finance/feature-account";
-import { ConsoleLogger, LOG_LEVEL } from "@opr-finance/feature-console-logger";
-import { smeDocumentActions } from "@opr-finance/feature-document";
 
 import { selectOverdueDays, selectUnpaidAmount, selectNotPaidStatements } from "../../selectors";
 import { FrontPageProps } from "./types";
@@ -31,6 +28,7 @@ import { AccountDetailBlock } from "../../components/AccountDetailBlock/AccountD
 import { NewsBlock } from "../../components/NewsBlock/NewsBlock";
 import { WithdrawBlock } from "../../components/WithdrawBlock/WithdrawBlock";
 import { CollectionBlock } from "../../components/CollectionBlock";
+import { smeDocumentActions } from "@opr-finance/feature-document";
 import { KycModal } from "../../components/KycModal";
 import { KycStatusResult } from "../../components/KycModal/types";
 import {
@@ -44,8 +42,7 @@ import {
     shouldBlockWithdrawal,
 } from "../../utils";
 import { kycFlow, T_CompanyKycParams } from "../../types/kyc";
-import { FeatureNoticesState, NoticesFields } from "@opr-finance/feature-contentful/src/types/contentful";
-import { Notice } from "../../components/Notice";
+import { ConsoleLogger, LOG_LEVEL } from "@opr-finance/feature-console-logger";
 
 const logger = new ConsoleLogger({ level: LOG_LEVEL });
 
@@ -57,7 +54,6 @@ export function FrontPage(props: FrontPageProps) {
     const dispatch = useDispatch();
     const location = useLocation<LocationState>();
     const { formatMessage: fm } = useIntl();
-    const { notices } = useSelector((state: FeatureNoticesState) => state?.notices);
 
     const component = location.state && location.state.component;
 
@@ -71,7 +67,6 @@ export function FrontPage(props: FrontPageProps) {
     const account = useSelector((state: AppState) => {
         return state.account.account;
     });
-
     const boardMemberId = useSelector((state: AppState) => {
         return state.customer?.companyInfo?.boardmembers
             ? state.customer?.companyInfo?.boardmembers[0].id
@@ -79,10 +74,11 @@ export function FrontPage(props: FrontPageProps) {
     });
 
     const notPaid = useSelector(selectNotPaidStatements);
+
     const overdueDays = useSelector(selectOverdueDays);
+
     const unpaidAmount = useSelector(selectUnpaidAmount);
 
-    // KYC state management
     const kycState = useSelector((state: AppState) => state.kyc);
     const company = useSelector((state: AppState) => state.customer.companyInfo.info);
     const session = useSelector((state: AppState) => state.session);
@@ -92,11 +88,8 @@ export function FrontPage(props: FrontPageProps) {
     useEffect(() => {
         const status = checkKycStatus(kycState);
         setKycStatus(status);
-
-        // Don't auto-open modal if previously dismissed
-        // Modal can be manually opened via the KYC button
     }, [kycState]);
-    // Withdraw form state
+
     const [isWithdrawn, setIsWithdrawn] = useState(false);
     const [applicationData, setApplicationData] = useState<{ withdrawnAmount: string }>({
         withdrawnAmount: "0",
@@ -115,18 +108,10 @@ export function FrontPage(props: FrontPageProps) {
         const status = checkKycStatus(kycState);
         setKycStatus(status);
 
-        // Auto-open modal only if overdue
         if (status.isOverdue && status.shouldShowModal) {
             setShowKycModal(true);
         }
     }, [kycState]);
-
-    useEffect(() => {
-        if (component && component === "withdraw") {
-            window.scrollTo({ top: 500, behavior: "smooth" });
-        }
-    });
-
     function handleChange(isValid, formName, form) {
         if (isValid) {
             setValidForms(add(validForms, formName));
@@ -139,7 +124,6 @@ export function FrontPage(props: FrontPageProps) {
             ...form,
         });
     }
-
     const handleClick = () => {
         dispatch(
             smeDocumentActions.smeFetchDocumentTrigger({
@@ -220,6 +204,13 @@ export function FrontPage(props: FrontPageProps) {
     }
 
     const availableCreditLimit = account?.availableCreditLimit;
+
+    useEffect(() => {
+        if (component && component === "withdraw") {
+            window.scrollTo({ top: 500, behavior: "smooth" });
+        }
+    });
+
     const isWithdrawalBlocked = shouldBlockWithdrawal(kycState);
 
     return (
@@ -231,7 +222,6 @@ export function FrontPage(props: FrontPageProps) {
                     pageTitleText: props.styleConfig.pageTitle,
                 }}
             />
-
             {shouldShowKycButton() && (
                 <StyledGrid
                     styleConfig={{
@@ -290,7 +280,6 @@ export function FrontPage(props: FrontPageProps) {
                     </Font>
                 </StyledGrid>
             </Scroll>
-
             <StyledGrid styleConfig={{ root: props.styleConfig.mainContentContainer }}>
                 <AccountDetailBlock />
                 <NewsBlock />
@@ -299,7 +288,8 @@ export function FrontPage(props: FrontPageProps) {
                     overdueDays={overdueDays}
                     unpaidAmount={unpaidAmount}
                     accountState={account?.state}
-                    blockedStatus={account?.blockedStatus || isWithdrawalBlocked}
+                    blockedStatus={account?.blockedStatus}
+                    kycOverdue={isWithdrawalBlocked}
                     handleChange={handleChange}
                 />
             </StyledGrid>

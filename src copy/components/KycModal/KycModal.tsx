@@ -22,10 +22,8 @@ export const KycModal: React.FC<KycModalProps> = ({
 }) => {
     const { formatMessage: fm } = useIntl();
 
-    const { reason, isOverdue, effectiveDueDate, daysRemaining } = kycStatus;
+    const { isOverdue, effectiveDueDate } = kycStatus;
     const displayDueDate = kycDueDate || effectiveDueDate;
-
-    const urgent = Boolean(isOverdue || (typeof daysRemaining === "number" && daysRemaining <= 7));
 
     const title = isOverdue ? fm(messages.overdueTitle) : fm(messages.kycTitle);
 
@@ -44,26 +42,12 @@ export const KycModal: React.FC<KycModalProps> = ({
             }}
         >
             <StyledGrid styleConfig={{ root: styleConfig.buttonContainer }}>
-                {/* Body */}
-                {isOverdue ? (
                     <>
+                    if {isOverdue}
                         <Font styleConfig={{ root: styleConfig.contentText }} as="p">
                             {fm(messages.overdueMessage)}
                         </Font>
 
-                        {displayDueDate && (
-                            <Font styleConfig={{ root: styleConfig.dateText }} as="p">
-                                {fm(messages.dueDateLabel)}{" "}
-                                {format(parseISO(displayDueDate), "d MMMM yyyy", { locale: sv })}
-                            </Font>
-                        )}
-
-                        <Font styleConfig={{ root: styleConfig.contentText }} as="p">
-                            {fm(messages.overdueMessage)}
-                        </Font>
-                    </>
-                ) : (
-                    <>
                         <Font styleConfig={{ root: styleConfig.contentText }} as="p">
                             {fm(messages.dueDateWarningMessage)}
                         </Font>
@@ -83,7 +67,6 @@ export const KycModal: React.FC<KycModalProps> = ({
                             </Font>
                         )}
                     </>
-                )}
 
                 {/* Actions */}
                 <StyledGrid

@@ -1,0 +1,10 @@
+import { SystemStyleObject } from "@styled-system/css";
+export declare function fontBoxTitle(): SystemStyleObject;
+export declare function fontBoldedText(): SystemStyleObject;
+export declare function fontBoldedTextSpan(): SystemStyleObject;
+export declare function fontAmountHeading(): SystemStyleObject;
+export declare function fontContentText(alert?: boolean): SystemStyleObject;
+export declare function fontFooterTitle(): SystemStyleObject;
+export declare function fontFooterText(): SystemStyleObject;
+export declare function fontUserPageTitle(): SystemStyleObject;
+export declare function fontUserBoxTitle(): SystemStyleObject;

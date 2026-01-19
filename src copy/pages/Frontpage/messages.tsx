@@ -109,4 +109,8 @@ export const messages = defineMessages({
     kycUpdateButton: {
         id: "flex-online-se-front-page-kyc-update-button",
     },
+    withdrawBlockedByKyc: {
+        id: "flex-online-se-front-page-withdraw-blocked-by-kyc",
+        defaultMessage: "Withdrawals are currently blocked due to KYC requirements. Please update your KYC information to proceed.",
+    },
 });

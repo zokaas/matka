@@ -4,7 +4,7 @@ export type KycStatusResult = {
     shouldShowModal: boolean;
     isOverdue: boolean;
     daysRemaining: number | null;
-    reason: "no_due_date" | "approaching_deadline" | "overdue" | "completed" | "dismissed" | "not_yet";
+    reason: "no_due_date" | "approaching_deadline" | "renewal_approaching" | "overdue" | "renewal_overdue" | "completed" | "dismissed" | "not_yet";
     effectiveDueDate?: string;
 };
 
