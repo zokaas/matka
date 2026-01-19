@@ -3,4 +3,5 @@ import { T_WithdrawAmount } from "@opr-finance/feature-withdraw/src/smeLoan/comp
 
 export type T_WithdrawProps = {
     handleChange: (isValid: boolean, formName: string, form: T_WithdrawAmount) => void;
+    isWithdrawalBlocked?: boolean;
 };

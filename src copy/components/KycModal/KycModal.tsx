@@ -28,14 +28,13 @@ export const KycModal: React.FC<KycModalProps> = ({
     const urgent = Boolean(isOverdue || (typeof daysRemaining === "number" && daysRemaining <= 7));
 
     const title = isOverdue ? fm(messages.overdueTitle) : fm(messages.kycTitle);
-    const showCloseButton = !isOverdue;
 
     return (
         <Modal
             modalTitle={title}
             isOpen={isOpen}
-            onClick={showCloseButton ? onClose : () => {}}
-            isCloseIconVisible={showCloseButton}
+            onClick={onClose}
+            isCloseIconVisible={true}
             styleConfig={{
                 closeIcon: styleConfig.modalCloseIcon,
                 overlay: styleConfig.modalOverlay,
@@ -43,8 +42,6 @@ export const KycModal: React.FC<KycModalProps> = ({
                 title: styleConfig.modalTitle,
                 titleText: styleConfig.titleText,
             }}
-            // If your Modal supports it, you can pass urgent to style it.
-            // urgent={urgent}
         >
             <StyledGrid styleConfig={{ root: styleConfig.buttonContainer }}>
                 {/* Body */}
@@ -60,6 +57,10 @@ export const KycModal: React.FC<KycModalProps> = ({
                                 {format(parseISO(displayDueDate), "d MMMM yyyy", { locale: sv })}
                             </Font>
                         )}
+
+                        <Font styleConfig={{ root: styleConfig.contentText }} as="p">
+                            {fm(messages.overdueMessage)}
+                        </Font>
                     </>
                 ) : (
                     <>
@@ -103,15 +104,13 @@ export const KycModal: React.FC<KycModalProps> = ({
                         </Font>
                     </StyledButton>
 
-                    {showCloseButton && (
-                        <StyledButton
-                            onClick={onClose}
-                            styleConfig={{ root: styleConfig.secondaryButton }}>
-                            <Font styleConfig={{ root: styleConfig.buttonText }}>
-                                {fm(messages.remindLaterButton)}
-                            </Font>
-                        </StyledButton>
-                    )}
+                    <StyledButton
+                        onClick={onClose}
+                        styleConfig={{ root: styleConfig.secondaryButton }}>
+                        <Font styleConfig={{ root: styleConfig.buttonText }}>
+                            {fm(messages.remindLaterButton)}
+                        </Font>
+                    </StyledButton>
                 </StyledGrid>
             </StyledGrid>
         </Modal>

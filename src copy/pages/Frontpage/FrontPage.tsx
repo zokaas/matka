@@ -6,7 +6,13 @@ import { Redirect, useLocation } from "react-router-dom";
 import { StyledGrid } from "@opr-finance/component-grid";
 import { StyledPageTitle } from "@opr-finance/component-content";
 import { Image } from "@opr-finance/component-image";
-import { FrontPageStyles, ButtonStyles, ModalStyles, FontsStyles } from "@opr-finance/theme-flex-online";
+import {
+    FrontPageStyles,
+    ButtonStyles,
+    ModalStyles,
+    FontsStyles,
+    StartPageStyles,
+} from "@opr-finance/theme-flex-online";
 import { add, remove } from "@opr-finance/utils";
 import { Scroll } from "@opr-finance/component-scroll";
 import { Font } from "@opr-finance/component-fonts";
@@ -38,6 +44,8 @@ import {
     shouldBlockWithdrawal,
 } from "../../utils";
 import { kycFlow, T_CompanyKycParams } from "../../types/kyc";
+import { FeatureNoticesState, NoticesFields } from "@opr-finance/feature-contentful/src/types/contentful";
+import { Notice } from "../../components/Notice";
 
 const logger = new ConsoleLogger({ level: LOG_LEVEL });
 
@@ -49,6 +57,7 @@ export function FrontPage(props: FrontPageProps) {
     const dispatch = useDispatch();
     const location = useLocation<LocationState>();
     const { formatMessage: fm } = useIntl();
+    const { notices } = useSelector((state: FeatureNoticesState) => state?.notices);
 
     const component = location.state && location.state.component;
 
@@ -62,7 +71,7 @@ export function FrontPage(props: FrontPageProps) {
     const account = useSelector((state: AppState) => {
         return state.account.account;
     });
-    
+
     const boardMemberId = useSelector((state: AppState) => {
         return state.customer?.companyInfo?.boardmembers
             ? state.customer?.companyInfo?.boardmembers[0].id
@@ -80,6 +89,13 @@ export function FrontPage(props: FrontPageProps) {
     const [showKycModal, setShowKycModal] = useState(false);
     const [kycStatus, setKycStatus] = useState<KycStatusResult>(checkKycStatus(kycState));
 
+    useEffect(() => {
+        const status = checkKycStatus(kycState);
+        setKycStatus(status);
+
+        // Don't auto-open modal if previously dismissed
+        // Modal can be manually opened via the KYC button
+    }, [kycState]);
     // Withdraw form state
     const [isWithdrawn, setIsWithdrawn] = useState(false);
     const [applicationData, setApplicationData] = useState<{ withdrawnAmount: string }>({
@@ -172,13 +188,11 @@ export function FrontPage(props: FrontPageProps) {
         }
     };
 
-    // Check if KYC button should be shown
     const shouldShowKycButton = () => {
         if (kycState.kycDone) return false;
-        
+
         const { isOverdue, daysRemaining } = kycStatus;
-        
-        // Show button if overdue or within 14 days
+
         return isOverdue || (daysRemaining !== null && daysRemaining <= 14);
     };
 
@@ -218,22 +232,28 @@ export function FrontPage(props: FrontPageProps) {
                 }}
             />
 
-            {/* KYC Button - only show if action needed */}
             {shouldShowKycButton() && (
-                <StyledGrid styleConfig={{ root: { marginBottom: "20px" } }}>
+                <StyledGrid
+                    styleConfig={{
+                        root: {
+                            marginBottom: "20px",
+                            display: "flex",
+                            justifyContent: "center",
+                        },
+                    }}>
                     <StyledButton
                         onClick={handleOpenKycModal}
                         styleConfig={{
-                            root: ButtonStyles.buttonStyles(),
+                            root: ButtonStyles.greenButtonStyles(),
                         }}>
                         <Font styleConfig={{ root: ButtonStyles.buttonFontStyles() }}>
-                            {fm(messages.kycUpdateButton)}
+                            {fm(messages.kycUpdateButton)}{" "}
+                            <Icon icon={["fa", "angle-double-right"]} />
                         </Font>
                     </StyledButton>
                 </StyledGrid>
             )}
 
-            {/* KYC Modal */}
             <KycModal
                 isOpen={showKycModal}
                 kycStatus={kycStatus}

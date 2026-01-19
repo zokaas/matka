@@ -18,6 +18,7 @@ import {
     LogoutPageStyles,
     ModalStyles,
     LoanPageStyles,
+    StartPageStyles,
 } from "@opr-finance/theme-flex-online";
 import { StyledFooter, StyledFooterContent } from "@opr-finance/component-footer/src/StyledFooter";
 import { StyledButton } from "@opr-finance/component-button";
@@ -60,6 +61,8 @@ import {
 import { ApplicationPage } from "./pages/ApplicationPage/ApplicationPage";
 import { ThankYouPage } from "./pages/ThankYouPage/ThankYouPage";
 import { KycCompletedPage } from "./pages/KycCompletedPage/KycCompletedPage";
+import { Notice } from "./components/Notice";
+import { StyledGrid } from "@opr-finance/component-grid";
 
 iconLibrary.initFlexOnline();
 
@@ -377,152 +380,350 @@ const App: React.FC = () => {
                     mainContentGrid: LayoutStyles.mainContentGrid(),
                     bodyBackgroundColor: "#f1faff",
                 }}>
-                <>
-                    <Switch>
-                        <Route
-                            path={E_Routes.ROOT}
-                            exact
-                            render={() => {
-                                return (
+                <StyledGrid styleConfig={{ root: LoanPageStyles.loanPageRootStyles() }}>
+                    <Notice
+                        notice="YOU MUST FILL KYC... or else"
+                        styleConfig={{
+                            noticeContainer: StartPageStyles.startPageNoticeContainer({
+                                label: " notice.label",
+                            }),
+                            notice: StartPageStyles.startPageNotice(),
+                        }}
+                    />
+
+                    <>
+                        <Switch>
+                            <Route
+                                path={E_Routes.ROOT}
+                                exact
+                                render={() => {
+                                    return (
+                                        <PageInitializer
+                                            id={E_Page_Ids.START}
+                                            successfulActions={[
+                                                AppActionConstants.START_PAGE_SUCCESS,
+                                            ]}
+                                            pageInitAction={AppActionConstants.START_PAGE_TRIGGER}>
+                                            <StartPage
+                                                styleConfig={{
+                                                    titleBox: PageTitleStyles.titleBox(),
+                                                    pageTitle: PageTitleStyles.pageTitle(),
+                                                }}
+                                            />
+                                        </PageInitializer>
+                                    );
+                                }}
+                            />
+                            <Route
+                                path={E_Routes.KYC}
+                                render={({ match }) => {
+                                    const { id } = match.params as { id: string };
+                                    sessionStorage.setItem("applicationId", id);
+                                    // set app flow as kyc first flow
+                                    sessionStorage.setItem("flow", "kyc-ff");
+                                    return <Redirect to={E_Routes.ROOT} />;
+                                }}
+                            />
+                            <Route
+                                path={E_Routes.LOGIN}
+                                render={() => {
+                                    return (
+                                        <PageInitializer
+                                            id={E_Page_Ids.LOGIN}
+                                            successfulActions={[
+                                                AppActionConstants.LOGIN_PAGE_SUCCESS,
+                                            ]}
+                                            pageInitAction={AppActionConstants.LOGIN_PAGE_TRIGGER}>
+                                            <LoginPage />
+                                        </PageInitializer>
+                                    );
+                                }}
+                            />
+                            <Route
+                                path={E_Routes.ERROR}
+                                render={() => {
+                                    return <ErrorPage />;
+                                }}
+                            />
+                            <Route
+                                path={E_Routes.ACCOUNTS}
+                                render={() => (
                                     <PageInitializer
-                                        id={E_Page_Ids.START}
-                                        successfulActions={[AppActionConstants.START_PAGE_SUCCESS]}
-                                        pageInitAction={AppActionConstants.START_PAGE_TRIGGER}>
-                                        <StartPage
-                                            styleConfig={{
-                                                titleBox: PageTitleStyles.titleBox(),
-                                                pageTitle: PageTitleStyles.pageTitle(),
-                                            }}
-                                        />
-                                    </PageInitializer>
-                                );
-                            }}
-                        />
-                        <Route
-                            path={E_Routes.KYC}
-                            render={({ match }) => {
-                                const { id } = match.params as { id: string };
-                                sessionStorage.setItem("applicationId", id);
-                                // set app flow as kyc first flow
-                                sessionStorage.setItem("flow", "kyc-ff");
-                                return <Redirect to={E_Routes.ROOT} />;
-                            }}
-                        />
-                        <Route
-                            path={E_Routes.LOGIN}
-                            render={() => {
-                                return (
-                                    <PageInitializer
-                                        id={E_Page_Ids.LOGIN}
-                                        successfulActions={[AppActionConstants.LOGIN_PAGE_SUCCESS]}
-                                        pageInitAction={AppActionConstants.LOGIN_PAGE_TRIGGER}>
-                                        <LoginPage />
-                                    </PageInitializer>
-                                );
-                            }}
-                        />
-                        <Route
-                            path={E_Routes.ERROR}
-                            render={() => {
-                                return <ErrorPage />;
-                            }}
-                        />
-                        <Route
-                            path={E_Routes.ACCOUNTS}
-                            render={() => (
-                                <PageInitializer
-                                    id={E_Page_Ids.ACCOUNTS}
-                                    successfulActions={[
-                                        AppActionConstants.CHOOSE_ACCOUNT_PAGE_SUCCESS,
-                                    ]}
-                                    pageInitAction={AppActionConstants.CHOOSE_ACCOUNT_PAGE_TRIGGER}>
-                                    <AccountListPage
-                                        styleConfig={{
-                                            titleBox: PageTitleStyles.titleBox(),
-                                            pageTitle: PageTitleStyles.pageTitle(),
-                                            textStyle: {
-                                                boldedText: FontsStyles.fontBoldedText(),
-                                                contentText: FontsStyles.fontContentText(),
-                                                boxTitle: FontsStyles.fontBoxTitle(),
-                                            },
-                                        }}
-                                    />
-                                </PageInitializer>
-                            )}
-                        />
-                        <Route
-                            path={E_Routes.FRONT}
-                            render={() => {
-                                return (
-                                    <PageInitializer
-                                        id={E_Page_Ids.FRONT}
-                                        successfulActions={[AppActionConstants.FRONT_PAGE_SUCCESS]}
-                                        pageInitAction={AppActionConstants.FRONT_PAGE_TRIGGER}>
-                                        <FrontPage
-                                            styleConfig={{
-                                                titleBox: PageTitleStyles.titleBox(),
-                                                pageTitle: PageTitleStyles.pageTitle(),
-                                                mainContentContainer:
-                                                    FrontPageStyles.mainContentContainer(),
-                                                loanInfoContainer:
-                                                    FrontPageStyles.loanInfoContainer(),
-                                                newsContainer: FrontPageStyles.newsContainer(),
-                                                creditRaiseContainer:
-                                                    FrontPageStyles.creditRaiseContainer(),
-                                                nostoContainer: FrontPageStyles.nostoContainer(),
-                                                nostoImage: FrontPageStyles.nostoImage(),
-                                                nostoText: FrontPageStyles.nostoText(),
-                                            }}
-                                        />
-                                    </PageInitializer>
-                                );
-                            }}
-                        />
-                        <Route
-                            path={E_Routes.LOAN}
-                            render={() => {
-                                return (
-                                    <PageInitializer
-                                        id={E_Page_Ids.LOAN}
-                                        successfulActions={[AppActionConstants.LOAN_PAGE_SUCCESS]}
-                                        pageInitAction={AppActionConstants.LOAN_PAGE_TRIGGER}>
-                                        <LoanPage
+                                        id={E_Page_Ids.ACCOUNTS}
+                                        successfulActions={[
+                                            AppActionConstants.CHOOSE_ACCOUNT_PAGE_SUCCESS,
+                                        ]}
+                                        pageInitAction={
+                                            AppActionConstants.CHOOSE_ACCOUNT_PAGE_TRIGGER
+                                        }>
+                                        <AccountListPage
                                             styleConfig={{
                                                 titleBox: PageTitleStyles.titleBox(),
                                                 pageTitle: PageTitleStyles.pageTitle(),
                                                 textStyle: {
                                                     boldedText: FontsStyles.fontBoldedText(),
                                                     contentText: FontsStyles.fontContentText(),
-                                                    alertText: FontsStyles.fontContentText(true),
                                                     boxTitle: FontsStyles.fontBoxTitle(),
-                                                    amountText: FontsStyles.fontAmountHeading(),
+                                                },
+                                            }}
+                                        />
+                                    </PageInitializer>
+                                )}
+                            />
+                            <Route
+                                path={E_Routes.FRONT}
+                                render={() => {
+                                    return (
+                                        <PageInitializer
+                                            id={E_Page_Ids.FRONT}
+                                            successfulActions={[
+                                                AppActionConstants.FRONT_PAGE_SUCCESS,
+                                            ]}
+                                            pageInitAction={AppActionConstants.FRONT_PAGE_TRIGGER}>
+                                            <FrontPage
+                                                styleConfig={{
+                                                    titleBox: PageTitleStyles.titleBox(),
+                                                    pageTitle: PageTitleStyles.pageTitle(),
+                                                    mainContentContainer:
+                                                        FrontPageStyles.mainContentContainer(),
+                                                    loanInfoContainer:
+                                                        FrontPageStyles.loanInfoContainer(),
+                                                    newsContainer: FrontPageStyles.newsContainer(),
+                                                    creditRaiseContainer:
+                                                        FrontPageStyles.creditRaiseContainer(),
+                                                    nostoContainer:
+                                                        FrontPageStyles.nostoContainer(),
+                                                    nostoImage: FrontPageStyles.nostoImage(),
+                                                    nostoText: FrontPageStyles.nostoText(),
+                                                }}
+                                            />
+                                        </PageInitializer>
+                                    );
+                                }}
+                            />
+                            <Route
+                                path={E_Routes.LOAN}
+                                render={() => {
+                                    return (
+                                        <PageInitializer
+                                            id={E_Page_Ids.LOAN}
+                                            successfulActions={[
+                                                AppActionConstants.LOAN_PAGE_SUCCESS,
+                                            ]}
+                                            pageInitAction={AppActionConstants.LOAN_PAGE_TRIGGER}>
+                                            <LoanPage
+                                                styleConfig={{
+                                                    titleBox: PageTitleStyles.titleBox(),
+                                                    pageTitle: PageTitleStyles.pageTitle(),
+                                                    textStyle: {
+                                                        boldedText: FontsStyles.fontBoldedText(),
+                                                        contentText: FontsStyles.fontContentText(),
+                                                        alertText:
+                                                            FontsStyles.fontContentText(true),
+                                                        boxTitle: FontsStyles.fontBoxTitle(),
+                                                        amountText: FontsStyles.fontAmountHeading(),
+                                                        linkText: {},
+                                                    },
+                                                }}
+                                            />
+                                        </PageInitializer>
+                                    );
+                                }}
+                            />
+                            {isRescoringVisible && (
+                                <Route
+                                    path={E_Routes.TOPUP}
+                                    render={() => {
+                                        return (
+                                            <PageInitializer
+                                                id={E_Page_Ids.TOPUP}
+                                                successfulActions={[
+                                                    AppActionConstants.TOPUP_PAGE_SUCCESS,
+                                                ]}
+                                                pageInitAction={
+                                                    AppActionConstants.TOPUP_PAGE_TRIGGER
+                                                }>
+                                                <TopupPage
+                                                    styleConfig={{
+                                                        titleBox: PageTitleStyles.titleBox(),
+                                                        pageTitle: PageTitleStyles.pageTitle(),
+                                                        modalCloseIcon: modalCloseIcon(),
+                                                        modalOverlay: modalOverlay(),
+                                                        modalContent: modalContent(),
+                                                        modalTitle: modalTitle(),
+                                                        titleText: titleText(),
+                                                    }}
+                                                />
+                                            </PageInitializer>
+                                        );
+                                    }}
+                                />
+                            )}
+                            <Route
+                                path={E_Routes.USER}
+                                render={() => {
+                                    return (
+                                        <PageInitializer
+                                            id={E_Page_Ids.USER}
+                                            successfulActions={[
+                                                AppActionConstants.USER_PAGE_SUCCESS,
+                                            ]}
+                                            pageInitAction={AppActionConstants.USER_PAGE_TRIGGER}>
+                                            <UserPage
+                                                styleConfig={{
+                                                    titleBox: PageTitleStyles.titleBox(),
+                                                    pageTitle: PageTitleStyles.pageTitle(),
+                                                }}
+                                            />
+                                        </PageInitializer>
+                                    );
+                                }}
+                            />
+                            <Route
+                                path={E_Routes.CONTACT}
+                                render={() => (
+                                    <PageInitializer
+                                        id={E_Page_Ids.CONTACT}
+                                        successfulActions={[
+                                            AppActionConstants.CONTACT_PAGE_SUCCESS,
+                                        ]}
+                                        pageInitAction={AppActionConstants.CONTACT_PAGE_TRIGGER}>
+                                        <ContactPage
+                                            styleConfig={{
+                                                titleBox: PageTitleStyles.titleBox(),
+                                                pageTitle: PageTitleStyles.pageTitle(),
+                                                textStyle: {
+                                                    boldedText: FontsStyles.fontBoldedText(),
+                                                    contentText: FontsStyles.fontContentText(),
+                                                    boxTitle: FontsStyles.fontBoxTitle(),
                                                     linkText: {},
                                                 },
                                             }}
                                         />
                                     </PageInitializer>
-                                );
-                            }}
-                        />
-                        {isRescoringVisible && (
+                                )}
+                            />
                             <Route
-                                path={E_Routes.TOPUP}
+                                path={E_Routes.THANK_YOU}
+                                render={() => {
+                                    return (
+                                        <ThankYouPage
+                                            styleConfig={{
+                                                titleBox: PageTitleStyles.titleBox(),
+                                                pageTitle: PageTitleStyles.pageTitle(),
+                                                textStyle: {
+                                                    boldedText: FontsStyles.fontBoldedText(),
+                                                    contentText: FontsStyles.fontContentText(),
+                                                    boxTitle: FontsStyles.fontBoxTitle(),
+                                                    linkText: {},
+                                                },
+                                            }}
+                                        />
+                                    );
+                                }}
+                            />
+                            <Route
+                                path={E_Routes.KYC_COMPLETED}
+                                render={() => {
+                                    return <KycCompletedPage />;
+                                }}
+                            />
+                            <Route
+                                path={E_Routes.LOGOUT}
                                 render={() => {
                                     return (
                                         <PageInitializer
-                                            id={E_Page_Ids.TOPUP}
+                                            id={E_Page_Ids.LOGOUT}
                                             successfulActions={[
-                                                AppActionConstants.TOPUP_PAGE_SUCCESS,
+                                                AppActionConstants.LOGOUT_PAGE_SUCCESS,
                                             ]}
-                                            pageInitAction={AppActionConstants.TOPUP_PAGE_TRIGGER}>
-                                            <TopupPage
+                                            pageInitAction={AppActionConstants.LOGOUT_PAGE_TRIGGER}>
+                                            <LogoutPage
+                                                styleConfig={{
+                                                    rootStyles:
+                                                        LogoutPageStyles.logoutPageRootStyles(),
+                                                    titleBox: PageTitleStyles.titleBox(),
+                                                    pageTitle: PageTitleStyles.pageTitle(),
+                                                    pageContent: LogoutPageStyles.pageContent(),
+                                                    content: LogoutPageStyles.content(),
+                                                    link: LogoutPageStyles.link(),
+                                                }}
+                                            />
+                                        </PageInitializer>
+                                    );
+                                }}
+                            />
+                            <Route
+                                path={E_Routes.NOT_FOUND}
+                                exact
+                                render={() => {
+                                    return (
+                                        <NotFoundPage
+                                            styleConfig={{
+                                                titleBox: PageTitleStyles.titleBox(),
+                                                pageTitle: PageTitleStyles.pageTitle(),
+                                            }}
+                                        />
+                                    );
+                                }}
+                            />
+                            <Route
+                                path={E_Routes.NO_LOAN}
+                                render={() => {
+                                    return (
+                                        <NoLoanPage
+                                            styleConfig={{
+                                                titleBox: PageTitleStyles.titleBox(),
+                                                pageTitle: PageTitleStyles.pageTitle(),
+                                                textStyle: {
+                                                    boldedText: FontsStyles.fontBoldedText(),
+                                                    contentText: FontsStyles.fontContentText(),
+                                                    boxTitle: FontsStyles.fontBoxTitle(),
+                                                    linkText: {},
+                                                },
+                                            }}
+                                        />
+                                    );
+                                }}
+                            />
+                            <Route
+                                path={E_Routes.EXPIRED}
+                                render={() => {
+                                    return (
+                                        <PageInitializer
+                                            id={E_Page_Ids.LOGOUT}
+                                            successfulActions={[
+                                                AppActionConstants.EXPIRED_PAGE_SUCCESS,
+                                            ]}
+                                            pageInitAction={
+                                                AppActionConstants.EXPIRED_PAGE_TRIGGER
+                                            }>
+                                            <ExpiredPage
                                                 styleConfig={{
                                                     titleBox: PageTitleStyles.titleBox(),
                                                     pageTitle: PageTitleStyles.pageTitle(),
-                                                    modalCloseIcon: modalCloseIcon(),
-                                                    modalOverlay: modalOverlay(),
-                                                    modalContent: modalContent(),
-                                                    modalTitle: modalTitle(),
+                                                }}
+                                            />
+                                        </PageInitializer>
+                                    );
+                                }}
+                            />
+                            <Route
+                                path={E_Routes.APPLICATION}
+                                render={() => {
+                                    return (
+                                        <PageInitializer
+                                            id={E_Page_Ids.APPLICATION}
+                                            successfulActions={[
+                                                AppActionConstants.APPLICATION_PAGE_SUCCESS,
+                                            ]}
+                                            pageInitAction={
+                                                AppActionConstants.APPLICATION_PAGE_TRIGGER
+                                            }>
+                                            <ApplicationPage
+                                                styleConfig={{
+                                                    titleBox: PageTitleStyles.titleBox(),
+                                                    pageTitle: PageTitleStyles.pageTitle(),
                                                     titleText: titleText(),
                                                 }}
                                             />
@@ -530,230 +731,68 @@ const App: React.FC = () => {
                                     );
                                 }}
                             />
-                        )}
-                        <Route
-                            path={E_Routes.USER}
-                            render={() => {
-                                return (
-                                    <PageInitializer
-                                        id={E_Page_Ids.USER}
-                                        successfulActions={[AppActionConstants.USER_PAGE_SUCCESS]}
-                                        pageInitAction={AppActionConstants.USER_PAGE_TRIGGER}>
-                                        <UserPage
-                                            styleConfig={{
-                                                titleBox: PageTitleStyles.titleBox(),
-                                                pageTitle: PageTitleStyles.pageTitle(),
-                                            }}
-                                        />
-                                    </PageInitializer>
-                                );
-                            }}
-                        />
-                        <Route
-                            path={E_Routes.CONTACT}
-                            render={() => (
-                                <PageInitializer
-                                    id={E_Page_Ids.CONTACT}
-                                    successfulActions={[AppActionConstants.CONTACT_PAGE_SUCCESS]}
-                                    pageInitAction={AppActionConstants.CONTACT_PAGE_TRIGGER}>
-                                    <ContactPage
-                                        styleConfig={{
-                                            titleBox: PageTitleStyles.titleBox(),
-                                            pageTitle: PageTitleStyles.pageTitle(),
-                                            textStyle: {
-                                                boldedText: FontsStyles.fontBoldedText(),
-                                                contentText: FontsStyles.fontContentText(),
-                                                boxTitle: FontsStyles.fontBoxTitle(),
-                                                linkText: {},
-                                            },
-                                        }}
-                                    />
-                                </PageInitializer>
-                            )}
-                        />
-                        <Route
-                            path={E_Routes.THANK_YOU}
-                            render={() => {
-                                return (
-                                    <ThankYouPage
-                                        styleConfig={{
-                                            titleBox: PageTitleStyles.titleBox(),
-                                            pageTitle: PageTitleStyles.pageTitle(),
-                                            textStyle: {
-                                                boldedText: FontsStyles.fontBoldedText(),
-                                                contentText: FontsStyles.fontContentText(),
-                                                boxTitle: FontsStyles.fontBoxTitle(),
-                                                linkText: {},
-                                            },
-                                        }}
-                                    />
-                                );
-                            }}
-                        />
-                        <Route
-                            path={E_Routes.KYC_COMPLETED}
-                            render={() => {
-                                return <KycCompletedPage />;
-                            }}
-                        />
-                        <Route
-                            path={E_Routes.LOGOUT}
-                            render={() => {
-                                return (
-                                    <PageInitializer
-                                        id={E_Page_Ids.LOGOUT}
-                                        successfulActions={[AppActionConstants.LOGOUT_PAGE_SUCCESS]}
-                                        pageInitAction={AppActionConstants.LOGOUT_PAGE_TRIGGER}>
-                                        <LogoutPage
-                                            styleConfig={{
-                                                rootStyles: LogoutPageStyles.logoutPageRootStyles(),
-                                                titleBox: PageTitleStyles.titleBox(),
-                                                pageTitle: PageTitleStyles.pageTitle(),
-                                                pageContent: LogoutPageStyles.pageContent(),
-                                                content: LogoutPageStyles.content(),
-                                                link: LogoutPageStyles.link(),
-                                            }}
-                                        />
-                                    </PageInitializer>
-                                );
-                            }}
-                        />
-                        <Route
-                            path={E_Routes.NOT_FOUND}
-                            exact
-                            render={() => {
-                                return (
-                                    <NotFoundPage
-                                        styleConfig={{
-                                            titleBox: PageTitleStyles.titleBox(),
-                                            pageTitle: PageTitleStyles.pageTitle(),
-                                        }}
-                                    />
-                                );
-                            }}
-                        />
-                        <Route
-                            path={E_Routes.NO_LOAN}
-                            render={() => {
-                                return (
-                                    <NoLoanPage
-                                        styleConfig={{
-                                            titleBox: PageTitleStyles.titleBox(),
-                                            pageTitle: PageTitleStyles.pageTitle(),
-                                            textStyle: {
-                                                boldedText: FontsStyles.fontBoldedText(),
-                                                contentText: FontsStyles.fontContentText(),
-                                                boxTitle: FontsStyles.fontBoxTitle(),
-                                                linkText: {},
-                                            },
-                                        }}
-                                    />
-                                );
-                            }}
-                        />
-                        <Route
-                            path={E_Routes.EXPIRED}
-                            render={() => {
-                                return (
-                                    <PageInitializer
-                                        id={E_Page_Ids.LOGOUT}
-                                        successfulActions={[
-                                            AppActionConstants.EXPIRED_PAGE_SUCCESS,
-                                        ]}
-                                        pageInitAction={AppActionConstants.EXPIRED_PAGE_TRIGGER}>
-                                        <ExpiredPage
-                                            styleConfig={{
-                                                titleBox: PageTitleStyles.titleBox(),
-                                                pageTitle: PageTitleStyles.pageTitle(),
-                                            }}
-                                        />
-                                    </PageInitializer>
-                                );
-                            }}
-                        />
-                        <Route
-                            path={E_Routes.APPLICATION}
-                            render={() => {
-                                return (
-                                    <PageInitializer
-                                        id={E_Page_Ids.APPLICATION}
-                                        successfulActions={[
-                                            AppActionConstants.APPLICATION_PAGE_SUCCESS,
-                                        ]}
-                                        pageInitAction={
-                                            AppActionConstants.APPLICATION_PAGE_TRIGGER
-                                        }>
-                                        <ApplicationPage
-                                            styleConfig={{
-                                                titleBox: PageTitleStyles.titleBox(),
-                                                pageTitle: PageTitleStyles.pageTitle(),
-                                                titleText: titleText(),
-                                            }}
-                                        />
-                                    </PageInitializer>
-                                );
-                            }}
-                        />
-                        <Route path={E_Routes.ALL_OTHERS}>
-                            <Redirect to="/error" />
-                        </Route>
-                    </Switch>
-                </>
-                {width < 786 && (
-                    <MobileNavigation
-                        isVisible={!noNavPages && authenticated}
-                        isMorePageVisible={isMorePageVisible}
-                        onCloseClick={() => setIsMorePageVisible(false)}
-                        morePageTitle={"Mer"}
-                        morePageLinksTitle={"Mina uppgifter och kundtjänst"}
-                        morePageLinks={morePageLinks}
-                        morePageHeader={
-                            <Header
-                                navigationVisible={false}
-                                logo={
-                                    <Logo
-                                        logoSrc={logo}
-                                        width={[113, 165]}
-                                        onClick={() => {
-                                            if (authenticated) {
-                                                window.location.href = "/front";
-                                            } else {
-                                                window.location.href = "/";
-                                            }
-                                        }}
-                                    />
-                                }
-                                button={
-                                    !isPathMatched(E_Routes.ROOT) ? (
-                                        <StyledButton
+                            <Route path={E_Routes.ALL_OTHERS}>
+                                <Redirect to="/error" />
+                            </Route>
+                        </Switch>
+                    </>
+                    {width < 786 && (
+                        <MobileNavigation
+                            isVisible={!noNavPages && authenticated}
+                            isMorePageVisible={isMorePageVisible}
+                            onCloseClick={() => setIsMorePageVisible(false)}
+                            morePageTitle={"Mer"}
+                            morePageLinksTitle={"Mina uppgifter och kundtjänst"}
+                            morePageLinks={morePageLinks}
+                            morePageHeader={
+                                <Header
+                                    navigationVisible={false}
+                                    logo={
+                                        <Logo
+                                            logoSrc={logo}
+                                            width={[113, 165]}
                                             onClick={() => {
                                                 if (authenticated) {
-                                                    dispatch(
-                                                        loginSessionActions.loginSessionEnd({
-                                                            redirect: true,
-                                                        })
-                                                    );
+                                                    window.location.href = "/front";
                                                 } else {
                                                     window.location.href = "/";
                                                 }
                                             }}
-                                            styleConfig={{ root: ButtonStyles.buttonStyles() }}>
-                                            {loginButtonText}
-                                        </StyledButton>
-                                    ) : null
-                                }
-                                authenticated={authenticated ? true : false}
-                            />
-                        }
-                        morePageAfter={""}
-                        icons={[
-                            <MobileNavItems
-                                isMorePageVisible={isMorePageVisible}
-                                isTopupVisible={isRescoringVisible}
-                                setIsMorePageVisible={setIsMorePageVisible}></MobileNavItems>,
-                        ]}
-                    />
-                )}
+                                        />
+                                    }
+                                    button={
+                                        !isPathMatched(E_Routes.ROOT) ? (
+                                            <StyledButton
+                                                onClick={() => {
+                                                    if (authenticated) {
+                                                        dispatch(
+                                                            loginSessionActions.loginSessionEnd({
+                                                                redirect: true,
+                                                            })
+                                                        );
+                                                    } else {
+                                                        window.location.href = "/";
+                                                    }
+                                                }}
+                                                styleConfig={{ root: ButtonStyles.buttonStyles() }}>
+                                                {loginButtonText}
+                                            </StyledButton>
+                                        ) : null
+                                    }
+                                    authenticated={authenticated ? true : false}
+                                />
+                            }
+                            morePageAfter={""}
+                            icons={[
+                                <MobileNavItems
+                                    isMorePageVisible={isMorePageVisible}
+                                    isTopupVisible={isRescoringVisible}
+                                    setIsMorePageVisible={setIsMorePageVisible}
+                                />,
+                            ]}
+                        />
+                    )}
+                </StyledGrid>
             </StyledLayout>
         </>
     );

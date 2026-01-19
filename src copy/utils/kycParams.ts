@@ -24,7 +24,6 @@ export const mapKycParams = (
         organizationNumber: !orgNumber,
         companyName: !companyName,
         sessionId: !sessionId,
-        applicationId: !applicationId,
         clientId: !clientId,
         exp: typeof exp !== "number",
         sessionRefreshCount: typeof sessionRefreshCount !== "number",

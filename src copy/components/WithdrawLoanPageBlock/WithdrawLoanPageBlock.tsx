@@ -10,6 +10,7 @@ import { AppState } from "../../types/general";
 import { selectOverdueDays, selectUnpaidAmount } from "../../selectors";
 import { T_WithdrawProps } from "./types";
 import { withdrawalRules } from "../../constants/rules";
+import { shouldBlockWithdrawal } from "../../utils";
 
 export function WithdrawLoanPageBlock(props: T_WithdrawProps) {
     const logger = new ConsoleLogger({ level: LOG_LEVEL });
@@ -17,12 +18,18 @@ export function WithdrawLoanPageBlock(props: T_WithdrawProps) {
     const { formatMessage: fm } = useIntl();
     const account = useSelector((state: AppState) => state.account.account);
     const accountState = useSelector((state: AppState) => state.account.accountState);
+    const kycState = useSelector((state: AppState) => state.kyc);
 
     const availableCreditLimit = account?.availableCreditLimit;
     const isIBANRegistered = account?.disbursementAccount?.externalAccountNumber ? true : false;
     const overdueDays = useSelector(selectOverdueDays);
     const unpaidAmount = useSelector(selectUnpaidAmount);
-    const blockedStatus = account?.blockedStatus ? account.blockedStatus : false;
+    
+    // Calculate KYC blocking status
+    const isWithdrawalBlocked = shouldBlockWithdrawal(kycState);
+    
+    // Combine all blocking conditions
+    const blockedStatus = account?.blockedStatus || isWithdrawalBlocked || false;
 
     const [isWithdraw, setIsWithdraw] = useState(false);
 
