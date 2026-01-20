@@ -34,6 +34,7 @@ export function ApplicationPage(props: ApplicationPageProps) {
     const { organizationNumber, companyName } = company;
     const { industryCode } = dynamicFields?.kyc || "";
 
+    const applicationId = application.id ?? "";
     const companyData: T_CompanyKycParams = mapCompanyDataForKyc({
         organizationNumber,
         companyName,
@@ -51,7 +52,7 @@ export function ApplicationPage(props: ApplicationPageProps) {
 
     const handleStartKyc = async () => {
         logger.log("Start KYC flow");
-        const started = await startKyc(companyData, session, kycFlow.NEW_CUSTOMER);
+        const started = await startKyc(companyData, session, applicationId, kycFlow.NEW_CUSTOMER);
         if (!started) {
             logger.error("flow not started");
             history.push(E_Routes.ERROR);

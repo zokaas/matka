@@ -193,8 +193,9 @@ function* handleBrokerApplicationKyc() {
         (state: AppState) => state.customer.companyInfo.info
     );
     const { organizationNumber, companyName, dynamicFields } = company;
+    const applicationId = sessionStorage.getItem("applicationId") ?? "";
 
-    if (!organizationNumber || !companyName) {
+    if (!organizationNumber || !companyName || applicationId) {
         logger.error("Missing org number or company name needed for KYC redirect", {
             organizationNumber,
             companyName,
@@ -212,7 +213,7 @@ function* handleBrokerApplicationKyc() {
     });
 
     // initiate KYC with session
-    yield call(startKyc, companyData, session, newCustomerKycFlow);
+    yield call(startKyc, companyData, session, applicationId, newCustomerKycFlow);
 }
 
 function* checkApplicationState(

@@ -17,6 +17,7 @@ import { E_Routes } from "../types/general";
 const logger = new ConsoleLogger({ level: LOG_LEVEL });
 
 export const initiateKycFlowWithSession = async (kycParams: T_KycParams) => {
+    console.log(kycParams);
     const kycCacheId = await saveData(kycParams);
     if (!kycCacheId) {
         logger.log("error");
@@ -53,9 +54,10 @@ const handleKycRedirect = async (kycCacheId: string): Promise<boolean> => {
 export const startKyc = async (
     company: T_CompanyKycParams,
     session: T_LoginSessionReducerState,
+    applicationId: string,
     flow: T_KycFlow = kycFlow.EXISTING_CUSTOMER
 ): Promise<boolean> => {
-    const params = mapKycParams(company, session, flow);
+    const params = mapKycParams(company, session, flow, applicationId);
     if (!params) return false;
 
     await initiateKycFlowWithSession(params);
@@ -66,10 +68,11 @@ export const handleStartKyc = async ({
     company,
     session,
     flow = kycFlow.EXISTING_CUSTOMER,
+    applicationId,
 }: T_HandleStartKycParams): Promise<boolean> => {
     logger.log("Starting KYC flow", { flow });
 
-    if (!company) {
+    if (!company || !applicationId) {
         logger.error("Company info not available");
         history.push(E_Routes.ERROR);
         return false;
@@ -84,7 +87,7 @@ export const handleStartKyc = async ({
         industryCode,
     });
 
-    const started = await startKyc(companyData, session, flow);
+    const started = await startKyc(companyData, session, applicationId, flow);
 
     if (!started) {
         logger.error("Failed to start KYC flow");

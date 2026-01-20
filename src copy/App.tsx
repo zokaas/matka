@@ -62,7 +62,6 @@ import { ThankYouPage } from "./pages/ThankYouPage/ThankYouPage";
 import { KycCompletedPage } from "./pages/KycCompletedPage/KycCompletedPage";
 import { KycNotice } from "./components/KycNotice/KycNotice";
 import { StyledGrid } from "@opr-finance/component-grid";
-import { KycModalContainer } from "./components/KycModal/KycModalContainer";
 
 iconLibrary.initFlexOnline();
 
@@ -216,16 +215,6 @@ const App: React.FC = () => {
         E_Routes.LOGOUT,
         E_Routes.THANK_YOU,
     ];
-
-    const kycNoticeAllowedPages = [
-        E_Routes.FRONT,
-        E_Routes.LOAN,
-        E_Routes.USER,
-        E_Routes.CONTACT,
-        E_Routes.TOPUP,
-        E_Routes.APPLICATION,
-    ];
-    const shouldShowKycNotice = kycNoticeAllowedPages.some((path) => isPathMatched(path));
 
     const noNavPagesList = [...baseNoSessionPages, E_Routes.APPLICATION, E_Routes.KYC_COMPLETED];
 
@@ -391,8 +380,7 @@ const App: React.FC = () => {
                     bodyBackgroundColor: "#f1faff",
                 }}>
                 <StyledGrid styleConfig={{ root: FrontPageStyles.frontPageRootStyles() }}>
-                    {shouldShowKycNotice && <KycNotice />}
-                    {shouldShowKycNotice && <KycModalContainer />}
+                    <KycNotice />
                     <Switch>
                         <Route
                             path={E_Routes.ROOT}

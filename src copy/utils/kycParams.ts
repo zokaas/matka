@@ -1,5 +1,5 @@
 import { ConsoleLogger, LOG_LEVEL } from "@opr-finance/feature-console-logger";
-import { T_CompanyKycParams, T_KycFlow, T_KycParams, kycType } from "../types/kyc";
+import { T_CompanyKycParams, T_KycFlow, T_KycParams, kycRedirectPath, kycType } from "../types/kyc";
 import { T_LoginSessionReducerState } from "@opr-finance/feature-login-session";
 
 const logger = new ConsoleLogger({ level: LOG_LEVEL });
@@ -8,7 +8,8 @@ const flexOnlineBaseUrl = process.env.REACT_APP_FLEX_ONLINE_BASEURL;
 export const mapKycParams = (
     company: T_CompanyKycParams,
     session: T_LoginSessionReducerState,
-    flow: T_KycFlow
+    flow: T_KycFlow,
+    applicationId: string
 ): T_KycParams | null => {
     logger.log("mapKycParams", company, session);
     if (!company || !session) return null;
@@ -18,7 +19,6 @@ export const mapKycParams = (
 
     const clientId = process.env.REACT_APP_CLIENT_ID as string;
     const sessionId = localStorage.getItem("token") ?? "";
-    const applicationId = "not_used_for_existing_customer";
 
     const missing: Record<string, boolean> = {
         organizationNumber: !orgNumber,
@@ -29,6 +29,7 @@ export const mapKycParams = (
         sessionRefreshCount: typeof sessionRefreshCount !== "number",
         maxSessionRefresh: typeof maxSessionRefresh !== "number",
         sniCode: !sniCode,
+        applicationId: !applicationId,
     };
 
     const missingKeys = Object.entries(missing)
@@ -60,9 +61,9 @@ export const mapKycParams = (
 };
 
 export const mapCompanyDataForKyc = (company: {
-    organizationNumber: any;
-    companyName: any;
-    industryCode: any;
+    organizationNumber: string;
+    companyName: string;
+    industryCode: string;
 }): T_CompanyKycParams => {
     return {
         orgNumber: company?.organizationNumber ?? "",

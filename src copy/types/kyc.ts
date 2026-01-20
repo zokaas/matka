@@ -65,8 +65,19 @@ type T_SessionKycParams = {
     kcUserId: string;
 };
 
+export type T_KycState = {
+    kycDone: boolean;
+    kycUpdatedDate: string;
+    kycDueDate: string;
+};
+
+export type T_KycReducerState = {
+    kyc: T_KycState;
+};
+
 export type T_HandleStartKycParams = {
     company: T_CompanyApiResponse | undefined;
     session: T_LoginSessionReducerState;
     flow: T_KycFlow;
+    applicationId: string;
 };
