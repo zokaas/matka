@@ -62,6 +62,7 @@ import { ThankYouPage } from "./pages/ThankYouPage/ThankYouPage";
 import { KycCompletedPage } from "./pages/KycCompletedPage/KycCompletedPage";
 import { KycNotice } from "./components/KycNotice/KycNotice";
 import { StyledGrid } from "@opr-finance/component-grid";
+import { KycModalContainer } from "./components/KycModal/KycModalContainer";
 
 iconLibrary.initFlexOnline();
 
@@ -391,6 +392,7 @@ const App: React.FC = () => {
                 }}>
                 <StyledGrid styleConfig={{ root: FrontPageStyles.frontPageRootStyles() }}>
                     {shouldShowKycNotice && <KycNotice />}
+                    {shouldShowKycNotice && <KycModalContainer />}
                     <Switch>
                         <Route
                             path={E_Routes.ROOT}

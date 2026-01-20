@@ -1,6 +1,7 @@
 import { differenceInDays, parseISO } from "date-fns";
-import { T_KycState } from "../types/kyc";
+
 import { KycStatusResult } from "../components/KycModal/types";
+import { T_KycState } from "@opr-finance/feature-kyc";
 
 export const KYC_MODAL_DISMISS_KEY = "kycModalDismissed";
 export const KYC_WARNING_DAYS = 14;

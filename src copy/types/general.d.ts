@@ -12,7 +12,7 @@ import { T_FeatureCustomerReducerState } from "@opr-finance/feature-sme-customer
 import { T_FeatureDocumentState } from "@opr-finance/feature-document";
 import { T_FeatureReportingState } from "@opr-finance/feature-reporting";
 import { T_FeatureSessionState } from "@opr-finance/feature-session";
-import { T_KycReducerState } from "./kyc";
+
 export type AppState = FeatureUserLoginState & T_FeatureCustomerReducerState & T_SmeLoan_FeatureAccountState & T_FeatureDocumentState & FeatureNewsState<FeatureUserLoginState> & FeatureNoticesState & FeatureTranslationStaticContentState<FeatureUserLoginState> & FeatureNoticesState & T_FeatureInvoicesState & T_SmeFeatureTransactionsState & FeatureInitializerState & FeatureSmeWithdrawState<FeatureUserLoginState> & FeatureLoaderState & T_FeatureLoginSessionState & T_FeaturePageInitializerState & T_FeatureReportingState & T_FeatureSessionState & T_KycReducerState;
 export type IncreaseCreditLimitFormData = {
     newCreditLimit: string;
