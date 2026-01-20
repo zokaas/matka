@@ -6,7 +6,7 @@ export const KYC_MODAL_DISMISS_KEY = "kycModalDismissed";
 export const KYC_WARNING_DAYS = 14;
 
 export const getKycDeadlineDate = (): string | null => {
-    const envDeadline = "2026-01-15";
+    const envDeadline = "2026-01-21";
     return envDeadline || null;
 };
 

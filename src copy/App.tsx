@@ -18,6 +18,7 @@ import {
     LogoutPageStyles,
     ModalStyles,
     LoanPageStyles,
+    KycNoticeStyles,
 } from "@opr-finance/theme-flex-online";
 import { StyledFooter, StyledFooterContent } from "@opr-finance/component-footer/src/StyledFooter";
 import { StyledButton } from "@opr-finance/component-button";
@@ -215,6 +216,10 @@ const App: React.FC = () => {
         E_Routes.LOGOUT,
         E_Routes.THANK_YOU,
     ];
+
+        console.log("KycNotice styleConfig:", {
+        noticeContainer: KycNoticeStyles.kycNoticeContainer({ label: "Critical" }),
+    });
 
     const noNavPagesList = [...baseNoSessionPages, E_Routes.APPLICATION, E_Routes.KYC_COMPLETED];
 

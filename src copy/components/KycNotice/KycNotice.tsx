@@ -25,7 +25,7 @@ import {
 
 const logger = new ConsoleLogger({ level: LOG_LEVEL });
 
-export const KycNotice: React.FC = (styleConfig: any) => {
+export const KycNotice: React.FC = () => {
     const [showKycModal, setShowKycModal] = useState(false);
 
     const kycState = useSelector((state: AppState) => state.kyc);
@@ -34,9 +34,6 @@ export const KycNotice: React.FC = (styleConfig: any) => {
     const authenticated = useSelector((state: AppState) => state.session.authenticated);
 
     const kycStatus = checkKycStatus(kycState);
-console.log('KYC State:', kycState);
-console.log('Should block withdrawals?', kycStatus);
-
     if (!authenticated || kycState.kycDone || !kycStatus) {
         return null;
     }
@@ -73,9 +70,11 @@ console.log('Should block withdrawals?', kycStatus);
     };
 
     const noticeText = isOverdue
-        ? "⚠️ Din KYC-uppdatering är försenad! Klicka här för att uppdatera nu."
-        : `⏰ Din KYC uppdatering krävs inom dagar. Klicka här för att uppdatera.`;
-        
+        ? "Du har inte svarat på våra kundkännedomsfrågor. Därför är dina möjligheter att göra uttag nu spärrade."
+        : `Det är dags att uppdatera din information för våra frågor om kundkännedom. Genom att svara i tid undviker du att möjligheten att göra uttag spärras`;
+    console.log("KycNotice styleConfig:", {
+        noticeContainer: KycNoticeStyles.kycNoticeContainer({ label: "Critical" }),
+    });
     return (
         <>
             <KycModal
@@ -92,6 +91,10 @@ console.log('Should block withdrawals?', kycStatus);
                     modalContent: ModalStyles.modalContentScroll({ height: ["fit-content"] }),
                     modalTitle: ModalStyles.modalTitle(),
                     titleText: ModalStyles.titleText(),
+                    contentScroll: {
+                        padding: "20px",
+                        maxHeight: "60vh",
+                    },
                     contentText: FontsStyles.fontContentText(),
                     dateText: {
                         ...FontsStyles.fontContentText(),
@@ -114,8 +117,10 @@ console.log('Should block withdrawals?', kycStatus);
                 <Notice
                     notice={noticeText}
                     styleConfig={{
-                        noticeContainer: KycNoticeStyles.kycNoticeContainer(),
-                        notice: KycNoticeStyles.kycNotice()
+                        noticeContainer: KycNoticeStyles.kycNoticeContainer({
+                            label: "Critical",
+                        }),
+                        notice: KycNoticeStyles.kycNotice(),
                     }}
                 />
             </StyledGrid>

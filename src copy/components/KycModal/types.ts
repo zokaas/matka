@@ -19,6 +19,7 @@ export type KycModalProps = {
         modalOverlay: SystemStyleObject;
         modalContent: SystemStyleObject;
         modalTitle: SystemStyleObject;
+        contentScroll: SystemStyleObject;
         titleText: SystemStyleObject;
         contentText: SystemStyleObject;
         dateText: SystemStyleObject;

@@ -172,14 +172,6 @@ export function FrontPage(props: FrontPageProps) {
         }
     };
 
-    const shouldShowKycButton = () => {
-        if (kycState.kycDone) return false;
-
-        const { isOverdue, daysRemaining } = kycStatus;
-
-        return isOverdue || (daysRemaining !== null && daysRemaining <= 14);
-    };
-
     if (!authenticated && !logoutInProgress) {
         return <Redirect to={E_Routes.ROOT} />;
     }
@@ -222,33 +214,14 @@ export function FrontPage(props: FrontPageProps) {
                     pageTitleText: props.styleConfig.pageTitle,
                 }}
             />
-            {shouldShowKycButton() && (
-                <StyledGrid
-                    styleConfig={{
-                        root: {
-                            marginBottom: "20px",
-                            display: "flex",
-                            justifyContent: "center",
-                        },
-                    }}>
-                    <StyledButton
-                        onClick={handleOpenKycModal}
-                        styleConfig={{
-                            root: ButtonStyles.greenButtonStyles(),
-                        }}>
-                        <Font styleConfig={{ root: ButtonStyles.buttonFontStyles() }}>
-                            {fm(messages.kycUpdateButton)}{" "}
-                            <Icon icon={["fa", "angle-double-right"]} />
-                        </Font>
-                    </StyledButton>
-                </StyledGrid>
-            )}
 
             <KycModal
                 isOpen={showKycModal}
                 kycStatus={kycStatus}
-                kycDueDate={kycState.kycDueDate}
-                onClose={handleCloseKycModal}
+                onClose={() => {
+                    dismissKycModal();
+                    setShowKycModal(false);
+                }}
                 onStartKyc={handleStartKyc}
                 styleConfig={{
                     modalCloseIcon: ModalStyles.modalCloseIcon(),
@@ -256,6 +229,12 @@ export function FrontPage(props: FrontPageProps) {
                     modalContent: ModalStyles.modalContentScroll({ height: ["fit-content"] }),
                     modalTitle: ModalStyles.modalTitle(),
                     titleText: ModalStyles.titleText(),
+                    contentScroll: {
+                        // ADD THIS PROPERTY
+                        padding: "20px",
+                        maxHeight: "60vh",
+                        overflowY: "auto",
+                    },
                     contentText: FontsStyles.fontContentText(),
                     dateText: {
                         ...FontsStyles.fontContentText(),

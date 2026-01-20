@@ -10,6 +10,9 @@ export const messages = defineMessages({
   dueDateLabel: {
     id: "flex-online-se-kyc-modal-due-date-label",
   },
+    dueDatePassedLabel: {
+    id: "flex-online-se-kyc-modal-due-date-passed-label",
+  },
   kycTitle: {
     id: "flex-online-se-kyc-modal-title",
   },

@@ -7,6 +7,7 @@ import { smeWithdrawActions, StyledWithdraw } from "@opr-finance/feature-withdra
 
 import { T_WithdrawProps } from "./types";
 import { messages } from "../../pages/Frontpage/messages";
+
 import { withdrawalRules } from "../../constants/rules";
 import { shouldBlockWithdrawal } from "../../utils";
 import { AppState } from "../../types/general";
