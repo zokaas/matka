@@ -2,7 +2,7 @@ import {
     T_SMEApplicationChannel,
     T_SMEApplicationState,
 } from "@opr-finance/feature-sme-customer/src/types";
-import { T_KycState } from "../types/kyc";
+import { T_KycState } from "@opr-finance/feature-kyc";
 
 export const initialFetchingTransactionsPeriod = 6; // Feth transactions for 6 last months
 
@@ -19,3 +19,5 @@ export const allowedStatesByChannel: Partial<
     WEB: ["PENDING", "PN_CREATED"],
     PHONE: ["PENDING", "PN_CREATED"],
 };
+
+export const oprFinanceBrokerName = "OPRFinance";

@@ -22,9 +22,9 @@ import { T_GatewayProps } from "@opr-finance/utils/src/types/general";
 import { getGwProps } from "@opr-finance/utils/src/getGwProps";
 import { loginSessionActions } from "@opr-finance/feature-login-session";
 import { T_CompanyApiResponse } from "@opr-finance/feature-sme-customer/src/types";
-import { T_KycState } from "../types/kyc";
 import { DEFAULT_KYC_STATE } from "../constants/general";
 import { restoreSession } from "./applicationPage";
+import { kycActions, T_KycState } from "@opr-finance/feature-kyc";
 
 const logger = new ConsoleLogger({ level: LOG_LEVEL });
 
@@ -33,13 +33,14 @@ export function* watchFrontPageTrigger() {
 }
 
 export function* handleFrontPageTrigger() {
-    const { mock, fullVpApiUrl }: T_GatewayProps = getGwProps();
+    const { mock, fullVpApiUrl, baseUrl, cid }: T_GatewayProps = getGwProps();
 
     try {
         const state: AppState = yield select((state: AppState) => state);
-        const { account, customer, session } = state;
+        const { account, customer, session, kyc } = state;
         const accountConfigUrl = account.config.gwUrl;
         const companyConfigUrl = customer.companyInfo.config.gwUrl;
+        const bffConfigUrl = kyc.config.bffUrl;
         const token = session.token;
 
         if (token) {
@@ -66,6 +67,18 @@ export function* handleFrontPageTrigger() {
                         errorUrl: E_Routes.ERROR,
                         noAuth: E_Routes.EXPIRED,
                         noLoanUrl: E_Routes.NO_LOAN,
+                    })
+                );
+            }
+
+            if (!bffConfigUrl) {
+                console.log("kycInitializer: cid", cid);
+                yield put(
+                    kycActions.kycInitializer({
+                        token,
+                        bffUrl: baseUrl,
+                        mock,
+                        cid,
                     })
                 );
             }
@@ -112,13 +125,13 @@ export function* handleFrontPageTrigger() {
 
             yield all([call(getInvoiceData), call(getTransactionsData)]);
 
-            const kyc: T_KycState = yield select((state: AppState) => state.kyc);
+            const kyc: T_KycState = yield select((state: AppState) => state.kyc.kycStatus);
 
             // Update SME kyc status from dynamic fields
             if (!kyc.kycDone) {
                 const kycState: T_KycState = yield call(getKycState);
                 logger.log("KYC state", kycState);
-                yield put(appActions.updateKycState(kycState));
+                yield put(kycActions.updateKycState(kycState));
             }
 
             yield put(appActions.frontPageSuccess());
@@ -138,13 +151,16 @@ function* getKycState() {
 
     const kyc = company.dynamicFields?.kyc;
 
+    const kycStatus = yield select((state: AppState) => state.kyc.kycStatus);
+
     if (!kyc) {
         logger.warn("No KYC dynamic fields found");
         return DEFAULT_KYC_STATE;
     }
 
     logger.log("kyc found in application Dynamic Fields : ", kyc);
-    const kycState: T_KycState = {
+    const kycState = {
+        ...kycStatus,
         kycDone: Boolean(kyc.kycDone),
         kycUpdatedDate: kyc.kycUpdatedDate ?? "",
         kycDueDate: kyc.kycDueDate ?? "",

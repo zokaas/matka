@@ -18,7 +18,7 @@ import { customerReducer } from "@opr-finance/feature-sme-customer";
 import { AppState } from "./types/general";
 import { reportingReducer } from "@opr-finance/feature-reporting";
 import { sessionReducer } from "@opr-finance/feature-session";
-import { kycReducer } from "./reducers/kyc.reducer";
+import { kycReducer } from "@opr-finance/feature-kyc";
 
 export const rootReducer = combineReducers<AppState>({
     customer: customerReducer,

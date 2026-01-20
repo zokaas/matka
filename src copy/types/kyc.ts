@@ -1,3 +1,6 @@
+import { T_LoginSessionReducerState } from "@opr-finance/feature-login-session";
+import { T_CompanyApiResponse } from "@opr-finance/feature-sme-customer/src/types";
+
 export const kycFlow = {
     NEW_CUSTOMER: "new_customer",
     EXISTING_CUSTOMER: "existing_customer",
@@ -70,4 +73,10 @@ export type T_KycState = {
 
 export type T_KycReducerState = {
     kyc: T_KycState;
+};
+
+export type T_HandleStartKycParams = {
+    company: T_CompanyApiResponse | undefined;
+    session: T_LoginSessionReducerState;
+    flow: T_KycFlow;
 };

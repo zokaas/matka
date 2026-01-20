@@ -1,10 +1,8 @@
 import { SystemStyleObject } from "@styled-system/css";
 
 export type KycStatusResult = {
-    shouldShowModal: boolean;
     isOverdue: boolean;
     daysRemaining: number | null;
-    reason: "no_due_date" | "approaching_deadline" | "renewal_approaching" | "overdue" | "renewal_overdue" | "completed" | "dismissed" | "not_yet";
     effectiveDueDate?: string;
 };
 
@@ -19,7 +17,6 @@ export type KycModalProps = {
         modalOverlay: SystemStyleObject;
         modalContent: SystemStyleObject;
         modalTitle: SystemStyleObject;
-        contentScroll: SystemStyleObject;
         titleText: SystemStyleObject;
         contentText: SystemStyleObject;
         dateText: SystemStyleObject;

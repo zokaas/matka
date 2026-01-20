@@ -1,4 +1,5 @@
 import { SystemStyleObject } from "@styled-system/css";
+import { ReactNode } from "react";
 
 export type NoticeProps = {
     notice: string;
@@ -6,4 +7,5 @@ export type NoticeProps = {
         noticeContainer: SystemStyleObject;
         notice: SystemStyleObject;
     };
+    children?: ReactNode;
 };

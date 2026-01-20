@@ -11,6 +11,17 @@ export function Notice(props: NoticeProps) {
             <Font styleConfig={{ root: props.styleConfig.notice }} as="p">
                 {props.notice}
             </Font>
+            {props.children && (
+                <StyledGrid
+                    styleConfig={{
+                        root: {
+                            alignSelf: "center",
+                            width: "auto",
+                        },
+                    }}>
+                    {props.children}
+                </StyledGrid>
+            )}
         </StyledGrid>
     );
 }

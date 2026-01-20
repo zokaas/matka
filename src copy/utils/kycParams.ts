@@ -1,5 +1,5 @@
 import { ConsoleLogger, LOG_LEVEL } from "@opr-finance/feature-console-logger";
-import { T_CompanyKycParams, T_KycFlow, T_KycParams, kycRedirectPath, kycType } from "../types/kyc";
+import { T_CompanyKycParams, T_KycFlow, T_KycParams, kycType } from "../types/kyc";
 import { T_LoginSessionReducerState } from "@opr-finance/feature-login-session";
 
 const logger = new ConsoleLogger({ level: LOG_LEVEL });
@@ -18,7 +18,7 @@ export const mapKycParams = (
 
     const clientId = process.env.REACT_APP_CLIENT_ID as string;
     const sessionId = localStorage.getItem("token") ?? "";
-    const applicationId = "11111";
+    const applicationId = "not_used_for_existing_customer";
 
     const missing: Record<string, boolean> = {
         organizationNumber: !orgNumber,
@@ -28,8 +28,7 @@ export const mapKycParams = (
         exp: typeof exp !== "number",
         sessionRefreshCount: typeof sessionRefreshCount !== "number",
         maxSessionRefresh: typeof maxSessionRefresh !== "number",
-        // TODO: uncomment the above line when sniCode is set by backend in dynamicFields
-        //sniCode: !sniCode,
+        sniCode: !sniCode,
     };
 
     const missingKeys = Object.entries(missing)

@@ -15,11 +15,14 @@ import {
 import { add, remove } from "@opr-finance/utils";
 import { Scroll } from "@opr-finance/component-scroll";
 import { Font } from "@opr-finance/component-fonts";
-import { StyledButton } from "@opr-finance/component-button";
-import { Icon } from "@opr-finance/component-icon";
 import { E_AllowedAccountStates } from "@opr-finance/feature-account";
 
-import { selectOverdueDays, selectUnpaidAmount, selectNotPaidStatements } from "../../selectors";
+import {
+    selectOverdueDays,
+    selectUnpaidAmount,
+    selectCompanyId,
+    selectAccountApplicationId,
+} from "../../selectors";
 import { FrontPageProps } from "./types";
 import currencyImage from "../../images/OPR-Foretagslan-Flex-ut.svg";
 import { messages } from "./messages";
@@ -33,18 +36,14 @@ import { KycModal } from "../../components/KycModal";
 import { KycStatusResult } from "../../components/KycModal/types";
 import {
     onComponentMounted,
-    mapCompanyDataForKyc,
-    startKyc,
-    history,
     checkKycStatus,
-    clearKycModalDismissal,
     dismissKycModal,
     shouldBlockWithdrawal,
+    shouldShowKycModal,
+    handleStartKyc,
 } from "../../utils";
-import { kycFlow, T_CompanyKycParams } from "../../types/kyc";
-import { ConsoleLogger, LOG_LEVEL } from "@opr-finance/feature-console-logger";
-
-const logger = new ConsoleLogger({ level: LOG_LEVEL });
+import { kycFlow } from "../../types/kyc";
+import { kycActions } from "@opr-finance/feature-kyc";
 
 type LocationState = {
     component: string;
@@ -73,24 +72,25 @@ export function FrontPage(props: FrontPageProps) {
             : "";
     });
 
-    const notPaid = useSelector(selectNotPaidStatements);
-
     const overdueDays = useSelector(selectOverdueDays);
 
     const unpaidAmount = useSelector(selectUnpaidAmount);
 
-    const kycState = useSelector((state: AppState) => state.kyc);
+    const kycState = useSelector((state: AppState) => state.kyc.kycStatus);
     const company = useSelector((state: AppState) => state.customer.companyInfo.info);
     const session = useSelector((state: AppState) => state.session);
     const [showKycModal, setShowKycModal] = useState(false);
     const [kycStatus, setKycStatus] = useState<KycStatusResult>(checkKycStatus(kycState));
 
-    useEffect(() => {
-        const status = checkKycStatus(kycState);
-        setKycStatus(status);
-    }, [kycState]);
-
     const [isWithdrawn, setIsWithdrawn] = useState(false);
+    const smeId = useSelector((state: AppState) => state.customer.engagement.activeSmeId) ?? "";
+
+    const applicationId = useSelector(selectAccountApplicationId) ?? "";
+
+    const companyId = useSelector(selectCompanyId);
+
+    const isCsReportReady = useSelector((state: AppState) => state.kyc.kycStatus.isCsReportReady);
+
     const [applicationData, setApplicationData] = useState<{ withdrawnAmount: string }>({
         withdrawnAmount: "0",
     });
@@ -107,11 +107,13 @@ export function FrontPage(props: FrontPageProps) {
     useEffect(() => {
         const status = checkKycStatus(kycState);
         setKycStatus(status);
-
-        if (status.isOverdue && status.shouldShowModal) {
+        if (shouldShowKycModal(status)) {
             setShowKycModal(true);
         }
     }, [kycState]);
+
+    const isWithdrawalBlocked = shouldBlockWithdrawal(kycState);
+
     function handleChange(isValid, formName, form) {
         if (isValid) {
             setValidForms(add(validForms, formName));
@@ -134,42 +136,6 @@ export function FrontPage(props: FrontPageProps) {
                 documentId: defaultPromissoryNoteId,
             })
         );
-    };
-
-    const handleCloseKycModal = () => {
-        dismissKycModal();
-        setShowKycModal(false);
-    };
-
-    const handleOpenKycModal = () => {
-        clearKycModalDismissal();
-        setShowKycModal(true);
-    };
-
-    const handleStartKyc = async () => {
-        logger.log("Starting KYC flow from FrontPage");
-
-        if (!company) {
-            logger.error("Company info not available");
-            history.push(E_Routes.ERROR);
-            return;
-        }
-
-        const { organizationNumber, companyName, dynamicFields } = company;
-        const { industryCode } = dynamicFields?.kyc || "";
-
-        const companyData: T_CompanyKycParams = mapCompanyDataForKyc({
-            organizationNumber,
-            companyName,
-            industryCode,
-        });
-
-        const started = await startKyc(companyData, session, kycFlow.EXISTING_CUSTOMER);
-
-        if (!started) {
-            logger.error("Failed to start KYC flow");
-            history.push(E_Routes.ERROR);
-        }
     };
 
     if (!authenticated && !logoutInProgress) {
@@ -197,13 +163,29 @@ export function FrontPage(props: FrontPageProps) {
 
     const availableCreditLimit = account?.availableCreditLimit;
 
+    const initiateKyc = async () => {
+        console.log("kyc button clicked");
+        const fetchCSReportPayload = {
+            applicationId,
+            smeId,
+            companyId,
+        };
+
+        dispatch(kycActions.kycFetchCreditSafeReportTrigger(fetchCSReportPayload));
+    };
+
     useEffect(() => {
         if (component && component === "withdraw") {
             window.scrollTo({ top: 500, behavior: "smooth" });
         }
     });
 
-    const isWithdrawalBlocked = shouldBlockWithdrawal(kycState);
+    useEffect(() => {
+        if (!isCsReportReady) return;
+
+        console.log("sni code ready, start kyc ", isCsReportReady);
+        handleStartKyc({ company, session, flow: kycFlow.EXISTING_CUSTOMER });
+    }, [isCsReportReady]);
 
     return (
         <StyledGrid styleConfig={{ root: FrontPageStyles.frontPageRootStyles() }}>
@@ -214,7 +196,6 @@ export function FrontPage(props: FrontPageProps) {
                     pageTitleText: props.styleConfig.pageTitle,
                 }}
             />
-
             <KycModal
                 isOpen={showKycModal}
                 kycStatus={kycStatus}
@@ -222,19 +203,13 @@ export function FrontPage(props: FrontPageProps) {
                     dismissKycModal();
                     setShowKycModal(false);
                 }}
-                onStartKyc={handleStartKyc}
+                onStartKyc={initiateKyc}
                 styleConfig={{
                     modalCloseIcon: ModalStyles.modalCloseIcon(),
                     modalOverlay: ModalStyles.modalOverlay(),
                     modalContent: ModalStyles.modalContentScroll({ height: ["fit-content"] }),
                     modalTitle: ModalStyles.modalTitle(),
                     titleText: ModalStyles.titleText(),
-                    contentScroll: {
-                        // ADD THIS PROPERTY
-                        padding: "20px",
-                        maxHeight: "60vh",
-                        overflowY: "auto",
-                    },
                     contentText: FontsStyles.fontContentText(),
                     dateText: {
                         ...FontsStyles.fontContentText(),

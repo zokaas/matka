@@ -25,7 +25,7 @@ export const KycModal: React.FC<KycModalProps> = ({
     const { isOverdue, effectiveDueDate } = kycStatus;
     const displayDueDate = kycDueDate || effectiveDueDate;
 
-    const title = isOverdue ? "fm(messages.overdueTitle) ": "fm(messages.kycTitle)";
+    const title = isOverdue ? fm(messages.overdueTitle) : fm(messages.kycTitle);
 
     return (
         <Modal
@@ -39,22 +39,17 @@ export const KycModal: React.FC<KycModalProps> = ({
                 content: styleConfig.modalContent,
                 title: styleConfig.modalTitle,
                 titleText: styleConfig.titleText,
-                contentScroll: styleConfig.contentScroll, // ADD THIS LINE
             }}>
             <StyledGrid styleConfig={{ root: styleConfig.buttonContainer }}>
-                {isOverdue ? (
-                    <>
-                        <Font styleConfig={{ root: styleConfig.contentText }} as="p">
-                            {fm(messages.overdueMessage)}
-                        </Font>
+                <Font styleConfig={{ root: styleConfig.contentText }} as="p">
+                    {fm(messages.kycReasonMessage)}
+                </Font>
 
-                        {displayDueDate && (
-                            <Font styleConfig={{ root: styleConfig.dateText }} as="p">
-                                {fm(messages.dueDatePassedLabel)}{" "}
-                                {format(parseISO(displayDueDate), "d MMMM yyyy", { locale: sv })}
-                            </Font>
-                        )}
-                    </>
+                <Font styleConfig={{ root: styleConfig.contentText }} as="p">
+                    {fm(messages.creditConsentLabel)}
+                </Font>
+                {isOverdue ? (
+                    <></>
                 ) : (
                     <>
                         <Font styleConfig={{ root: styleConfig.contentText }} as="p">
@@ -69,14 +64,6 @@ export const KycModal: React.FC<KycModalProps> = ({
                         )}
                     </>
                 )}
-
-                <Font styleConfig={{ root: styleConfig.contentText }} as="p">
-                    {fm(messages.kycReasonMessage)}
-                </Font>
-
-                <Font styleConfig={{ root: styleConfig.contentText }} as="p">
-                    {fm(messages.creditConsentLabel)}
-                </Font>
 
                 <StyledGrid
                     styleConfig={{
@@ -96,13 +83,15 @@ export const KycModal: React.FC<KycModalProps> = ({
                         </Font>
                     </StyledButton>
 
-                    <StyledButton
-                        onClick={onClose}
-                        styleConfig={{ root: styleConfig.secondaryButton }}>
-                        <Font styleConfig={{ root: styleConfig.buttonText }}>
-                            {fm(messages.remindLaterButton)}
-                        </Font>
-                    </StyledButton>
+                    {!isOverdue && (
+                        <StyledButton
+                            onClick={onClose}
+                            styleConfig={{ root: styleConfig.secondaryButton }}>
+                            <Font styleConfig={{ root: styleConfig.buttonText }}>
+                                {fm(messages.remindLaterButton)}
+                            </Font>
+                        </StyledButton>
+                    )}
                 </StyledGrid>
             </StyledGrid>
         </Modal>

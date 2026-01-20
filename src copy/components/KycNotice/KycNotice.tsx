@@ -3,17 +3,15 @@ import { useSelector } from "react-redux";
 import { StyledGrid } from "@opr-finance/component-grid";
 import { ConsoleLogger, LOG_LEVEL } from "@opr-finance/feature-console-logger";
 
-import { KycModal } from "../KycModal";
+import { KycModal, messages } from "../KycModal";
 import { Notice } from "../Notice";
-import { AppState, E_Routes } from "../../types/general";
-import { kycFlow, T_CompanyKycParams } from "../../types/kyc";
+import { AppState } from "../../types/general";
+import { kycFlow } from "../../types/kyc";
 import {
     checkKycStatus,
     clearKycModalDismissal,
     dismissKycModal,
-    mapCompanyDataForKyc,
-    startKyc,
-    history,
+    handleStartKyc,
 } from "../../utils";
 import {
     ButtonStyles,
@@ -22,13 +20,17 @@ import {
     KycNoticeStyles,
     ModalStyles,
 } from "@opr-finance/theme-flex-online";
+import { StyledButton } from "@opr-finance/component-button/src/Button";
+import { Font } from "@opr-finance/component-fonts/src/Font";
+import { useIntl } from "react-intl";
 
 const logger = new ConsoleLogger({ level: LOG_LEVEL });
 
 export const KycNotice: React.FC = () => {
+    const { formatMessage: fm } = useIntl();
     const [showKycModal, setShowKycModal] = useState(false);
 
-    const kycState = useSelector((state: AppState) => state.kyc);
+    const kycState = useSelector((state: AppState) => state.kyc.kycStatus);
     const company = useSelector((state: AppState) => state.customer.companyInfo.info);
     const session = useSelector((state: AppState) => state.session);
     const authenticated = useSelector((state: AppState) => state.session.authenticated);
@@ -43,38 +45,23 @@ export const KycNotice: React.FC = () => {
 
     if (!shouldShow) return null;
 
-    const handleStartKyc = async () => {
-        logger.log("Starting KYC flow");
-
-        if (!company) {
-            logger.error("Company info not available");
-            history.push(E_Routes.ERROR);
-            return;
-        }
-
-        const { organizationNumber, companyName, dynamicFields } = company;
-        const { industryCode } = dynamicFields?.kyc || "";
-
-        const companyData: T_CompanyKycParams = mapCompanyDataForKyc({
-            organizationNumber,
-            companyName,
-            industryCode,
-        });
-
-        const started = await startKyc(companyData, session, kycFlow.EXISTING_CUSTOMER);
-
-        if (!started) {
-            logger.error("Failed to start KYC flow");
-            history.push(E_Routes.ERROR);
-        }
+    const onStartKyc = async () => {
+        await handleStartKyc({ company, session, flow: kycFlow.EXISTING_CUSTOMER });
+    };
+    const handleOpenModal = () => {
+        clearKycModalDismissal();
+        setShowKycModal(true);
     };
 
     const noticeText = isOverdue
         ? "Du har inte svarat på våra kundkännedomsfrågor. Därför är dina möjligheter att göra uttag nu spärrade."
         : `Det är dags att uppdatera din information för våra frågor om kundkännedom. Genom att svara i tid undviker du att möjligheten att göra uttag spärras`;
-    console.log("KycNotice styleConfig:", {
-        noticeContainer: KycNoticeStyles.kycNoticeContainer({ label: "Critical" }),
-    });
+
+    const styleConfig = {
+        buttonStyles: isOverdue ? ButtonStyles.redButtonStyles() : ButtonStyles.greenButtonStyles(),
+        buttonText: ButtonStyles.buttonFontStyles(),
+    };
+
     return (
         <>
             <KycModal
@@ -84,17 +71,13 @@ export const KycNotice: React.FC = () => {
                     dismissKycModal();
                     setShowKycModal(false);
                 }}
-                onStartKyc={handleStartKyc}
+                onStartKyc={onStartKyc}
                 styleConfig={{
                     modalCloseIcon: ModalStyles.modalCloseIcon(),
                     modalOverlay: ModalStyles.modalOverlay(),
                     modalContent: ModalStyles.modalContentScroll({ height: ["fit-content"] }),
                     modalTitle: ModalStyles.modalTitle(),
                     titleText: ModalStyles.titleText(),
-                    contentScroll: {
-                        padding: "20px",
-                        maxHeight: "60vh",
-                    },
                     contentText: FontsStyles.fontContentText(),
                     dateText: {
                         ...FontsStyles.fontContentText(),
@@ -107,22 +90,27 @@ export const KycNotice: React.FC = () => {
                     buttonText: ButtonStyles.buttonFontStyles(),
                 }}
             />
-
-            <StyledGrid
-                onClick={() => {
-                    clearKycModalDismissal();
-                    setShowKycModal(true);
-                }}
-                styleConfig={{ root: { cursor: "pointer" } }}>
-                <Notice
-                    notice={noticeText}
-                    styleConfig={{
-                        noticeContainer: KycNoticeStyles.kycNoticeContainer({
-                            label: "Critical",
-                        }),
-                        notice: KycNoticeStyles.kycNotice(),
-                    }}
-                />
+            <StyledGrid styleConfig={{ root: { cursor: "pointer" } }}>
+                <button
+                    onClick={handleOpenModal}
+                    style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}>
+                    <Notice
+                        notice={noticeText}
+                        styleConfig={{
+                            noticeContainer: KycNoticeStyles.kycNoticeContainer({
+                                label: isOverdue ? "Critical" : "Alert",
+                            }),
+                            notice: KycNoticeStyles.kycNotice(),
+                        }}>
+                        <StyledButton
+                            onClick={handleOpenModal}
+                            styleConfig={{ root: styleConfig.buttonStyles }}>
+                            <Font styleConfig={{ root: styleConfig.buttonText }}>
+                                {fm(messages.updateNowButton)}
+                            </Font>
+                        </StyledButton>
+                    </Notice>
+                </button>
             </StyledGrid>
         </>
     );

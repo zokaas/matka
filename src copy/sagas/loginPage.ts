@@ -1,5 +1,5 @@
-import { put, call, take, select, race, takeLeading } from "redux-saga/effects";
 import { ActionType } from "typesafe-actions";
+import { put, call, take, select, race, takeLeading } from "redux-saga/effects";
 
 import { errorActions } from "@opr-finance/feature-error";
 import {
@@ -17,13 +17,14 @@ import { T_GatewayProps } from "@opr-finance/utils/src/types/general";
 import { getGwProps } from "@opr-finance/utils/src/getGwProps";
 import { ConsoleLogger, LOG_LEVEL } from "@opr-finance/feature-console-logger";
 import {
+    T_ApplicationApiResponse,
     T_ApplicationReducerState,
     T_CompanyApiResponse,
     T_SMEApplicationChannel,
     T_SMEApplicationState,
 } from "@opr-finance/feature-sme-customer/src/types";
 import { kycFlow, T_CompanyKycParams } from "../types/kyc";
-import { allowedStatesByChannel } from "../constants/general";
+import { allowedStatesByChannel, oprFinanceBrokerName } from "../constants/general";
 
 const logger = new ConsoleLogger({ level: LOG_LEVEL });
 
@@ -65,12 +66,14 @@ function* handleApplicationFlow(token: string) {
         }
 
         logger.log("Fetched application; validating application state");
-        const application: T_ApplicationReducerState = yield select(
-            (state: AppState) => state.customer.application
+        const application: T_ApplicationApiResponse = yield select(
+            (state: AppState) => state.customer.application.application
         );
 
-        const { applicationChannel, applicationState } = application.application ?? {};
+        const brokerName = application.brokerName;
+        const { applicationChannel, applicationState } = application ?? {};
 
+        //TODO refactor application state and channel check if no other than BROKER applicationChannels will be handled
         // Stop flow if state is invalid
         yield call(checkApplicationState, applicationChannel, applicationState);
 
@@ -80,12 +83,12 @@ function* handleApplicationFlow(token: string) {
 
         logger.log("Checking application channel");
 
-        if (applicationChannel === "BROKER") {
+        if (applicationChannel === "BROKER" && brokerName !== oprFinanceBrokerName) {
             yield call(handleBrokerApplicationKyc);
             return;
         }
 
-        // Non-broker case -> lead to application UI
+        // OPR Finance as a broker and other then brokers (if exist)-> lead to application UI
         history.push(E_Routes.APPLICATION);
     } catch (error) {
         if (error instanceof StopApplicationFlow) {

@@ -1,6 +1,5 @@
 import { ActionType, createAction } from "typesafe-actions";
 import { T_UpdateUserInfoFormData } from "../pages/UserPage/types";
-import { T_KycState } from "../types/kyc";
 
 export enum AppActionConstants {
     APPLICATION_TRIGGER = "APP/INIT_TRIGGER",
@@ -35,7 +34,6 @@ export enum AppActionConstants {
     // TOPUP_APPLICATION_SEND_TRIGGER = "APP/TOPUP_APPLICATION_SEND_TRIGGER",
     TRANSLATION_TRIGGER = "PAGE/TRANSLATION_TRIGGER",
     TRANSLATION_SUCCESS = "PAGE/TRANSLATION_SUCCESS",
-    UPDATE_KYC_STATE = "UPDATE_KYC_STATE",
 }
 
 type T_ChooseAccountPageSelectedPayload = {
@@ -79,7 +77,6 @@ export const appActions = {
         AppActionConstants.USER_INFO_UPDATE_TRIGGER
     )<T_UpdateUserInfoFormData>(),
     userInfoUpdateSuccess: createAction(AppActionConstants.USER_INFO_UPDATE_SUCCESS)(),
-    updateKycState: createAction(AppActionConstants.UPDATE_KYC_STATE)<T_KycState>(),
 };
 
 export type AppAction = ActionType<typeof appActions>;

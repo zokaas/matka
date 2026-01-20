@@ -2,7 +2,7 @@ import { T_TopupRules, T_WithdrawalRules } from "@opr-finance/utils";
 
 export const withdrawalRules: T_WithdrawalRules = {
     minWithdrawal: 5000,
-    overdueDays: 51294184719471947095738923479347697,
+    overdueDays: 5,
     accountState: ["OPEN", "PENDING"],
     blockedStatus: false,
     kycOverdue: false,

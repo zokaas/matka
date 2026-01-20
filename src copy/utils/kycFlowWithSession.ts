@@ -1,9 +1,18 @@
 import { ConsoleLogger, LOG_LEVEL } from "@opr-finance/feature-console-logger";
-import { T_CompanyKycParams, T_KycFlow, T_KycParams } from "../types/kyc";
-import { saveData } from "../api/cacheData";
-import { mapKycParams } from "./kycParams";
 import { T_LoginSessionReducerState } from "@opr-finance/feature-login-session";
+
+import {
+    kycFlow,
+    T_CompanyKycParams,
+    T_HandleStartKycParams,
+    T_KycFlow,
+    T_KycParams,
+} from "../types/kyc";
+import { saveData } from "../api/cacheData";
+import { mapKycParams, mapCompanyDataForKyc } from "./kycParams";
 import { clearSessionStorage } from "./clearSessionStorage";
+import { history } from "./history";
+import { E_Routes } from "../types/general";
 
 const logger = new ConsoleLogger({ level: LOG_LEVEL });
 
@@ -44,11 +53,44 @@ const handleKycRedirect = async (kycCacheId: string): Promise<boolean> => {
 export const startKyc = async (
     company: T_CompanyKycParams,
     session: T_LoginSessionReducerState,
-    flow: T_KycFlow
+    flow: T_KycFlow = kycFlow.EXISTING_CUSTOMER
 ): Promise<boolean> => {
     const params = mapKycParams(company, session, flow);
     if (!params) return false;
 
     await initiateKycFlowWithSession(params);
+    return true;
+};
+
+export const handleStartKyc = async ({
+    company,
+    session,
+    flow = kycFlow.EXISTING_CUSTOMER,
+}: T_HandleStartKycParams): Promise<boolean> => {
+    logger.log("Starting KYC flow", { flow });
+
+    if (!company) {
+        logger.error("Company info not available");
+        history.push(E_Routes.ERROR);
+        return false;
+    }
+
+    const { organizationNumber, companyName, dynamicFields } = company;
+    const { industryCode } = dynamicFields?.kyc || {};
+
+    const companyData = mapCompanyDataForKyc({
+        organizationNumber,
+        companyName,
+        industryCode,
+    });
+
+    const started = await startKyc(companyData, session, flow);
+
+    if (!started) {
+        logger.error("Failed to start KYC flow");
+        history.push(E_Routes.ERROR);
+        return false;
+    }
+
     return true;
 };

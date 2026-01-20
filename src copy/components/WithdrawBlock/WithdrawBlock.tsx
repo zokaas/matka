@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useIntl } from "react-intl";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 
 import { ButtonStyles, FrontPageStyles } from "@opr-finance/theme-flex-online";
 import { smeWithdrawActions, StyledWithdraw } from "@opr-finance/feature-withdraw";
@@ -9,19 +9,12 @@ import { T_WithdrawProps } from "./types";
 import { messages } from "../../pages/Frontpage/messages";
 
 import { withdrawalRules } from "../../constants/rules";
-import { shouldBlockWithdrawal } from "../../utils";
-import { AppState } from "../../types/general";
 
 export function WithdrawBlock(props: T_WithdrawProps) {
     const { formatMessage: fm } = useIntl();
     const dispatch = useDispatch();
-    const kycState = useSelector((state: AppState) => state.kyc);
 
     const [isWithdrawn, setIsWithdrawn] = useState(false);
-
-    const isKycOverdue = shouldBlockWithdrawal(kycState);
-console.log('KYC State:', kycState);
-console.log('Should block withdrawals?', isKycOverdue);
 
     return (
         <StyledWithdraw
@@ -82,7 +75,7 @@ console.log('Should block withdrawals?', isKycOverdue);
             unpaidAmount={props.unpaidAmount}
             accountState={props.accountState}
             blockedStatus={props.blockedStatus}
-            kycOverdue={isKycOverdue}
+            kycOverdue={props.kycOverdue}
             messages={{
                 title: fm(messages.withdrawTitle),
                 inputLabel: fm(messages.withdrawInputLabel),
