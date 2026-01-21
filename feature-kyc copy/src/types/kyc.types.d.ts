@@ -1,9 +1,8 @@
 import { DefaultInitializerType } from "@opr-finance/utils";
 export declare enum E_KycActionConstants {
     KYC_INITIALIZEER = "KYC_INITIALIZEER",
-    KYC_FETCH_CREDIT_SAFE_REPORT_TRIGGER = "KYC/FETCH_COMPANY_TRIGGER",
-    KYC_FETCH_CREDIT_SAFE_REPORT_SUCCESS = "KYC/FETCH_COMPANY_SUCCESS",
     UPDATE_KYC_STATE = "UPDATE_KYC_STATE",
+    RETURNED_FROM_KYC = "RETURNED_FROM_KYC",
     KYC_SHOW_MODAL = "KYC/SHOW_MODAL",
     KYC_HIDE_MODAL = "KYC/HIDE_MODAL",
     KYC_START_FLOW_TRIGGER = "KYC/START_FLOW_TRIGGER",
@@ -27,13 +26,11 @@ export type T_KycInitializerPayload = {
     cid: string;
 };
 export type T_KycReducerState = {
-    kycStatus: T_KycStatus;
+    kycStatus: T_KycState;
     config: T_Config;
     showModal: boolean;
     isLoading: boolean;
-};
-export type T_KycStatus = T_KycState & {
-    isCsReportReady: boolean;
+    returnedFromKyc: boolean;
 };
 export type T_KycState = {
     kycDone: boolean;
@@ -46,9 +43,6 @@ export type T_FeatureKycState = {
 export type T_CountryProductId = "finland-flex-online" | "sweden-flex-online";
 export type T_CreditSafeRequest = T_KycPayload & DefaultInitializerType & {
     cid: T_CountryProductId;
-};
-export type T_KycCreditSafeReportPayload = {
-    isCsReportReady: boolean;
 };
 export type T_KycStartFlowPayload = {
     applicationId: string;

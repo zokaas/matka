@@ -1,9 +1,43 @@
 import { E_KycActionConstants } from "../types";
 import { kycActions } from "../actions";
 import { ActionType } from "typesafe-actions";
-export declare function watchKycTrigger(): Generator<import("redux-saga/effects").ForkEffect<never>, void, unknown>;
+import { T_LoginSessionReducerState } from "@opr-finance/feature-login-session";
 export declare function watchKycStartFlowTrigger(): Generator<import("redux-saga/effects").ForkEffect<never>, void, unknown>;
-export declare function handleKycTrigger(action: ActionType<typeof kycActions.kycFetchCreditSafeReportTrigger>): Generator<import("redux-saga/effects").SelectEffect | import("redux-saga/effects").CallEffect<string> | import("redux-saga/effects").PutEffect<import("typesafe-actions").PayloadAction<import("@opr-finance/feature-sme-customer/src/types").E_CompanyActionConstants.GET_COMPANY_INFO_TRIGGER, {
+export declare function handleKycStartFlow(action: ActionType<typeof kycActions.kycStartFlowTrigger>): Generator<import("redux-saga/effects").SelectEffect | import("redux-saga/effects").CallEffect<string> | import("redux-saga/effects").PutEffect<import("typesafe-actions").PayloadAction<import("@opr-finance/feature-sme-customer/src/types").E_CompanyActionConstants.GET_COMPANY_INFO_TRIGGER, {
     smeId: string;
-}>> | import("redux-saga/effects").TakeEffect | import("redux-saga/effects").PutEffect<import("typesafe-actions").PayloadAction<E_KycActionConstants.KYC_FETCH_CREDIT_SAFE_REPORT_SUCCESS, import("../types").T_KycCreditSafeReportPayload>>, void, any>;
-export declare function handleKycStartFlow(action: ActionType<typeof kycActions.kycStartFlowTrigger>): Generator<any, void, any>;
+}>> | import("redux-saga/effects").TakeEffect | import("redux-saga/effects").CallEffect<void> | import("redux-saga/effects").PutEffect<import("typesafe-actions").EmptyAction<E_KycActionConstants.KYC_START_FLOW_SUCCESS>>, void, {
+    id?: string;
+    organizationNumber: string;
+    organizationCountryCode: string;
+    companyName: string;
+    companyType?: string;
+    externalReference?: string;
+    officialAddress?: import("packages/api-definitions/src").components["schemas"]["AddressForSMEV2"];
+    createDate?: string;
+    updateDate?: string;
+    phone?: string;
+    email?: string;
+    web?: string;
+    signatoriesText?: string;
+    businessTypeCode?: string;
+    businessTypeDescription?: string;
+    taxClassification?: string;
+    VAT?: boolean;
+    VATId?: string;
+    LEI?: string;
+    employeeCount?: number;
+    parentCompanyOrgNumber?: string;
+    parentCompanyCountryCode?: string;
+    groupMotherOrgNumber?: string;
+    groupMotherCountryCode?: string;
+    incorporationDate?: string;
+    companyStatus?: "ACTIVE";
+    riskClass?: "LOW" | "NORMAL" | "HIGH";
+    riskClassComment?: string;
+    signatories?: import("packages/api-definitions/src").components["schemas"]["SignatoriesV2"];
+    dynamicFields?: import("packages/api-definitions/src").components["schemas"]["VPDynamicFields"];
+    dynamicFieldsRef?: string;
+    schemaMetadata?: import("packages/api-definitions/src").components["schemas"]["ViljaSchemaMetadata"];
+} & {
+    dynamicFields: import("packages/feature-sme-customer/src/types/company").T_CompanyDynamicFields;
+} & T_LoginSessionReducerState>;

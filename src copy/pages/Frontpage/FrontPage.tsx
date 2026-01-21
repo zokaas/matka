@@ -6,12 +6,7 @@ import { Redirect, useLocation } from "react-router-dom";
 import { StyledGrid } from "@opr-finance/component-grid";
 import { StyledPageTitle } from "@opr-finance/component-content";
 import { Image } from "@opr-finance/component-image";
-import {
-    FrontPageStyles,
-    ButtonStyles,
-    ModalStyles,
-    FontsStyles,
-} from "@opr-finance/theme-flex-online";
+import { FrontPageStyles } from "@opr-finance/theme-flex-online";
 import { add, remove } from "@opr-finance/utils";
 import { Scroll } from "@opr-finance/component-scroll";
 import { Font } from "@opr-finance/component-fonts";
@@ -33,15 +28,7 @@ import { NewsBlock } from "../../components/NewsBlock/NewsBlock";
 import { WithdrawBlock } from "../../components/WithdrawBlock/WithdrawBlock";
 import { CollectionBlock } from "../../components/CollectionBlock";
 import { smeDocumentActions } from "@opr-finance/feature-document";
-import { KycModal } from "../../components/KycModal";
-import {
-    onComponentMounted,
-    checkKycStatus,
-    dismissKycModal,
-    shouldBlockWithdrawal,
-    shouldShowKycModal,
-} from "../../utils";
-import { kycFlow } from "../../types/kyc";
+import { onComponentMounted, shouldBlockWithdrawal } from "../../utils";
 
 type LocationState = {
     component: string;
@@ -75,13 +62,7 @@ export function FrontPage(props: FrontPageProps) {
     const unpaidAmount = useSelector(selectUnpaidAmount);
 
     const kycState = useSelector((state: AppState) => state.kyc.kycStatus);
-    const showKycModal = useSelector((state: AppState) => state.kyc.showModal);
-    const isKycLoading = useSelector((state: AppState) => state.kyc.isLoading);
-    const kycStatus = checkKycStatus(kycState);
-
-    const smeId = useSelector((state: AppState) => state.customer.engagement.activeSmeId) ?? "";
-    const applicationId = useSelector(selectAccountApplicationId) ?? "";
-    const companyId = useSelector(selectCompanyId);
+    const isWithdrawalBlocked = shouldBlockWithdrawal(kycState);
 
     const [applicationData, setApplicationData] = useState<{ withdrawnAmount: string }>({
         withdrawnAmount: "0",
@@ -92,17 +73,9 @@ export function FrontPage(props: FrontPageProps) {
         return defaultValids;
     });
 
-    const isWithdrawalBlocked = shouldBlockWithdrawal(kycState);
-
     useEffect(() => {
         onComponentMounted(boardMemberId);
     }, []);
-
-    useEffect(() => {
-        if (kycStatus && shouldShowKycModal(kycStatus)) {
-            dispatch(kycActions.showModal());
-        }
-    }, [kycState.kycDone]);
 
     function handleChange(isValid, formName, form) {
         if (isValid) {
@@ -126,22 +99,6 @@ export function FrontPage(props: FrontPageProps) {
                 documentId: defaultPromissoryNoteId,
             })
         );
-    };
-
-    const handleStartKyc = () => {
-        dispatch(
-            kycActions.kycStartFlowTrigger({
-                applicationId,
-                smeId,
-                companyId,
-                flow: kycFlow.EXISTING_CUSTOMER,
-            })
-        );
-    };
-
-    const handleCloseModal = () => {
-        dismissKycModal();
-        dispatch(kycActions.hideModal());
     };
 
     if (!authenticated && !logoutInProgress) {
@@ -182,31 +139,6 @@ export function FrontPage(props: FrontPageProps) {
                 styleConfig={{
                     pageTitleContainer: props.styleConfig.titleBox,
                     pageTitleText: props.styleConfig.pageTitle,
-                }}
-            />
-
-            <KycModal
-                isOpen={showKycModal}
-                kycStatus={kycStatus}
-                isLoading={isKycLoading}
-                onClose={handleCloseModal}
-                onStartKyc={handleStartKyc}
-                styleConfig={{
-                    modalCloseIcon: ModalStyles.modalCloseIcon(),
-                    modalOverlay: ModalStyles.modalOverlay(),
-                    modalContent: ModalStyles.modalContentScroll({ height: ["fit-content"] }),
-                    modalTitle: ModalStyles.modalTitle(),
-                    titleText: ModalStyles.titleText(),
-                    contentText: FontsStyles.fontContentText(),
-                    dateText: {
-                        ...FontsStyles.fontContentText(),
-                        marginTop: "16px",
-                        fontWeight: "bold",
-                    },
-                    buttonContainer: FrontPageStyles.creditRaiseInfoColumn(),
-                    primaryButton: ButtonStyles.greenButtonStyles({ width: "100%" }),
-                    secondaryButton: ButtonStyles.grayButtonStyles({ width: "100%" }),
-                    buttonText: ButtonStyles.buttonFontStyles(),
                 }}
             />
 

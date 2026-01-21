@@ -5,7 +5,6 @@ import { T_KycAction, kycActions } from "../actions";
 
 const initialState: T_KycReducerState = {
     kycStatus: {
-        isCsReportReady: false,
         kycDone: false,
         kycUpdatedDate: "",
         kycDueDate: "",
@@ -18,6 +17,7 @@ const initialState: T_KycReducerState = {
     },
     showModal: false,
     isLoading: false,
+    returnedFromKyc: false,
 };
 
 export const kycReducer = createReducer<T_KycReducerState, T_KycAction>(initialState)
@@ -29,22 +29,16 @@ export const kycReducer = createReducer<T_KycReducerState, T_KycAction>(initialS
             draftState.config.cid = action.payload.cid;
         });
     })
-    .handleAction(kycActions.kycFetchCreditSafeReportTrigger, (state) => {
-        return produce(state, (draftState) => {
-            draftState.isLoading = true;
-        });
-    })
-    .handleAction(kycActions.kycFetchCreditSafeReportSuccess, (state, action) => {
-        return produce(state, (draftState) => {
-            draftState.kycStatus.isCsReportReady = action.payload.isCsReportReady ?? false;
-            draftState.isLoading = false;
-        });
-    })
     .handleAction(kycActions.updateKycState, (state, action) => {
         return produce(state, (draftState) => {
             draftState.kycStatus.kycDone = action.payload.kycDone ?? false;
             draftState.kycStatus.kycUpdatedDate = action.payload.kycUpdatedDate ?? "";
             draftState.kycStatus.kycDueDate = action.payload.kycDueDate ?? "";
+        });
+    })
+    .handleAction(kycActions.updateReturnedFromKycState, (state, action) => {
+        return produce(state, (draftState) => {
+            draftState.returnedFromKyc = action.payload.returnedFromKyc ?? false;
         });
     })
     .handleAction(kycActions.showModal, (state) => {

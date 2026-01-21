@@ -5,7 +5,7 @@ import { kycActions } from "@opr-finance/feature-kyc";
 
 import { Notice } from "../Notice";
 import { AppState } from "../../types/general";
-import { checkKycStatus, clearKycModalDismissal } from "../../utils";
+import { checkKycStatus } from "../../utils";
 import { ButtonStyles, KycNoticeStyles } from "@opr-finance/theme-flex-online";
 import { StyledButton } from "@opr-finance/component-button/src/Button";
 import { Font } from "@opr-finance/component-fonts/src/Font";
@@ -16,7 +16,7 @@ export const KycNotice: React.FC = () => {
     const { formatMessage: fm } = useIntl();
     const dispatch = useDispatch();
 
-    const kycState = useSelector((state: AppState) => state.kyc.kycStatus);
+    const kycState = useSelector((state: AppState) => state.kyc);
     const authenticated = useSelector((state: AppState) => state.session.authenticated);
 
     const kycStatus = checkKycStatus(kycState);
@@ -30,7 +30,6 @@ export const KycNotice: React.FC = () => {
     if (!shouldShow) return null;
 
     const handleOpenModal = () => {
-        clearKycModalDismissal();
         dispatch(kycActions.showModal());
     };
 
@@ -44,10 +43,24 @@ export const KycNotice: React.FC = () => {
     };
 
     return (
-        <StyledGrid styleConfig={{ root: { cursor: "pointer" } }}>
+        <StyledGrid
+            styleConfig={{
+                root: {
+                    width: "100%",
+                    display: "flex",
+                    justifyContent: "center",
+                },
+            }}>
             <button
                 onClick={handleOpenModal}
-                style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}>
+                style={{
+                    background: "none",
+                    border: "none",
+                    padding: 0,
+                    cursor: "pointer",
+                    width: "100%",
+                    maxWidth: "1200px",
+                }}>
                 <Notice
                     notice={noticeText}
                     styleConfig={{

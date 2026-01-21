@@ -62,7 +62,7 @@ import { ThankYouPage } from "./pages/ThankYouPage/ThankYouPage";
 import { KycCompletedPage } from "./pages/KycCompletedPage/KycCompletedPage";
 import { StyledGrid } from "@opr-finance/component-grid";
 import { KycNotice } from "./components/KycNotice/KycNotice";
-import { checkKycStatus, dismissKycModal, shouldShowKycModal } from "./utils";
+import { checkKycStatus, dismissKycModal } from "./utils";
 import { selectAccountApplicationId, selectCompanyId } from "./selectors";
 import { kycActions, kycFlow } from "@opr-finance/feature-kyc";
 import { KycModal } from "./components/KycModal";
@@ -100,7 +100,7 @@ const App: React.FC = () => {
     const [isMorePageVisible, setIsMorePageVisible] = useState(false);
     const authenticated = useSelector((state: AppState) => state.session.authenticated);
 
-    const kycState = useSelector((state: AppState) => state.kyc.kycStatus);
+    const kycState = useSelector((state: AppState) => state.kyc);
     const showKycModal = useSelector((state: AppState) => state.kyc.showModal);
     const isKycLoading = useSelector((state: AppState) => state.kyc.isLoading);
     const smeId = useSelector((state: AppState) => state.customer.engagement.activeSmeId) ?? "";
@@ -201,13 +201,18 @@ const App: React.FC = () => {
         }
     }, [sessionTimerExpired, isUserActive]);
 
-        useEffect(() => {
-            if (kycStatus && shouldShowKycModal(kycStatus)) {
-                dispatch(kycActions.showModal());
-            }
-        }, [kycState.kycDone]);
+    const kycEnabledPages = [
+        E_Routes.FRONT,
+        E_Routes.LOAN,
+        E_Routes.TOPUP,
+        E_Routes.USER,
+        E_Routes.CONTACT,
+    ];
+
+    const shouldShowKycNotice = kycEnabledPages.some((path) => location.pathname === path);
 
     const handleStartKyc = () => {
+        dismissKycModal();
         dispatch(
             kycActions.kycStartFlowTrigger({
                 applicationId,
@@ -339,7 +344,7 @@ const App: React.FC = () => {
                     optionLogout: fm(sessionModalMessages.sessionModalButtonLogout),
                 }}
             />
-            {authenticated && (
+            {authenticated && shouldShowKycNotice && (
                 <KycModal
                     isOpen={showKycModal}
                     kycStatus={kycStatus}
@@ -440,7 +445,7 @@ const App: React.FC = () => {
                     bodyBackgroundColor: "#f1faff",
                 }}>
                 <StyledGrid styleConfig={{ root: FrontPageStyles.frontPageRootStyles() }}>
-                    {authenticated && <KycNotice />}
+                    {authenticated && shouldShowKycNotice && <KycNotice />}
                     <Switch>
                         <Route
                             path={E_Routes.ROOT}

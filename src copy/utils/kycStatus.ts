@@ -1,18 +1,20 @@
 import { differenceInDays, parseISO } from "date-fns";
 import { T_KycState } from "../types/kyc";
 import { KycStatusResult } from "../components/KycModal/types";
+import { T_KycReducerState } from "@opr-finance/feature-kyc";
 
 export const KYC_MODAL_DISMISS_KEY = "kycModalDismissed";
 export const KYC_WARNING_DAYS = 14;
 
 const getKycDeadlineDate = (): string | null => {
-    return process.env.REACT_APP_KYC_DEADLINE_DATE || "2026-01-30";
+    return process.env.REACT_APP_KYC_DEADLINE_DATE || "2026-01-30"; // Hardcoded fallback
 };
 
-export const checkKycStatus = (kycState: T_KycState): KycStatusResult => {
-    const dueDateString = kycState.kycDueDate || getKycDeadlineDate();
+export const checkKycStatus = (kyc: T_KycReducerState): KycStatusResult => {
+    const dueDateString = kyc.kycStatus.kycDueDate || getKycDeadlineDate();
+    const returnedFromKyc = kyc.returnedFromKyc;
 
-    if (!dueDateString) {
+    if (!dueDateString || returnedFromKyc) {
         return { isOverdue: false, daysRemaining: null };
     }
 

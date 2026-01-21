@@ -24,7 +24,8 @@ import { loginSessionActions } from "@opr-finance/feature-login-session";
 import { T_CompanyApiResponse } from "@opr-finance/feature-sme-customer/src/types";
 import { DEFAULT_KYC_STATE } from "../constants/general";
 import { restoreSession } from "./applicationPage";
-import { kycActions, T_KycState } from "@opr-finance/feature-kyc";
+import { kycActions, T_KycReducerState, T_KycState } from "@opr-finance/feature-kyc";
+import { checkKycStatus, shouldShowKycModal } from "../utils";
 
 const logger = new ConsoleLogger({ level: LOG_LEVEL });
 
@@ -125,13 +126,20 @@ export function* handleFrontPageTrigger() {
 
             yield all([call(getInvoiceData), call(getTransactionsData)]);
 
-            const kyc: T_KycState = yield select((state: AppState) => state.kyc.kycStatus);
+            const kyc: T_KycReducerState = yield select((state: AppState) => state.kyc);
 
-            // Update SME kyc status from dynamic fields
-            if (!kyc.kycDone) {
+            if (kyc.returnedFromKyc) {
+                logger.log("KYC already done in Redux, skipping modal check");
+            } else {
                 const kycState: T_KycState = yield call(getKycState);
                 logger.log("KYC state", kycState);
                 yield put(kycActions.updateKycState(kycState));
+
+                const kycStatusResult = checkKycStatus(kyc);
+                if (shouldShowKycModal(kycStatusResult)) {
+                    logger.log("Showing KYC modal from saga");
+                    yield put(kycActions.showModal());
+                }
             }
 
             yield put(appActions.frontPageSuccess());
@@ -150,12 +158,14 @@ function* getKycState() {
     );
 
     const kyc = company.dynamicFields?.kyc;
-
     const kycStatus = yield select((state: AppState) => state.kyc.kycStatus);
 
     if (!kyc) {
-        logger.warn("No KYC dynamic fields found");
-        return DEFAULT_KYC_STATE;
+        logger.warn("No KYC dynamic fields found, using defaults with fallback date");
+        return {
+            ...DEFAULT_KYC_STATE,
+            kycDueDate: process.env.REACT_APP_KYC_DEADLINE_DATE || "2026-01-30",
+        };
     }
 
     logger.log("kyc found in application Dynamic Fields : ", kyc);
@@ -163,7 +173,7 @@ function* getKycState() {
         ...kycStatus,
         kycDone: Boolean(kyc.kycDone),
         kycUpdatedDate: kyc.kycUpdatedDate ?? "",
-        kycDueDate: kyc.kycDueDate ?? "",
+        kycDueDate: kyc.kycDueDate || process.env.REACT_APP_KYC_DEADLINE_DATE || "2026-01-30",
     };
 
     logger.log("KYC from application", kycState);

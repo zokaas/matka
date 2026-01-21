@@ -199,7 +199,7 @@ function* handleBrokerApplicationKyc() {
         logger.error("Missing parameters needed for KYC redirect", {
             organizationNumber,
             companyName,
-            applicationId
+            applicationId,
         });
         history.push(E_Routes.ERROR);
         throw new StopApplicationFlow(); // stop parent saga
