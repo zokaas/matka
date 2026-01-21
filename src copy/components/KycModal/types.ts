@@ -10,6 +10,7 @@ export type KycModalProps = {
     isOpen: boolean;
     kycStatus: KycStatusResult;
     kycDueDate?: string;
+    isLoading?: boolean;
     onClose: () => void;
     onStartKyc: () => void;
     styleConfig: {

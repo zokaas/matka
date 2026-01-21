@@ -17,6 +17,8 @@ const initialState = {
         mock: false,
         cid: "",
     },
+    showModal: false,
+    isLoading: false,
 };
 exports.kycReducer = (0, typesafe_actions_1.createReducer)(initialState)
     .handleAction(actions_1.kycActions.kycInitializer, (state, action) => {
@@ -27,20 +29,45 @@ exports.kycReducer = (0, typesafe_actions_1.createReducer)(initialState)
         draftState.config.cid = action.payload.cid;
     });
 })
-    .handleAction(actions_1.kycActions.kycFetchCreditSafeReportTrigger, (state, action) => {
-    return (0, immer_1.produce)(state, (draftState) => { });
+    .handleAction(actions_1.kycActions.kycFetchCreditSafeReportTrigger, (state) => {
+    return (0, immer_1.produce)(state, (draftState) => {
+        draftState.isLoading = true;
+    });
 })
     .handleAction(actions_1.kycActions.kycFetchCreditSafeReportSuccess, (state, action) => {
     return (0, immer_1.produce)(state, (draftState) => {
         var _a;
         draftState.kycStatus.isCsReportReady = (_a = action.payload.isCsReportReady) !== null && _a !== void 0 ? _a : false;
+        draftState.isLoading = false;
     });
 })
     .handleAction(actions_1.kycActions.updateKycState, (state, action) => {
     return (0, immer_1.produce)(state, (draftState) => {
-        var _a, _b;
+        var _a, _b, _c;
         draftState.kycStatus.kycDone = (_a = action.payload.kycDone) !== null && _a !== void 0 ? _a : false;
         draftState.kycStatus.kycUpdatedDate = (_b = action.payload.kycUpdatedDate) !== null && _b !== void 0 ? _b : "";
+        draftState.kycStatus.kycDueDate = (_c = action.payload.kycDueDate) !== null && _c !== void 0 ? _c : "";
+    });
+})
+    .handleAction(actions_1.kycActions.showModal, (state) => {
+    return (0, immer_1.produce)(state, (draftState) => {
+        draftState.showModal = true;
+    });
+})
+    .handleAction(actions_1.kycActions.hideModal, (state) => {
+    return (0, immer_1.produce)(state, (draftState) => {
+        draftState.showModal = false;
+    });
+})
+    .handleAction(actions_1.kycActions.kycStartFlowTrigger, (state) => {
+    return (0, immer_1.produce)(state, (draftState) => {
+        draftState.isLoading = true;
+    });
+})
+    .handleAction(actions_1.kycActions.kycStartFlowSuccess, (state) => {
+    return (0, immer_1.produce)(state, (draftState) => {
+        draftState.isLoading = false;
+        draftState.showModal = false;
     });
 });
 //# sourceMappingURL=kyc.reducer.js.map

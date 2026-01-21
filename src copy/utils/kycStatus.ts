@@ -6,7 +6,7 @@ export const KYC_MODAL_DISMISS_KEY = "kycModalDismissed";
 export const KYC_WARNING_DAYS = 14;
 
 const getKycDeadlineDate = (): string | null => {
-    return process.env.REACT_APP_KYC_DEADLINE_DATE || "2026-01-30";
+    return "2026-12-31";
 };
 
 export const checkKycStatus = (kycState: T_KycState): KycStatusResult => {

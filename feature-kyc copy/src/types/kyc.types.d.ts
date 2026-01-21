@@ -3,7 +3,11 @@ export declare enum E_KycActionConstants {
     KYC_INITIALIZEER = "KYC_INITIALIZEER",
     KYC_FETCH_CREDIT_SAFE_REPORT_TRIGGER = "KYC/FETCH_COMPANY_TRIGGER",
     KYC_FETCH_CREDIT_SAFE_REPORT_SUCCESS = "KYC/FETCH_COMPANY_SUCCESS",
-    UPDATE_KYC_STATE = "UPDATE_KYC_STATE"
+    UPDATE_KYC_STATE = "UPDATE_KYC_STATE",
+    KYC_SHOW_MODAL = "KYC/SHOW_MODAL",
+    KYC_HIDE_MODAL = "KYC/HIDE_MODAL",
+    KYC_START_FLOW_TRIGGER = "KYC/START_FLOW_TRIGGER",
+    KYC_START_FLOW_SUCCESS = "KYC/START_FLOW_SUCCESS"
 }
 export type T_Config = {
     token: string | null;
@@ -25,6 +29,8 @@ export type T_KycInitializerPayload = {
 export type T_KycReducerState = {
     kycStatus: T_KycStatus;
     config: T_Config;
+    showModal: boolean;
+    isLoading: boolean;
 };
 export type T_KycStatus = T_KycState & {
     isCsReportReady: boolean;
@@ -44,3 +50,14 @@ export type T_CreditSafeRequest = T_KycPayload & DefaultInitializerType & {
 export type T_KycCreditSafeReportPayload = {
     isCsReportReady: boolean;
 };
+export type T_KycStartFlowPayload = {
+    applicationId: string;
+    smeId: string;
+    companyId: string;
+    flow: T_KycFlow;
+};
+export declare const kycFlow: {
+    readonly NEW_CUSTOMER: "new_customer";
+    readonly EXISTING_CUSTOMER: "existing_customer";
+};
+export type T_KycFlow = (typeof kycFlow)[keyof typeof kycFlow];
