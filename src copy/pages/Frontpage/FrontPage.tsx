@@ -61,8 +61,8 @@ export function FrontPage(props: FrontPageProps) {
 
     const unpaidAmount = useSelector(selectUnpaidAmount);
 
-    const kycState = useSelector((state: AppState) => state.kyc.kycStatus);
-    const isWithdrawalBlocked = shouldBlockWithdrawal(kycState);
+    const kyc = useSelector((state: AppState) => state.kyc);
+    const isWithdrawalBlocked = shouldBlockWithdrawal(kyc);
 
     const [applicationData, setApplicationData] = useState<{ withdrawnAmount: string }>({
         withdrawnAmount: "0",

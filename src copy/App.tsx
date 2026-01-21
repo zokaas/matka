@@ -61,11 +61,10 @@ import { ApplicationPage } from "./pages/ApplicationPage/ApplicationPage";
 import { ThankYouPage } from "./pages/ThankYouPage/ThankYouPage";
 import { KycCompletedPage } from "./pages/KycCompletedPage/KycCompletedPage";
 import { StyledGrid } from "@opr-finance/component-grid";
-import { KycNotice } from "./components/KycNotice/KycNotice";
-import { checkKycStatus, dismissKycModal } from "./utils";
 import { selectAccountApplicationId, selectCompanyId } from "./selectors";
 import { kycActions, kycFlow } from "@opr-finance/feature-kyc";
 import { KycModal } from "./components/KycModal";
+import { checkKycStatus, dismissKycModal } from "./utils";
 
 iconLibrary.initFlexOnline();
 
@@ -209,7 +208,7 @@ const App: React.FC = () => {
         E_Routes.CONTACT,
     ];
 
-    const shouldShowKycNotice = kycEnabledPages.some((path) => location.pathname === path);
+    const isKycEnabledPage = kycEnabledPages.some((path) => location.pathname === path);
 
     const handleStartKyc = () => {
         dismissKycModal();
@@ -344,7 +343,7 @@ const App: React.FC = () => {
                     optionLogout: fm(sessionModalMessages.sessionModalButtonLogout),
                 }}
             />
-            {authenticated && shouldShowKycNotice && (
+            {authenticated && isKycEnabledPage && (
                 <KycModal
                     isOpen={showKycModal}
                     kycStatus={kycStatus}
@@ -445,7 +444,6 @@ const App: React.FC = () => {
                     bodyBackgroundColor: "#f1faff",
                 }}>
                 <StyledGrid styleConfig={{ root: FrontPageStyles.frontPageRootStyles() }}>
-                    {authenticated && shouldShowKycNotice && <KycNotice />}
                     <Switch>
                         <Route
                             path={E_Routes.ROOT}

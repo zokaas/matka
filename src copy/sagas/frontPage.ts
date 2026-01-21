@@ -131,14 +131,23 @@ export function* handleFrontPageTrigger() {
             if (kyc.returnedFromKyc) {
                 logger.log("KYC already done in Redux, skipping modal check");
             } else {
-                const kycState: T_KycState = yield call(getKycState);
-                logger.log("KYC state", kycState);
-                yield put(kycActions.updateKycState(kycState));
+                const kyc: T_KycReducerState = yield select((state: AppState) => state.kyc);
 
-                const kycStatusResult = checkKycStatus(kyc);
-                if (shouldShowKycModal(kycStatusResult)) {
-                    logger.log("Showing KYC modal from saga");
-                    yield put(kycActions.showModal());
+                if (kyc.returnedFromKyc) {
+                    logger.log("KYC already done in Redux, skipping modal check");
+                } else {
+                    const kycState: T_KycState = yield call(getKycState);
+                    logger.log("KYC state", kycState);
+                    yield put(kycActions.updateKycState(kycState));
+
+                    const updatedKyc: T_KycReducerState = yield select(
+                        (state: AppState) => state.kyc
+                    );
+                    const kycStatusResult = checkKycStatus(updatedKyc);
+                    if (shouldShowKycModal(kycStatusResult)) {
+                        logger.log("Showing KYC modal from saga");
+                        yield put(kycActions.showModal());
+                    }
                 }
             }
 

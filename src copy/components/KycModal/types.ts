@@ -1,14 +1,14 @@
 import { SystemStyleObject } from "@styled-system/css";
 
-export type KycStatusResult = {
+export type T_KycStatusResult = {
     isOverdue: boolean;
     daysRemaining: number | null;
     effectiveDueDate?: string;
 };
 
-export type KycModalProps = {
+export type T_KycModalProps = {
     isOpen: boolean;
-    kycStatus: KycStatusResult;
+    kycStatus: T_KycStatusResult;
     kycDueDate?: string;
     isLoading?: boolean;
     onClose: () => void;

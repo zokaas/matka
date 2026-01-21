@@ -17,17 +17,22 @@ export const KycNotice: React.FC = () => {
     const dispatch = useDispatch();
 
     const kycState = useSelector((state: AppState) => state.kyc);
-    const authenticated = useSelector((state: AppState) => state.session.authenticated);
 
-    const kycStatus = checkKycStatus(kycState);
-    if (!authenticated || !kycStatus) {
+    if (!kycState.config.bffUrl) {
         return null;
     }
 
+    if (kycState.returnedFromKyc) {
+        return null;
+    }
+
+    const kycStatus = checkKycStatus(kycState);
     const { isOverdue, daysRemaining } = kycStatus;
     const shouldShow = isOverdue || (daysRemaining !== null && daysRemaining <= 14);
 
-    if (!shouldShow) return null;
+    if (!shouldShow) {
+        return null;
+    }
 
     const handleOpenModal = () => {
         dispatch(kycActions.showModal());

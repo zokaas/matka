@@ -10,10 +10,10 @@ import { StyledButton } from "@opr-finance/component-button";
 import { Icon } from "@opr-finance/component-icon";
 import { Loader } from "@opr-finance/component-loader";
 
-import { KycModalProps } from "./types";
+import { T_KycModalProps } from "./types";
 import { messages } from "./messages";
 
-export const KycModal: React.FC<KycModalProps> = ({
+export const KycModal: React.FC<T_KycModalProps> = ({
     isOpen,
     kycStatus,
     kycDueDate,

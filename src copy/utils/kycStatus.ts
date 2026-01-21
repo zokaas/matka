@@ -1,16 +1,15 @@
 import { differenceInDays, parseISO } from "date-fns";
-import { T_KycState } from "../types/kyc";
-import { KycStatusResult } from "../components/KycModal/types";
+import { T_KycStatusResult } from "../components/KycModal/types";
 import { T_KycReducerState } from "@opr-finance/feature-kyc";
 
 export const KYC_MODAL_DISMISS_KEY = "kycModalDismissed";
 export const KYC_WARNING_DAYS = 14;
 
 const getKycDeadlineDate = (): string | null => {
-    return process.env.REACT_APP_KYC_DEADLINE_DATE || "2026-01-30"; // Hardcoded fallback
+    return process.env.REACT_APP_KYC_DEADLINE_DATE || "2026-01-30";
 };
 
-export const checkKycStatus = (kyc: T_KycReducerState): KycStatusResult => {
+export const checkKycStatus = (kyc: T_KycReducerState): T_KycStatusResult => {
     const dueDateString = kyc.kycStatus.kycDueDate || getKycDeadlineDate();
     const returnedFromKyc = kyc.returnedFromKyc;
 
@@ -28,8 +27,10 @@ export const checkKycStatus = (kyc: T_KycReducerState): KycStatusResult => {
     };
 };
 
-export const shouldBlockWithdrawal = (kycState: T_KycState): boolean => {
-    const dueDateString = kycState.kycDueDate || getKycDeadlineDate();
+export const shouldBlockWithdrawal = (kyc: T_KycReducerState): boolean => {
+    if (kyc.returnedFromKyc) return false;
+
+    const dueDateString = kyc.kycStatus.kycDueDate || getKycDeadlineDate();
     if (!dueDateString) return false;
 
     try {
@@ -39,7 +40,7 @@ export const shouldBlockWithdrawal = (kycState: T_KycState): boolean => {
     }
 };
 
-export const shouldShowKycModal = (kycStatus: KycStatusResult): boolean => {
+export const shouldShowKycModal = (kycStatus: T_KycStatusResult): boolean => {
     if (sessionStorage.getItem(KYC_MODAL_DISMISS_KEY) === "true") return false;
 
     return (
