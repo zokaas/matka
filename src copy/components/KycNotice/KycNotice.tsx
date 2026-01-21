@@ -20,7 +20,7 @@ export const KycNotice: React.FC = () => {
     const authenticated = useSelector((state: AppState) => state.session.authenticated);
 
     const kycStatus = checkKycStatus(kycState);
-    if (!authenticated || kycState.kycDone || !kycStatus) {
+    if (!authenticated || !kycStatus) {
         return null;
     }
 

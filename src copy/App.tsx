@@ -60,8 +60,12 @@ import {
 import { ApplicationPage } from "./pages/ApplicationPage/ApplicationPage";
 import { ThankYouPage } from "./pages/ThankYouPage/ThankYouPage";
 import { KycCompletedPage } from "./pages/KycCompletedPage/KycCompletedPage";
-import { KycNotice } from "./components/KycNotice/KycNotice";
 import { StyledGrid } from "@opr-finance/component-grid";
+import { KycNotice } from "./components/KycNotice/KycNotice";
+import { checkKycStatus, dismissKycModal, shouldShowKycModal } from "./utils";
+import { selectAccountApplicationId, selectCompanyId } from "./selectors";
+import { kycActions, kycFlow } from "@opr-finance/feature-kyc";
+import { KycModal } from "./components/KycModal";
 
 iconLibrary.initFlexOnline();
 
@@ -95,6 +99,15 @@ const App: React.FC = () => {
 
     const [isMorePageVisible, setIsMorePageVisible] = useState(false);
     const authenticated = useSelector((state: AppState) => state.session.authenticated);
+
+    const kycState = useSelector((state: AppState) => state.kyc.kycStatus);
+    const showKycModal = useSelector((state: AppState) => state.kyc.showModal);
+    const isKycLoading = useSelector((state: AppState) => state.kyc.isLoading);
+    const smeId = useSelector((state: AppState) => state.customer.engagement.activeSmeId) ?? "";
+    const applicationId = useSelector(selectAccountApplicationId) ?? "";
+    const companyId = useSelector(selectCompanyId);
+
+    const kycStatus = checkKycStatus(kycState);
 
     const boardMemberId = useSelector((state: AppState) => {
         return state.customer?.companyInfo?.boardmembers
@@ -188,6 +201,28 @@ const App: React.FC = () => {
         }
     }, [sessionTimerExpired, isUserActive]);
 
+        useEffect(() => {
+            if (kycStatus && shouldShowKycModal(kycStatus)) {
+                dispatch(kycActions.showModal());
+            }
+        }, [kycState.kycDone]);
+
+    const handleStartKyc = () => {
+        dispatch(
+            kycActions.kycStartFlowTrigger({
+                applicationId,
+                smeId,
+                companyId,
+                flow: kycFlow.EXISTING_CUSTOMER,
+            })
+        );
+    };
+
+    const handleCloseKycModal = () => {
+        dismissKycModal();
+        dispatch(kycActions.hideModal());
+    };
+
     if (isLoading) {
         return (
             <AppInitializer
@@ -215,7 +250,6 @@ const App: React.FC = () => {
         E_Routes.LOGOUT,
         E_Routes.THANK_YOU,
     ];
-
     const noNavPagesList = [...baseNoSessionPages, E_Routes.APPLICATION, E_Routes.KYC_COMPLETED];
 
     const noSessionPages = baseNoSessionPages.some((path) => path === window.location.pathname);
@@ -305,6 +339,32 @@ const App: React.FC = () => {
                     optionLogout: fm(sessionModalMessages.sessionModalButtonLogout),
                 }}
             />
+            {authenticated && (
+                <KycModal
+                    isOpen={showKycModal}
+                    kycStatus={kycStatus}
+                    isLoading={isKycLoading}
+                    onClose={handleCloseKycModal}
+                    onStartKyc={handleStartKyc}
+                    styleConfig={{
+                        modalCloseIcon: ModalStyles.modalCloseIcon(),
+                        modalOverlay: ModalStyles.modalOverlay(),
+                        modalContent: ModalStyles.modalContentScroll({ height: ["fit-content"] }),
+                        modalTitle: ModalStyles.modalTitle(),
+                        titleText: ModalStyles.titleText(),
+                        contentText: FontsStyles.fontContentText(),
+                        dateText: {
+                            ...FontsStyles.fontContentText(),
+                            marginTop: "16px",
+                            fontWeight: "bold",
+                        },
+                        buttonContainer: FrontPageStyles.creditRaiseInfoColumn(),
+                        primaryButton: ButtonStyles.greenButtonStyles({ width: "100%" }),
+                        secondaryButton: ButtonStyles.grayButtonStyles({ width: "100%" }),
+                        buttonText: ButtonStyles.buttonFontStyles(),
+                    }}
+                />
+            )}
             <StyledLayout
                 header={
                     <Header
@@ -380,7 +440,7 @@ const App: React.FC = () => {
                     bodyBackgroundColor: "#f1faff",
                 }}>
                 <StyledGrid styleConfig={{ root: FrontPageStyles.frontPageRootStyles() }}>
-                    <KycNotice />
+                    {authenticated && <KycNotice />}
                     <Switch>
                         <Route
                             path={E_Routes.ROOT}

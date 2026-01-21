@@ -195,10 +195,11 @@ function* handleBrokerApplicationKyc() {
     const { organizationNumber, companyName, dynamicFields } = company;
     const applicationId = sessionStorage.getItem("applicationId") ?? "";
 
-    if (!organizationNumber || !companyName || applicationId) {
-        logger.error("Missing org number or company name needed for KYC redirect", {
+    if (!organizationNumber || !companyName || !applicationId) {
+        logger.error("Missing parameters needed for KYC redirect", {
             organizationNumber,
             companyName,
+            applicationId
         });
         history.push(E_Routes.ERROR);
         throw new StopApplicationFlow(); // stop parent saga

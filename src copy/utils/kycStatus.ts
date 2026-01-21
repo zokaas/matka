@@ -6,7 +6,7 @@ export const KYC_MODAL_DISMISS_KEY = "kycModalDismissed";
 export const KYC_WARNING_DAYS = 14;
 
 const getKycDeadlineDate = (): string | null => {
-    return "2026-12-31";
+    return process.env.REACT_APP_KYC_DEADLINE_DATE || "2026-01-30";
 };
 
 export const checkKycStatus = (kycState: T_KycState): KycStatusResult => {
@@ -38,7 +38,7 @@ export const shouldBlockWithdrawal = (kycState: T_KycState): boolean => {
 };
 
 export const shouldShowKycModal = (kycStatus: KycStatusResult): boolean => {
-    if (sessionStorage.getItem(KYC_MODAL_DISMISS_KEY) === "true") return true;
+    if (sessionStorage.getItem(KYC_MODAL_DISMISS_KEY) === "true") return false;
 
     return (
         kycStatus.isOverdue ||

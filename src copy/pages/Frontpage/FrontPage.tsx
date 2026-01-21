@@ -75,9 +75,9 @@ export function FrontPage(props: FrontPageProps) {
     const unpaidAmount = useSelector(selectUnpaidAmount);
 
     const kycState = useSelector((state: AppState) => state.kyc.kycStatus);
-
     const showKycModal = useSelector((state: AppState) => state.kyc.showModal);
     const isKycLoading = useSelector((state: AppState) => state.kyc.isLoading);
+    const kycStatus = checkKycStatus(kycState);
 
     const smeId = useSelector((state: AppState) => state.customer.engagement.activeSmeId) ?? "";
     const applicationId = useSelector(selectAccountApplicationId) ?? "";
@@ -99,11 +99,10 @@ export function FrontPage(props: FrontPageProps) {
     }, []);
 
     useEffect(() => {
-        if (checkKycStatus(kycState)) {
+        if (kycStatus && shouldShowKycModal(kycStatus)) {
             dispatch(kycActions.showModal());
         }
     }, [kycState.kycDone]);
-
 
     function handleChange(isValid, formName, form) {
         if (isValid) {
@@ -188,7 +187,7 @@ export function FrontPage(props: FrontPageProps) {
 
             <KycModal
                 isOpen={showKycModal}
-                kycStatus={checkKycStatus(kycState)}
+                kycStatus={kycStatus}
                 isLoading={isKycLoading}
                 onClose={handleCloseModal}
                 onStartKyc={handleStartKyc}
