@@ -23,6 +23,7 @@ import { InfoAndContactBlock } from "../../components/InfoAndContactBlock/InfoAn
 import { onComponentMounted } from "../../utils";
 import { WithdrawLoanPageBlock } from "../../components/WithdrawLoanPageBlock/WithdrawLoanPageBlock";
 import { ReportingBlock } from "../../components/ReportingBlock/ReportingBlock";
+import { KycNotice } from "../../components/KycNotice/KycNotice";
 
 export function LoanPage(props: LoanPageProps) {
     const logger = new ConsoleLogger({ level: LOG_LEVEL });
@@ -141,6 +142,7 @@ export function LoanPage(props: LoanPageProps) {
 
     return (
         <StyledGrid styleConfig={{ root: LoanPageStyles.loanPageRootStyles() }}>
+            <KycNotice />
             <StyledPageTitle
                 title={fm(messages.pageTitle)}
                 styleConfig={{

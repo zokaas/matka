@@ -1,3 +1,3 @@
 export { KycModal } from "./KycModal";
-export type { KycModalProps, KycStatusResult } from "./types";
+export type { T_KycModalProps, T_KycStatusResult } from "./types";
 export { messages } from "./messages";

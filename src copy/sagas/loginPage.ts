@@ -174,6 +174,7 @@ export function* handleLoginTrigger(action: ActionType<typeof appActions.loginPa
 }
 
 function* handleBrokerApplicationKyc() {
+    //TODO:use feature-kyc daga for this too
     logger.log("Application channel is BROKER — preparing company info");
 
     const newCustomerKycFlow = kycFlow.NEW_CUSTOMER;

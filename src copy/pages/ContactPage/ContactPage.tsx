@@ -13,6 +13,7 @@ import { ContactPageProps } from "./types";
 import { AppState, E_Routes } from "../../types/general";
 import { messages } from "./messages";
 import { onComponentMounted } from "../../utils";
+import { KycNotice } from "../../components/KycNotice/KycNotice";
 
 export function ContactPage(props: ContactPageProps) {
     const { formatMessage: fm } = useIntl();
@@ -34,6 +35,7 @@ export function ContactPage(props: ContactPageProps) {
 
     return (
         <StyledGrid styleConfig={{ root: ContactPageStyles.contactPageRootStyles() }}>
+            <KycNotice />
             <StyledPageTitle
                 title={fm(messages.pageTitle)}
                 styleConfig={{

@@ -18,7 +18,7 @@ export function WithdrawLoanPageBlock(props: T_WithdrawProps) {
     const { formatMessage: fm } = useIntl();
     const account = useSelector((state: AppState) => state.account.account);
     const accountState = useSelector((state: AppState) => state.account.accountState);
-    const kycState = useSelector((state: AppState) => state.kyc.kycStatus);
+    const kyc = useSelector((state: AppState) => state.kyc);
 
     const availableCreditLimit = account?.availableCreditLimit;
     const isIBANRegistered = account?.disbursementAccount?.externalAccountNumber ? true : false;
@@ -27,7 +27,7 @@ export function WithdrawLoanPageBlock(props: T_WithdrawProps) {
     const blockedStatus = account?.blockedStatus ? account.blockedStatus : false;
 
     const [isWithdraw, setIsWithdraw] = useState(false);
-    const isKycOverdue = shouldBlockWithdrawal(kycState);
+    const isKycOverdue = shouldBlockWithdrawal(kyc);
 
     return (
         <StyledWithdraw

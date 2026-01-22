@@ -29,6 +29,7 @@ import { WithdrawBlock } from "../../components/WithdrawBlock/WithdrawBlock";
 import { CollectionBlock } from "../../components/CollectionBlock";
 import { smeDocumentActions } from "@opr-finance/feature-document";
 import { onComponentMounted, shouldBlockWithdrawal } from "../../utils";
+import { KycNotice } from "../../components/KycNotice/KycNotice";
 
 type LocationState = {
     component: string;
@@ -134,6 +135,7 @@ export function FrontPage(props: FrontPageProps) {
 
     return (
         <StyledGrid styleConfig={{ root: FrontPageStyles.frontPageRootStyles() }}>
+            <KycNotice />
             <StyledPageTitle
                 title={fm(messages.frontPageTitle)}
                 styleConfig={{
@@ -141,7 +143,6 @@ export function FrontPage(props: FrontPageProps) {
                     pageTitleText: props.styleConfig.pageTitle,
                 }}
             />
-
             <Scroll to="withdraw-section">
                 <StyledGrid styleConfig={{ root: props.styleConfig.nostoContainer }}>
                     <Image

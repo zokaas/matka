@@ -41,6 +41,7 @@ import { mapApplicationToLfpRequest } from "./mapApplicationToLfpRequest";
 import { paymentsSinceLastTopup } from "../../selectors/paymentsSinceLastTopup";
 import { onComponentMounted } from "../../utils";
 import { topupRules } from "../../constants/rules";
+import { KycNotice } from "../../components/KycNotice/KycNotice";
 
 const isRescoringAllowed = process.env.REACT_APP_IS_RESCORING_ALLOWED === "1" ? true : false;
 
@@ -252,6 +253,7 @@ export function TopupPage(props: TopupPageProps) {
 
     return (
         <StyledGrid styleConfig={{ root: TopupPageStyles.topupPageRootStyles() }}>
+            <KycNotice />
             {isCustomerEligible ? (
                 <StyledGrid styleConfig={{ root: TopupPageStyles.topupPageRootStyles() }}>
                     <StyledPageTitle

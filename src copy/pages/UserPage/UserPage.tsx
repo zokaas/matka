@@ -20,6 +20,7 @@ import { UserPageProps, T_UpdateUserInfoFormData } from "./types";
 import { messages } from "./messages";
 import { AppState, E_Routes } from "../../types/general";
 import { onComponentMounted } from "../../utils";
+import { KycNotice } from "../../components/KycNotice/KycNotice";
 
 export function UserPage(props: UserPageProps) {
     const logger = new ConsoleLogger({ level: LOG_LEVEL });
@@ -167,6 +168,7 @@ export function UserPage(props: UserPageProps) {
 
     return (
         <StyledGrid styleConfig={{ root: UserPageStyles.userPageRootStyles() }}>
+            <KycNotice />
             <StyledPageTitle
                 title={fm(messages.pageTitle)}
                 styleConfig={{
