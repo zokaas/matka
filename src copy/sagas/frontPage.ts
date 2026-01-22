@@ -169,20 +169,12 @@ function* getKycState() {
     const kyc = company.dynamicFields?.kyc;
     const kycStatus = yield select((state: AppState) => state.kyc.kycStatus);
 
-    if (!kyc) {
-        logger.warn("No KYC dynamic fields found, using defaults with fallback date");
-        return {
-            ...DEFAULT_KYC_STATE,
-            kycDueDate: process.env.REACT_APP_KYC_DEADLINE_DATE || "2026-01-30",
-        };
-    }
-
     logger.log("kyc found in application Dynamic Fields : ", kyc);
     const kycState = {
         ...kycStatus,
         kycDone: Boolean(kyc.kycDone),
         kycUpdatedDate: kyc.kycUpdatedDate ?? "",
-        kycDueDate: kyc.kycDueDate || process.env.REACT_APP_KYC_DEADLINE_DATE || "2026-01-30",
+        kycDueDate: kyc.kycDueDate || process.env.REACT_APP_KYC_DEADLINE_DATE,
     };
 
     logger.log("KYC from application", kycState);

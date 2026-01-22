@@ -5,12 +5,8 @@ import { T_KycReducerState } from "@opr-finance/feature-kyc";
 export const KYC_MODAL_DISMISS_KEY = "kycModalDismissed";
 export const KYC_WARNING_DAYS = 14;
 
-const getKycDeadlineDate = (): string | null => {
-    return process.env.REACT_APP_KYC_DEADLINE_DATE || "2026-01-30";
-};
-
 export const checkKycStatus = (kyc: T_KycReducerState): T_KycStatusResult => {
-    const dueDateString = kyc.kycStatus.kycDueDate || getKycDeadlineDate();
+    const dueDateString = kyc.kycStatus.kycDueDate || process.env.REACT_APP_KYC_DEADLINE_DATE;
     const returnedFromKyc = kyc.returnedFromKyc;
 
     if (!dueDateString || returnedFromKyc) {
@@ -30,7 +26,7 @@ export const checkKycStatus = (kyc: T_KycReducerState): T_KycStatusResult => {
 export const shouldBlockWithdrawal = (kyc: T_KycReducerState): boolean => {
     if (kyc.returnedFromKyc) return false;
 
-    const dueDateString = kyc.kycStatus.kycDueDate || getKycDeadlineDate();
+    const dueDateString = kyc.kycStatus.kycDueDate || process.env.REACT_APP_KYC_DEADLINE_DATE;
     if (!dueDateString) return false;
 
     try {

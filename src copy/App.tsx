@@ -102,7 +102,6 @@ const App: React.FC = () => {
     const kycState = useSelector((state: AppState) => state.kyc);
     const showKycModal = useSelector((state: AppState) => state.kyc.showModal);
     const isKycLoading = useSelector((state: AppState) => state.kyc.isLoading);
-    const [redirectLoader, setRedirectLoader] = useState(false);
     const smeId = useSelector((state: AppState) => state.customer.engagement.activeSmeId) ?? "";
     const applicationId = useSelector(selectAccountApplicationId) ?? "";
     const companyId = useSelector(selectCompanyId);
@@ -220,7 +219,6 @@ const App: React.FC = () => {
                 flow: kycFlow.EXISTING_CUSTOMER,
             })
         );
-        setRedirectLoader(true);
     };
 
     const handleCloseKycModal = () => {

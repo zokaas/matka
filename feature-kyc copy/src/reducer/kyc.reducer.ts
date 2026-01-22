@@ -58,7 +58,7 @@ export const kycReducer = createReducer<T_KycReducerState, T_KycAction>(initialS
     })
     .handleAction(kycActions.kycStartFlowSuccess, (state) => {
         return produce(state, (draftState) => {
-            draftState.isLoading = false;
-            draftState.showModal = false;
+            draftState.isLoading = true;
+            draftState.showModal = true;
         });
     });

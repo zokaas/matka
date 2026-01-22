@@ -60,8 +60,8 @@ exports.kycReducer = (0, typesafe_actions_1.createReducer)(initialState)
 })
     .handleAction(actions_1.kycActions.kycStartFlowSuccess, (state) => {
     return (0, immer_1.produce)(state, (draftState) => {
-        draftState.isLoading = false;
-        draftState.showModal = false;
+        draftState.isLoading = true;
+        draftState.showModal = true;
     });
 });
 //# sourceMappingURL=kyc.reducer.js.map

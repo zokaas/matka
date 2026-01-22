@@ -78,11 +78,7 @@ export const KycModal: React.FC<T_KycModalProps> = ({
                             {fm(messages.creditConsentLabel)}
                         </Font>
 
-                        {isOverdue ? (
-                            <Font styleConfig={{ root: styleConfig.contentText }} as="p">
-                                {fm(messages.overdueMessage)}
-                            </Font>
-                        ) : (
+                        {!isOverdue && (
                             <>
                                 <Font styleConfig={{ root: styleConfig.contentText }} as="p">
                                     {fm(messages.dueDateWarningMessage)}

@@ -17,8 +17,9 @@ export const KycNotice: React.FC = () => {
     const dispatch = useDispatch();
 
     const kycState = useSelector((state: AppState) => state.kyc);
+    const authenticated = useSelector((state: AppState) => state.session.authenticated);
 
-    if (!kycState.config.bffUrl) {
+    if (!authenticated || !kycState) {
         return null;
     }
 
@@ -30,9 +31,7 @@ export const KycNotice: React.FC = () => {
     const { isOverdue, daysRemaining } = kycStatus;
     const shouldShow = isOverdue || (daysRemaining !== null && daysRemaining <= 14);
 
-    if (!shouldShow) {
-        return null;
-    }
+    if (!shouldShow) return null;
 
     const handleOpenModal = () => {
         dispatch(kycActions.showModal());
@@ -40,7 +39,7 @@ export const KycNotice: React.FC = () => {
 
     const noticeText = isOverdue
         ? "Du har inte svarat på våra kundkännedomsfrågor. Därför är dina möjligheter att göra uttag nu spärrade."
-        : "Det är dags att uppdatera din information för våra frågor om kundkännedom. Genom att svara i tid undviker du att möjligheten att göra uttag spärras";
+        : "Det är dags att uppdatera din information för våra frågor om kundkännedom. Genom att svara i tid undviker du att möjligheten att göra uttag spärras.";
 
     const styleConfig = {
         buttonStyles: isOverdue ? ButtonStyles.redButtonStyles() : ButtonStyles.greenButtonStyles(),

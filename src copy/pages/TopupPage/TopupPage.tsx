@@ -24,7 +24,6 @@ import { Icon } from "@opr-finance/component-icon";
 import { StyledButton } from "@opr-finance/component-button";
 import { StyledLink } from "@opr-finance/component-link-to";
 import { Modal } from "@opr-finance/component-modal-dialog";
-import { E_AllowedAccountStates } from "@opr-finance/feature-account";
 import { ConsoleLogger, LOG_LEVEL } from "@opr-finance/feature-console-logger";
 
 import {
@@ -64,7 +63,6 @@ export function TopupPage(props: TopupPageProps) {
     const [modalOpen, toggleModalOpen] = useState(false);
 
     const { authenticated, logoutInProgress } = useSelector((state: AppState) => state.session);
-    const accountState = useSelector((state: AppState) => state.account.accountState);
     const account = useSelector((state: AppState) => state.account.account);
     const invoice = useSelector((state: AppState) => state.invoices.formatted[0]);
     const { info, boardmembers } = useSelector((state: AppState) => state.customer.companyInfo);
@@ -177,9 +175,10 @@ export function TopupPage(props: TopupPageProps) {
     const { givenName, surname, reference, birthDate } = boardMember || {};
     const { companyName, email, phone, organizationNumber } = info || {};
 
-    if ((!authenticated || accountState === E_AllowedAccountStates.PENDING) && !logoutInProgress) {
+    if (!authenticated && !logoutInProgress) {
         return <Redirect to={E_Routes.ROOT} />;
     }
+
     const checkMissingData = (): TDataError => {
         const boardMemberProperties = [givenName, surname, reference, birthDate];
         const companyInfoProperties = [email, phone];

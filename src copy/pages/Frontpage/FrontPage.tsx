@@ -143,6 +143,7 @@ export function FrontPage(props: FrontPageProps) {
                     pageTitleText: props.styleConfig.pageTitle,
                 }}
             />
+
             <Scroll to="withdraw-section">
                 <StyledGrid styleConfig={{ root: props.styleConfig.nostoContainer }}>
                     <Image

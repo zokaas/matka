@@ -4,14 +4,8 @@ export const messages = defineMessages({
     overdueTitle: {
         id: "flex-online-se-kyc-modal-overdue-title",
     },
-    overdueMessage: {
-        id: "flex-online-se-kyc-modal-overdue-message",
-    },
     dueDateLabel: {
         id: "flex-online-se-kyc-modal-due-date-label",
-    },
-    dueDatePassedLabel: {
-        id: "flex-online-se-kyc-modal-due-date-passed-label",
     },
     kycTitle: {
         id: "flex-online-se-kyc-modal-title",
