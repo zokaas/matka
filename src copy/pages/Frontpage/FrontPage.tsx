@@ -131,7 +131,7 @@ export function FrontPage(props: FrontPageProps) {
         if (component && component === "withdraw") {
             window.scrollTo({ top: 500, behavior: "smooth" });
         }
-    });
+    }, [component]);
 
     return (
         <StyledGrid styleConfig={{ root: FrontPageStyles.frontPageRootStyles() }}>

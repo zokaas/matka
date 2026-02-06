@@ -28,7 +28,6 @@ export type AppState = FeatureUserLoginState &
     FeatureNewsState<FeatureUserLoginState> &
     FeatureNoticesState &
     FeatureTranslationStaticContentState<FeatureUserLoginState> &
-    FeatureNoticesState &
     T_FeatureInvoicesState &
     T_SmeFeatureTransactionsState &
     FeatureInitializerState &

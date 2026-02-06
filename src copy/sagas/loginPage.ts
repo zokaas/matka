@@ -1,5 +1,5 @@
 import { ActionType } from "typesafe-actions";
-import { put, call, take, select, race, takeLeading } from "redux-saga/effects";
+import { put, call, take, select, race, takeLeading, delay } from "redux-saga/effects";
 
 import { errorActions } from "@opr-finance/feature-error";
 import {
@@ -34,7 +34,9 @@ function navigateNoLoan() {
     console.log("navigate to no loan");
     history.push(E_Routes.NO_LOAN);
 }
-
+function navigateError() {
+    history.push(E_Routes.ERROR);
+}
 class StopApplicationFlow extends Error {}
 
 /**
@@ -103,46 +105,56 @@ function* handleApplicationFlow(token: string) {
  */
 function* handleEngagementFlow(token: string, role: string, ssn: string) {
     logger.log("No applicationId — initializing engagement flow");
+    try {
+        yield put(
+            engagementActions.engagementInitializer({
+                mock,
+                gwUrl: fullVpApiUrl,
+                token,
+                role,
+                reference: ssn,
+            })
+        );
 
-    yield put(
-        engagementActions.engagementInitializer({
-            mock,
-            gwUrl: fullVpApiUrl,
-            token,
-            role,
-            reference: ssn,
-        })
-    );
+        yield put(engagementActions.engagementTrigger());
 
-    yield put(engagementActions.engagementTrigger());
+        const { success, error, timeout } = yield race({
+            success: take(engagementActions.engagementSuccess),
+            error: take(engagementActions.engagementError),
+            timeout: delay(10000),
+        });
 
-    const [engagementSuccess, engagementError] = yield race([
-        take(engagementActions.engagementSuccess),
-        take(engagementActions.engagementError),
-    ]);
+        if (timeout || error) {
+            yield call(navigateError);
+            return;
+        }
 
-    if (engagementError) {
-        logger.log("Engagement fetch error; routing to NO_LOAN");
-        yield call(navigateNoLoan);
-        return;
+        const engagements = yield select(
+            (state: AppState) => state.customer?.engagement?.engagements ?? []
+        );
+
+        if (!engagements || engagements.length === 0) {
+            yield call(navigateNoLoan);
+            return;
+        }
+
+        if (engagements.length > 1) {
+            history.push(E_Routes.CHOOSE_ACCOUNT);
+            return;
+        }
+
+        const single = engagements[0];
+        yield put(engagementActions.saveSmeIdSuccess(single.smeId));
+        try {
+            localStorage.setItem("smeId", single.smeId);
+        } catch (e) {
+            logger.warn("Failed to persist smeId", e);
+        }
+        history.push(E_Routes.FRONT);
+    } catch (error) {
+        logger.error("Engagement flow failed", error);
+        yield call(navigateError);
     }
-
-    const engagements = yield select((state: AppState) => state.customer.engagement.engagements);
-
-    if (!engagements || engagements.length === 0) {
-        yield call(navigateNoLoan);
-        return;
-    }
-
-    if (engagements.length > 1) {
-        history.push(E_Routes.CHOOSE_ACCOUNT);
-        return;
-    }
-
-    const single = engagements[0];
-    yield put(engagementActions.saveSmeIdSuccess(single.smeId));
-    localStorage.setItem("smeId", single.smeId);
-    history.push(E_Routes.FRONT);
 }
 
 export function* watchLoginTrigger() {
@@ -157,6 +169,15 @@ export function* handleLoginTrigger(action: ActionType<typeof appActions.loginPa
 
         const { token, role, ssn } = yield select((state: AppState) => state.session);
 
+        if (!token || !ssn) {
+            yield put(
+                errorActions.errorTrigger({
+                    message: "Missing session information",
+                    url: "/error",
+                })
+            );
+            return;
+        }
         const applicationId = sessionStorage.getItem("applicationId");
 
         if (applicationId) {
@@ -169,7 +190,12 @@ export function* handleLoginTrigger(action: ActionType<typeof appActions.loginPa
 
         yield put(appActions.loginPageSuccess());
     } catch (e) {
-        yield put(errorActions.errorTrigger({ message: "login failed" + e, url: "/error" }));
+        yield put(
+            errorActions.errorTrigger({
+                message: `login failed: ${e instanceof Error ? e.message : String(e)}`,
+                url: "/error",
+            })
+        );
     }
 }
 
@@ -224,7 +250,7 @@ function* checkApplicationState(
 ) {
     if (!applicationChannel || !applicationState) return;
     const allowedStates = allowedStatesByChannel[applicationChannel];
-    //if broker application is any other than pn_created -> no loan
+    //if broker application is any other than pending/pn_created -> no loan
     //if application is any other than pending/pn_created -> no loan
     logger.log("applicationChannel: ", applicationChannel, "applicationState:", applicationState);
     logger.log("allowedStates", allowedStates);

@@ -50,7 +50,6 @@ export type StatementsStatus = {
     overdueDays: number; // need to be 0
     statementsCount: number; // need to be at least 3
 };
-
 export type TDataError = {
     status: boolean;
     errorMessage: string;

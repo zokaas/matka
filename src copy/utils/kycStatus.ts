@@ -3,7 +3,7 @@ import { T_KycStatusResult } from "../components/KycModal/types";
 import { T_KycReducerState } from "@opr-finance/feature-kyc";
 
 export const KYC_MODAL_DISMISS_KEY = "kycModalDismissed";
-export const KYC_WARNING_DAYS = 14;
+export const KYC_WARNING_DAYS = 21;
 
 export const checkKycStatus = (kyc: T_KycReducerState): T_KycStatusResult => {
     const dueDateString = kyc.kycStatus.kycDueDate || process.env.REACT_APP_KYC_DEADLINE_DATE;
@@ -36,13 +36,20 @@ export const shouldBlockWithdrawal = (kyc: T_KycReducerState): boolean => {
     }
 };
 
-export const shouldShowKycModal = (kycStatus: T_KycStatusResult): boolean => {
-    if (sessionStorage.getItem(KYC_MODAL_DISMISS_KEY) === "true") return false;
-
+export const shouldShowKycComponent = (kycStatus: T_KycStatusResult): boolean => {
     return (
         kycStatus.isOverdue ||
         (kycStatus.daysRemaining !== null && kycStatus.daysRemaining <= KYC_WARNING_DAYS)
     );
+};
+
+export const shouldShowKycNotice = (kycStatus: T_KycStatusResult): boolean => {
+    return shouldShowKycComponent(kycStatus);
+};
+
+export const shouldShowKycModal = (kycStatus: T_KycStatusResult): boolean => {
+    if (sessionStorage.getItem(KYC_MODAL_DISMISS_KEY) === "true") return false;
+    return shouldShowKycComponent(kycStatus);
 };
 
 export const dismissKycModal = (): void => {

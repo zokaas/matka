@@ -247,7 +247,6 @@ export function TopupPage(props: TopupPageProps) {
         paidInvoicesCount: payments.length,
         blockedStatus,
     };
-
     const isCustomerEligible = isRescoringAllowed && checkTopupEligibility(accountData, topupRules);
 
     return (
@@ -322,6 +321,70 @@ export function TopupPage(props: TopupPageProps) {
                                         }}
                                     />
                                     <FormError field="newCreditLimit" />
+                                </StyledGrid>
+                            </StyledGrid>
+                            <StyledGrid styleConfig={{ root: TopupPageStyles.formItemContainer() }}>
+                                <Font styleConfig={{ root: TopupPageStyles.formLabel() }}>
+                                    {fm(messages.textLoanPurpose)}
+                                </Font>
+                                <StyledGrid
+                                    styleConfig={{ root: TopupPageStyles.inputContainer() }}>
+                                    <SelectField
+                                        name="loanPurpose"
+                                        value={getOption(loanPurposeOptions, form.data.loanPurpose)}
+                                        icon={<Icon icon={["fa", "caret-down"]} size="lg" />}
+                                        inputConfig={{
+                                            select: {
+                                                value: form.data.loanPurpose,
+                                                onChange: (value) => {
+                                                    processChange({
+                                                        field: "loanPurpose",
+                                                        value: value?.value,
+                                                        validate: true,
+                                                        touched: true,
+                                                    });
+                                                },
+                                            },
+                                        }}
+                                        options={loanPurposeOptions}
+                                        styleConfig={{
+                                            select: TopupPageStyles.select(),
+                                            singleValue: TopupPageStyles.singleValue(),
+                                            option: TopupPageStyles.singleOption(),
+                                            menu: TopupPageStyles.menu(),
+                                        }}
+                                    />
+                                    <FormError field="loanPurpose" />
+                                </StyledGrid>
+                            </StyledGrid>
+                            <StyledGrid styleConfig={{ root: TopupPageStyles.formItemContainer() }}>
+                                <Font styleConfig={{ root: TopupPageStyles.formLabel() }}>
+                                    {fm(messages.textLoanPurposeDescription)}
+                                </Font>
+                                <StyledGrid
+                                    styleConfig={{ root: TopupPageStyles.inputContainer() }}>
+                                    <TextArea
+                                        inputConfig={{
+                                            name: "loanPurposeDescription",
+                                            placeholder: fm(messages.placeholder),
+                                            value: form.data.loanPurposeDescription,
+                                            onFocus: () => {
+                                                processFocus("loanPurposeDescription");
+                                            },
+                                            onChange: (e) => {
+                                                processChange({
+                                                    field: "loanPurposeDescription",
+                                                    value: e.target.value,
+                                                });
+                                            },
+                                            onBlur: () => {
+                                                processBlur("loanPurposeDescription");
+                                            },
+                                            maxLength: "200",
+                                        }}
+                                        styleConfig={{ root: TopupPageStyles.textArea() }}
+                                    />
+                                    <FormError field="loanPurposeDescription" />
                                 </StyledGrid>
                             </StyledGrid>
                             <StyledGrid styleConfig={{ root: TopupPageStyles.formItemContainer() }}>

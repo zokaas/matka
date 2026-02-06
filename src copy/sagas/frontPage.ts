@@ -1,12 +1,11 @@
-import { take, put, call, select, takeLatest, race, all } from "redux-saga/effects";
+import { take, put, call, select, takeLatest, race, all, delay } from "redux-saga/effects";
 
 import { recentNewsActions } from "@opr-finance/feature-contentful";
 import { errorActions } from "@opr-finance/feature-error";
 import { smeLoanAccountActions } from "@opr-finance/feature-account";
 import { smeWithdrawActions } from "@opr-finance/feature-withdraw";
 import { companyActions, engagementActions } from "@opr-finance/feature-sme-customer";
-import { history } from "@opr-finance/utils";
-import { ConsoleLogger, LOG_LEVEL } from "@opr-finance/feature-console-logger";
+import { history, createBffLogger } from "@opr-finance/utils";
 
 import { AppState, E_Routes } from "../types/general";
 import {
@@ -22,12 +21,10 @@ import { T_GatewayProps } from "@opr-finance/utils/src/types/general";
 import { getGwProps } from "@opr-finance/utils/src/getGwProps";
 import { loginSessionActions } from "@opr-finance/feature-login-session";
 import { T_CompanyApiResponse } from "@opr-finance/feature-sme-customer/src/types";
-import { DEFAULT_KYC_STATE } from "../constants/general";
 import { restoreSession } from "./applicationPage";
 import { kycActions, T_KycReducerState, T_KycState } from "@opr-finance/feature-kyc";
 import { checkKycStatus, shouldShowKycModal } from "../utils";
-
-const logger = new ConsoleLogger({ level: LOG_LEVEL });
+import { DEFAULT_KYC_STATE } from "../constants/general";
 
 export function* watchFrontPageTrigger() {
     yield takeLatest(AppActionConstants.FRONT_PAGE_TRIGGER, handleFrontPageTrigger);
@@ -35,125 +32,174 @@ export function* watchFrontPageTrigger() {
 
 export function* handleFrontPageTrigger() {
     const { mock, fullVpApiUrl, baseUrl, cid }: T_GatewayProps = getGwProps();
+    const state: AppState = yield select((state: AppState) => state);
+
+    const bffLogger = createBffLogger({
+        baseUrl,
+        context: {
+            cid,
+            ssn: state.session?.auth?.ssn,
+            saga: AppActionConstants.FRONT_PAGE_TRIGGER,
+        },
+    });
+
+    bffLogger.info("Front page trigger started");
 
     try {
-        const state: AppState = yield select((state: AppState) => state);
         const { account, customer, session, kyc } = state;
         const accountConfigUrl = account.config.gwUrl;
         const companyConfigUrl = customer.companyInfo.config.gwUrl;
         const bffConfigUrl = kyc.config.bffUrl;
         const token = session.token;
 
-        if (token) {
-            yield call(checkSession);
-            yield call(restoreSession, token);
-            yield put(engagementActions.engagementTrigger());
+        if (!token) {
+            history.push(E_Routes.ROOT);
+            return;
+        }
 
-            const { engagementSuccess, engagementError } = yield race({
-                engagementSuccess: take(engagementActions.engagementSuccess),
-                engagementError: take(engagementActions.engagementError),
-            });
+        yield call(checkSession);
+        yield call(restoreSession, token);
+        yield put(engagementActions.engagementTrigger());
 
-            if (engagementError) {
-                logger.log("error getting engagements");
-                window.location.href = "/error";
-            }
+        const { engagementError, timeout } = yield race({
+            engagementSuccess: take(engagementActions.engagementSuccess),
+            engagementError: take(engagementActions.engagementError),
+            timeout: delay(10000),
+        });
 
-            if (!accountConfigUrl) {
-                yield put(
-                    smeLoanAccountActions.accountInitializer({
-                        mockApiCalls: mock,
-                        gwUrl: fullVpApiUrl,
-                        token,
-                        errorUrl: E_Routes.ERROR,
-                        noAuth: E_Routes.EXPIRED,
-                        noLoanUrl: E_Routes.NO_LOAN,
-                    })
-                );
-            }
+        if (timeout) {
+            bffLogger.error("Engagement timeout");
+            history.push(E_Routes.ERROR);
+            return;
+        }
 
-            if (!bffConfigUrl) {
-                console.log("kycInitializer: cid", cid);
-                yield put(
-                    kycActions.kycInitializer({
-                        token,
-                        bffUrl: baseUrl,
-                        mock,
-                        cid,
-                    })
-                );
-            }
+        if (engagementError) {
+            bffLogger.error("Engagement error");
+            history.push(E_Routes.ERROR);
+            return;
+        }
 
-            if (!companyConfigUrl) {
-                yield put(
-                    companyActions.companyDataInitializer({
-                        token,
-                        gwUrl: fullVpApiUrl,
-                        mock: mock,
-                    })
-                );
-            }
-
+        if (!accountConfigUrl) {
             yield put(
-                recentNewsActions.fetchRecentNewsTrigger({
-                    clientParams: {
-                        space: process.env.REACT_APP_CONTENTFUL_SPACE as string,
-                        accessToken: process.env.REACT_APP_CONTENTFUL_ACCESS_TOKEN as string,
-                    },
-                    contentParams: {
-                        select: "fields,sys.createdAt",
-                        content_type: "recentNews",
-                        "fields.language[in]": "sv",
-                        "fields.application[in]": "Flex Online Sweden",
-                    },
-                })
-            );
-            yield take(recentNewsActions.fetchRecentNewsSuccess);
-
-            yield call(getAccountData);
-
-            yield call(setInvoiceConfig);
-            yield call(setTransactionsConfig);
-
-            yield put(
-                smeWithdrawActions.withdrawInitializer({
+                smeLoanAccountActions.accountInitializer({
                     mockApiCalls: mock,
                     gwUrl: fullVpApiUrl,
                     token,
+                    errorUrl: E_Routes.ERROR,
+                    noAuth: E_Routes.EXPIRED,
+                    noLoanUrl: E_Routes.NO_LOAN,
                 })
             );
-            yield put(loginSessionActions.loginSessionVerify());
+        }
 
-            yield all([call(getInvoiceData), call(getTransactionsData)]);
+        if (!bffConfigUrl) {
+            yield put(
+                kycActions.kycInitializer({
+                    token,
+                    bffUrl: baseUrl,
+                    mock,
+                    cid,
+                })
+            );
+        }
 
-            const kyc: T_KycReducerState = yield select((state: AppState) => state.kyc);
+        if (!companyConfigUrl) {
+            yield put(
+                companyActions.companyDataInitializer({
+                    token,
+                    gwUrl: fullVpApiUrl,
+                    mock: mock,
+                })
+            );
+            bffLogger.info("Company data initializer dispatched");
 
-            if (kyc.returnedFromKyc) {
-                logger.log("KYC already done in Redux, skipping modal check");
-            } else {
-                const kyc: T_KycReducerState = yield select((state: AppState) => state.kyc);
+            const smeId: string = localStorage.getItem("smeId") || "";
+            yield put(companyActions.getCompanyInfoTrigger({ smeId }));
+            bffLogger.info("Company info trigger dispatched");
 
-                if (kyc.returnedFromKyc) {
-                    logger.log("KYC already done in Redux, skipping modal check");
-                } else {
-                    const kycState: T_KycState = yield call(getKycState);
-                    logger.log("KYC state", kycState);
-                    yield put(kycActions.updateKycState(kycState));
+            const { companyError } = yield race({
+                companySuccess: take(companyActions.getCompanyInfoSuccess),
+                companyError: take(companyActions.getCompanyInfoError),
+            });
 
-                    const updatedKyc: T_KycReducerState = yield select(
-                        (state: AppState) => state.kyc
-                    );
-                    const kycStatusResult = checkKycStatus(updatedKyc);
-                    if (shouldShowKycModal(kycStatusResult)) {
-                        logger.log("Showing KYC modal from saga");
-                        yield put(kycActions.showModal());
-                    }
-                }
+            if (companyError) {
+                bffLogger.error("Company data failed to load.");
+                history.push(E_Routes.ERROR);
+                return;
             }
 
-            yield put(appActions.frontPageSuccess());
+            bffLogger.info("Company data loaded successfully");
+        }
+
+        yield put(
+            recentNewsActions.fetchRecentNewsTrigger({
+                clientParams: {
+                    space: process.env.REACT_APP_CONTENTFUL_SPACE as string,
+                    accessToken: process.env.REACT_APP_CONTENTFUL_ACCESS_TOKEN as string,
+                },
+                contentParams: {
+                    select: "fields,sys.createdAt",
+                    content_type: "recentNews",
+                    "fields.language[in]": "sv",
+                    "fields.application[in]": "Flex Online Sweden",
+                },
+            })
+        );
+
+        const { error } = yield race({
+            success: take(recentNewsActions.fetchRecentNewsSuccess),
+            error: take(recentNewsActions.fetchRecentNewsError),
+        });
+
+        if (error) {
+            bffLogger.warn("Recent news failed, continuing");
+        } else {
+            bffLogger.info("Recent news fetched successfully");
+        }
+
+        yield call(getAccountData);
+        yield call(setInvoiceConfig);
+        yield call(setTransactionsConfig);
+
+        yield put(
+            smeWithdrawActions.withdrawInitializer({
+                mockApiCalls: mock,
+                gwUrl: fullVpApiUrl,
+                token,
+            })
+        );
+        yield put(loginSessionActions.loginSessionVerify());
+
+        yield all([call(getInvoiceData), call(getTransactionsData)]);
+
+        const kycReducer: T_KycReducerState = yield select((state: AppState) => state.kyc);
+        bffLogger.info("KYC state retrieved from Redux");
+
+        let showKycModal = false;
+
+        if (!kycReducer.returnedFromKyc) {
+            const kycState: T_KycState = yield call(getKycState);
+            yield put(kycActions.updateKycState(kycState));
+
+            const updatedKyc: T_KycReducerState = yield select((state: AppState) => state.kyc);
+            const kycStatusResult = checkKycStatus(updatedKyc);
+            showKycModal = shouldShowKycModal(kycStatusResult);
+        }
+
+        yield put(appActions.frontPageSuccess());
+        bffLogger.info("Front page loaded successfully");
+
+        if (showKycModal) {
+            yield put(kycActions.showModal());
         }
     } catch (e) {
+        const error = e instanceof Error ? e : new Error(String(e));
+
+        bffLogger.error("Frontpage load failed", {
+            errorMessage: error.message,
+            stack: error.stack,
+        });
+
         history.push(E_Routes.ERROR);
         yield put(
             errorActions.errorTrigger({ message: "frontpage load failed" + e, url: "/error" })
@@ -166,17 +212,20 @@ function* getKycState() {
         (state: AppState) => state.customer.companyInfo.info
     );
 
-    const kyc = company.dynamicFields?.kyc;
-    const kycStatus = yield select((state: AppState) => state.kyc.kycStatus);
+    const kyc = company?.dynamicFields?.kyc;
 
-    logger.log("kyc found in application Dynamic Fields : ", kyc);
-    const kycState = {
+    if (!kyc) {
+        return DEFAULT_KYC_STATE;
+    }
+
+    const kycStatus: T_KycState = yield select((state: AppState) => state.kyc.kycStatus);
+
+    const kycState: T_KycState = {
         ...kycStatus,
         kycDone: Boolean(kyc.kycDone),
         kycUpdatedDate: kyc.kycUpdatedDate ?? "",
-        kycDueDate: kyc.kycDueDate || process.env.REACT_APP_KYC_DEADLINE_DATE,
+        kycDueDate: kyc.kycDueDate || process.env.REACT_APP_KYC_DEADLINE_DATE || "",
     };
 
-    logger.log("KYC from application", kycState);
     return kycState;
 }

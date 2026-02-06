@@ -1,7 +1,8 @@
 import { T_FormattedInvoice } from "@opr-finance/feature-statements";
 import { createSelector } from "reselect";
 
-import { AppState } from "../types/general";
+import { AppState, E_Routes } from "../types/general";
+import { useHistory } from "react-router-dom";
 
 export const paymentsSinceLastTopup = createSelector(
     (state: AppState) => state.customer.companyInfo.accounts?.applications,

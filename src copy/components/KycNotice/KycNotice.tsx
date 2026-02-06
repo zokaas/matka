@@ -5,7 +5,7 @@ import { kycActions } from "@opr-finance/feature-kyc";
 
 import { Notice } from "../Notice";
 import { AppState } from "../../types/general";
-import { checkKycStatus } from "../../utils";
+import { checkKycStatus, shouldShowKycNotice } from "../../utils";
 import { ButtonStyles, KycNoticeStyles } from "@opr-finance/theme-flex-online";
 import { StyledButton } from "@opr-finance/component-button/src/Button";
 import { Font } from "@opr-finance/component-fonts/src/Font";
@@ -28,10 +28,9 @@ export const KycNotice: React.FC = () => {
     }
 
     const kycStatus = checkKycStatus(kycState);
-    const { isOverdue, daysRemaining } = kycStatus;
-    const shouldShow = isOverdue || (daysRemaining !== null && daysRemaining <= 14);
+    const { isOverdue } = kycStatus;
 
-    if (!shouldShow) return null;
+    if (!shouldShowKycNotice(kycStatus)) return null;
 
     const handleOpenModal = () => {
         dispatch(kycActions.showModal());

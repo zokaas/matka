@@ -15,7 +15,7 @@ export const DEFAULT_KYC_STATE: T_KycState = {
 export const allowedStatesByChannel: Partial<
     Record<T_SMEApplicationChannel, readonly T_SMEApplicationState[]>
 > = {
-    BROKER: ["PN_CREATED"],
+    BROKER: ["PENDING", "PN_CREATED"],
     WEB: ["PENDING", "PN_CREATED"],
     PHONE: ["PENDING", "PN_CREATED"],
 };
